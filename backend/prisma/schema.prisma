@@ -1,0 +1,105 @@
+// Horizons — schema do banco.
+// Modelagem generica de trilhas: uma Track (trilha) tem Modules, que tem
+// Lessons. O progresso e por usuario e por licao.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Prisma 7: a connection string vive em prisma.config.ts (Migrate) e no
+// adapter passado ao PrismaClient (runtime), nao mais aqui.
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  name      String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  progress  Progress[]
+
+  @@map("users")
+}
+
+/// Uma trilha de estudo (ex.: System Design).
+model Track {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  title       String
+  description String
+  /// Emoji ou nome de icone para a listagem.
+  icon        String?
+  position    Int      @default(0)
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  modules     Module[]
+
+  @@map("tracks")
+}
+
+model Module {
+  id       String   @id @default(uuid())
+  trackId  String
+  slug     String
+  title    String
+  /// O que a pessoa sai sabendo depois deste modulo.
+  goal     String
+  position Int      @default(0)
+  track    Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  lessons  Lesson[]
+
+  @@unique([trackId, slug])
+  @@index([trackId, position])
+  @@map("modules")
+}
+
+enum LessonKind {
+  ARTICLE
+  VIDEO
+  PAPER
+  COURSE
+  BOOK
+  CHANNEL
+}
+
+model Lesson {
+  id       String     @id @default(uuid())
+  moduleId String
+  slug     String
+  title    String
+  kind     LessonKind @default(ARTICLE)
+  /// Resumo de uma linha, exibido na listagem.
+  summary  String?
+  /// Conteudo autoral da aula, como blocos estruturados (JSON).
+  content  Json?
+  /// Link para a fonte original, quando houver leitura complementar.
+  sourceUrl String?
+  position Int        @default(0)
+  module   Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress Progress[]
+
+  @@unique([moduleId, slug])
+  @@index([moduleId, position])
+  @@map("lessons")
+}
+
+/// Progresso e anotacoes de um usuario numa licao.
+model Progress {
+  id          String    @id @default(uuid())
+  userId      String
+  lessonId    String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  note        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId, completed])
+  @@map("progress")
+}

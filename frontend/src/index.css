@@ -1,0 +1,122 @@
+@import 'tailwindcss';
+
+/* ── Horizons — design system ────────────────────────────────────────────
+   Paleta base: verde escuro, dourado, preto e branco.
+
+   Nota de contraste: o dourado (#D4A017) sobre branco fica em ~2.2:1 e
+   sobre ele o texto branco fica em ~2.4:1 — os dois reprovam em WCAG AA.
+   Por isso o dourado entra como acento (bordas, realces, texto sobre
+   preto/verde) e sempre com texto PRETO quando vira fundo de botao.
+   Para texto dourado sobre fundo claro existe o --color-gold-ink, uma
+   versao escurecida que passa em AA.
+   ------------------------------------------------------------------- */
+@theme {
+  /* Marca */
+  --color-forest-50: #e6f2ed;
+  --color-forest-100: #c0dfd1;
+  --color-forest-200: #91c9b1;
+  --color-forest-300: #5fb18f;
+  --color-forest-400: #2f9a72;
+  --color-forest-500: #00704a; /* primaria */
+  --color-forest-600: #006241;
+  --color-forest-700: #005236;
+  --color-forest-800: #00412b;
+  --color-forest-900: #00291b;
+
+  --color-gold-50: #fdf6e3;
+  --color-gold-100: #f8e7b8;
+  --color-gold-200: #f0d488;
+  --color-gold-300: #e5be4f;
+  --color-gold-400: #dcaf2e;
+  --color-gold-500: #d4a017; /* acento */
+  --color-gold-600: #b58712;
+  --color-gold-700: #8f6a0e;
+  --color-gold-800: #6b4f0a;
+  --color-gold-900: #4a3707;
+  /* Dourado escurecido: use para TEXTO sobre fundo claro (passa em AA). */
+  --color-gold-ink: #7a5c0c;
+
+  --color-ink: #000000;
+  --color-paper: #ffffff;
+
+  /* Neutros — cinzas levemente puxados para o verde, para casar com a marca */
+  --color-slate-50: #f6f8f7;
+  --color-slate-100: #eaefec;
+  --color-slate-200: #d5ded9;
+  --color-slate-300: #b0bfb8;
+  --color-slate-400: #7d9188;
+  --color-slate-500: #566860;
+  --color-slate-600: #3d4c45;
+  --color-slate-700: #2b352f;
+  --color-slate-800: #1a211d;
+  --color-slate-900: #0f1411;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Tokens semanticos — claro e escuro.
+   Sempre use var(--surface), var(--text) etc. nos componentes, nunca a cor
+   crua: assim o tema escuro sai de graca. */
+:root {
+  --surface: var(--color-paper);
+  --surface-raised: var(--color-paper);
+  --surface-sunken: var(--color-slate-50);
+  --border: var(--color-slate-200);
+  --text: var(--color-slate-900);
+  --text-muted: var(--color-slate-500);
+  --brand: var(--color-forest-500);
+  --brand-text: var(--color-paper);
+  --accent: var(--color-gold-500);
+  --accent-text: var(--color-ink);
+  --accent-ink: var(--color-gold-ink);
+}
+
+:root[data-theme='dark'],
+:root:not([data-theme='light']) {
+  @media (prefers-color-scheme: dark) {
+    --surface: var(--color-slate-900);
+    --surface-raised: var(--color-slate-800);
+    --surface-sunken: #0a0d0b;
+    --border: var(--color-slate-700);
+    --text: var(--color-slate-50);
+    --text-muted: var(--color-slate-400);
+    --brand: var(--color-forest-400);
+    --brand-text: var(--color-ink);
+    --accent: var(--color-gold-400);
+    --accent-text: var(--color-ink);
+    /* No escuro o dourado claro ja tem contraste suficiente para texto. */
+    --accent-ink: var(--color-gold-300);
+  }
+}
+
+:root[data-theme='dark'] {
+  --surface: var(--color-slate-900);
+  --surface-raised: var(--color-slate-800);
+  --surface-sunken: #0a0d0b;
+  --border: var(--color-slate-700);
+  --text: var(--color-slate-50);
+  --text-muted: var(--color-slate-400);
+  --brand: var(--color-forest-400);
+  --brand-text: var(--color-ink);
+  --accent: var(--color-gold-400);
+  --accent-text: var(--color-ink);
+  --accent-ink: var(--color-gold-300);
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background-color: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Foco visivel e consistente em toda a aplicacao. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

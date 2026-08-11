@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: horizons-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: horizons
+      POSTGRES_PASSWORD: horizons
+      POSTGRES_DB: horizons
+    # 5433 no host: a 5432 ja e usada pelo Postgres do manage-house.
+    ports:
+      - '5433:5432'
+    volumes:
+      - horizons_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U horizons -d horizons']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  horizons_pgdata:
