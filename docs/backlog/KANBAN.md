@@ -69,3 +69,26 @@ Para não serem rediscutidas sem motivo novo:
 - **A invoice é em inglês, as trilhas em português.** A invoice é porta de
   entrada global; as trilhas são para o dev brasileiro.
 - **O PDF é gerado no navegador.** Custo zero de servidor, funciona anônimo.
+
+---
+
+## Quadro dentro do app (temporário)
+
+Existe uma aba **Quadro** no app, visível **só em desenvolvimento** — o
+`import.meta.env.DEV` vira `false` no build e o tree-shaking remove a página
+inteira (verificado: zero ocorrências no bundle de produção).
+
+Os dados vêm de `frontend/public/quadro.json`, gerado junto com o HTML:
+
+```
+python3 scripts/kanban-html.py    # gera o index.html E o quadro.json
+```
+
+**Para remover quando não fizer mais sentido** — é só apagar, nada mais
+depende disso:
+
+1. `frontend/src/pages/QuadroPage.tsx`
+2. `frontend/public/quadro.json`
+3. As três marcas `QUADRO (temporario)` em `frontend/src/App.tsx`
+   (o import, a entrada da aba e a rota)
+4. O bloco `SAIDA_JSON` em `scripts/kanban-html.py`, se quiser parar de gerar

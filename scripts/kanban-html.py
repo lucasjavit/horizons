@@ -17,6 +17,8 @@ RAIZ = Path(__file__).resolve().parent.parent
 CARDS = RAIZ / "docs/backlog/cards"
 SPRINTS = RAIZ / "docs/backlog/sprints"
 SAIDA = RAIZ / "docs/backlog/index.html"
+# O mesmo quadro, para a aba /quadro do app (so em desenvolvimento).
+SAIDA_JSON = RAIZ / "frontend/public/quadro.json"
 
 # Ordem das colunas e como cada estado do card cai numa delas.
 COLUNAS = [
@@ -351,3 +353,32 @@ body {{
 if __name__ == "__main__":
     SAIDA.write_text(montar(), encoding="utf-8")
     print(f"{SAIDA.relative_to(RAIZ)} gerado")
+
+    import json
+
+    sprint = ler_sprint()
+    dados = {
+        "colunas": [{"chave": c, "rotulo": r} for c, r in COLUNAS],
+        "sprint": sprint,
+        "cards": [
+            {
+                "id": c["id"],
+                "titulo": c["titulo"],
+                "estado": c["estado"],
+                "coluna": c["coluna"],
+                "tamanho": c["tamanho"],
+                "porque": limpar_markdown(c["porque"])[:220],
+                "decisao": limpar_markdown(c["decisao"]),
+                "bloqueio": limpar_markdown(
+                    c["bloqueio"].split("\n")[0].lstrip("- ").strip()
+                ),
+                "feitos": c["criterios"][0],
+                "total": c["criterios"][1],
+            }
+            for c in ler_cards()
+        ],
+    }
+    SAIDA_JSON.write_text(
+        json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(f"{SAIDA_JSON.relative_to(RAIZ)} gerado")

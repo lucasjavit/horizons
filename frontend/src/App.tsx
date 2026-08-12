@@ -6,6 +6,8 @@ import {
   useLocation,
 } from 'react-router-dom'
 import { InvoicePage } from './pages/InvoicePage'
+// QUADRO (temporario) — remover esta linha junto com a pagina
+import { QuadroPage } from './pages/QuadroPage'
 import { LessonPage } from './pages/LessonPage'
 import { TrackPage } from './pages/TrackPage'
 import { TracksPage } from './pages/TracksPage'
@@ -22,6 +24,12 @@ function Abas() {
   const abas = [
     { to: '/', label: 'Trilhas', ativa: pathname === '/' || pathname.startsWith('/t/') },
     { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
+    // QUADRO (temporario) — so em desenvolvimento. `import.meta.env.DEV` e
+    // substituido por `false` no build, entao o bundle de producao nem
+    // carrega a aba. Remover esta entrada junto com a pagina.
+    ...(import.meta.env.DEV
+      ? [{ to: '/quadro', label: 'Quadro', ativa: pathname === '/quadro' }]
+      : []),
   ]
 
   return (
@@ -98,6 +106,10 @@ export default function App() {
           <Route path="/t/:trackSlug" element={<TrackPage />} />
           <Route path="/t/:trackSlug/:lessonSlug" element={<LessonPage />} />
           <Route path="/invoice" element={<InvoicePage />} />
+          {/* QUADRO (temporario) — remover esta rota junto com a pagina */}
+          {import.meta.env.DEV && (
+            <Route path="/quadro" element={<QuadroPage />} />
+          )}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

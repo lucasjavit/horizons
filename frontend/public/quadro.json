@@ -1,0 +1,136 @@
+{
+  "colunas": [
+    {
+      "chave": "backlog",
+      "rotulo": "Backlog"
+    },
+    {
+      "chave": "pronto",
+      "rotulo": "Pronto para fazer"
+    },
+    {
+      "chave": "fazendo",
+      "rotulo": "Fazendo"
+    },
+    {
+      "chave": "feito",
+      "rotulo": "Feito"
+    }
+  ],
+  "sprint": {
+    "titulo": "Sprint 01 · Invoice confiável",
+    "objetivo": "fechar os achados do QA para a invoice poder ir ao ar sem ressalva.",
+    "periodo": "12/08/2026 até 26/08/2026",
+    "arquivo": "sprints/01-invoice-confiavel.md"
+  },
+  "cards": [
+    {
+      "id": "INV-01",
+      "titulo": "Quantidade negativa gera invoice com total negativo",
+      "estado": "feito (12/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "Achado do QA adversarial em 12/08/2026. Uma fatura com total negativo não existe no mundo real — ou é erro de digitação, ou a pessoa queria um desconto, que é outra coisa. Hoje o gerador aceita e imprime no PDF sem avisa",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 5
+    },
+    {
+      "id": "INV-02",
+      "titulo": "Número grande demais vira $0.00 em silêncio",
+      "estado": "feito (12/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "Achado do QA adversarial em 12/08/2026. Quando o valor passa do limite de inteiro seguro do JavaScript, a linha vira $0.00 sem dizer nada. O comportamento é defensivo — não quebra a página nem produz NaN — mas some com o",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 6
+    },
+    {
+      "id": "INV-03",
+      "titulo": "Clique repetido em baixar gera vários PDFs",
+      "estado": "feito (12/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "Achado do QA adversarial em 12/08/2026. Três cliques rápidos geram três downloads idênticos. Não corrompe nada, mas polui a pasta de downloads e faz a pessoa duvidar de qual arquivo é o certo — justamente num documento q",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 6,
+      "total": 6
+    },
+    {
+      "id": "INV-04",
+      "titulo": "Editar durante a geração produz PDF com dados antigos",
+      "estado": "feito (12/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "Achado do QA em 12/08/2026, durante a revisão do INV-03. É o achado mais grave da invoice até agora, e é pior que o bug que estávamos consertando: a pessoa envia ao cliente uma fatura com valor e moeda errados, acreditan",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "INV-05",
+      "titulo": "Depois de uma falha, \"Please try again\" nunca funciona",
+      "estado": "parcial — mensagem corrigida, retry ainda exige F5",
+      "coluna": "pronto",
+      "tamanho": "P",
+      "porque": "Achado do QA em 12/08/2026, durante a revisão do INV-03. A mensagem de erro instrui a pessoa a fazer exatamente o que não pode dar certo: clicar de novo nunca funciona, por mais que a rede tenha voltado. Só recarregar a ",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 4
+    },
+    {
+      "id": "INV-06",
+      "titulo": "Ativar o download por teclado joga o foco para o topo",
+      "estado": "pronto para fazer",
+      "coluna": "pronto",
+      "tamanho": "P",
+      "porque": "Achado do QA em 12/08/2026. Quem navega por teclado é jogado ao topo do documento ao baixar a invoice e precisa retabular a página inteira — que tem mais de 30 elementos focáveis — para voltar ao botão.",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 4
+    },
+    {
+      "id": "INV-07",
+      "titulo": "O status fica preso em \"Invoice downloaded.\"",
+      "estado": "feito (12/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "O QA levantou isto como pergunta (\"é intencional?\") em 12/08/2026. Verifiquei: não é intencional, é bug.",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 4
+    },
+    {
+      "id": "INV-08",
+      "titulo": "Cadastrar empresa numa modal e reusar num select",
+      "estado": "feito (12/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "Hoje os dados do emissor (\"From\") são digitados direto no formulário, toda vez. Quem emite invoice todo mês redigita nome, endereço, e-mail e tax ID sempre — e é sempre a mesma empresa.",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 7,
+      "total": 7
+    },
+    {
+      "id": "INV-10",
+      "titulo": "Clientes salvos, histórico e duplicar do mês passado",
+      "estado": "backlog",
+      "coluna": "backlog",
+      "tamanho": "G",
+      "porque": "Hoje o gerador é anônimo e roda inteiro no navegador. Isso foi decisão deliberada: quem chega do Google gera o PDF sem cadastro, e o login vira consequência do valor entregue, não pedágio.",
+      "decisao": "",
+      "bloqueio": "Login de verdade. Hoje o CurrentUserGuard é um stub que lê",
+      "feitos": 0,
+      "total": 13
+    }
+  ]
+}
