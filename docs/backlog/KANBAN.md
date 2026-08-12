@@ -29,7 +29,9 @@ ele é o único card que sobrou.
 
 ## Esperando decisão
 
-_(vazio)_
+| Card | Título | Tam. | Decisão pendente |
+| --- | --- | --- | --- |
+| [INV-09](cards/INV-09-redesenho-da-tela.md) | Redesenhar a tela do gerador | M | qual direção visual? o agente `ux` propõe 2-3 |
 
 ## Fazendo
 
