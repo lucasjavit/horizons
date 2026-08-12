@@ -44,9 +44,15 @@ function Abas() {
   )
 }
 
+// id e tabIndex nao sao opcionais aqui: o skip link aponta para #conteudo, e
+// sem eles ele morre justamente na pagina de erro.
 function NotFound() {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-20 text-center">
+    <main
+      id="conteudo"
+      tabIndex={-1}
+      className="mx-auto max-w-3xl px-4 py-20 text-center"
+    >
       <h1 className="text-2xl font-bold">Página não encontrada</h1>
       <Link
         to="/"
