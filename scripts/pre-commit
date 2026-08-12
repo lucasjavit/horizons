@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Hook de pre-commit do Horizons.
+#
+# Instale com:  ln -sf ../../scripts/pre-commit .git/hooks/pre-commit
+# (o link mora no repo, entao a regra e versionada e nao se perde num clone.)
+#
+# Roda a suite rapida — ~8s. A bateria adversarial completa NAO entra aqui:
+# leva minutos, e um hook lento so ensina a usar --no-verify.
+#
+# Para pular conscientemente:  git commit --no-verify
+
+set -euo pipefail
+
+raiz="$(git rev-parse --show-toplevel)"
+
+# So verifica se o commit toca no frontend. Mexer em README ou em card do
+# kanban nao precisa subir navegador.
+if ! git diff --cached --name-only | grep -q '^frontend/'; then
+  exit 0
+fi
+
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "pre-commit: python3 ausente, pulando a verificacao" >&2
+  exit 0
+fi
+
+exec python3 "$raiz/scripts/qa-rapido.py"

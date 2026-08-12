@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""
+QA rapido — o que roda a cada commit.
+
+Nao e a bateria adversarial completa (essa leva minutos e vive em
+scripts/qa-completo.py). Aqui so entra o que e barato e pega regressao
+grosseira: a pagina abre, nao explode no console, o dinheiro soma certo.
+
+Sai com codigo 1 se achar problema, e o hook de pre-commit barra o commit.
+"""
+import subprocess
+import sys
+import urllib.error
+import urllib.request
+
+BASE = "http://localhost:5173"
+falhas: list[str] = []
+
+
+def ok(cond: bool, msg: str) -> bool:
+    print(f"  {'ok  ' if cond else 'FALHA'}  {msg}")
+    if not cond:
+        falhas.append(msg)
+    return cond
+
+
+def containers_no_ar() -> bool:
+    try:
+        r = subprocess.run(
+            ["docker", "compose", "ps", "--status=running", "--format", "{{.Name}}"],
+            capture_output=True, text=True, timeout=20,
+        )
+        return "horizons-web" in r.stdout
+    except Exception:
+        return False
+
+
+print("QA rapido")
+print()
+
+# 1. O build e o portao mais barato: tsc estrito pega tipo errado, import
+#    nao usado e enum de TS antes de qualquer coisa subir.
+print("build")
+r = subprocess.run(
+    ["npm", "run", "build"], cwd="frontend",
+    capture_output=True, text=True, timeout=300,
+)
+if not ok(r.returncode == 0, "frontend compila"):
+    print(r.stdout[-1500:])
+    print(r.stderr[-1500:])
+
+# 2. O jsPDF precisa continuar fora do bundle principal. E a regressao mais
+#    facil de cometer sem perceber: basta alguem trocar o import() dinamico
+#    por um import estatico e o bundle dobra em silencio.
+if r.returncode == 0:
+    from pathlib import Path
+    assets = Path("frontend/dist/assets")
+    principal = [f for f in assets.glob("index-*.js")]
+    if principal:
+        conteudo = principal[0].read_text(errors="ignore")
+        # Import estatico apareceria como 'from"./jspdf...' no topo do chunk.
+        estatico = 'from"./jspdf' in conteudo or "from'./jspdf" in conteudo
+        ok(not estatico, "jspdf fora do bundle principal (import dinamico)")
+        tamanho = principal[0].stat().st_size
+        ok(tamanho < 450_000, f"bundle principal em {tamanho // 1024} KB (limite 440)")
+
+# 3. Se os containers estiverem no ar, confere o comportamento. Se nao
+#    estiverem, pula sem reprovar: nem todo commit acontece com tudo rodando.
+print()
+if not containers_no_ar():
+    print("containers")
+    print("  pulado  horizons-web nao esta no ar; so o build foi verificado")
+else:
+    print("rotas")
+    for rota in ["/", "/invoice", "/t/system-design"]:
+        try:
+            with urllib.request.urlopen(BASE + rota, timeout=10) as resp:
+                ok(resp.status == 200, f"{rota} responde 200")
+        except (urllib.error.URLError, TimeoutError) as e:
+            ok(False, f"{rota} responde 200 ({e})")
+
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print()
+        print("navegador")
+        print("  pulado  playwright ausente")
+    else:
+        print()
+        print("navegador")
+        with sync_playwright() as p:
+            nav = p.chromium.launch()
+            pg = nav.new_context().new_page()
+            erros: list[str] = []
+            pg.on("pageerror", lambda e: erros.append(str(e)))
+            pg.on(
+                "console",
+                lambda m: erros.append(m.text) if m.type == "error" else None,
+            )
+
+            pg.goto(f"{BASE}/invoice", wait_until="networkidle")
+            ok(pg.locator("main#conteudo").count() == 1,
+               "invoice tem main#conteudo (contrato do skip link)")
+
+            # A soma tem de bater com a soma das linhas impressas. Este e o
+            # teste que protege o dinheiro: 3 x 33.33 = 99.99, e 0.1 dez vezes
+            # nao pode virar 0.9999999999999999.
+            li = pg.locator("ul li").first
+            li.locator("input").nth(0).fill("Servico")
+            li.locator("input").nth(1).fill("3")
+            li.locator("input").nth(2).fill("33.33")
+            pg.wait_for_timeout(400)
+            linha = li.locator("output").inner_text()
+            ok(linha == "$99.99", f"3 x 33.33 = $99.99 (obtido {linha})")
+
+            li.locator("input").nth(1).fill("1")
+            li.locator("input").nth(2).fill("1.005")
+            pg.wait_for_timeout(400)
+            linha = li.locator("output").inner_text()
+            ok(linha == "$1.01", f"1.005 arredonda para $1.01 (obtido {linha})")
+
+            # As trilhas nao podem quebrar por causa de mexida na invoice.
+            pg.goto(f"{BASE}/", wait_until="networkidle")
+            ok("trilha" in pg.locator("main").inner_text().lower(),
+               "pagina de trilhas continua carregando")
+
+            reais = [e for e in erros if "favicon" not in e.lower()]
+            ok(len(reais) == 0, f"sem erro de console ({reais[:1]})")
+
+            nav.close()
+
+print()
+if falhas:
+    print(f"{len(falhas)} falha(s):")
+    for f in falhas:
+        print(f"  - {f}")
+    print()
+    print("Para commitar assim mesmo: git commit --no-verify")
+    sys.exit(1)
+
+print("tudo certo")
+sys.exit(0)

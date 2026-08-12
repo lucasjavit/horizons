@@ -9,22 +9,31 @@ umbrella).
 
 ---
 
+**Sprint atual:** [01 · Invoice confiável](sprints/01-invoice-confiavel.md)
+(12/08 – 26/08) — fechar os achados do QA para a invoice poder ir ao ar.
+
 ## Backlog
 
-Achados do QA adversarial de 12/08/2026 — nenhum quebra a aplicação, os três
-esperam decisão de produto antes de virar código.
-
-| Card | Título | Tam. |
-| --- | --- | --- |
-| [INV-01](cards/INV-01-total-negativo.md) | Quantidade negativa gera invoice com total negativo | P |
-| [INV-02](cards/INV-02-numero-grande-vira-zero.md) | Número grande demais vira $0.00 em silêncio | P |
-| [INV-03](cards/INV-03-clique-repetido-gera-varios-pdfs.md) | Clique repetido em baixar gera vários PDFs | P |
-| [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G |
+| Card | Título | Tam. | Nota |
+| --- | --- | --- | --- |
+| [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | trava no login; quebrar em 4 antes |
 
 ## Pronto para fazer
 
-_(vazio — INV-01 e INV-02 entram aqui assim que a decisão de produto sair;
-INV-03 já está pronto para pegar, se quiser resolvê-lo direto)_
+| Card | Título | Tam. |
+| --- | --- | --- |
+| [INV-03](cards/INV-03-clique-repetido-gera-varios-pdfs.md) | Clique repetido em baixar gera vários PDFs | P |
+
+## Esperando decisão
+
+Achados do QA adversarial de 12/08/2026. Nenhum quebra a aplicação, mas os
+dois produzem número errado numa fatura — precisam da sua decisão antes de
+virar código. As opções estão na [sprint 01](sprints/01-invoice-confiavel.md).
+
+| Card | Título | Tam. | Decisão pendente |
+| --- | --- | --- | --- |
+| [INV-01](cards/INV-01-total-negativo.md) | Quantidade negativa gera total negativo | P | rejeitar ou virar desconto? |
+| [INV-02](cards/INV-02-numero-grande-vira-zero.md) | Número grande vira $0.00 em silêncio | P | avisar ou continuar zerando? |
 
 ## Fazendo
 
