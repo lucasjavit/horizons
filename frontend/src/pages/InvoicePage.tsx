@@ -2,7 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { SelectField, TextAreaField, TextField } from '../components/invoice/Field'
+import { CompanyPicker } from '../components/invoice/CompanyPicker'
 import { LineItemsEditor } from '../components/invoice/LineItemsEditor'
+import type { Company } from '../invoice/companies'
+import { loadCompanies, saveCompanies } from '../invoice/companies'
 import { CURRENCIES, isCurrencyCode } from '../invoice/currencies'
 import { formatCents } from '../invoice/money'
 import { generateInvoicePdf, invoiceTotalCents } from '../invoice/pdf'
@@ -71,6 +74,45 @@ export function InvoicePage() {
   // Tambem nao pode ser `estadoPdf === 'gerando'`: o estado vira 'pronto'
   // assim que o arquivo sai, e a trava so cai depois de MIN_BLOQUEIO_MS.
   const [bloqueado, setBloqueado] = useState(false)
+
+  // Empresas emissoras salvas. Ficam fora do rascunho de propósito: valem
+  // para todas as invoices, e nao so para a que esta sendo escrita.
+  const [companies, setCompanies] = useState<Company[]>(() => loadCompanies())
+  const [companyId, setCompanyId] = useState<string | null>(null)
+
+  const salvarEmpresa = useCallback((c: Company) => {
+    setCompanies((lista) => {
+      const existe = lista.some((x) => x.id === c.id)
+      const nova = existe ? lista.map((x) => (x.id === c.id ? c : x)) : [...lista, c]
+      saveCompanies(nova)
+      return nova
+    })
+    setCompanyId(c.id)
+    // Copia para o rascunho: o PDF le o `from`, nao a lista de empresas.
+    inv.setFromTodo({ name: c.name, address: c.address, email: c.email, taxId: c.taxId })
+  }, [inv])
+
+  const escolherEmpresa = useCallback((id: string | null) => {
+    setCompanyId(id)
+    const c = companies.find((x) => x.id === id)
+    inv.setFromTodo(
+      c
+        ? { name: c.name, address: c.address, email: c.email, taxId: c.taxId }
+        : { name: '', address: '', email: '', taxId: '' },
+    )
+  }, [companies, inv])
+
+  const apagarEmpresa = useCallback((id: string) => {
+    setCompanies((lista) => {
+      const nova = lista.filter((x) => x.id !== id)
+      saveCompanies(nova)
+      return nova
+    })
+    // Apagar a empresa selecionada limpa o From, senao a invoice ficaria com
+    // os dados de uma empresa que nao existe mais na lista.
+    setCompanyId((atual) => (atual === id ? null : atual))
+    inv.setFromTodo({ name: '', address: '', email: '', taxId: '' })
+  }, [inv])
 
   const erros = useMemo(() => validateDraft(draft), [draft])
 
@@ -238,40 +280,19 @@ export function InvoicePage() {
             <h2 id="from-heading" className="text-lg font-semibold tracking-tight">
               From
             </h2>
-            <div className="mt-4 flex flex-col gap-4">
-              <TextField
-                id="from-name"
-                label="Name or company"
-                value={draft.from.name}
-                onChange={(v) => inv.setFrom('name', v)}
-                onBlur={tocar('from.name')}
-                error={erro('from.name')}
-                autoComplete="organization"
+            <div className="mt-4">
+              <CompanyPicker
+                companies={companies}
+                selectedId={companyId}
+                onSelect={escolherEmpresa}
+                onSave={salvarEmpresa}
+                onDelete={apagarEmpresa}
               />
-              <TextAreaField
-                id="from-address"
-                label="Address"
-                value={draft.from.address}
-                onChange={(v) => inv.setFrom('address', v)}
-                placeholder={'Street, number\nCity, State, ZIP\nCountry'}
-              />
-              <TextField
-                id="from-email"
-                label="Email"
-                type="email"
-                value={draft.from.email}
-                onChange={(v) => inv.setFrom('email', v)}
-                onBlur={tocar('from.email')}
-                error={erro('from.email')}
-                autoComplete="email"
-              />
-              <TextField
-                id="from-taxid"
-                label="Tax ID"
-                value={draft.from.taxId}
-                onChange={(v) => inv.setFrom('taxId', v)}
-                hint="Optional — CNPJ, VAT, EIN…"
-              />
+              {erro('from.name') && (
+                <p role="alert" className="mt-2 text-sm" style={{ color: WARN_INK }}>
+                  {erro('from.name')}
+                </p>
+              )}
             </div>
           </section>
 

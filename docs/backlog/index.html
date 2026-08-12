@@ -1,0 +1,316 @@
+<title>Quadro do Horizons</title>
+<style>
+:root {
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f6f8f7;
+  --border: #d5ded9;
+  --text: #0f1411;
+  --text-muted: #566860;
+  --brand: #00704a;
+  --accent-ink: #7a5c0c;
+  --feito: #00704a;
+  --atencao: #a34a17;
+  --sombra: 0 1px 2px rgb(15 20 17 / .06);
+}
+:root:not([data-theme="light"]) {
+  @media (prefers-color-scheme: dark) {
+    --surface: #0f1411;
+    --surface-raised: #1a211d;
+    --surface-sunken: #0a0d0b;
+    --border: #2b352f;
+    --text: #f6f8f7;
+    --text-muted: #7d9188;
+    --brand: #2f9a72;
+    --accent-ink: #e5be4f;
+    --feito: #2f9a72;
+    --atencao: #e08b5a;
+    --sombra: none;
+  }
+}
+:root[data-theme="dark"] {
+  --surface: #0f1411;
+  --surface-raised: #1a211d;
+  --surface-sunken: #0a0d0b;
+  --border: #2b352f;
+  --text: #f6f8f7;
+  --text-muted: #7d9188;
+  --brand: #2f9a72;
+  --accent-ink: #e5be4f;
+  --feito: #2f9a72;
+  --atencao: #e08b5a;
+  --sombra: none;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 2rem 1.5rem 4rem;
+  background: var(--surface);
+  color: var(--text);
+  font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.topo { max-width: 78rem; margin: 0 auto 2rem; }
+.topo h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  letter-spacing: -.02em;
+}
+.topo h1 span { color: var(--brand); }
+.topo .resumo { margin: .35rem 0 0; color: var(--text-muted); font-size: .9rem; }
+.sprint {
+  max-width: 78rem;
+  margin: 0 auto 2rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--brand);
+  border-radius: .5rem;
+}
+.sprint .rotulo {
+  margin: 0; font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted);
+}
+.sprint h2 { margin: .2rem 0 .3rem; font-size: 1.05rem; }
+.sprint a { color: var(--text); text-decoration: none; }
+.sprint a:hover { text-decoration: underline; }
+.sprint .objetivo { margin: 0; color: var(--text-muted); font-size: .9rem; }
+.quadro {
+  max-width: 78rem; margin: 0 auto;
+  display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  align-items: start;
+}
+.coluna h2 {
+  display: flex; align-items: center; gap: .5rem;
+  margin: 0 0 .75rem;
+  font-size: .78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em;
+  color: var(--text-muted);
+}
+.coluna h2 .n {
+  min-width: 1.35rem; padding: 0 .3rem;
+  background: var(--surface-sunken); border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: .72rem; text-align: center; letter-spacing: 0;
+}
+.col-feito h2 { color: var(--feito); }
+.coluna ul { margin: 0; padding: 0; list-style: none; display: grid; gap: .6rem; }
+.cartao a {
+  display: block; padding: .8rem .9rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border); border-radius: .55rem;
+  box-shadow: var(--sombra);
+  color: inherit; text-decoration: none;
+  transition: border-color .15s;
+}
+.cartao a:hover { border-color: var(--brand); }
+.cartao a:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }
+.col-feito .cartao a { border-left: 3px solid var(--feito); }
+.cabeca { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.ident {
+  font: 700 .68rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .04em; color: var(--text-muted);
+}
+.tam {
+  min-width: 1.1rem; padding: .1rem .3rem;
+  border: 1px solid var(--border); border-radius: .25rem;
+  font: 700 .62rem/1.3 ui-monospace, monospace; text-align: center;
+  color: var(--text-muted);
+}
+.cartao h3 { margin: .45rem 0 .3rem; font-size: .92rem; line-height: 1.3; letter-spacing: -.01em; }
+.tag-parcial {
+  display: inline-block; margin-left: .3rem; padding: .05rem .35rem;
+  background: var(--surface-sunken); border: 1px solid var(--atencao);
+  border-radius: .25rem;
+  font-size: .62rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--atencao); vertical-align: middle;
+}
+.porque { margin: 0; font-size: .8rem; line-height: 1.45; color: var(--text-muted); }
+.decisao, .bloqueio {
+  margin: .5rem 0 0; padding-top: .5rem;
+  border-top: 1px solid var(--border);
+  font-size: .75rem; color: var(--text-muted);
+}
+.decisao strong { color: var(--text); }
+.bloqueio { color: var(--atencao); }
+.progresso { display: flex; align-items: center; gap: .5rem; margin-top: .6rem; }
+.barra { flex: 1; height: .3rem; background: var(--surface-sunken);
+  border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+.barra span { display: block; height: 100%; background: var(--feito); }
+.conta { font: .68rem/1 ui-monospace, monospace; color: var(--text-muted); }
+.vazio {
+  padding: .9rem; border: 1px dashed var(--border); border-radius: .55rem;
+  font-size: .8rem; color: var(--text-muted); text-align: center;
+}
+.rodape {
+  max-width: 78rem; margin: 2.5rem auto 0; padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: .78rem; color: var(--text-muted);
+}
+.rodape code { font-family: ui-monospace, monospace; }
+</style>
+
+<header class="topo">
+  <h1><span>Horizons</span> · quadro</h1>
+  <p class="resumo">9 cards · 6 feitos</p>
+</header>
+
+  <aside class="sprint">
+    <p class="rotulo">Sprint atual</p>
+    <h2><a href="sprints/01-invoice-confiavel.md">Sprint 01 · Invoice confiável</a></h2>
+    <p class="objetivo">fechar os achados do QA para a invoice poder ir ao ar sem ressalva.</p>
+  </aside>
+<main class="quadro">
+    <section class="coluna col-backlog" aria-labelledby="col-backlog">
+      <h2 id="col-backlog">Backlog <span class="n">1</span></h2>
+      <ul>
+      <li class="cartao">
+        <a href="cards/INV-10-clientes-salvos-e-historico.md">
+          <div class="cabeca">
+            <span class="ident">INV-10</span>
+            <span class="tam" title="Tamanho">G</span>
+          </div>
+          <h3>Clientes salvos, histórico e duplicar do mês passado</h3>
+          <p class="porque">Hoje o gerador é anônimo e roda inteiro no navegador. Isso foi decisão deliberada: quem chega do Google gera o PDF sem cadastro, e o login vira consequência do valor entr</p>
+          <p class="bloqueio">Depende de: Login de verdade. Hoje o CurrentUserGuard é um stub que lê</p>
+        <div class="progresso" role="img"
+             aria-label="0 de 13 critérios atendidos">
+          <div class="barra"><span style="width:0%"></span></div>
+          <span class="conta">0/13</span>
+        </div>
+        </a>
+      </li>
+      </ul>
+    </section>
+    <section class="coluna col-pronto" aria-labelledby="col-pronto">
+      <h2 id="col-pronto">Pronto para fazer <span class="n">2</span></h2>
+      <ul>
+      <li class="cartao">
+        <a href="cards/INV-05-retry-impossivel-apos-falha.md">
+          <div class="cabeca">
+            <span class="ident">INV-05</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Depois de uma falha, &quot;Please try again&quot; nunca funciona <span class="tag-parcial">parcial</span></h3>
+          <p class="porque">Achado do QA em 12/08/2026, durante a revisão do INV-03. A mensagem de erro instrui a pessoa a fazer exatamente o que não pode dar certo: clicar de novo nunca funciona, p</p>
+          
+        <div class="progresso" role="img"
+             aria-label="0 de 4 critérios atendidos">
+          <div class="barra"><span style="width:0%"></span></div>
+          <span class="conta">0/4</span>
+        </div>
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-06-foco-perdido-no-teclado.md">
+          <div class="cabeca">
+            <span class="ident">INV-06</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Ativar o download por teclado joga o foco para o topo</h3>
+          <p class="porque">Achado do QA em 12/08/2026. Quem navega por teclado é jogado ao topo do documento ao baixar a invoice e precisa retabular a página inteira — que tem mais de 30 elementos </p>
+          
+        <div class="progresso" role="img"
+             aria-label="0 de 4 critérios atendidos">
+          <div class="barra"><span style="width:0%"></span></div>
+          <span class="conta">0/4</span>
+        </div>
+        </a>
+      </li>
+      </ul>
+    </section>
+    <section class="coluna col-fazendo" aria-labelledby="col-fazendo">
+      <h2 id="col-fazendo">Fazendo <span class="n">0</span></h2>
+      <ul>
+      <li class="vazio">Nada aqui.</li>
+      </ul>
+    </section>
+    <section class="coluna col-feito" aria-labelledby="col-feito">
+      <h2 id="col-feito">Feito <span class="n">6</span></h2>
+      <ul>
+      <li class="cartao">
+        <a href="cards/INV-01-total-negativo.md">
+          <div class="cabeca">
+            <span class="ident">INV-01</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Quantidade negativa gera invoice com total negativo</h3>
+          <p class="porque">Achado do QA adversarial em 12/08/2026. Uma fatura com total negativo não existe no mundo real — ou é erro de digitação, ou a pessoa queria um desconto, que é outra coisa</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-02-numero-grande-vira-zero.md">
+          <div class="cabeca">
+            <span class="ident">INV-02</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Número grande demais vira $0.00 em silêncio</h3>
+          <p class="porque">Achado do QA adversarial em 12/08/2026. Quando o valor passa do limite de inteiro seguro do JavaScript, a linha vira $0.00 sem dizer nada. O comportamento é defensivo — n</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-03-clique-repetido-gera-varios-pdfs.md">
+          <div class="cabeca">
+            <span class="ident">INV-03</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Clique repetido em baixar gera vários PDFs</h3>
+          <p class="porque">Achado do QA adversarial em 12/08/2026. Três cliques rápidos geram três downloads idênticos. Não corrompe nada, mas polui a pasta de downloads e faz a pessoa duvidar de q</p>
+          
+        <div class="progresso" role="img"
+             aria-label="6 de 6 critérios atendidos">
+          <div class="barra"><span style="width:100%"></span></div>
+          <span class="conta">6/6</span>
+        </div>
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-04-pdf-com-dados-antigos.md">
+          <div class="cabeca">
+            <span class="ident">INV-04</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Editar durante a geração produz PDF com dados antigos</h3>
+          <p class="porque">Achado do QA em 12/08/2026, durante a revisão do INV-03. É o achado mais grave da invoice até agora, e é pior que o bug que estávamos consertando: a pessoa envia ao clien</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-07-status-preso-em-baixado.md">
+          <div class="cabeca">
+            <span class="ident">INV-07</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>O status fica preso em &quot;Invoice downloaded.&quot;</h3>
+          <p class="porque">O QA levantou isto como pergunta (&quot;é intencional?&quot;) em 12/08/2026. Verifiquei: não é intencional, é bug.</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-08-empresa-em-modal.md">
+          <div class="cabeca">
+            <span class="ident">INV-08</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>Cadastrar empresa numa modal e reusar num select</h3>
+          <p class="porque">Hoje os dados do emissor (&quot;From&quot;) são digitados direto no formulário, toda vez. Quem emite invoice todo mês redigita nome, endereço, e-mail e tax ID sempre — e é sempre a</p>
+          
+        <div class="progresso" role="img"
+             aria-label="7 de 7 critérios atendidos">
+          <div class="barra"><span style="width:100%"></span></div>
+          <span class="conta">7/7</span>
+        </div>
+        </a>
+      </li>
+      </ul>
+    </section>
+</main>
+
+<footer class="rodape">
+  Gerado dos arquivos em <code>docs/backlog/cards/</code> —
+  o markdown é a verdade. Para atualizar:
+  <code>python3 scripts/kanban-html.py</code>
+</footer>

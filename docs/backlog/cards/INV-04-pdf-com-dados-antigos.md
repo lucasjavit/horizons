@@ -1,6 +1,6 @@
 # INV-04 · Editar durante a geração produz PDF com dados antigos
 
-**Estado:** esperando decisão
+**Estado:** feito (12/08/2026)
 **Tamanho:** P
 
 ## Por quê

@@ -1,6 +1,6 @@
 # INV-03 · Clique repetido em baixar gera vários PDFs
 
-**Estado:** backlog
+**Estado:** feito (12/08/2026)
 **Tamanho:** P
 
 ## Por quê

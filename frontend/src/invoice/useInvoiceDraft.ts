@@ -13,6 +13,8 @@ export interface UseInvoiceDraft {
   salvo: boolean
   setCampo: <K extends keyof InvoiceDraft>(campo: K, valor: InvoiceDraft[K]) => void
   setFrom: (campo: keyof Issuer, valor: string) => void
+  /** Troca o bloco From inteiro — usado ao escolher uma empresa salva. */
+  setFromTodo: (emissor: Issuer) => void
   setBillTo: (campo: keyof Party, valor: string) => void
   setCurrency: (moeda: CurrencyCode) => void
   setItem: (id: string, campo: CampoItem, valor: string) => void
@@ -70,6 +72,11 @@ export function useInvoiceDraft(): UseInvoiceDraft {
   const setFrom = useCallback(
     (campo: keyof Issuer, valor: string) =>
       alterar((d) => ({ ...d, from: { ...d.from, [campo]: valor } })),
+    [alterar],
+  )
+
+  const setFromTodo = useCallback(
+    (emissor: Issuer) => alterar((d) => ({ ...d, from: emissor })),
     [alterar],
   )
 
@@ -137,6 +144,7 @@ export function useInvoiceDraft(): UseInvoiceDraft {
     salvo,
     setCampo,
     setFrom,
+    setFromTodo,
     setBillTo,
     setCurrency,
     setItem,
