@@ -74,9 +74,12 @@ Para não serem rediscutidas sem motivo novo:
 
 ## Quadro dentro do app (temporário)
 
-Existe uma aba **Quadro** no app, visível **só em desenvolvimento** — o
-`import.meta.env.DEV` vira `false` no build e o tree-shaking remove a página
-inteira (verificado: zero ocorrências no bundle de produção).
+Existe uma aba **Quadro** no app, em `/quadro`, visível em qualquer build —
+inclusive no Docker (`localhost:5173`), que é onde o app roda de verdade.
+
+**Ela precisa sair antes de publicar.** O backlog tem bugs conhecidos e
+decisões internas; não é conteúdo para quem chega de fora. Enquanto o app não
+está no ar, deixá-la visível não custa nada e serve para acompanhar o trabalho.
 
 Os dados vêm de `frontend/public/quadro.json`, gerado junto com o HTML:
 

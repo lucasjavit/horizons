@@ -24,12 +24,11 @@ function Abas() {
   const abas = [
     { to: '/', label: 'Trilhas', ativa: pathname === '/' || pathname.startsWith('/t/') },
     { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
-    // QUADRO (temporario) — so em desenvolvimento. `import.meta.env.DEV` e
-    // substituido por `false` no build, entao o bundle de producao nem
-    // carrega a aba. Remover esta entrada junto com a pagina.
-    ...(import.meta.env.DEV
-      ? [{ to: '/quadro', label: 'Quadro', ativa: pathname === '/quadro' }]
-      : []),
+    // QUADRO (temporario) — o quadro do backlog, para acompanhar o trabalho
+    // enquanto o projeto esta sendo construido. Aparece em qualquer build,
+    // inclusive no Docker. Remover esta entrada junto com a pagina, antes de
+    // publicar: o backlog interno nao e para o publico.
+    { to: '/quadro', label: 'Quadro', ativa: pathname === '/quadro' },
   ]
 
   return (
@@ -107,9 +106,7 @@ export default function App() {
           <Route path="/t/:trackSlug/:lessonSlug" element={<LessonPage />} />
           <Route path="/invoice" element={<InvoicePage />} />
           {/* QUADRO (temporario) — remover esta rota junto com a pagina */}
-          {import.meta.env.DEV && (
-            <Route path="/quadro" element={<QuadroPage />} />
-          )}
+          <Route path="/quadro" element={<QuadroPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
