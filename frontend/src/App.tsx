@@ -1,7 +1,48 @@
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
+import {
+  BrowserRouter,
+  Link,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom'
+import { InvoicePage } from './pages/InvoicePage'
 import { LessonPage } from './pages/LessonPage'
 import { TrackPage } from './pages/TrackPage'
 import { TracksPage } from './pages/TracksPage'
+
+/**
+ * Abas dos produtos sob a marca Horizons.
+ *
+ * "Trilhas" em portugues e "Invoice" em ingles de proposito: o gerador de
+ * invoice mira um publico global, enquanto as trilhas sao escritas em
+ * portugues para o dev brasileiro. A mistura e consciente.
+ */
+function Abas() {
+  const { pathname } = useLocation()
+  const abas = [
+    { to: '/', label: 'Trilhas', ativa: pathname === '/' || pathname.startsWith('/t/') },
+    { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
+  ]
+
+  return (
+    <nav aria-label="Produtos" className="flex items-center gap-1 text-sm">
+      {abas.map((aba) => (
+        <Link
+          key={aba.to}
+          to={aba.to}
+          aria-current={aba.ativa ? 'page' : undefined}
+          className="rounded-md px-3 py-1.5 font-medium"
+          style={{
+            background: aba.ativa ? 'var(--surface-sunken)' : undefined,
+            color: aba.ativa ? 'var(--text)' : 'var(--text-muted)',
+          }}
+        >
+          {aba.label}
+        </Link>
+      ))}
+    </nav>
+  )
+}
 
 function NotFound() {
   return (
@@ -38,10 +79,11 @@ export default function App() {
             background: 'color-mix(in srgb, var(--surface) 85%, transparent)',
           }}
         >
-          <div className="mx-auto flex max-w-6xl items-center px-4 py-3 sm:px-6">
+          <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3 sm:px-6">
             <Link to="/" className="font-bold tracking-tight">
               <span style={{ color: 'var(--brand)' }}>Horizons</span>
             </Link>
+            <Abas />
           </div>
         </header>
 
@@ -49,6 +91,7 @@ export default function App() {
           <Route path="/" element={<TracksPage />} />
           <Route path="/t/:trackSlug" element={<TrackPage />} />
           <Route path="/t/:trackSlug/:lessonSlug" element={<LessonPage />} />
+          <Route path="/invoice" element={<InvoicePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
