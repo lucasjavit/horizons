@@ -1,6 +1,6 @@
 # INV-05 · Depois de uma falha, "Please try again" nunca funciona
 
-**Estado:** pronto para fazer
+**Estado:** parcial — mensagem corrigida, retry ainda exige F5
 **Tamanho:** P
 
 ## Por quê
@@ -57,3 +57,19 @@ mensagem para dizer a verdade ("recarregue a página e tente de novo"). Resolve
 a mentira sem resolver o problema.
 
 Não foi introduzido pelo INV-03 — existe desde a primeira versão da feature.
+
+
+## Resolução parcial (12/08/2026)
+
+Tentei o cache-busting sugerido acima (`import('jspdf?t=...')`) e **o Vite
+parou de separar o chunk**: o bundle principal saltou de 320 KB para 329 KB
+com o jsPDF dentro. Revertido — o carregamento sob demanda protege todo mundo
+que só quer ler uma aula, e este bug atinge só quem teve falha de rede.
+
+O que foi feito: a mensagem passou a dizer a verdade — "Please reload the page
+and try again" em vez de "Please try again", que instruía a fazer o que não
+funciona.
+
+O que falta: fazer a retentativa funcionar sem recarregar, sem quebrar o code
+splitting. Provavelmente exige carregar o jsPDF por outro caminho que não o
+`import()` do ESM.

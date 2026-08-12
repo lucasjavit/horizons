@@ -1,6 +1,6 @@
 # INV-02 · Número grande demais vira $0.00 em silêncio
 
-**Estado:** pronto para fazer
+**Estado:** feito (12/08/2026)
 **Tamanho:** P
 **Decisão do stakeholder (12/08/2026):** limitar o que pode ser digitado à
 faixa **1 a 1.000.000**, por campo. Um teto humano é mais defensável que o

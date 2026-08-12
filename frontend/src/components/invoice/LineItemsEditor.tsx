@@ -14,6 +14,8 @@ interface LineItemsEditorProps {
   items: LineItem[]
   currency: CurrencyCode
   error?: string
+  /** Erros por campo, na chave `${id}.quantity` / `${id}.rate`. */
+  itemErrors?: Record<string, string | undefined>
   onChange: (id: string, campo: CampoItem, valor: string) => void
   onAdd: () => void
   onRemove: (id: string) => void
@@ -26,6 +28,7 @@ export function LineItemsEditor({
   items,
   currency,
   error,
+  itemErrors,
   onChange,
   onAdd,
   onRemove,
@@ -59,6 +62,8 @@ export function LineItemsEditor({
             posicao={i + 1}
             total={items.length}
             currency={currency}
+            erroQtd={itemErrors?.[`${item.id}.quantity`]}
+            erroRate={itemErrors?.[`${item.id}.rate`]}
             onChange={onChange}
             onRemove={onRemove}
             onMove={onMove}
@@ -89,6 +94,8 @@ interface RowProps {
   posicao: number
   total: number
   currency: CurrencyCode
+  erroQtd?: string
+  erroRate?: string
   onChange: (id: string, campo: CampoItem, valor: string) => void
   onRemove: (id: string) => void
   onMove: (id: string, direcao: -1 | 1) => void
@@ -99,6 +106,8 @@ function LineItemRow({
   posicao,
   total,
   currency,
+  erroQtd,
+  erroRate,
   onChange,
   onRemove,
   onMove,
@@ -157,13 +166,25 @@ function LineItemRow({
           inputMode="decimal"
           value={item.quantity}
           onChange={(e) => onChange(item.id, 'quantity', e.target.value)}
+          aria-invalid={erroQtd ? true : undefined}
+          aria-describedby={erroQtd ? `${idQtd}-error` : undefined}
           className="w-full rounded-md border px-3 py-2 text-sm tabular-nums"
           style={{
-            borderColor: 'var(--border)',
+            borderColor: erroQtd ? WARN_INK : 'var(--border)',
             background: 'var(--surface-sunken)',
             color: 'var(--text)',
           }}
         />
+        {erroQtd && (
+          <p
+            id={`${idQtd}-error`}
+            role="alert"
+            className="mt-1 text-xs"
+            style={{ color: WARN_INK }}
+          >
+            {erroQtd}
+          </p>
+        )}
       </div>
 
       <div>
@@ -177,13 +198,25 @@ function LineItemRow({
           value={item.rate}
           onChange={(e) => onChange(item.id, 'rate', e.target.value)}
           placeholder="0.00"
+          aria-invalid={erroRate ? true : undefined}
+          aria-describedby={erroRate ? `${idRate}-error` : undefined}
           className="w-full rounded-md border px-3 py-2 text-sm tabular-nums"
           style={{
-            borderColor: 'var(--border)',
+            borderColor: erroRate ? WARN_INK : 'var(--border)',
             background: 'var(--surface-sunken)',
             color: 'var(--text)',
           }}
         />
+        {erroRate && (
+          <p
+            id={`${idRate}-error`}
+            role="alert"
+            className="mt-1 text-xs"
+            style={{ color: WARN_INK }}
+          >
+            {erroRate}
+          </p>
+        )}
       </div>
 
       {/* Valor e derivado, entao nao e input. aria-live off de proposito:

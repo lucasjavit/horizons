@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { SelectField, TextAreaField, TextField } from '../components/invoice/Field'
@@ -7,7 +7,7 @@ import { CURRENCIES, isCurrencyCode } from '../invoice/currencies'
 import { formatCents } from '../invoice/money'
 import { generateInvoicePdf, invoiceTotalCents } from '../invoice/pdf'
 import { useInvoiceDraft } from '../invoice/useInvoiceDraft'
-import { dueDateWarning, validateDraft } from '../invoice/validate'
+import { dueDateWarning, validateDraft, validateItem } from '../invoice/validate'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 type EstadoPdf = 'ocioso' | 'gerando' | 'pronto' | 'erro'
@@ -73,6 +73,15 @@ export function InvoicePage() {
   const [bloqueado, setBloqueado] = useState(false)
 
   const erros = useMemo(() => validateDraft(draft), [draft])
+
+  // Erros de linha aparecem assim que o valor e invalido, sem esperar o
+  // envio: diferente de campo em branco, um numero negativo ja e erro no
+  // momento em que foi digitado.
+  const errosDeLinha = useMemo(() => {
+    const r: Record<string, string | undefined> = {}
+    for (const item of draft.items) Object.assign(r, validateItem(item))
+    return r
+  }, [draft.items])
   const aviso = useMemo(() => dueDateWarning(draft), [draft])
   const total = useMemo(() => invoiceTotalCents(draft), [draft])
 
@@ -86,6 +95,12 @@ export function InvoicePage() {
     (campo: string) => () => setTocados((t) => ({ ...t, [campo]: true })),
     [],
   )
+
+  // INV-07: sem isto, "Invoice downloaded." fica na tela para sempre e
+  // encobre o aviso de autosave, mentindo sobre uma invoice que ja mudou.
+  useEffect(() => {
+    setEstadoPdf((atual) => (atual === 'pronto' ? 'ocioso' : atual))
+  }, [draft])
 
   const baixar = useCallback(async () => {
     // Antes de tudo: se ja ha uma geracao em andamento, o clique nao existe.
@@ -130,7 +145,9 @@ export function InvoicePage() {
       setEstadoPdf('pronto')
     } catch {
       setEstadoPdf('erro')
-      setErroPdf('Could not generate the PDF. Please try again.')
+      // Diz a verdade: o modulo do jsPDF fica cacheado como falho pelo ESM,
+      // entao clicar de novo nao vai a rede. So recarregar resolve (INV-05).
+      setErroPdf('Could not generate the PDF. Please reload the page and try again.')
     } finally {
       // Segura a trava por um tempo minimo. Sem isso ela nao serve para nada:
       // a geracao leva 13ms com o jsPDF ja carregado, entao o botao fecha e
@@ -296,6 +313,7 @@ export function InvoicePage() {
           items={draft.items}
           currency={draft.currency}
           error={enviado ? erros.items : undefined}
+          itemErrors={errosDeLinha}
           onChange={inv.setItem}
           onAdd={inv.addItem}
           onRemove={inv.removeItem}

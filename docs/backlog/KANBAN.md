@@ -20,30 +20,28 @@ umbrella).
 
 ## Pronto para fazer
 
-| Card | Título | Tam. | Origem |
+| Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
-| [INV-05](cards/INV-05-retry-impossivel-apos-falha.md) | Após falha, "try again" nunca funciona | P | QA no INV-03 |
-| [INV-07](cards/INV-07-status-preso-em-baixado.md) | Status fica preso em "Invoice downloaded." | P | QA no INV-03 |
-| [INV-01](cards/INV-01-total-negativo.md) | Quantidade negativa gera total negativo | P | decidido: rejeitar |
-| [INV-02](cards/INV-02-numero-grande-vira-zero.md) | Número grande vira $0.00 em silêncio | P | decidido: teto de 1.000.000 |
-| [INV-06](cards/INV-06-foco-perdido-no-teclado.md) | Foco vai para o topo ao baixar por teclado | P | reavaliar após INV-03 |
+| [INV-06](cards/INV-06-foco-perdido-no-teclado.md) | Foco vai para o topo ao baixar por teclado | P | consequência do bloqueio do INV-03 |
+| [INV-05](cards/INV-05-retry-impossivel-apos-falha.md) | Retry sem F5 após falha de rede | P | **parcial** — mensagem já corrigida |
 
 ## Esperando decisão
 
-| Card | Título | Tam. | Decisão pendente |
-| --- | --- | --- | --- |
-| [INV-04](cards/INV-04-pdf-com-dados-antigos.md) | **PDF com dados antigos se editar durante a geração** | P | bloquear edição, avisar, ou regenerar? |
+_(vazio)_
 
 ## Fazendo
 
-| Card | Título | Tam. | Nota |
-| --- | --- | --- | --- |
-| [INV-03](cards/INV-03-clique-repetido-gera-varios-pdfs.md) | Clique repetido gera vários PDFs | P | 1ª tentativa reprovada pelo QA; em correção |
+_(vazio)_
 
 ## Feito
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [INV-01](cards/INV-01-total-negativo.md) | Rejeita quantidade e valor negativos | 12/08/2026 |
+| [INV-02](cards/INV-02-numero-grande-vira-zero.md) | Teto de 1.000.000 por campo, com aviso | 12/08/2026 |
+| [INV-03](cards/INV-03-clique-repetido-gera-varios-pdfs.md) | Clique repetido gera vários PDFs | 12/08/2026 |
+| [INV-04](cards/INV-04-pdf-com-dados-antigos.md) | PDF com dados antigos ao editar durante a geração | 12/08/2026 |
+| [INV-07](cards/INV-07-status-preso-em-baixado.md) | Status preso em "Invoice downloaded." | 12/08/2026 |
 | — | Gerador de invoice, camada 1 (formulário, PDF, rascunho local) | 12/08/2026 |
 | — | Trilhas, progresso e 75 aulas autorais de System Design | 11/08/2026 |
 

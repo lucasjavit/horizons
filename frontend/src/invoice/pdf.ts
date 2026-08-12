@@ -54,13 +54,41 @@ export function invoiceTotalCents(draft: InvoiceDraft): number {
   return sumCents(linhasValidas(draft).map((l) => l.valorCents))
 }
 
+/**
+ * Carrega o jsPDF sob demanda, guardando a promessa entre chamadas.
+ *
+ * O cache proprio guarda so o sucesso: em caso de falha ele e limpo, para a
+ * proxima tentativa tentar de novo em vez de reusar a promessa rejeitada.
+ *
+ * ATENCAO: isso NAO resolve o INV-05 sozinho. O registro de modulos do ESM
+ * cacheia o proprio `import()` rejeitado, entao a retentativa continua sem ir
+ * a rede. Tentei contornar com URL dinamica (`jspdf?t=...`) e o Vite parou de
+ * separar o chunk — o bundle principal saltou para 329 KB. Nao vale: o
+ * carregamento sob demanda protege todo mundo que so quer ler uma aula, e o
+ * INV-05 atinge quem teve falha de rede. A mensagem passou a dizer a verdade.
+ */
+let jsPdfCache: Promise<[
+  typeof import('jspdf'),
+  typeof import('jspdf-autotable'),
+]> | null = null
+
+function carregarJsPdf() {
+  if (!jsPdfCache) {
+    jsPdfCache = Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]) as Promise<[typeof import('jspdf'), typeof import('jspdf-autotable')]>
+    jsPdfCache.catch(() => {
+      jsPdfCache = null
+    })
+  }
+  return jsPdfCache
+}
+
 export async function generateInvoicePdf(draft: InvoiceDraft): Promise<Blob> {
   // Import dinamico: as centenas de KB do jsPDF so descem quando alguem
   // realmente pede o PDF, e nao no carregamento da pagina.
-  const [{ jsPDF }, { autoTable }] = await Promise.all([
-    import('jspdf'),
-    import('jspdf-autotable'),
-  ])
+  const [{ jsPDF }, { autoTable }] = await carregarJsPdf()
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: true })
   const largura = doc.internal.pageSize.getWidth()

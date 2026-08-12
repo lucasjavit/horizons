@@ -1,6 +1,6 @@
 # INV-01 · Quantidade negativa gera invoice com total negativo
 
-**Estado:** pronto para fazer
+**Estado:** feito (12/08/2026)
 **Tamanho:** P
 **Decisão do stakeholder (12/08/2026):** rejeitar. Não permitir valor
 negativo — nem na quantidade, nem no valor unitário.

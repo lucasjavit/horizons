@@ -1,7 +1,38 @@
-import { parseAmountToCents } from './money'
-import type { InvoiceDraft } from './types'
+import { parseAmountToCents, parseQuantity } from './money'
+import type { InvoiceDraft, LineItem } from './types'
 
 export type InvoiceErrors = Partial<Record<string, string>>
+
+/**
+ * Teto do que da para digitar em quantidade e valor unitario.
+ *
+ * Um milhao e um numero que faz sentido para uma pessoa, ao contrario do
+ * limite de inteiro seguro do JavaScript. Vale por campo, nao pelo total:
+ * dez linhas de um milhao somam dez milhoes, e isso continua permitido.
+ */
+export const MAX_VALOR = 1_000_000
+
+/** Erros de uma linha, indexados por `${id}.campo`. */
+export function validateItem(i: LineItem): InvoiceErrors {
+  const e: InvoiceErrors = {}
+
+  const qtd = parseQuantity(i.quantity)
+  if (i.quantity.trim() && qtd !== null) {
+    // Maior que zero, e nao >= 1: cobrar meia hora e caso de uso real.
+    if (qtd <= 0) e[`${i.id}.quantity`] = 'Quantity must be greater than zero.'
+    else if (qtd > MAX_VALOR)
+      e[`${i.id}.quantity`] = `Quantity must be at most ${MAX_VALOR.toLocaleString('en-US')}.`
+  }
+
+  const rate = parseAmountToCents(i.rate)
+  if (i.rate.trim() && rate !== null) {
+    if (rate < 0) e[`${i.id}.rate`] = 'Rate cannot be negative.'
+    else if (rate > MAX_VALOR * 100)
+      e[`${i.id}.rate`] = `Rate must be at most ${MAX_VALOR.toLocaleString('en-US')}.`
+  }
+
+  return e
+}
 
 /**
  * Validacao minima de proposito.
@@ -30,6 +61,10 @@ export function validateDraft(d: InvoiceDraft): InvoiceErrors {
   )
   if (validos.length === 0)
     e.items = 'Add at least one item with a description and a rate.'
+
+  // Erros de linha entram no mesmo mapa, com a chave `${id}.campo`, para o
+  // botao de baixar bloquear enquanto houver linha invalida.
+  for (const item of d.items) Object.assign(e, validateItem(item))
 
   return e
 }

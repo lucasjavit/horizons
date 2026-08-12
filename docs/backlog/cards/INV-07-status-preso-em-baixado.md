@@ -1,6 +1,6 @@
 # INV-07 · O status fica preso em "Invoice downloaded."
 
-**Estado:** pronto para fazer
+**Estado:** feito (12/08/2026)
 **Tamanho:** P
 
 ## Por quê
