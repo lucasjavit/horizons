@@ -87,13 +87,13 @@
     {
       "id": "INV-06",
       "titulo": "Ativar o download por teclado joga o foco para o topo",
-      "estado": "pronto para fazer",
-      "coluna": "pronto",
+      "estado": "feito (12/08/2026)",
+      "coluna": "feito",
       "tamanho": "P",
       "porque": "Achado do QA em 12/08/2026. Quem navega por teclado é jogado ao topo do documento ao baixar a invoice e precisa retabular a página inteira — que tem mais de 30 elementos focáveis — para voltar ao botão.",
       "decisao": "",
       "bloqueio": "",
-      "feitos": 0,
+      "feitos": 4,
       "total": 4
     },
     {

@@ -73,3 +73,19 @@ funciona.
 O que falta: fazer a retentativa funcionar sem recarregar, sem quebrar o code
 splitting. Provavelmente exige carregar o jsPDF por outro caminho que não o
 `import()` do ESM.
+
+
+## Segunda tentativa (12/08/2026) — tambem descartada
+
+Tentei reaquecer a rede antes de reimportar: `fetch(url, {cache:'reload'})`
+no chunk descoberto via `performance.getEntriesByType('resource')`. O fetch
+encontra as URLs e vai a rede, mas **o registro de modulos do ESM guarda a
+rejeicao do `import()` para sempre** — medido: continua sem gerar o PDF.
+
+As duas saidas obvias estao esgotadas (URL dinamica quebra o code splitting,
+cache-reload nao apaga o registro do ESM). O codigo morto foi removido; o
+raciocinio ficou registrado no comentario de `pdf.ts`.
+
+**O que sobra:** carregar o jsPDF por outro caminho que nao o `import()` do
+ESM (por exemplo injetando um `<script>`), o que e uma mudanca grande para um
+bug que atinge so quem teve falha de rede. Fica parado de proposito.

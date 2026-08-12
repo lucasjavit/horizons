@@ -58,14 +58,22 @@ export function invoiceTotalCents(draft: InvoiceDraft): number {
  * Carrega o jsPDF sob demanda, guardando a promessa entre chamadas.
  *
  * O cache proprio guarda so o sucesso: em caso de falha ele e limpo, para a
- * proxima tentativa tentar de novo em vez de reusar a promessa rejeitada.
+ * proxima tentativa nao reusar a promessa rejeitada.
  *
- * ATENCAO: isso NAO resolve o INV-05 sozinho. O registro de modulos do ESM
- * cacheia o proprio `import()` rejeitado, entao a retentativa continua sem ir
- * a rede. Tentei contornar com URL dinamica (`jspdf?t=...`) e o Vite parou de
- * separar o chunk — o bundle principal saltou para 329 KB. Nao vale: o
- * carregamento sob demanda protege todo mundo que so quer ler uma aula, e o
- * INV-05 atinge quem teve falha de rede. A mensagem passou a dizer a verdade.
+ * Isso nao resolve o INV-05, e as duas saidas obvias foram testadas e
+ * descartadas:
+ *
+ * - URL dinamica (`import('jspdf?t=...')`) faz o Vite parar de separar o
+ *   chunk: o bundle principal salta de 320 para 329 KB, com os 400 KB do
+ *   jsPDF dentro.
+ * - `fetch(url, {cache:'reload'})` antes de reimportar reaquece o cache HTTP
+ *   mas nao apaga o registro de modulos do ESM, que guarda a rejeicao para
+ *   sempre. Medido: continua sem gerar o PDF.
+ *
+ * Por isso a mensagem de erro pede para recarregar a pagina, que e o que de
+ * fato funciona. Trocar o carregamento sob demanda — que protege todo mundo
+ * que so quer ler uma aula — por um retry que atinge quem teve falha de rede
+ * seria mau negocio.
  */
 let jsPdfCache: Promise<[
   typeof import('jspdf'),

@@ -64,6 +64,12 @@ export function InvoicePage() {
   // ato e barra o segundo clique; o `disabled` e o que a pessoa ve.
   const gerando = useRef(false)
 
+  // O navegador tira o foco de um elemento que vira `disabled`, e o React nao
+  // devolve quando o atributo sai. Sem isto, quem baixa a invoice pelo teclado
+  // e jogado para o topo do documento e precisa retabular a pagina inteira
+  // (INV-06).
+  const botaoBaixar = useRef<HTMLButtonElement>(null)
+
   // Enquanto gera, o formulario inteiro fica somente leitura: editar no meio
   // produziria um PDF com os dados capturados no clique, sem nada avisando.
   //
@@ -204,6 +210,15 @@ export function InvoicePage() {
       window.setTimeout(() => {
         gerando.current = false
         setBloqueado(false)
+        // Devolve o foco so se ele continua perdido no body. A checagem vai
+        // dentro do frame seguinte, e nao antes: entre o clique e este ponto
+        // a pessoa pode ter ido para outro campo, e roubar o foco de volta
+        // seria pior que a perda que estamos consertando.
+        requestAnimationFrame(() => {
+          if (document.activeElement === document.body) {
+            botaoBaixar.current?.focus()
+          }
+        })
       }, resta)
     }
   }, [draft, erros])
@@ -402,6 +417,7 @@ export function InvoicePage() {
               o minimo de AA) sem ganhar nada — a troca de rotulo ja sinaliza
               o bloqueio. */}
           <button
+            ref={botaoBaixar}
             type="button"
             onClick={() => void baixar()}
             disabled={bloqueado}

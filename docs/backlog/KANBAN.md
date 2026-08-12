@@ -22,8 +22,7 @@ umbrella).
 
 | Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
-| [INV-06](cards/INV-06-foco-perdido-no-teclado.md) | Foco vai para o topo ao baixar por teclado | P | consequência do bloqueio do INV-03 |
-| [INV-05](cards/INV-05-retry-impossivel-apos-falha.md) | Retry sem F5 após falha de rede | P | **parcial** — mensagem já corrigida |
+| [INV-05](cards/INV-05-retry-impossivel-apos-falha.md) | Retry sem F5 após falha de rede | P | **parado** — as duas saídas viáveis foram testadas e falharam |
 
 ## Esperando decisão
 
@@ -37,6 +36,7 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [INV-06](cards/INV-06-foco-perdido-no-teclado.md) | Foco volta ao botão ao baixar por teclado | 12/08/2026 |
 | [INV-08](cards/INV-08-empresa-em-modal.md) | Cadastro de empresa em modal + select | 12/08/2026 |
 | [INV-01](cards/INV-01-total-negativo.md) | Rejeita quantidade e valor negativos | 12/08/2026 |
 | [INV-02](cards/INV-02-numero-grande-vira-zero.md) | Teto de 1.000.000 por campo, com aviso | 12/08/2026 |
