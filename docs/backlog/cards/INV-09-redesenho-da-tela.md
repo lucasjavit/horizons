@@ -1,6 +1,6 @@
 # INV-09 · Redesenhar a tela do gerador de invoice
 
-**Estado:** esperando decisão — três direções propostas, falta escolher
+**Estado:** feito (12/08/2026)
 **Tamanho:** M (a decisão), G (a execução, dependendo da direção)
 **Pedido do stakeholder (12/08/2026):** "não está do meu agrado".
 
@@ -88,7 +88,7 @@ Direções já cogitadas, para o `ux` avaliar e não se limitar a elas:
 - [x] O diagnóstico foi confirmado ou corrigido com medida
 - [x] Há 2 ou 3 direções distintas, com esboço e custo
 - [x] Há uma recomendação explícita
-- [ ] O stakeholder escolheu uma direção
+- [x] O stakeholder escolheu uma direção: A com o bloco 2 de B
 
 Depois da escolha, a execução vira card próprio — o tamanho depende do que for
 escolhido.
@@ -178,3 +178,59 @@ No scratchpad da sessão: `mock-a-desktop.png`, `mock-a-desktop-dark.png`,
 
 São HTML descartável, fora do repositório. Nenhum arquivo do projeto foi
 tocado.
+
+
+---
+
+# Executado (12/08/2026)
+
+Direção A com o bloco 2 de B, como recomendado.
+
+## Medido antes e depois
+
+| | Antes | Depois |
+| --- | --- | --- |
+| Altura desktop (vazia) | 1.495px | **955px** (−36%) |
+| Altura desktop (preenchida) | 1.613px | **993px** (−38%) |
+| Altura celular | 2.355px | **1.821px** (−23%) |
+| Pede cadastro no 1º contato | sim | **não** |
+| Vê o documento antes de baixar | não | **sim, ao vivo** |
+
+## Como cada incômodo foi resolvido
+
+1. **Personalidade** — o papel branco com sombra ao lado é a marca visual.
+   No tema escuro o contraste do documento contra o fundo reforça que aquilo
+   é o arquivo que vai sair.
+2. **Ver o resultado** — prévia ao vivo, montando enquanto se digita.
+3. **Buraco** — resolvido pela raiz: os campos do emissor voltaram para a
+   página (`IssuerFields`), então as duas colunas têm conteúdo equivalente.
+   A empresa salva virou atalho que só aparece depois de existir uma.
+4. **Comprimento** — blocos em acordeão, um aberto por vez, com resumo do que
+   já foi preenchido quando fechados.
+
+## A divergência prévia × PDF
+
+Mitigada como combinado: `linhasValidas` e `invoiceTotalCents` foram
+exportadas de `pdf.ts`, e a prévia lê dali. O que difere entre os dois é só o
+desenho — número calculado duas vezes é número que uma hora diverge.
+
+O `scripts/qa-rapido.py`, que roda no pre-commit, ganhou uma checagem que
+compara o valor da linha com o que aparece na prévia.
+
+## Acessibilidade
+
+Auditada depois da mudança: todo campo com label, todo botão com nome e
+`type`, alvos ≥24px (skip link 232×40, link do rodapé 573×36), um `h1` no
+topo, sem título duplicado, skip link continua sendo o primeiro foco.
+
+A prévia é `aria-hidden`: é um espelho do formulário, que já é todo rotulado.
+Sem isso, quem usa leitor de tela ouviria tudo duas vezes.
+
+## O que não foi feito
+
+As duas perguntas de produto que o `ux` levantou continuam abertas:
+
+1. A prévia é fiel ao PDF? Hoje sim nos números (mesmo módulo) e aproximada
+   no desenho. A tela diz "The downloaded PDF is the final version".
+2. A porta de entrada deve vender as trilhas com mais força? Continua uma
+   linha no rodapé.

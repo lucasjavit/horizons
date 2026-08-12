@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { SelectField, TextAreaField, TextField } from '../components/invoice/Field'
-import { CompanyPicker } from '../components/invoice/CompanyPicker'
+import { InvoicePreview } from '../components/invoice/InvoicePreview'
+import { IssuerFields } from '../components/invoice/IssuerFields'
 import { LineItemsEditor } from '../components/invoice/LineItemsEditor'
 import type { Company } from '../invoice/companies'
 import { loadCompanies, saveCompanies } from '../invoice/companies'
@@ -80,6 +82,9 @@ export function InvoicePage() {
   // Tambem nao pode ser `estadoPdf === 'gerando'`: o estado vira 'pronto'
   // assim que o arquivo sai, e a trava so cai depois de MIN_BLOQUEIO_MS.
   const [bloqueado, setBloqueado] = useState(false)
+
+  // Um bloco aberto por vez. Comeca no 1: e onde a pessoa comeca a preencher.
+  const [aberto, setAberto] = useState<number | null>(1)
 
   // Empresas emissoras salvas. Ficam fora do rascunho de propósito: valem
   // para todas as invoices, e nao so para a que esta sendo escrita.
@@ -224,288 +229,411 @@ export function InvoicePage() {
   }, [draft, erros])
 
   return (
-    <main
-      id="conteudo"
-      tabIndex={-1}
-      className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14"
-    >
-      <header className="mb-10">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Free invoice generator
-        </h1>
-        <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
-          Create a professional invoice for international clients. No sign-up,
-          nothing leaves your browser.
-        </p>
-      </header>
+    <main id="conteudo" tabIndex={-1}>
+      {/* Duas colunas no desktop: formulario a esquerda, documento a direita.
+          A previa e o unico diferencial real contra um concorrente que tambem
+          e um formulario — por isso ela ocupa metade da tela, e nao um canto. */}
+      <div className="mx-auto grid max-w-[100rem] items-start gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="px-4 py-8 sm:px-8 lg:py-12">
+          <div className="mx-auto max-w-2xl">
+            <header className="mb-8">
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Free invoice generator
+              </h1>
+              <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
+                Professional invoices for international clients — ready in under
+                a minute.
+              </p>
+              <ul className="mt-4 flex flex-wrap gap-2 text-xs">
+                {['No sign-up', 'Nothing leaves your browser', '7 currencies'].map(
+                  (s) => (
+                    <li
+                      key={s}
+                      className="rounded-full border px-2.5 py-1"
+                      style={{
+                        borderColor: 'var(--border)',
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      {s}
+                    </li>
+                  ),
+                )}
+              </ul>
+            </header>
 
-      {/* fieldset em vez de `disabled` campo a campo: um atributo so cobre
-          todos os inputs, inclusive os das linhas, que sao dinamicos.
-          `min-w-0` porque fieldset tem largura minima automatica que quebra
-          grid. */}
-      <fieldset
-        disabled={bloqueado}
-        className="flex min-w-0 flex-col gap-10 border-0 p-0"
-      >
-        <section aria-labelledby="details-heading">
-          <h2 id="details-heading" className="text-lg font-semibold tracking-tight">
-            Invoice details
-          </h2>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <TextField
-              id="invoice-number"
-              label="Invoice number"
-              value={draft.invoiceNumber}
-              onChange={(v) => inv.setCampo('invoiceNumber', v)}
-              onBlur={tocar('invoiceNumber')}
-              error={erro('invoiceNumber')}
-              placeholder="INV-0001"
-            />
-            <TextField
-              id="issue-date"
-              label="Issue date"
-              type="date"
-              value={draft.issueDate}
-              onChange={(v) => inv.setCampo('issueDate', v)}
-              onBlur={tocar('issueDate')}
-              error={erro('issueDate')}
-            />
-            <TextField
-              id="due-date"
-              label="Due date"
-              type="date"
-              value={draft.dueDate}
-              onChange={(v) => inv.setCampo('dueDate', v)}
-              hint={aviso ?? undefined}
-            />
-            <SelectField
-              id="currency"
-              label="Currency"
-              value={draft.currency}
-              onChange={(v) => {
-                if (isCurrencyCode(v)) inv.setCurrency(v)
-              }}
-              options={CURRENCIES.map((c) => ({ value: c.code, label: c.label }))}
-            />
-          </div>
-        </section>
+            <fieldset
+              disabled={bloqueado}
+              className="flex min-w-0 flex-col gap-4 border-0 p-0"
+            >
+              <Bloco
+                numero={1}
+                titulo="Invoice details"
+                resumo={`${draft.invoiceNumber.trim() || 'No number'} · ${draft.currency}`}
+                aberto={aberto === 1}
+                onToggle={() => setAberto(aberto === 1 ? null : 1)}
+              >
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <TextField
+                    id="invoice-number"
+                    label="Invoice number"
+                    value={draft.invoiceNumber}
+                    onChange={(v) => inv.setCampo('invoiceNumber', v)}
+                    onBlur={tocar('invoiceNumber')}
+                    error={erro('invoiceNumber')}
+                    placeholder="INV-0001"
+                  />
+                  <SelectField
+                    id="currency"
+                    label="Currency"
+                    value={draft.currency}
+                    onChange={(v) => {
+                      if (isCurrencyCode(v)) inv.setCurrency(v)
+                    }}
+                    options={CURRENCIES.map((c) => ({
+                      value: c.code,
+                      label: c.label,
+                    }))}
+                  />
+                  <TextField
+                    id="issue-date"
+                    label="Issue date"
+                    type="date"
+                    value={draft.issueDate}
+                    onChange={(v) => inv.setCampo('issueDate', v)}
+                    onBlur={tocar('issueDate')}
+                    error={erro('issueDate')}
+                  />
+                  <TextField
+                    id="due-date"
+                    label="Due date"
+                    type="date"
+                    value={draft.dueDate}
+                    onChange={(v) => inv.setCampo('dueDate', v)}
+                    hint={aviso ?? undefined}
+                  />
+                </div>
+              </Bloco>
 
-        <div className="grid gap-10 sm:grid-cols-2">
-          <section aria-labelledby="from-heading">
-            <h2 id="from-heading" className="text-lg font-semibold tracking-tight">
-              From
-            </h2>
-            <div className="mt-4">
-              <CompanyPicker
-                companies={companies}
-                selectedId={companyId}
-                onSelect={escolherEmpresa}
-                onSave={salvarEmpresa}
-                onDelete={apagarEmpresa}
-              />
-              {erro('from.name') && (
-                <p role="alert" className="mt-2 text-sm" style={{ color: WARN_INK }}>
-                  {erro('from.name')}
+              <Bloco
+                numero={2}
+                titulo="Who is billing whom"
+                resumo={
+                  draft.from.name.trim() || draft.billTo.name.trim()
+                    ? `${draft.from.name.trim() || '—'} → ${draft.billTo.name.trim() || '—'}`
+                    : 'Not filled in yet'
+                }
+                aberto={aberto === 2}
+                onToggle={() => setAberto(aberto === 2 ? null : 2)}
+              >
+                <div className="grid gap-8 sm:grid-cols-2">
+                  <section aria-labelledby="from-heading">
+                    <h3
+                      id="from-heading"
+                      className="mb-3 text-[0.7rem] font-bold uppercase tracking-widest"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      From
+                    </h3>
+                    <IssuerFields
+                      from={draft.from}
+                      companies={companies}
+                      selectedId={companyId}
+                      erroNome={erro('from.name')}
+                      erroEmail={erro('from.email')}
+                      onChangeCampo={inv.setFrom}
+                      onSelect={escolherEmpresa}
+                      onSave={salvarEmpresa}
+                      onDelete={apagarEmpresa}
+                    />
+                  </section>
+
+                  <section aria-labelledby="billto-heading">
+                    <h3
+                      id="billto-heading"
+                      className="mb-3 text-[0.7rem] font-bold uppercase tracking-widest"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      Bill to
+                    </h3>
+                    <div className="flex flex-col gap-4">
+                      <TextField
+                        id="billto-name"
+                        label="Client name or company"
+                        value={draft.billTo.name}
+                        onChange={(v) => inv.setBillTo('name', v)}
+                        onBlur={tocar('billTo.name')}
+                        error={erro('billTo.name')}
+                      />
+                      <TextAreaField
+                        id="billto-address"
+                        label="Client address"
+                        value={draft.billTo.address}
+                        onChange={(v) => inv.setBillTo('address', v)}
+                        placeholder={'Street, number\nCity, State, ZIP\nCountry'}
+                      />
+                      <TextField
+                        id="billto-email"
+                        label="Client email"
+                        type="email"
+                        value={draft.billTo.email}
+                        onChange={(v) => inv.setBillTo('email', v)}
+                        onBlur={tocar('billTo.email')}
+                        error={erro('billTo.email')}
+                        hint="Where the invoice will be sent."
+                      />
+                    </div>
+                  </section>
+                </div>
+              </Bloco>
+
+              <Bloco
+                numero={3}
+                titulo="Items"
+                resumo={`${draft.items.length} ${draft.items.length === 1 ? 'line' : 'lines'} · ${formatCents(total, draft.currency)}`}
+                aberto={aberto === 3}
+                onToggle={() => setAberto(aberto === 3 ? null : 3)}
+              >
+                <LineItemsEditor
+                  items={draft.items}
+                  currency={draft.currency}
+                  error={enviado ? erros.items : undefined}
+                  itemErrors={errosDeLinha}
+                  onChange={inv.setItem}
+                  onAdd={inv.addItem}
+                  onRemove={inv.removeItem}
+                  onMove={inv.moveItem}
+                />
+              </Bloco>
+
+              <Bloco
+                numero={4}
+                titulo="Payment & notes"
+                resumo={
+                  draft.paymentDetails.trim() || draft.notes.trim()
+                    ? 'Filled in'
+                    : 'Optional'
+                }
+                aberto={aberto === 4}
+                onToggle={() => setAberto(aberto === 4 ? null : 4)}
+              >
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <TextAreaField
+                    id="payment-details"
+                    label="Payment details"
+                    value={draft.paymentDetails}
+                    onChange={(v) => inv.setCampo('paymentDetails', v)}
+                    rows={4}
+                    placeholder={'Bank name\nIBAN / Account\nSWIFT / Routing\nWise, Payoneer…'}
+                  />
+                  <TextAreaField
+                    id="notes"
+                    label="Notes / terms"
+                    value={draft.notes}
+                    onChange={(v) => inv.setCampo('notes', v)}
+                    rows={4}
+                    placeholder="Payment due within 30 days."
+                  />
+                </div>
+              </Bloco>
+            </fieldset>
+
+            <div
+              className="mt-8 flex flex-wrap items-center gap-3 border-t pt-6"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <span className="text-sm font-semibold uppercase tracking-wide">
+                Total
+              </span>
+              <span
+                aria-live="polite"
+                className="text-2xl font-bold tabular-nums"
+                style={{ color: 'var(--brand)' }}
+              >
+                {formatCents(total, draft.currency)}
+              </span>
+
+              <span className="ml-auto flex flex-wrap items-center gap-3">
+                <button
+                  ref={botaoBaixar}
+                  type="button"
+                  onClick={() => void baixar()}
+                  disabled={bloqueado}
+                  aria-busy={bloqueado}
+                  className="rounded-md px-5 py-2.5 text-sm font-semibold disabled:opacity-90"
+                  style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
+                >
+                  {bloqueado ? 'Preparing PDF…' : 'Download PDF'}
+                </button>
+
+                {!confirmandoLimpeza ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmandoLimpeza(true)}
+                    className="rounded-md border px-4 py-2.5 text-sm font-medium"
+                    style={{
+                      borderColor: 'var(--border)',
+                      color: 'var(--text-muted)',
+                    }}
+                  >
+                    Clear
+                  </button>
+                ) : (
+                  <span
+                    role="alert"
+                    className="flex flex-wrap items-center gap-2 text-sm"
+                  >
+                    Clear everything?
+                    <button
+                      type="button"
+                      onClick={() => {
+                        inv.reset()
+                        setTocados({})
+                        setEnviado(false)
+                        setEstadoPdf('ocioso')
+                        setCompanyId(null)
+                        setConfirmandoLimpeza(false)
+                      }}
+                      className="rounded-md px-3 py-1.5 text-sm font-semibold"
+                      style={{ background: WARN_INK, color: '#fff' }}
+                    >
+                      Yes, clear
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmandoLimpeza(false)}
+                      className="rounded-md border px-3 py-1.5 text-sm font-medium"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
+                      Keep it
+                    </button>
+                  </span>
+                )}
+              </span>
+
+              <p
+                role="status"
+                aria-live="polite"
+                className="w-full text-sm"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {estadoPdf === 'pronto'
+                  ? 'Invoice downloaded.'
+                  : inv.salvo
+                    ? 'Draft saved in this browser.'
+                    : 'Saving…'}
+              </p>
+
+              {erroPdf && (
+                <p role="alert" className="w-full text-sm" style={{ color: WARN_INK }}>
+                  {erroPdf}
                 </p>
               )}
             </div>
-          </section>
 
-          <section aria-labelledby="billto-heading">
-            <h2 id="billto-heading" className="text-lg font-semibold tracking-tight">
-              Bill to
-            </h2>
-            <div className="mt-4 flex flex-col gap-4">
-              <TextField
-                id="billto-name"
-                label="Client name or company"
-                value={draft.billTo.name}
-                onChange={(v) => inv.setBillTo('name', v)}
-                onBlur={tocar('billTo.name')}
-                error={erro('billTo.name')}
-              />
-              <TextAreaField
-                id="billto-address"
-                label="Address"
-                value={draft.billTo.address}
-                onChange={(v) => inv.setBillTo('address', v)}
-                placeholder={'Street, number\nCity, State, ZIP\nCountry'}
-              />
-              <TextField
-                id="billto-email"
-                label="Email"
-                type="email"
-                value={draft.billTo.email}
-                onChange={(v) => inv.setBillTo('email', v)}
-                onBlur={tocar('billTo.email')}
-                error={erro('billTo.email')}
-                hint="Where the invoice will be sent."
-              />
-            </div>
-          </section>
-        </div>
-
-        <LineItemsEditor
-          items={draft.items}
-          currency={draft.currency}
-          error={enviado ? erros.items : undefined}
-          itemErrors={errosDeLinha}
-          onChange={inv.setItem}
-          onAdd={inv.addItem}
-          onRemove={inv.removeItem}
-          onMove={inv.moveItem}
-        />
-
-        <div
-          className="flex items-baseline justify-end gap-4 border-t pt-4"
-          style={{ borderColor: 'var(--border)' }}
-        >
-          <span className="text-sm font-semibold uppercase tracking-wide">
-            Total
-          </span>
-          {/* polite: anuncia o total quando a digitacao assenta, sem
-              tagarelar a cada tecla. */}
-          <span
-            aria-live="polite"
-            className="text-2xl font-bold tabular-nums"
-            style={{ color: 'var(--brand)' }}
-          >
-            {formatCents(total, draft.currency)}
-          </span>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2">
-          <TextAreaField
-            id="payment-details"
-            label="Payment details"
-            value={draft.paymentDetails}
-            onChange={(v) => inv.setCampo('paymentDetails', v)}
-            rows={4}
-            placeholder={'Bank name\nIBAN / Account\nSWIFT / Routing\nWise, Payoneer…'}
-          />
-          <TextAreaField
-            id="notes"
-            label="Notes / terms"
-            value={draft.notes}
-            onChange={(v) => inv.setCampo('notes', v)}
-            rows={4}
-            placeholder="Payment due within 30 days."
-          />
-        </div>
-      </fieldset>
-
-      {/* Fora do fieldset: os botoes precisam continuar respondendo para o
-          rotulo de progresso aparecer e o Clear seguir alcancavel. */}
-      <div className="flex flex-col gap-10">
-        <div
-          className="mt-10 flex flex-wrap items-center gap-3 border-t pt-6"
-          style={{ borderColor: 'var(--border)' }}
-        >
-          {/* Fica habilitado mesmo invalido, validando no clique: botao
-              desabilitado nao recebe foco e nao explica por que nada
-              acontece.
-
-              Desabilitar durante a geracao e outro caso, nao a excecao dessa
-              regra: e bloqueio momentaneo de uma operacao em andamento, com o
-              proprio rotulo dizendo o que esta acontecendo — nao recusa
-              silenciosa. O aria-busy conta a mesma coisa a quem nao ve o
-              rotulo mudar.
-
-              opacity-90, e nao o 40 dos botoes de linha: este botao carrega o
-              unico texto de progresso da tela. Apagar o recado que a pessoa
-              precisa ler custa contraste (a 0,7 o texto cai para ~3,3:1, sob
-              o minimo de AA) sem ganhar nada — a troca de rotulo ja sinaliza
-              o bloqueio. */}
-          <button
-            ref={botaoBaixar}
-            type="button"
-            onClick={() => void baixar()}
-            disabled={bloqueado}
-            aria-busy={bloqueado}
-            className="rounded-md px-5 py-2.5 text-sm font-semibold disabled:opacity-90"
-            style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
-          >
-            {bloqueado ? 'Preparing PDF…' : 'Download PDF'}
-          </button>
-
-          {!confirmandoLimpeza ? (
-            <button
-              type="button"
-              onClick={() => setConfirmandoLimpeza(true)}
-              className="rounded-md border px-4 py-2.5 text-sm font-medium"
+            <footer
+              className="mt-12 border-t pt-6 text-sm"
               style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
             >
-              Clear
-            </button>
-          ) : (
-            <span
-              role="alert"
-              className="flex flex-wrap items-center gap-2 text-sm"
-            >
-              Clear everything?
-              <button
-                type="button"
-                onClick={() => {
-                  inv.reset()
-                  setTocados({})
-                  setEnviado(false)
-                  setEstadoPdf('ocioso')
-                  setConfirmandoLimpeza(false)
-                }}
-                className="rounded-md px-3 py-1.5 text-sm font-semibold"
-                style={{ background: WARN_INK, color: '#fff' }}
-              >
-                Yes, clear
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmandoLimpeza(false)}
-                className="rounded-md border px-3 py-1.5 text-sm font-medium"
-                style={{ borderColor: 'var(--border)' }}
-              >
-                Keep it
-              </button>
-            </span>
-          )}
+              <p>
+                Horizons also has free, in-depth System Design study tracks (in
+                Portuguese).{' '}
+                <Link
+                  to="/"
+                  className="font-medium underline"
+                  style={{ color: 'var(--accent-ink)' }}
+                >
+                  Take a look
+                </Link>
+                .
+              </p>
+            </footer>
+          </div>
+        </div>
 
-          <p
-            role="status"
-            aria-live="polite"
-            className="text-sm"
+        {/* A previa. No celular vem depois do formulario, sem posicao fixa. */}
+        <aside
+          className="px-4 pb-12 sm:px-8 lg:sticky lg:top-[57px] lg:max-h-[calc(100dvh-57px)] lg:overflow-y-auto lg:py-10"
+          style={{ background: 'var(--surface-sunken)' }}
+          aria-labelledby="preview-heading"
+        >
+          <h2
+            id="preview-heading"
+            className="mb-4 pt-8 text-[0.7rem] font-bold uppercase tracking-widest lg:pt-0"
             style={{ color: 'var(--text-muted)' }}
           >
-            {estadoPdf === 'pronto'
-              ? 'Invoice downloaded.'
-              : inv.salvo
-                ? 'Draft saved in this browser.'
-                : 'Saving…'}
+            Live preview
+          </h2>
+          <InvoicePreview draft={draft} />
+          <p className="mt-4 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
+            The downloaded PDF is the final version.
           </p>
-
-          {erroPdf && (
-            <p role="alert" className="text-sm" style={{ color: WARN_INK }}>
-              {erroPdf}
-            </p>
-          )}
-        </div>
+        </aside>
       </div>
-
-      <footer
-        className="mt-16 border-t pt-6 text-sm"
-        style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-      >
-        <p>
-          Horizons also has free, in-depth System Design study tracks
-          (in Portuguese).{' '}
-          <Link
-            to="/"
-            className="font-medium underline"
-            style={{ color: 'var(--accent-ink)' }}
-          >
-            Take a look
-          </Link>
-          .
-        </p>
-      </footer>
     </main>
+  )
+}
+
+/**
+ * Bloco numerado que fecha em acordeao.
+ *
+ * Fechado, mostra um resumo do que ja foi preenchido — e o que derruba a
+ * altura no celular de 2.355px para ~1.000px sem esconder informacao: quem
+ * quer conferir abre, e quem so quer seguir ve o resumo.
+ */
+function Bloco({
+  numero,
+  titulo,
+  resumo,
+  aberto,
+  onToggle,
+  children,
+}: {
+  numero: number
+  titulo: string
+  resumo: string
+  aberto: boolean
+  onToggle: () => void
+  children: ReactNode
+}) {
+  const idConteudo = `bloco-${numero}`
+  return (
+    <section
+      className="rounded-xl border"
+      style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
+    >
+      <h2>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={aberto}
+          aria-controls={idConteudo}
+          className="flex w-full items-center gap-3 px-4 py-3.5 text-left sm:px-5"
+        >
+          <span
+            aria-hidden
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+            style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
+          >
+            {numero}
+          </span>
+          <span className="font-semibold tracking-tight">{titulo}</span>
+          <span
+            className="ml-auto truncate text-xs"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {resumo}
+          </span>
+          <span aria-hidden className="shrink-0 text-xs" style={{ color: 'var(--text-muted)' }}>
+            {aberto ? '▲' : '▼'}
+          </span>
+        </button>
+      </h2>
+      {/* hidden em vez de desmontar: o conteudo continua no DOM, entao o
+          rascunho nao se perde e o Ctrl+F do navegador continua achando. */}
+      <div id={idConteudo} hidden={!aberto} className="px-4 pb-5 sm:px-5">
+        {children}
+      </div>
+    </section>
   )
 }

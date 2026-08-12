@@ -105,7 +105,9 @@ else:
             # A soma tem de bater com a soma das linhas impressas. Este e o
             # teste que protege o dinheiro: 3 x 33.33 = 99.99, e 0.1 dez vezes
             # nao pode virar 0.9999999999999999.
-            li = pg.locator("ul li").first
+            pg.get_by_role("button", name="Items").click()
+            pg.wait_for_timeout(300)
+            li = pg.locator("#bloco-3 ul li").first
             li.locator("input").nth(0).fill("Servico")
             li.locator("input").nth(1).fill("3")
             li.locator("input").nth(2).fill("33.33")
@@ -118,6 +120,15 @@ else:
             pg.wait_for_timeout(400)
             linha = li.locator("output").inner_text()
             ok(linha == "$1.01", f"1.005 arredonda para $1.01 (obtido {linha})")
+
+            # A previa e o PDF leem do mesmo modulo, mas sao dois desenhos
+            # do mesmo documento. Este teste e o que impede de divergirem em
+            # silencio — foi a mitigacao combinada no INV-09.
+            li.locator("input").nth(1).fill("3")
+            li.locator("input").nth(2).fill("33.33")
+            pg.wait_for_timeout(500)
+            previa = pg.locator('[aria-labelledby="preview-heading"]').inner_text()
+            ok("$99.99" in previa, "previa mostra o mesmo valor da linha")
 
             # As trilhas nao podem quebrar por causa de mexida na invoice.
             pg.goto(f"{BASE}/", wait_until="networkidle")

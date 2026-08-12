@@ -35,7 +35,14 @@ function formatarData(iso: string): string {
   })
 }
 
-function linhasValidas(draft: InvoiceDraft) {
+/**
+ * Linhas que entram no documento, com o valor ja calculado.
+ *
+ * Exportada de proposito: a previa na tela e o PDF leem DAQUI, e nao cada um
+ * do seu jeito. Foi a mitigacao escolhida para o risco do INV-09 — dois
+ * desenhos do mesmo documento divergirem com o tempo.
+ */
+export function linhasValidas(draft: InvoiceDraft) {
   return draft.items
     .filter((i) => i.description.trim() || parseAmountToCents(i.rate) !== null)
     .map((i) => {

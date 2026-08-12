@@ -27,9 +27,7 @@ _(vazio)_
 
 ## Esperando decisão
 
-| Card | Título | Tam. | Decisão pendente |
-| --- | --- | --- | --- |
-| [INV-09](cards/INV-09-redesenho-da-tela.md) | Redesenhar a tela do gerador | M | qual direção visual? o agente `ux` propõe 2-3 |
+_(vazio)_
 
 ## Fazendo
 
@@ -39,6 +37,7 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [INV-09](cards/INV-09-redesenho-da-tela.md) | Redesenho: prévia ao vivo, acordeão, buraco resolvido | 12/08/2026 |
 | [INV-05](cards/INV-05-retry-impossivel-apos-falha.md) | Retry após falha — fechado como não-viável, 4 caminhos medidos | 12/08/2026 |
 | [INV-06](cards/INV-06-foco-perdido-no-teclado.md) | Foco volta ao botão ao baixar por teclado | 12/08/2026 |
 | [INV-08](cards/INV-08-empresa-em-modal.md) | Cadastro de empresa em modal + select | 12/08/2026 |

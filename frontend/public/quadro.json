@@ -123,8 +123,8 @@
     {
       "id": "INV-09",
       "titulo": "Redesenhar a tela do gerador de invoice",
-      "estado": "esperando decisão — três direções propostas, falta escolher",
-      "coluna": "backlog",
+      "estado": "feito (12/08/2026)",
+      "coluna": "feito",
       "tamanho": "M (a decisão), G (a execução, dependendo da direção)",
       "porque": "A invoice é a porta de entrada global do Horizons: quem chega buscando \"invoice generator\" no Google encontra esta tela antes de qualquer outra coisa. Hoje ela funciona — sete cards de correção fecharam nesta semana — ma",
       "decisao": "",

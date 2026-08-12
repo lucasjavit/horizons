@@ -35,16 +35,14 @@ export function LineItemsEditor({
   onMove,
 }: LineItemsEditorProps) {
   return (
-    <section aria-labelledby="items-heading">
-      <h2 id="items-heading" className="text-lg font-semibold tracking-tight">
-        Items
-      </h2>
-
+    <section>
+      {/* O titulo vive no cabecalho do acordeao (bloco 3); repetir aqui
+          duplicaria "Items" na tela e na arvore de acessibilidade. */}
       {/* Cabecalho so visual: e aria-hidden porque nao rotula nada de forma
           programatica — cada input carrega o proprio label. */}
       <div
         aria-hidden
-        className={`mt-4 hidden gap-3 border-b pb-2 text-xs font-semibold uppercase tracking-wide sm:grid ${GRADE}`}
+        className={`hidden gap-3 border-b pb-2 text-xs font-semibold uppercase tracking-wide sm:grid ${GRADE}`}
         style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
       >
         <span>Description</span>
