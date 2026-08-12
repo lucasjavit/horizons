@@ -18,5 +18,75 @@ services:
       timeout: 5s
       retries: 5
 
+  # Aplica as migrations e roda o seed, depois encerra. A api so sobe quando
+  # este contêiner termina com sucesso. Usa o estagio de build da imagem do
+  # backend, que e o unico que tem o CLI do Prisma e o ts-node.
+  migrate:
+    build:
+      context: ./backend
+      target: build
+    container_name: horizons-migrate
+    environment:
+      DATABASE_URL: postgresql://horizons:horizons@db:5432/horizons?schema=public
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    build:
+      context: ./backend
+    container_name: horizons-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://horizons:horizons@db:5432/horizons?schema=public
+      PORT: 3333
+      # O front chama /api no mesmo host (nginx faz o proxy), entao nao ha
+      # requisicao cross-origin. A origem do dev server fica liberada para
+      # quem quiser rodar `npm run dev` contra este backend.
+      CORS_ORIGIN: http://localhost:5173
+      DEFAULT_USER_EMAIL: eu@horizons.local
+    ports:
+      - '3333:3333'
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://127.0.0.1:3333/api/tracks',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        # Caminho relativo: o nginx da propria imagem repassa /api para a api.
+        VITE_API_URL: /api
+    container_name: horizons-web
+    restart: unless-stopped
+    ports:
+      - '5173:80'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1/']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
 volumes:
   horizons_pgdata:
