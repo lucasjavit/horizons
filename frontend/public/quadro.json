@@ -20,7 +20,7 @@
   "sprint": {
     "titulo": "Sprint 01 · Invoice confiável",
     "objetivo": "fechar os achados do QA para a invoice poder ir ao ar sem ressalva.",
-    "periodo": "12/08/2026 até 26/08/2026",
+    "periodo": "12/08/2026 até 12/08/2026 (fechada no mesmo dia)",
     "arquivo": "sprints/01-invoice-confiavel.md"
   },
   "cards": [

@@ -122,6 +122,27 @@ corpo (75 aulas hoje, mediana 765).
 Nunca copie de algomaster.io nem do awesome-system-design-resources — esses
 entram só como `sourceUrl`, leitura complementar.
 
+## O quadro acompanha o trabalho
+
+**Mexeu no que o quadro descreve, atualize o quadro — na mesma leva, não
+depois.** Quadro que mente é pior que quadro nenhum, porque as decisões
+passam a se apoiar nele.
+
+O que isso significa na prática:
+
+- Terminou um card: `**Estado:** feito (dd/mm/aaaa)` no arquivo **e** a linha
+  movida para "Feito" no `KANBAN.md`. Marque os critérios de aceite com `[x]`.
+- Descobriu um bug ou uma necessidade nova: vira card em `docs/backlog/cards/`
+  antes de virar código, com o que foi medido e como reproduzir.
+- Card não deu certo, ou ficou pela metade: registre **o que foi tentado e por
+  que falhou**, com número quando houver. Isso vale mais que o card fechado —
+  evita que a próxima pessoa (ou você em duas semanas) tente o mesmo caminho.
+- Uma decisão de produto foi tomada: escreva no card, não só no chat.
+- Depois de qualquer mudança: `python3 scripts/kanban-html.py`, que regenera
+  o `index.html` e o `quadro.json` da aba Quadro.
+
+O markdown é a verdade; o HTML e o JSON são só apresentação.
+
 ## Verificar antes de dizer pronto
 
 O critério é o navegador, não o build. Suba os containers, abra a página,

@@ -1,74 +1,57 @@
 # Sprint 01 · Invoice confiável
 
-**De:** 12/08/2026 · **Até:** 26/08/2026
+**De:** 12/08/2026 · **Até:** 12/08/2026 (fechada no mesmo dia)
 **Objetivo:** fechar os achados do QA para a invoice poder ir ao ar sem
 ressalva.
 
-## Compromisso
+## Resultado
 
-| Card | Título | Tam. | Estado |
-| --- | --- | --- | --- |
-| [INV-03](../cards/INV-03-clique-repetido-gera-varios-pdfs.md) | Clique repetido gera vários PDFs | P | pronto para fazer |
-| [INV-01](../cards/INV-01-total-negativo.md) | Quantidade negativa gera total negativo | P | **espera decisão** |
-| [INV-02](../cards/INV-02-numero-grande-vira-zero.md) | Número grande vira $0.00 em silêncio | P | **espera decisão** |
+Objetivo atingido. Sete cards entregues — mais que os três do compromisso,
+porque o QA encontrou quatro bugs novos durante a revisão e todos couberam.
 
-Três cards pequenos, um só executor. É pouco de propósito: melhor terminar
-três do que começar oito.
+| Card | Título | Estado |
+| --- | --- | --- |
+| INV-01 | Quantidade e valor negativos | feito |
+| INV-02 | Teto de 1.000.000 por campo | feito |
+| INV-03 | Clique repetido gera vários PDFs | feito |
+| INV-04 | PDF com dados antigos ao editar durante a geração | feito |
+| INV-06 | Foco perdido ao baixar por teclado | feito |
+| INV-07 | Status preso em "Invoice downloaded." | feito |
+| INV-08 | Cadastro de empresa em modal + select | feito |
+| INV-05 | Retry sem F5 após falha de rede | **parado** |
 
-## Por que estes
+## O que não fechou, e por quê
 
-Aplicando a ordem de prioridade:
+**INV-05.** As duas saídas viáveis foram testadas e medidas:
 
-1. **Está quebrado?** Os três são achados reais do QA. Nenhum derruba a
-   aplicação, mas INV-01 e INV-02 produzem **número errado numa fatura que vai
-   para um cliente** — que é o pior tipo de erro que este produto pode ter.
-2. **Trava outra coisa?** Nenhum trava, mas todos travam a confiança: não dá
-   para divulgar um gerador de invoice que aceita total negativo.
-3. **Quanto vale?** A invoice é a porta de entrada global. Cada bug aqui é
-   visto por quem chegou pela primeira vez.
-4. **Quanto custa?** Os três são P. INV-03 é puramente técnico e pode começar
-   agora.
+- URL dinâmica no `import()` quebra o code splitting — o bundle principal vai
+  de 320 para 329 KB, com os 400 KB do jsPDF dentro.
+- `fetch` com `cache: 'reload'` antes de reimportar reaquece o cache HTTP mas
+  não apaga o registro de módulos do ESM, que guarda a rejeição para sempre.
+
+O que sobra é carregar o jsPDF fora do ESM — mudança grande para um bug que
+atinge só quem teve falha de rede. A mensagem já diz a verdade ("reload the
+page"). Parado de propósito.
+
+## O que esta sprint ensinou
+
+**A separação entre quem faz e quem testa pagou.** O `tech-lead` deu o INV-03
+como pronto tendo testado com cliques sintéticos no mesmo tick; o `qa` testou
+com cliques humanos espaçados e o bug voltou. A janela de bloqueio durava
+13ms — menos que o intervalo entre dois cliques do mesmo dedo.
+
+**O QA achou mais bugs do que o card original tinha.** Quatro achados novos
+durante a revisão de um card, incluindo o INV-04, que era mais grave que o
+bug sendo corrigido: a pessoa enviava ao cliente uma fatura com valor e moeda
+errados sem nada avisar.
+
+**Três correções falharam por eu confiar no build em vez do navegador**: ref
+lido durante a renderização (o `disabled` nunca chegava ao DOM), medição do
+elemento errado (`input.disabled` dentro de fieldset desabilitado), e a
+suposição de que o container servia build velho.
 
 ## Fora desta sprint
 
-**[INV-10](../cards/INV-10-clientes-salvos-e-historico.md)** — clientes salvos,
-histórico e duplicar. Motivo: depende de login de verdade, que não foi
-decidido. Hoje o `CurrentUserGuard` aceita qualquer `x-user-email` e nunca
-rejeita; não dá para guardar dado de cliente em cima disso.
-
-Além disso o card é G, e G quase sempre são vários cards disfarçados. Ele já
-traz a sugestão de quebra em quatro (login, clientes, histórico, duplicar) —
-essa quebra deve acontecer antes de entrar em qualquer sprint.
-
-## O que está travado
-
-**Duas decisões suas destravam dois dos três cards desta sprint.**
-
-### 1. Quantidade negativa: rejeitar ou virar desconto?
-
-Hoje quantidade `-5` produz total `-$500.00` e gera o PDF normalmente.
-
-- **Rejeitar** — mais simples, e uma fatura negativa não existe mesmo.
-- **Virar linha de desconto** — resolve um caso legítimo (crédito de mês
-  anterior, abatimento acordado) e é mais barato do que parece, porque
-  `parseAmountToCents` já trata o sinal. Custa a apresentação no PDF.
-
-### 2. Valor grande demais: avisar ou continuar zerando?
-
-Hoje valor acima do inteiro seguro vira `$0.00` sem dizer nada. Não quebra,
-mas some com o número que a pessoa digitou.
-
-- **Avisar** — o campo fica inválido dizendo que o valor é grande demais.
-- **Manter** — assumir que ninguém digita um trilhão numa invoice de verdade.
-
-Relacionado, e vale decidir junto: `1e9` na quantidade hoje é aceito como um
-bilhão. Provavelmente foi erro de digitação de quem queria `1`.
-
-## Andamento
-
-```
-Feito: nada ainda (sprint recém-aberta)
-Pronto para pegar: INV-03
-Travado: INV-01 e INV-02, esperando as duas decisões acima
-Fora: INV-10, precisa da decisão de login e de ser quebrado em quatro
-```
+**INV-10** — clientes salvos, histórico e duplicar. Trava no login, que não
+foi decidido, e é G demais: precisa ser quebrado em quatro antes de entrar em
+qualquer sprint.

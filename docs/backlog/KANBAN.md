@@ -9,8 +9,11 @@ umbrella).
 
 ---
 
-**Sprint atual:** [01 · Invoice confiável](sprints/01-invoice-confiavel.md)
-(12/08 – 26/08) — fechar os achados do QA para a invoice poder ir ao ar.
+**Nenhuma sprint aberta.** A [01 · Invoice confiável](sprints/01-invoice-confiavel.md)
+fechou em 12/08/2026 com sete cards entregues.
+
+A próxima depende de uma decisão: **o login**. Sem ele o INV-10 não começa, e
+ele é o único card que sobrou.
 
 ## Backlog
 
