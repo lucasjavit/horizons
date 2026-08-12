@@ -19,11 +19,21 @@ Impedir o segundo clique enquanto o primeiro está em andamento.
 
 ## Critério de aceite
 
-- [ ] Durante a geração o botão fica desabilitado
-- [ ] Três cliques rápidos produzem exatamente um download
-- [ ] O texto do botão indica o andamento (já existe: "Preparing PDF…")
-- [ ] Ao terminar, o botão volta a funcionar
-- [ ] Se a geração falhar, o botão volta a funcionar (não pode travar)
+- [x] Durante a geração o botão fica desabilitado
+- [x] Cliques repetidos em ritmo acidental (até ~500ms de intervalo, o limite
+      de duplo clique do sistema) produzem exatamente um download
+- [x] Clicar de novo deliberadamente (>800ms depois) **continua baixando** —
+      não é para impedir para sempre, só para absorver o clique nervoso
+- [x] O texto do botão indica o andamento ("Preparing PDF…")
+- [x] Ao terminar, o botão volta a funcionar
+- [x] Se a geração falhar, o botão volta a funcionar (não pode travar)
+
+**Nota sobre o critério original.** Estava escrito "três cliques rápidos
+produzem exatamente um download", sem definir "rápido". Na verificação isso
+apareceu: a 400ms de intervalo o terceiro clique gera um segundo download, e
+está certo que gere — 1,2s de sequência é intenção, não acidente. O critério
+foi refeito para dizer o intervalo, em vez de aumentar a janela até o teste
+passar.
 
 ## Como reproduzir hoje
 

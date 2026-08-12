@@ -20,24 +20,25 @@ umbrella).
 
 ## Pronto para fazer
 
-| Card | Título | Tam. |
-| --- | --- | --- |
-| [INV-03](cards/INV-03-clique-repetido-gera-varios-pdfs.md) | Clique repetido em baixar gera vários PDFs | P |
+| Card | Título | Tam. | Origem |
+| --- | --- | --- | --- |
+| [INV-05](cards/INV-05-retry-impossivel-apos-falha.md) | Após falha, "try again" nunca funciona | P | QA no INV-03 |
+| [INV-07](cards/INV-07-status-preso-em-baixado.md) | Status fica preso em "Invoice downloaded." | P | QA no INV-03 |
+| [INV-01](cards/INV-01-total-negativo.md) | Quantidade negativa gera total negativo | P | decidido: rejeitar |
+| [INV-02](cards/INV-02-numero-grande-vira-zero.md) | Número grande vira $0.00 em silêncio | P | decidido: teto de 1.000.000 |
+| [INV-06](cards/INV-06-foco-perdido-no-teclado.md) | Foco vai para o topo ao baixar por teclado | P | reavaliar após INV-03 |
 
 ## Esperando decisão
 
-Achados do QA adversarial de 12/08/2026. Nenhum quebra a aplicação, mas os
-dois produzem número errado numa fatura — precisam da sua decisão antes de
-virar código. As opções estão na [sprint 01](sprints/01-invoice-confiavel.md).
-
 | Card | Título | Tam. | Decisão pendente |
 | --- | --- | --- | --- |
-| [INV-01](cards/INV-01-total-negativo.md) | Quantidade negativa gera total negativo | P | rejeitar ou virar desconto? |
-| [INV-02](cards/INV-02-numero-grande-vira-zero.md) | Número grande vira $0.00 em silêncio | P | avisar ou continuar zerando? |
+| [INV-04](cards/INV-04-pdf-com-dados-antigos.md) | **PDF com dados antigos se editar durante a geração** | P | bloquear edição, avisar, ou regenerar? |
 
 ## Fazendo
 
-_(vazio)_
+| Card | Título | Tam. | Nota |
+| --- | --- | --- | --- |
+| [INV-03](cards/INV-03-clique-repetido-gera-varios-pdfs.md) | Clique repetido gera vários PDFs | P | 1ª tentativa reprovada pelo QA; em correção |
 
 ## Feito
 

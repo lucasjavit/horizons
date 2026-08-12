@@ -1,7 +1,9 @@
 # INV-01 · Quantidade negativa gera invoice com total negativo
 
-**Estado:** backlog
+**Estado:** pronto para fazer
 **Tamanho:** P
+**Decisão do stakeholder (12/08/2026):** rejeitar. Não permitir valor
+negativo — nem na quantidade, nem no valor unitário.
 
 ## Por quê
 
@@ -11,25 +13,18 @@ que é outra coisa. Hoje o gerador aceita e imprime no PDF sem avisar.
 
 ## O que
 
-Decidir o que fazer com quantidade ou valor negativo, e aplicar.
-
-Três saídas possíveis, para você escolher:
-
-1. **Rejeitar** — negativo é erro de validação, com mensagem no campo.
-2. **Aceitar como desconto** — permitir valor negativo, e o PDF mostra a linha
-   como desconto. Mais trabalho, mas resolve um caso legítimo (crédito de mês
-   anterior, abatimento acordado).
-3. **Aceitar em silêncio** — manter como está, assumindo que quem digitou
-   sabe o que quer.
+Rejeitar valor negativo, na quantidade e no valor unitário. A decisão foi
+tomada: linha de desconto ficou de fora por ora — se aparecer a necessidade
+real, vira card próprio.
 
 ## Critério de aceite
 
-Depende da escolha acima. Para a opção 1:
-
 - [ ] Quantidade negativa marca o campo como inválido, com mensagem
-- [ ] Valor negativo idem
+- [ ] Valor unitário negativo idem
 - [ ] O botão de baixar não gera PDF enquanto houver linha negativa
 - [ ] O erro segue o padrão da casa: borda + `aria-invalid` + texto
+- [ ] O erro aparece no blur, não enquanto a pessoa digita pela primeira vez
+      (é o padrão do formulário)
 
 ## Como reproduzir hoje
 

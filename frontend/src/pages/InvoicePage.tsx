@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { SelectField, TextAreaField, TextField } from '../components/invoice/Field'
@@ -11,6 +11,19 @@ import { dueDateWarning, validateDraft } from '../invoice/validate'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 type EstadoPdf = 'ocioso' | 'gerando' | 'pronto' | 'erro'
+
+/**
+ * Quanto tempo o formulario fica bloqueado ao gerar o PDF.
+ *
+ * Nao e enfeite: a geracao real leva de 13ms (jsPDF ja carregado) a 63ms
+ * (primeira vez, baixando o chunk). Bloquear so durante isso e inutil —
+ * o botao reabre entre dois cliques do mesmo dedo, e a pessoa consegue
+ * editar um campo no meio e receber um PDF com os dados de antes.
+ *
+ * 600ms e curto o bastante para nao irritar e longo o bastante para o olho
+ * registrar que algo aconteceu.
+ */
+const MIN_BLOQUEIO_MS = 600
 
 /**
  * Chave de erro -> id do input, para levar o foco ao primeiro campo
@@ -41,6 +54,24 @@ export function InvoicePage() {
   const [erroPdf, setErroPdf] = useState<string | null>(null)
   const [confirmandoLimpeza, setConfirmandoLimpeza] = useState(false)
 
+  // Trava sincrona da geracao. Parece redundante com `estadoPdf === 'gerando'`
+  // no `disabled` do botao, mas nao e: `setEstadoPdf` e assincrono, entao uma
+  // rajada de cliques no mesmo tick do event loop entra em `baixar` tres vezes
+  // antes de o React re-renderizar o `disabled` uma unica vez. O ref muda no
+  // ato e barra o segundo clique; o `disabled` e o que a pessoa ve.
+  const gerando = useRef(false)
+
+  // Enquanto gera, o formulario inteiro fica somente leitura: editar no meio
+  // produziria um PDF com os dados capturados no clique, sem nada avisando.
+  //
+  // Precisa ser estado, e nao o ref: mudar um ref nao re-renderiza, entao o
+  // `disabled` nunca chegaria ao DOM. O ref decide (sincrono, no clique);
+  // este estado mostra.
+  //
+  // Tambem nao pode ser `estadoPdf === 'gerando'`: o estado vira 'pronto'
+  // assim que o arquivo sai, e a trava so cai depois de MIN_BLOQUEIO_MS.
+  const [bloqueado, setBloqueado] = useState(false)
+
   const erros = useMemo(() => validateDraft(draft), [draft])
   const aviso = useMemo(() => dueDateWarning(draft), [draft])
   const total = useMemo(() => invoiceTotalCents(draft), [draft])
@@ -57,6 +88,9 @@ export function InvoicePage() {
   )
 
   const baixar = useCallback(async () => {
+    // Antes de tudo: se ja ha uma geracao em andamento, o clique nao existe.
+    if (gerando.current) return
+
     setEnviado(true)
     setErroPdf(null)
 
@@ -76,7 +110,13 @@ export function InvoicePage() {
       return
     }
 
+    // So marca a trava depois da validacao: formulario invalido nao inicia
+    // geracao nenhuma e o botao continua clicavel, como manda o padrao da
+    // casa (recusa silenciosa e pior que erro explicado).
+    gerando.current = true
+    setBloqueado(true)
     setEstadoPdf('gerando')
+    const comecou = performance.now()
     try {
       const blob = await generateInvoicePdf(draft)
       const url = URL.createObjectURL(blob)
@@ -91,6 +131,21 @@ export function InvoicePage() {
     } catch {
       setEstadoPdf('erro')
       setErroPdf('Could not generate the PDF. Please try again.')
+    } finally {
+      // Segura a trava por um tempo minimo. Sem isso ela nao serve para nada:
+      // a geracao leva 13ms com o jsPDF ja carregado, entao o botao fecha e
+      // reabre entre dois cliques do mesmo dedo — medido, tres cliques a cada
+      // 150ms davam tres PDFs.
+      //
+      // O tempo tambem sustenta o bloqueio dos campos: um piscar de 13ms nao
+      // seria percebido, e a pessoa poderia editar no meio da geracao e
+      // receber um PDF com os dados antigos.
+      const passou = performance.now() - comecou
+      const resta = Math.max(0, MIN_BLOQUEIO_MS - passou)
+      window.setTimeout(() => {
+        gerando.current = false
+        setBloqueado(false)
+      }, resta)
     }
   }, [draft, erros])
 
@@ -110,7 +165,14 @@ export function InvoicePage() {
         </p>
       </header>
 
-      <div className="flex flex-col gap-10">
+      {/* fieldset em vez de `disabled` campo a campo: um atributo so cobre
+          todos os inputs, inclusive os das linhas, que sao dinamicos.
+          `min-w-0` porque fieldset tem largura minima automatica que quebra
+          grid. */}
+      <fieldset
+        disabled={bloqueado}
+        className="flex min-w-0 flex-col gap-10 border-0 p-0"
+      >
         <section aria-labelledby="details-heading">
           <h2 id="details-heading" className="text-lg font-semibold tracking-tight">
             Invoice details
@@ -276,21 +338,39 @@ export function InvoicePage() {
             placeholder="Payment due within 30 days."
           />
         </div>
+      </fieldset>
 
+      {/* Fora do fieldset: os botoes precisam continuar respondendo para o
+          rotulo de progresso aparecer e o Clear seguir alcancavel. */}
+      <div className="flex flex-col gap-10">
         <div
-          className="flex flex-wrap items-center gap-3 border-t pt-6"
+          className="mt-10 flex flex-wrap items-center gap-3 border-t pt-6"
           style={{ borderColor: 'var(--border)' }}
         >
           {/* Fica habilitado mesmo invalido, validando no clique: botao
               desabilitado nao recebe foco e nao explica por que nada
-              acontece. */}
+              acontece.
+
+              Desabilitar durante a geracao e outro caso, nao a excecao dessa
+              regra: e bloqueio momentaneo de uma operacao em andamento, com o
+              proprio rotulo dizendo o que esta acontecendo — nao recusa
+              silenciosa. O aria-busy conta a mesma coisa a quem nao ve o
+              rotulo mudar.
+
+              opacity-90, e nao o 40 dos botoes de linha: este botao carrega o
+              unico texto de progresso da tela. Apagar o recado que a pessoa
+              precisa ler custa contraste (a 0,7 o texto cai para ~3,3:1, sob
+              o minimo de AA) sem ganhar nada — a troca de rotulo ja sinaliza
+              o bloqueio. */}
           <button
             type="button"
             onClick={() => void baixar()}
-            className="rounded-md px-5 py-2.5 text-sm font-semibold"
+            disabled={bloqueado}
+            aria-busy={bloqueado}
+            className="rounded-md px-5 py-2.5 text-sm font-semibold disabled:opacity-90"
             style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
           >
-            {estadoPdf === 'gerando' ? 'Preparing PDF…' : 'Download PDF'}
+            {bloqueado ? 'Preparing PDF…' : 'Download PDF'}
           </button>
 
           {!confirmandoLimpeza ? (
