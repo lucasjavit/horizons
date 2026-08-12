@@ -8,4 +8,8 @@ export default defineConfig({
   datasource: {
     url: env('DATABASE_URL'),
   },
+  // Prisma 7: o seed vive aqui, nao mais no bloco "prisma" do package.json.
+  migrations: {
+    seed: 'ts-node --compiler-options {"module":"CommonJS"} prisma/seed.ts',
+  },
 })
