@@ -69,6 +69,10 @@ export function invoiceTotalCents(draft: InvoiceDraft): number {
  * - `fetch(url, {cache:'reload'})` antes de reimportar reaquece o cache HTTP
  *   mas nao apaga o registro de modulos do ESM, que guarda a rejeicao para
  *   sempre. Medido: continua sem gerar o PDF.
+ * - `<script type="module">` injetado usa o MESMO registro de modulos, entao
+ *   herda a rejeicao. Nao e via alternativa, e a mesma via com outra sintaxe.
+ * - Blob URL nao resolve o import relativo interno do chunk
+ *   (`Failed to resolve module specifier "./index-*.js"`).
  *
  * Por isso a mensagem de erro pede para recarregar a pagina, que e o que de
  * fato funciona. Trocar o carregamento sob demanda — que protege todo mundo

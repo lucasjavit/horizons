@@ -75,8 +75,8 @@
     {
       "id": "INV-05",
       "titulo": "Depois de uma falha, \"Please try again\" nunca funciona",
-      "estado": "parcial — mensagem corrigida, retry ainda exige F5",
-      "coluna": "pronto",
+      "estado": "fechado como nao-viavel (12/08/2026) — mensagem corrigida",
+      "coluna": "backlog",
       "tamanho": "P",
       "porque": "Achado do QA em 12/08/2026, durante a revisão do INV-03. A mensagem de erro instrui a pessoa a fazer exatamente o que não pode dar certo: clicar de novo nunca funciona, por mais que a rede tenha voltado. Só recarregar a ",
       "decisao": "",

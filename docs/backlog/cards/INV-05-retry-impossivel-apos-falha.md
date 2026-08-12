@@ -1,6 +1,6 @@
 # INV-05 · Depois de uma falha, "Please try again" nunca funciona
 
-**Estado:** parcial — mensagem corrigida, retry ainda exige F5
+**Estado:** fechado como nao-viavel (12/08/2026) — mensagem corrigida
 **Tamanho:** P
 
 ## Por quê
@@ -89,3 +89,43 @@ raciocinio ficou registrado no comentario de `pdf.ts`.
 **O que sobra:** carregar o jsPDF por outro caminho que nao o `import()` do
 ESM (por exemplo injetando um `<script>`), o que e uma mudanca grande para um
 bug que atinge so quem teve falha de rede. Fica parado de proposito.
+
+
+## Terceira e quarta tentativas (12/08/2026) — encerrado
+
+Testei as duas ultimas saidas que restavam, cada uma numa aba com o chunk
+bloqueado, falha provocada e rede liberada em seguida:
+
+**`<script type="module">` injetado.** Falhou. Um script de modulo usa o
+**mesmo registro de modulos** que o `import()`, entao herda a rejeicao
+cacheada. Nao e via alternativa nenhuma — e a mesma via com outra sintaxe.
+
+**Blob URL.** Falhou, e o erro explica o porque de forma definitiva:
+
+```
+Failed to resolve module specifier "./index-CA1LRIvg.js"
+```
+
+O chunk do jsPDF importa outro chunk por **caminho relativo**. Um blob nao
+tem caminho base, entao a resolucao quebra. Reescrever o import interno seria
+mexer no artefato de build — fragil e sem garantia entre versoes.
+
+## Conclusao
+
+**Quatro caminhos testados, quatro fechados com motivo medido:**
+
+| Caminho | Por que falhou |
+| --- | --- |
+| URL dinamica no `import()` | Vite para de separar o chunk: 320 → 329 KB |
+| `fetch` com `cache:'reload'` | Reaquece o cache HTTP, nao o registro do ESM |
+| `<script type="module">` | Mesmo registro de modulos, mesma rejeicao |
+| Blob URL | Import relativo interno nao resolve sem caminho base |
+
+O que sobraria e abandonar o code splitting do Vite para o jsPDF e servi-lo
+como script classico (nao-modulo) — o que significa 400 KB fora do sistema de
+build, sem versionamento por hash e sem tree-shaking. Custo alto demais para
+um bug que atinge quem teve falha de rede no momento exato do download.
+
+**Fechado.** O que foi entregue: a mensagem diz a verdade ("Please reload the
+page and try again") em vez de instruir a fazer o que nao funciona. Se algum
+dia o carregamento do jsPDF mudar por outro motivo, vale reavaliar.
