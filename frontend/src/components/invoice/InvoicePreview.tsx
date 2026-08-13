@@ -121,6 +121,10 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
 
       {pagamento.length > 0 && (
         <div className="mt-7">
+          {/* Mesmo fio do cabecalho: separa as partes dos dados de pagamento
+              sem pesar. Dourado so como linha — sobre branco ele da ~2,2:1 e
+              nao serve para texto. */}
+          <div style={{ height: 1, background: DOURADO, marginBottom: '1.25rem' }} />
           <p
             className="mb-2 text-[0.62rem] font-bold uppercase tracking-widest"
             style={{ color: APAGADO, margin: 0 }}

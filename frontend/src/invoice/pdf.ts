@@ -335,12 +335,19 @@ function desenharPagamento(
   if (linhas.length === 0 && !livre) return yInicial
 
   const direita = largura - MARGEM
+
+  // Mesmo fio dourado do cabecalho, separando as partes do pagamento.
+  doc.setDrawColor(...GOLD)
+  doc.setLineWidth(0.4)
+  doc.line(MARGEM, yInicial, direita, yInicial)
+
+  const yTitulo = yInicial + 6
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8)
   doc.setTextColor(...MUTED)
-  doc.text('PAYMENT DETAILS', MARGEM, yInicial)
+  doc.text('PAYMENT DETAILS', MARGEM, yTitulo)
 
-  let y = yInicial + 5
+  let y = yTitulo + 5
   doc.setFontSize(9)
   for (const c of linhas) {
     doc.setFont('helvetica', 'normal')

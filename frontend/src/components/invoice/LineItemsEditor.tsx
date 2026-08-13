@@ -4,6 +4,7 @@ import {
   lineAmountCents,
   parseAmountToCents,
   parseQuantity,
+  somenteNumero,
 } from '../../invoice/money'
 import type { CurrencyCode, LineItem } from '../../invoice/types'
 import { WARN_INK } from '../blocks/BlockRenderer'
@@ -166,7 +167,9 @@ function LineItemRow({
           type="text"
           inputMode="decimal"
           value={item.quantity}
-          onChange={(e) => onChange(item.id, 'quantity', e.target.value)}
+          onChange={(e) =>
+            onChange(item.id, 'quantity', somenteNumero(e.target.value))
+          }
           aria-invalid={erroQtd ? true : undefined}
           aria-describedby={erroQtd ? `${idQtd}-error` : undefined}
           className="w-full rounded-md border px-3 py-2 text-sm tabular-nums"
@@ -197,7 +200,9 @@ function LineItemRow({
           type="text"
           inputMode="decimal"
           value={item.rate}
-          onChange={(e) => onChange(item.id, 'rate', e.target.value)}
+          onChange={(e) =>
+            onChange(item.id, 'rate', somenteNumero(e.target.value))
+          }
           placeholder="0.00"
           aria-invalid={erroRate ? true : undefined}
           aria-describedby={erroRate ? `${idRate}-error` : undefined}

@@ -65,6 +65,27 @@ function normalizarSeparadores(s: string, moeda?: string): string {
 }
 
 /**
+ * Filtra o que a pessoa digita num campo numerico.
+ *
+ * Aplicado no `onChange`, entao a letra nem chega a aparecer — melhor que
+ * aceitar e reclamar depois. Mantem digito, um separador decimal e o sinal:
+ * rejeitar negativo e trabalho da validacao, nao da digitacao.
+ *
+ * Nao normaliza nem completa: `3.` e `0,` continuam existindo enquanto a
+ * pessoa esta no meio de digitar. Quem interpreta e o parse.
+ */
+export function somenteNumero(raw: string): string {
+  let saida = ''
+  for (const c of raw) {
+    if (c >= '0' && c <= '9') saida += c
+    else if ((c === '.' || c === ',') && !/[.,]/.test(saida)) saida += c
+    else if (c === '-' && saida === '') saida += c
+  }
+  return saida
+}
+
+
+/**
  * Le um valor digitado e devolve centavos inteiros, ou null se invalido.
  *
  * Baseado em string de proposito. O caminho obvio — `Math.round(n * 100)` —

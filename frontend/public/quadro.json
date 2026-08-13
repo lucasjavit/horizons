@@ -191,6 +191,18 @@
       "bloqueio": "",
       "feitos": 10,
       "total": 10
+    },
+    {
+      "id": "INV-15",
+      "titulo": "Campo numérico aceitava letra",
+      "estado": "feito (13/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "Os campos de Hours e Rate são type=\"text\" inputMode=\"decimal\" — decisão deliberada do INV-01, porque type=\"number\" descarta entrada inválida em silêncio, muda de valor com a roda do mouse e tem setinhas de alvo minúsculo",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
     }
   ]
 }
