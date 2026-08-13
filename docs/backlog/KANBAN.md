@@ -37,6 +37,7 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [JOB-01](cards/JOB-01-provar-o-firecrawl.md) | Firecrawl provado — viável, e o prompt é o que decide | 13/08/2026 |
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos e histórico — **substituído** pelo PLT-02 e INV-14 | 13/08/2026 |
 | [PLT-01](cards/PLT-01-tokens-de-api.md) | Tela de configurações com tokens de API, cifrados | 13/08/2026 |
 | [INV-16](cards/INV-16-logo-da-empresa.md) | Logo da empresa, com opção preto e branco | 13/08/2026 |

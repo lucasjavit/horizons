@@ -219,13 +219,13 @@
     {
       "id": "JOB-01",
       "titulo": "Provar o Firecrawl antes de construir tela",
-      "estado": "pronto para fazer",
-      "coluna": "pronto",
+      "estado": "feito (13/08/2026)",
+      "coluna": "feito",
       "tamanho": "P",
       "porque": "É onde mora o risco da feature inteira. O tech-lead executou o Firecrawl na reunião de planejamento e o resultado foi pior que a lentidão:",
       "decisao": "",
       "bloqueio": "",
-      "feitos": 0,
+      "feitos": 4,
       "total": 4
     },
     {
