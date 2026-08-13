@@ -32,6 +32,8 @@ export interface UseInvoiceDraft {
   addPayment: () => void
   removePayment: (id: string) => void
   reset: () => void
+  /** Carrega uma invoice inteira, vinda do historico. */
+  load: (novo: InvoiceDraft) => void
 }
 
 export function useInvoiceDraft(): UseInvoiceDraft {
@@ -171,6 +173,17 @@ export function useInvoiceDraft(): UseInvoiceDraft {
     [alterar],
   )
 
+  const load = useCallback((novo: InvoiceDraft) => {
+    if (timer.current) clearTimeout(timer.current)
+    // Copia profunda: sem isso, editar o formulario mexeria no registro do
+    // historico, e a invoice "original" deixaria de estar intacta.
+    const copia = JSON.parse(JSON.stringify(novo)) as InvoiceDraft
+    draftRef.current = copia
+    setDraft(copia)
+    saveDraft(copia)
+    setSalvo(true)
+  }, [])
+
   const reset = useCallback(() => {
     if (timer.current) clearTimeout(timer.current)
     const limpo = emptyDraft()
@@ -196,5 +209,6 @@ export function useInvoiceDraft(): UseInvoiceDraft {
     addPayment,
     removePayment,
     reset,
+    load,
   }
 }

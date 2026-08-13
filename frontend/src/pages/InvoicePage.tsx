@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { SelectField, TextAreaField, TextField } from '../components/invoice/Field'
 import { Hint } from '../components/invoice/Hint'
+import { InvoiceHistory } from '../components/invoice/InvoiceHistory'
 import { InvoicePreview } from '../components/invoice/InvoicePreview'
 import { IssuerFields } from '../components/invoice/IssuerFields'
 import { LineItemsEditor } from '../components/invoice/LineItemsEditor'
@@ -11,6 +12,8 @@ import { PaymentFieldsEditor } from '../components/invoice/PaymentFieldsEditor'
 import type { Company } from '../invoice/companies'
 import { loadCompanies, saveCompanies } from '../invoice/companies'
 import { CURRENCIES, isCurrencyCode } from '../invoice/currencies'
+import type { HistoryEntry } from '../invoice/history'
+import { loadHistory, recordDownload, removeFromHistory } from '../invoice/history'
 import { formatCents } from '../invoice/money'
 import { generateInvoicePdf, invoiceTotalCents } from '../invoice/pdf'
 import { useInvoiceDraft } from '../invoice/useInvoiceDraft'
@@ -87,6 +90,9 @@ export function InvoicePage() {
 
   // Um bloco aberto por vez. Comeca no 1: e onde a pessoa comeca a preencher.
   const [aberto, setAberto] = useState<number | null>(1)
+
+  // Invoices ja baixadas, guardadas neste navegador.
+  const [historico, setHistorico] = useState<HistoryEntry[]>(() => loadHistory())
 
   // Empresas emissoras salvas. Ficam fora do rascunho de propósito: valem
   // para todas as invoices, e nao so para a que esta sendo escrita.
@@ -194,6 +200,9 @@ export function InvoicePage() {
       a.href = url
       a.download = `invoice-${draft.invoiceNumber.trim() || 'draft'}.pdf`
       a.click()
+      // Entra no historico no momento em que deixa de ser rascunho e vira
+      // documento. Conteudo identico ao de um registro existente nao duplica.
+      setHistorico(recordDownload(draft))
       // Revoga depois: revogar antes do clique ser processado cancela o
       // download em alguns navegadores.
       setTimeout(() => URL.revokeObjectURL(url), 1000)
@@ -593,6 +602,18 @@ export function InvoicePage() {
           <p className="mt-4 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
             The downloaded PDF is the final version.
           </p>
+          <InvoiceHistory
+            entries={historico}
+            onOpen={(e) => {
+              inv.load(e.draft)
+              setTocados({})
+              setEnviado(false)
+              setEstadoPdf('ocioso')
+              setAberto(4)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+            onRemove={(id) => setHistorico(removeFromHistory(id))}
+          />
         </aside>
       </div>
     </main>

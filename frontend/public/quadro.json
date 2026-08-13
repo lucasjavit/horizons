@@ -179,6 +179,18 @@
       "bloqueio": "",
       "feitos": 8,
       "total": 8
+    },
+    {
+      "id": "INV-14",
+      "titulo": "Histórico de invoices no navegador",
+      "estado": "feito (13/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "A pergunta corrigiu um erro meu. Ao responder sobre histórico (INV-10), eu apresentei como se fosse ou local ou com login — e isso é falso. As duas coisas coexistem, e o local já funciona: rascunho e empresas salvas usam",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 10,
+      "total": 10
     }
   ]
 }
