@@ -153,40 +153,135 @@ body {
 
 <header class="topo">
   <h1><span>Horizons</span> · quadro</h1>
-  <p class="resumo">17 cards · 16 feitos</p>
+  <p class="resumo">24 cards · 17 feitos</p>
 </header>
 
   <aside class="sprint">
     <p class="rotulo">Sprint atual</p>
-    <h2><a href="sprints/01-invoice-confiavel.md">Sprint 01 · Invoice confiável</a></h2>
-    <p class="objetivo">fechar os achados do QA para a invoice poder ir ao ar sem ressalva.</p>
+    <h2><a href="sprints/02-achar-vaga.md">Sprint 02 · Achar vaga</a></h2>
+    <p class="objetivo">dar dono às contas e fazer a busca de vagas rodar sozinha.</p>
   </aside>
 <main class="quadro">
     <section class="coluna col-backlog" aria-labelledby="col-backlog">
-      <h2 id="col-backlog">Backlog <span class="n">1</span></h2>
+      <h2 id="col-backlog">Backlog <span class="n">4</span></h2>
       <ul>
       <li class="cartao">
-        <a href="cards/INV-10-clientes-salvos-e-historico.md">
+        <a href="cards/JOB-02-perfil-de-busca.md">
           <div class="cabeca">
-            <span class="ident">INV-10</span>
-            <span class="tam" title="Tamanho">G</span>
+            <span class="ident">JOB-02</span>
+            <span class="tam" title="Tamanho">M</span>
           </div>
-          <h3>Clientes salvos, histórico e duplicar do mês passado</h3>
-          <p class="porque">Hoje o gerador é anônimo e roda inteiro no navegador. Isso foi decisão deliberada: quem chega do Google gera o PDF sem cadastro, e o login vira consequência do valor entr</p>
-          <p class="bloqueio">Depende de: Login de verdade. Hoje o CurrentUserGuard é um stub que lê</p>
+          <h3>Perfil de busca e agrupamento</h3>
+          <p class="porque">Sem perfil não há o que buscar. É o que a pessoa cadastra uma vez, e o que o job de 50 minutos lê para saber o que procurar.</p>
+          <p class="bloqueio">Depende de: PLT-02 (perfil precisa de dono)</p>
         <div class="progresso" role="img"
-             aria-label="0 de 13 critérios atendidos">
+             aria-label="0 de 6 critérios atendidos">
           <div class="barra"><span style="width:0%"></span></div>
-          <span class="conta">0/13</span>
+          <span class="conta">0/6</span>
+        </div>
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-03-busca-em-segundo-plano.md">
+          <div class="cabeca">
+            <span class="ident">JOB-03</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>A busca roda sozinha a cada 50 minutos</h3>
+          <p class="porque">É o motor da feature, e é o que resolve o problema que quase a matou.</p>
+          <p class="bloqueio">Depende de: JOB-01 (saber se sobra vaga aproveitável)</p>
+        <div class="progresso" role="img"
+             aria-label="0 de 7 critérios atendidos">
+          <div class="barra"><span style="width:0%"></span></div>
+          <span class="conta">0/7</span>
+        </div>
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-04-tela-de-vagas.md">
+          <div class="cabeca">
+            <span class="ident">JOB-04</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>A tela das vagas encontradas</h3>
+          <p class="porque">O valor da feature não é &quot;buscar vagas&quot; — é não ler as 40 que não serviam. A tela é onde isso se prova ou se perde.</p>
+          <p class="bloqueio">Depende de: JOB-03 (ter vaga para mostrar)</p>
+        <div class="progresso" role="img"
+             aria-label="0 de 8 critérios atendidos">
+          <div class="barra"><span style="width:0%"></span></div>
+          <span class="conta">0/8</span>
+        </div>
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-05-salvar-vaga.md">
+          <div class="cabeca">
+            <span class="ident">JOB-05</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Salvar vaga</h3>
+          <p class="porque"></p>
+          <p class="bloqueio">Depende de: JOB-04 (a tela)</p>
+        <div class="progresso" role="img"
+             aria-label="0 de 5 critérios atendidos">
+          <div class="barra"><span style="width:0%"></span></div>
+          <span class="conta">0/5</span>
         </div>
         </a>
       </li>
       </ul>
     </section>
     <section class="coluna col-pronto" aria-labelledby="col-pronto">
-      <h2 id="col-pronto">Pronto para fazer <span class="n">0</span></h2>
+      <h2 id="col-pronto">Pronto para fazer <span class="n">3</span></h2>
       <ul>
-      <li class="vazio">Nada aqui.</li>
+      <li class="cartao">
+        <a href="cards/JOB-01-provar-o-firecrawl.md">
+          <div class="cabeca">
+            <span class="ident">JOB-01</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Provar o Firecrawl antes de construir tela</h3>
+          <p class="porque">É onde mora o risco da feature inteira. O tech-lead executou o Firecrawl na reunião de planejamento e o resultado foi pior que a lentidão:</p>
+          
+        <div class="progresso" role="img"
+             aria-label="0 de 4 critérios atendidos">
+          <div class="barra"><span style="width:0%"></span></div>
+          <span class="conta">0/4</span>
+        </div>
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/PLT-02-login-com-google.md">
+          <div class="cabeca">
+            <span class="ident">PLT-02</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>Login com Google</h3>
+          <p class="porque">É a decisão que trava o projeto desde o começo. O CurrentUserGuard lê x-user-email, cria a conta se não existir e nunca rejeita — qualquer um vira qualquer um mandando um</p>
+          <p class="bloqueio">Depende de: Conta no Google Cloud com OAuth client configurado (GOOGLE_CLIENT_ID)</p>
+        <div class="progresso" role="img"
+             aria-label="0 de 7 critérios atendidos">
+          <div class="barra"><span style="width:0%"></span></div>
+          <span class="conta">0/7</span>
+        </div>
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/PLT-03-migrar-contas-existentes.md">
+          <div class="cabeca">
+            <span class="ident">PLT-03</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Migrar as contas criadas pelo guard antigo</h3>
+          <p class="porque">O CurrentUserGuard cria conta a partir do header x-user-email. Já existem contas assim, e elas carregam dado real:</p>
+          <p class="bloqueio">Depende de: PLT-02 (o login em si)</p>
+        <div class="progresso" role="img"
+             aria-label="0 de 4 critérios atendidos">
+          <div class="barra"><span style="width:0%"></span></div>
+          <span class="conta">0/4</span>
+        </div>
+        </a>
+      </li>
       </ul>
     </section>
     <section class="coluna col-fazendo" aria-labelledby="col-fazendo">
@@ -196,7 +291,7 @@ body {
       </ul>
     </section>
     <section class="coluna col-feito" aria-labelledby="col-feito">
-      <h2 id="col-feito">Feito <span class="n">16</span></h2>
+      <h2 id="col-feito">Feito <span class="n">17</span></h2>
       <ul>
       <li class="cartao">
         <a href="cards/INV-01-total-negativo.md">
@@ -315,6 +410,17 @@ body {
           <h3>Redesenhar a tela do gerador de invoice</h3>
           <p class="porque">A invoice é a porta de entrada global do Horizons: quem chega buscando &quot;invoice generator&quot; no Google encontra esta tela antes de qualquer outra coisa. Hoje ela funciona —</p>
           
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-10-clientes-salvos-e-historico.md">
+          <div class="cabeca">
+            <span class="ident">INV-10</span>
+            <span class="tam" title="Tamanho">G</span>
+          </div>
+          <h3>Clientes salvos, histórico e duplicar do mês passado</h3>
+          <p class="porque">Hoje o gerador é anônimo e roda inteiro no navegador. Isso foi decisão deliberada: quem chega do Google gera o PDF sem cadastro, e o login vira consequência do valor entr</p>
+          <p class="bloqueio">Depende de: Login de verdade. Hoje o CurrentUserGuard é um stub que lê</p>
         </a>
       </li>
       <li class="cartao">

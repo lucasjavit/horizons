@@ -18,10 +18,10 @@
     }
   ],
   "sprint": {
-    "titulo": "Sprint 01 · Invoice confiável",
-    "objetivo": "fechar os achados do QA para a invoice poder ir ao ar sem ressalva.",
-    "periodo": "12/08/2026 até 12/08/2026 (fechada no mesmo dia)",
-    "arquivo": "sprints/01-invoice-confiavel.md"
+    "titulo": "Sprint 02 · Achar vaga",
+    "objetivo": "dar dono às contas e fazer a busca de vagas rodar sozinha.",
+    "periodo": "13/08/2026 até 27/08/2026",
+    "arquivo": "sprints/02-achar-vaga.md"
   },
   "cards": [
     {
@@ -135,8 +135,8 @@
     {
       "id": "INV-10",
       "titulo": "Clientes salvos, histórico e duplicar do mês passado",
-      "estado": "bloqueado — espera a decisão de login",
-      "coluna": "backlog",
+      "estado": "substituído (13/08/2026) — ver observação no fim",
+      "coluna": "feito",
       "tamanho": "G",
       "porque": "Hoje o gerador é anônimo e roda inteiro no navegador. Isso foi decisão deliberada: quem chega do Google gera o PDF sem cadastro, e o login vira consequência do valor entregue, não pedágio.",
       "decisao": "",
@@ -217,6 +217,66 @@
       "total": 7
     },
     {
+      "id": "JOB-01",
+      "titulo": "Provar o Firecrawl antes de construir tela",
+      "estado": "pronto para fazer",
+      "coluna": "pronto",
+      "tamanho": "P",
+      "porque": "É onde mora o risco da feature inteira. O tech-lead executou o Firecrawl na reunião de planejamento e o resultado foi pior que a lentidão:",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 4
+    },
+    {
+      "id": "JOB-02",
+      "titulo": "Perfil de busca e agrupamento",
+      "estado": "backlog",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "Sem perfil não há o que buscar. É o que a pessoa cadastra uma vez, e o que o job de 50 minutos lê para saber o que procurar.",
+      "decisao": "",
+      "bloqueio": "PLT-02 (perfil precisa de dono)",
+      "feitos": 0,
+      "total": 6
+    },
+    {
+      "id": "JOB-03",
+      "titulo": "A busca roda sozinha a cada 50 minutos",
+      "estado": "backlog",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "É o motor da feature, e é o que resolve o problema que quase a matou.",
+      "decisao": "",
+      "bloqueio": "JOB-01 (saber se sobra vaga aproveitável)",
+      "feitos": 0,
+      "total": 7
+    },
+    {
+      "id": "JOB-04",
+      "titulo": "A tela das vagas encontradas",
+      "estado": "backlog",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "O valor da feature não é \"buscar vagas\" — é não ler as 40 que não serviam. A tela é onde isso se prova ou se perde.",
+      "decisao": "",
+      "bloqueio": "JOB-03 (ter vaga para mostrar)",
+      "feitos": 0,
+      "total": 8
+    },
+    {
+      "id": "JOB-05",
+      "titulo": "Salvar vaga",
+      "estado": "backlog",
+      "coluna": "backlog",
+      "tamanho": "P",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "JOB-04 (a tela)",
+      "feitos": 0,
+      "total": 5
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",
@@ -227,6 +287,30 @@
       "bloqueio": "",
       "feitos": 8,
       "total": 8
+    },
+    {
+      "id": "PLT-02",
+      "titulo": "Login com Google",
+      "estado": "pronto para fazer",
+      "coluna": "pronto",
+      "tamanho": "M",
+      "porque": "É a decisão que trava o projeto desde o começo. O CurrentUserGuard lê x-user-email, cria a conta se não existir e nunca rejeita — qualquer um vira qualquer um mandando um header.",
+      "decisao": "",
+      "bloqueio": "Conta no Google Cloud com OAuth client configurado (GOOGLE_CLIENT_ID)",
+      "feitos": 0,
+      "total": 7
+    },
+    {
+      "id": "PLT-03",
+      "titulo": "Migrar as contas criadas pelo guard antigo",
+      "estado": "pronto para fazer",
+      "coluna": "pronto",
+      "tamanho": "P",
+      "porque": "O CurrentUserGuard cria conta a partir do header x-user-email. Já existem contas assim, e elas carregam dado real:",
+      "decisao": "",
+      "bloqueio": "PLT-02 (o login em si)",
+      "feitos": 0,
+      "total": 4
     }
   ]
 }

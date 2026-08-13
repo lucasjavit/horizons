@@ -9,11 +9,11 @@ umbrella).
 
 ---
 
-**Nenhuma sprint aberta.** A [01 · Invoice confiável](sprints/01-invoice-confiavel.md)
-fechou em 12/08/2026 com sete cards entregues.
+**Sprint atual:** [02 · Achar vaga](sprints/02-achar-vaga.md) (13/08 – 27/08)
+— dar dono às contas e fazer a busca de vagas rodar sozinha.
 
-A próxima depende de uma decisão: **o login**. Sem ele o INV-10 não começa, e
-ele é o único card que sobrou.
+A decisão do login **saiu**: Google Sign-In, portado do arguição. É o que
+destrava o resto.
 
 ## Backlog
 
@@ -37,6 +37,7 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos e histórico — **substituído** pelo PLT-02 e INV-14 | 13/08/2026 |
 | [PLT-01](cards/PLT-01-tokens-de-api.md) | Tela de configurações com tokens de API, cifrados | 13/08/2026 |
 | [INV-16](cards/INV-16-logo-da-empresa.md) | Logo da empresa, com opção preto e branco | 13/08/2026 |
 | [INV-15](cards/INV-15-campo-numerico-so-aceita-numero.md) | Campo numérico aceitava letra (`1eee`) | 13/08/2026 |
@@ -60,13 +61,13 @@ _(vazio)_
 
 ## O que trava o resto
 
-**Login de verdade.** O `CurrentUserGuard` é um stub: lê `x-user-email`, cria
-a conta se não existir, nunca rejeita. Serve para um app pessoal e não serve
-para guardar dado de cliente de outra pessoa.
+**Nada, por ora.** A decisão do login saiu em 13/08/2026: Google Sign-In,
+portado do arguição, no card [PLT-02](cards/PLT-02-login-com-google.md).
 
-O INV-10 depende dele por inteiro, e ele não é só da invoice — vale para o
-Learning e para o Beyond. Enquanto não for decidido, a Camada 2 da invoice não
-começa.
+O risco que continua até ele ser feito: o `CurrentUserGuard` ainda é o stub que
+lê `x-user-email` e nunca rejeita. Os tokens de API do PLT-01 estão guardados
+**sem dono real** — cifrados contra vazamento do banco, não contra alguém
+mandar o header com o e-mail de outra pessoa.
 
 ## Decisões já tomadas
 
@@ -79,6 +80,16 @@ Para não serem rediscutidas sem motivo novo:
 - **A invoice é em inglês, as trilhas em português.** A invoice é porta de
   entrada global; as trilhas são para o dev brasileiro.
 - **O PDF é gerado no navegador.** Custo zero de servidor, funciona anônimo.
+- **O login é com Google, não com senha** (13/08/2026). O arguição não tem
+  senha para portar, e o Google já entrega e-mail verificado — que a busca de
+  vagas precisa para avisar.
+- **A busca de vagas roda em segundo plano**, a cada 50 min, e ninguém espera
+  olhando a tela. Medido: uma busca ao vivo leva ~58s no melhor caso.
+- **Vaga encontrada fica 15 dias**; vaga salva fica para sempre.
+- **Do CV, guarda-se só o perfil extraído** — nunca o arquivo. Some o CPF, o
+  endereço e o telefone.
+- **Não reusar o look4job**, apesar de ele ter 1.953 empresas catalogadas e
+  estar em produção. Abordagem deliberadamente diferente.
 
 ---
 

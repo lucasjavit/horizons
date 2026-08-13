@@ -1,6 +1,6 @@
 # INV-10 · Clientes salvos, histórico e duplicar do mês passado
 
-**Estado:** bloqueado — espera a decisão de login
+**Estado:** substituído (13/08/2026) — ver observação no fim
 **Decisão do stakeholder (13/08/2026):** o histórico **espera o login**, não
 vai para o navegador. E o comportamento de edição foi definido, ver abaixo.
 **Tamanho:** G — provavelmente são três cards, ver observações
@@ -137,3 +137,28 @@ Hoje o `CurrentUserGuard` lê `x-user-email`, cria a conta se não existir e
 para guardar invoice de outra pessoa em cima disso.
 
 Enquanto essa decisão não sair, este card não começa.
+
+
+---
+
+# Substituído (13/08/2026)
+
+Este card foi escrito quando "login" era uma decisão pendente e tudo dependia
+dela. Isso mudou:
+
+- **O login virou card próprio** — [PLT-02](PLT-02-login-com-google.md), com
+  Google Sign-In portado do arguição, mais [PLT-03](PLT-03-migrar-contas-existentes.md)
+  para as contas que já existem.
+- **O histórico de invoices já foi entregue** em
+  [INV-14](INV-14-historico-local.md), no navegador. O stakeholder tinha
+  recusado o localStorage aqui, mas depois perguntou se cabia — e cabia: as
+  duas coisas coexistem. A regra de edição definida neste card ("editar não
+  cria cópia; alterar e salvar gera registro novo") foi implementada lá.
+- **Clientes salvos** continuam sem card. Com o login existindo, viram trabalho
+  pequeno — mas ninguém pediu ainda, e o gerador funciona sem eles.
+
+A numeração sugerida aqui (INV-10/11/12/13) ficou obsoleta: os IDs foram
+consumidos por outros cards no mesmo dia.
+
+**O que sobrevive deste card** é a regra de edição, que já está em produção no
+INV-14, e o alerta sobre o guard stub — que o PLT-02 resolve.

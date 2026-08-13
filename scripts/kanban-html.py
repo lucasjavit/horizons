@@ -31,7 +31,9 @@ COLUNAS = [
 
 def coluna_de(estado: str) -> str:
     e = estado.lower()
-    if e.startswith("feito"):
+    # "substituido" e "cancelado" tambem saem do fluxo: nao estao pendentes,
+    # e deixa-los no backlog faria o quadro mentir sobre o que falta.
+    if e.startswith("feito") or "substitu" in e or "cancelad" in e:
         return "feito"
     if "fazendo" in e:
         return "fazendo"
