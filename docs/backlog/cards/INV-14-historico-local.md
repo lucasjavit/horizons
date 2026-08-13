@@ -125,3 +125,30 @@ dos dois lados. Medido em três tentativas:
 O erro era insistir em CSS num problema de posição. A explicação virou **texto
 fixo no painel** — e é melhor assim: "vou sobrescrever a fatura antiga?" é
 caro demais para ficar escondido atrás de um hover.
+
+
+## Correção: o painel não fechava (13/08/2026)
+
+O stakeholder reportou que o histórico não fechava. Reproduzido: **qualquer
+passagem do mouse pelo painel travava a abertura para sempre.**
+
+O erro foi meu na primeira versão: tratei "passar o mouse" e "clicar" como o
+mesmo sinal, e o cancelamento era definitivo. Como o painel ocupa a lateral
+esquerda inteira, o cursor cruza a área dele em quase qualquer movimento pela
+tela — então na prática ele quase nunca fechava.
+
+Agora há dois níveis de intenção:
+
+| Sinal | Efeito |
+| --- | --- |
+| Mouse entra | adia o fechamento |
+| Mouse sai | **reagenda** os 3s |
+| Clicar num registro | fixa aberto para sempre |
+| Focar por teclado | fixa aberto para sempre |
+| Abrir pelo botão | fixa aberto para sempre |
+
+A distinção que faltava: cursor que atravessa não é intenção; clique e foco
+por teclado são. E fechar o que alguém abriu de propósito continua sendo
+hostil, então esses casos fixam de vez.
+
+Cinco cenários verificados no navegador.

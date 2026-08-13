@@ -104,27 +104,38 @@ export function InvoicePage() {
   // Guarda o timer do fechamento automatico para poder cancela-lo.
   const timerHistorico = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const fixarHistorico = useCallback(() => {
-    // Qualquer sinal de interesse cancela o fechamento: passar o mouse,
-    // focar por teclado ou clicar. Fechar na mao de quem esta lendo seria
-    // pior que nunca ter aberto.
+  // Depois que a pessoa clica no painel ou abre por conta propria, ele para
+  // de fechar sozinho: fechar o que alguem abriu de proposito e hostil.
+  const historicoFixado = useRef(false)
+
+  const cancelarFechamento = useCallback(() => {
     if (timerHistorico.current) {
       clearTimeout(timerHistorico.current)
       timerHistorico.current = null
     }
   }, [])
 
-  useEffect(() => {
-    if (!historicoAberto) return
+  const agendarFechamento = useCallback(() => {
+    cancelarFechamento()
+    if (historicoFixado.current) return
     timerHistorico.current = setTimeout(() => {
       setHistoricoAberto(false)
       timerHistorico.current = null
     }, 3000)
-    return () => {
-      if (timerHistorico.current) clearTimeout(timerHistorico.current)
-    }
-    // Roda uma vez, na montagem: reabrir depois e escolha da pessoa, e
-    // fechar o que ela abriu de proposito seria hostil.
+  }, [cancelarFechamento])
+
+  /** Passar o mouse so adia; sair reagenda. Clicar fixa de vez. */
+  const fixarHistorico = useCallback(() => {
+    historicoFixado.current = true
+    cancelarFechamento()
+  }, [cancelarFechamento])
+
+  useEffect(() => {
+    if (!historicoAberto) return
+    agendarFechamento()
+    return cancelarFechamento
+    // Roda uma vez, na montagem: a abertura automatica e o unico caso que
+    // fecha sozinho.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -292,7 +303,11 @@ export function InvoicePage() {
           className="border-b lg:sticky lg:top-[57px] lg:max-h-[calc(100dvh-57px)] lg:overflow-y-auto lg:border-b-0 lg:border-r"
           style={{ borderColor: 'var(--border)' }}
           aria-labelledby="history-heading"
-          onMouseEnter={fixarHistorico}
+          // Passar o mouse adia o fechamento; tirar o mouse reagenda. Clicar
+          // ou focar por teclado fixa de vez — ai e intencao, nao um cursor
+          // que passou por cima a caminho de outra coisa.
+          onMouseEnter={cancelarFechamento}
+          onMouseLeave={agendarFechamento}
           onFocusCapture={fixarHistorico}
           onPointerDown={fixarHistorico}
         >
