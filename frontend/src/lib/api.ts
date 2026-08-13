@@ -1,5 +1,7 @@
 import axios, { AxiosError } from 'axios'
 import type {
+  ApiProvider,
+  ApiTokenInfo,
   LessonDetail,
   LessonSearchHit,
   ProgressResult,
@@ -70,6 +72,23 @@ export const api = {
       completed,
     })
     return data
+  },
+
+  async listTokens(signal?: AbortSignal): Promise<ApiTokenInfo[]> {
+    const { data } = await http.get<ApiTokenInfo[]>('/settings/tokens', { signal })
+    return data
+  },
+
+  async setToken(provider: ApiProvider, token: string): Promise<ApiTokenInfo> {
+    const { data } = await http.put<ApiTokenInfo>('/settings/tokens', {
+      provider,
+      token,
+    })
+    return data
+  },
+
+  async removeToken(provider: ApiProvider): Promise<void> {
+    await http.delete(`/settings/tokens/${provider}`)
   },
 
   async setNote(lessonId: string, note: string): Promise<ProgressResult> {

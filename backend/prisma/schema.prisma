@@ -19,8 +19,31 @@ model User {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   progress  Progress[]
+  tokens    ApiToken[]
 
   @@map("users")
+}
+
+enum ApiProvider {
+  ANTHROPIC
+  OPENAI
+}
+
+/// Token de API de um provedor de IA, cifrado em repouso.
+model ApiToken {
+  id        String      @id @default(uuid())
+  userId    String
+  provider  ApiProvider
+  /// Valor cifrado (AES-256-GCM). Nunca sai da API em texto claro.
+  secret    String
+  /// Ultimos quatro caracteres, para a pessoa reconhecer qual token e.
+  hint      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@map("api_tokens")
 }
 
 /// Uma trilha de estudo (ex.: System Design).

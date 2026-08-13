@@ -102,3 +102,12 @@ export interface ProgressResult {
   completedAt: string | null
   note: string | null
 }
+
+export type ApiProvider = 'ANTHROPIC' | 'OPENAI'
+
+/** O valor do token nunca vem da API — so o final, para reconhecer qual e. */
+export interface ApiTokenInfo {
+  provider: ApiProvider
+  hint: string
+  updatedAt: string
+}

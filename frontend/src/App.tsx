@@ -8,6 +8,7 @@ import {
 import { InvoicePage } from './pages/InvoicePage'
 // QUADRO (temporario) — remover esta linha junto com a pagina
 import { QuadroPage } from './pages/QuadroPage'
+import { SettingsPage } from './pages/SettingsPage'
 import { LessonPage } from './pages/LessonPage'
 import { TrackPage } from './pages/TrackPage'
 import { TracksPage } from './pages/TracksPage'
@@ -24,6 +25,7 @@ function Abas() {
   const abas = [
     { to: '/', label: 'Trilhas', ativa: pathname === '/' || pathname.startsWith('/t/') },
     { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
+    { to: '/config', label: 'Config', ativa: pathname === '/config' },
     // QUADRO (temporario) — o quadro do backlog, para acompanhar o trabalho
     // enquanto o projeto esta sendo construido. Aparece em qualquer build,
     // inclusive no Docker. Remover esta entrada junto com a pagina, antes de
@@ -105,6 +107,7 @@ export default function App() {
           <Route path="/t/:trackSlug" element={<TrackPage />} />
           <Route path="/t/:trackSlug/:lessonSlug" element={<LessonPage />} />
           <Route path="/invoice" element={<InvoicePage />} />
+          <Route path="/config" element={<SettingsPage />} />
           {/* QUADRO (temporario) — remover esta rota junto com a pagina */}
           <Route path="/quadro" element={<QuadroPage />} />
           <Route path="*" element={<NotFound />} />
