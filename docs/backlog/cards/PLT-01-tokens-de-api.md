@@ -69,3 +69,21 @@ resposta da API: contém "9999", não contém o token
 Para que servem os tokens ainda não foi decidido — a tela hoje só guarda.
 Quando houver uso, provavelmente entra "testar a chave" (uma chamada barata
 ao provedor) e registro de quando foi usada pela última vez.
+
+
+## Config virou engrenagem (13/08/2026)
+
+Por pedido do stakeholder, Config saiu das abas e virou um **ícone de
+engrenagem no canto direito** do cabeçalho.
+
+Faz sentido além do visual: Trilhas e Invoice são **produtos**; Config é
+ajuste da aplicação. Misturar os três na mesma fila dava a eles o mesmo peso.
+
+Cuidados que a mudança exigiu:
+
+- `aria-label="Configurações"` — ícone sozinho sem nome acessível faz o leitor
+  de tela anunciar apenas "link"
+- o `<svg>` é `aria-hidden`, senão viraria ruído junto do rótulo
+- alvo de 36×36px, acima dos 24px mínimos da WCAG 2.5.8
+- `aria-current="page"` quando está na rota, como as abas
+- alcançável por Tab, verificado

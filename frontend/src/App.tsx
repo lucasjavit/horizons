@@ -20,12 +20,48 @@ import { TracksPage } from './pages/TracksPage'
  * invoice mira um publico global, enquanto as trilhas sao escritas em
  * portugues para o dev brasileiro. A mistura e consciente.
  */
+/** Atalho para as configuracoes, no canto direito do cabecalho. */
+function Engrenagem() {
+  const { pathname } = useLocation()
+  const ativa = pathname === '/config'
+
+  return (
+    <Link
+      to="/config"
+      // Icone sozinho precisa de nome acessivel: sem isto o leitor de tela
+      // anuncia so "link".
+      aria-label="Configurações"
+      title="Configurações"
+      aria-current={ativa ? 'page' : undefined}
+      // 36px de alvo, acima dos 24px minimos da WCAG 2.5.8.
+      className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
+      style={{
+        background: ativa ? 'var(--surface-sunken)' : undefined,
+        color: ativa ? 'var(--text)' : 'var(--text-muted)',
+      }}
+    >
+      <svg
+        aria-hidden
+        viewBox="0 0 24 24"
+        className="h-[18px] w-[18px]"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      </svg>
+    </Link>
+  )
+}
+
 function Abas() {
   const { pathname } = useLocation()
   const abas = [
     { to: '/', label: 'Trilhas', ativa: pathname === '/' || pathname.startsWith('/t/') },
     { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
-    { to: '/config', label: 'Config', ativa: pathname === '/config' },
     // QUADRO (temporario) — o quadro do backlog, para acompanhar o trabalho
     // enquanto o projeto esta sendo construido. Aparece em qualquer build,
     // inclusive no Docker. Remover esta entrada junto com a pagina, antes de
@@ -99,6 +135,10 @@ export default function App() {
               <span style={{ color: 'var(--brand)' }}>Horizons</span>
             </Link>
             <Abas />
+
+            {/* Config fica na ponta direita, separada das abas: nao e um
+                produto como Trilhas e Invoice, e sim ajuste da aplicacao. */}
+            <Engrenagem />
           </div>
         </header>
 
