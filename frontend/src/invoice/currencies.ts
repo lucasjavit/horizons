@@ -7,14 +7,16 @@ import type { CurrencyCode } from './types'
 export const CURRENCIES: ReadonlyArray<{
   code: CurrencyCode
   label: string
+  /** Bandeira em emoji. Entra no <option>, que nao aceita <img> nem SVG. */
+  flag: string
 }> = [
-  { code: 'USD', label: 'USD — US Dollar' },
-  { code: 'EUR', label: 'EUR — Euro' },
-  { code: 'GBP', label: 'GBP — British Pound' },
-  { code: 'BRL', label: 'BRL — Brazilian Real' },
-  { code: 'CAD', label: 'CAD — Canadian Dollar' },
-  { code: 'AUD', label: 'AUD — Australian Dollar' },
-  { code: 'CHF', label: 'CHF — Swiss Franc' },
+  { code: 'USD', label: 'US Dollar', flag: '🇺🇸' },
+  { code: 'EUR', label: 'Euro', flag: '🇪🇺' },
+  { code: 'GBP', label: 'British Pound', flag: '🇬🇧' },
+  { code: 'BRL', label: 'Brazilian Real', flag: '🇧🇷' },
+  { code: 'CAD', label: 'Canadian Dollar', flag: '🇨🇦' },
+  { code: 'AUD', label: 'Australian Dollar', flag: '🇦🇺' },
+  { code: 'CHF', label: 'Swiss Franc', flag: '🇨🇭' },
 ]
 
 export function isCurrencyCode(v: unknown): v is CurrencyCode {

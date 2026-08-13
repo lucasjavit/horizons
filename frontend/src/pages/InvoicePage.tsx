@@ -298,7 +298,7 @@ export function InvoicePage() {
                     }}
                     options={CURRENCIES.map((c) => ({
                       value: c.code,
-                      label: c.label,
+                      label: `${c.flag}  ${c.code} — ${c.label}`,
                     }))}
                   />
                   <TextField
@@ -400,6 +400,50 @@ export function InvoicePage() {
 
               <Bloco
                 numero={3}
+                titulo="Payment"
+                dica={{
+                  title: 'Payment',
+                  texto:
+                    'How you want to be paid: bank name, IBAN or account number, SWIFT or routing code, or a service like Wise or Payoneer. Missing or wrong details here are the most common reason an international transfer bounces.',
+                }}
+                resumo={draft.paymentDetails.trim() ? 'Filled in' : 'Optional'}
+                aberto={aberto === 3}
+                onToggle={() => setAberto(aberto === 3 ? null : 3)}
+              >
+                <TextAreaField
+                  id="payment-details"
+                  label="Payment details"
+                  value={draft.paymentDetails}
+                  onChange={(v) => inv.setCampo('paymentDetails', v)}
+                  rows={5}
+                  placeholder={'Bank name\nIBAN / Account\nSWIFT / Routing\nWise, Payoneer…'}
+                />
+              </Bloco>
+
+              <Bloco
+                numero={4}
+                titulo="Notes & terms"
+                dica={{
+                  title: 'Notes & terms',
+                  texto:
+                    'The conditions of this charge: payment window, late fee, reference period, or anything your client asked to see on the document. It prints at the bottom of the invoice.',
+                }}
+                resumo={draft.notes.trim() ? 'Filled in' : 'Optional'}
+                aberto={aberto === 4}
+                onToggle={() => setAberto(aberto === 4 ? null : 4)}
+              >
+                <TextAreaField
+                  id="notes"
+                  label="Notes / terms"
+                  value={draft.notes}
+                  onChange={(v) => inv.setCampo('notes', v)}
+                  rows={5}
+                  placeholder="Payment due within 30 days."
+                />
+              </Bloco>
+
+              <Bloco
+                numero={5}
                 titulo="Items"
                 dica={{
                   title: 'Items',
@@ -407,8 +451,8 @@ export function InvoicePage() {
                     'Hours × hourly rate gives the line amount. Fractions work, so 2.5 hours is fine. Each line is rounded to the cent before being summed, so the printed total always matches the sum of the printed lines.',
                 }}
                 resumo={`${draft.items.length} ${draft.items.length === 1 ? 'line' : 'lines'} · ${formatCents(total, draft.currency)}`}
-                aberto={aberto === 3}
-                onToggle={() => setAberto(aberto === 3 ? null : 3)}
+                aberto={aberto === 5}
+                onToggle={() => setAberto(aberto === 5 ? null : 5)}
               >
                 <LineItemsEditor
                   items={draft.items}
@@ -422,41 +466,6 @@ export function InvoicePage() {
                 />
               </Bloco>
 
-              <Bloco
-                numero={4}
-                titulo="Payment & notes"
-                dica={{
-                  title: 'Payment & notes',
-                  texto:
-                    'Payment details is where you say how to be paid: bank, IBAN, SWIFT, or a service like Wise or Payoneer. Notes carry the terms — late fees, reference period, or anything your client asked to see on the document.',
-                }}
-                resumo={
-                  draft.paymentDetails.trim() || draft.notes.trim()
-                    ? 'Filled in'
-                    : 'Optional'
-                }
-                aberto={aberto === 4}
-                onToggle={() => setAberto(aberto === 4 ? null : 4)}
-              >
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <TextAreaField
-                    id="payment-details"
-                    label="Payment details"
-                    value={draft.paymentDetails}
-                    onChange={(v) => inv.setCampo('paymentDetails', v)}
-                    rows={4}
-                    placeholder={'Bank name\nIBAN / Account\nSWIFT / Routing\nWise, Payoneer…'}
-                  />
-                  <TextAreaField
-                    id="notes"
-                    label="Notes / terms"
-                    value={draft.notes}
-                    onChange={(v) => inv.setCampo('notes', v)}
-                    rows={4}
-                    placeholder="Payment due within 30 days."
-                  />
-                </div>
-              </Bloco>
             </fieldset>
 
             <div

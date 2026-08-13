@@ -111,9 +111,9 @@ else:
             # nao pode virar 0.9999999999999999.
             # aria-controls e nao o nome: o icone de ajuda ao lado tambem
             # tem "Items" no rotulo, e o get_by_role acharia os dois.
-            pg.locator('button[aria-controls="bloco-3"]').click()
+            pg.locator('button[aria-controls="bloco-5"]').click()
             pg.wait_for_timeout(300)
-            li = pg.locator("#bloco-3 ul li").first
+            li = pg.locator("#bloco-5 ul li").first
             li.locator("input").nth(0).fill("Servico")
             li.locator("input").nth(1).fill("3")
             li.locator("input").nth(2).fill("33.33")
