@@ -19,7 +19,22 @@ destrava o resto.
 
 | Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
-| [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **bloqueado no login** · comportamento já definido |
+| [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
+| [PLT-04](cards/PLT-04-crud-de-prompts.md) | Config vira área de admin, com CRUD dos prompts de busca | M | agora tem `@AdminOnly()` de verdade por trás |
+| [JOB-02](cards/JOB-02-perfil-de-busca.md) | Perfil de busca e agrupamento | M | destravado pelo login — o perfil tem dono |
+| [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha a cada 50 minutos | M | ver **Antes de começar** abaixo: dois ajustes pendentes |
+| [JOB-04](cards/JOB-04-tela-de-vagas.md) | A tela das vagas encontradas | M | depende do JOB-03 |
+| [JOB-05](cards/JOB-05-salvar-vaga.md) | Salvar vaga (sai da regra dos 15 dias) | P | depende do JOB-04 |
+
+### Antes de começar o JOB-03
+
+Dois detalhes que hoje matam a busca em silêncio, levantados pelo QA e ainda
+**não corrigidos**:
+
+- `frontend/src/lib/api.ts:14` tem `timeout: 10_000`. Uma busca medida leva
+  ~58s no melhor caso, então qualquer chamada síncrona morre antes de responder.
+- `frontend/nginx.conf` não tem `proxy_buffering off` — resposta em streaming
+  fica presa no buffer do nginx até terminar.
 
 ## Pronto para fazer
 
@@ -37,6 +52,8 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [PLT-02](cards/PLT-02-login-com-google.md) | **Login com Google** — guard global *fail closed*, revogação imediata | 13/08/2026 |
+| [PLT-03](cards/PLT-03-migrar-contas-existentes.md) | Contas do guard antigo adotadas por e-mail, sem duplicar | 13/08/2026 |
 | [JOB-01](cards/JOB-01-provar-o-firecrawl.md) | Firecrawl provado — viável, e o prompt é o que decide | 13/08/2026 |
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos e histórico — **substituído** pelo PLT-02 e INV-14 | 13/08/2026 |
 | [PLT-01](cards/PLT-01-tokens-de-api.md) | Tela de configurações com tokens de API, cifrados | 13/08/2026 |
@@ -62,13 +79,14 @@ _(vazio)_
 
 ## O que trava o resto
 
-**Nada, por ora.** A decisão do login saiu em 13/08/2026: Google Sign-In,
-portado do arguição, no card [PLT-02](cards/PLT-02-login-com-google.md).
+**Uma coisa, e é externa:** falta um `GOOGLE_CLIENT_ID` real para entrar de
+verdade. O código está pronto e verificado até onde dá sem ele — a tela sem
+client id explica que o login não está configurado, e com um client id
+inventado o botão do Google renderiza e o próprio Google recusa. Falta criar o
+OAuth client no Google Cloud Console e cadastrar as origens.
 
-O risco que continua até ele ser feito: o `CurrentUserGuard` ainda é o stub que
-lê `x-user-email` e nunca rejeita. Os tokens de API do PLT-01 estão guardados
-**sem dono real** — cifrados contra vazamento do banco, não contra alguém
-mandar o header com o e-mail de outra pessoa.
+**O risco do guard stub acabou** (13/08/2026). `x-user-email` agora responde
+**401** — medido. Os tokens de API do PLT-01 têm dono de verdade.
 
 ## Decisões já tomadas
 
@@ -91,6 +109,11 @@ Para não serem rediscutidas sem motivo novo:
   endereço e o telefone.
 - **Não reusar o look4job**, apesar de ele ter 1.953 empresas catalogadas e
   estar em produção. Abordagem deliberadamente diferente.
+- **`ADMIN_EMAILS` é a fonte da verdade do papel**, reavaliada a cada login
+  (13/08/2026). Vazio significa ninguém — sem default hardcoded. O efeito
+  colateral é intencional: promover alguém direto no banco não sobrevive ao
+  próximo login, e por isso uma promoção manual esquecida não vira permanente.
+- **Configurações é área de admin.** Deixou de ser a tela sem dono do PLT-01.
 
 ---
 

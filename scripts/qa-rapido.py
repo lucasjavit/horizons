@@ -8,12 +8,14 @@ grosseira: a pagina abre, nao explode no console, o dinheiro soma certo.
 
 Sai com codigo 1 se achar problema, e o hook de pre-commit barra o commit.
 """
+import json
 import subprocess
 import sys
 import urllib.error
 import urllib.request
 
 BASE = "http://localhost:5173"
+API = "http://localhost:3333/api"
 falhas: list[str] = []
 
 
@@ -22,6 +24,40 @@ def ok(cond: bool, msg: str) -> bool:
     if not cond:
         falhas.append(msg)
     return cond
+
+
+def token_de_teste() -> str | None:
+    """
+    Assina um token com o segredo do proprio container.
+
+    Depois do PLT-02 nao ha mais tela sem sessao: sem isto, o QA abriria a
+    pagina de login e reprovaria tudo. Assinar de dentro do container e o
+    unico jeito de o script continuar autonomo — ele nao conhece o segredo,
+    e nem deveria.
+    """
+    sql = "select id, email, role from users limit 1;"
+    try:
+        r = subprocess.run(
+            ["docker", "compose", "exec", "-T", "db", "psql", "-U", "horizons",
+             "-d", "horizons", "-tAF,", "-c", sql],
+            capture_output=True, text=True, timeout=20,
+        )
+        linha = r.stdout.strip().splitlines()[0].split(",")
+        if len(linha) < 3:
+            return None
+        js = (
+            "const jwt=require('jsonwebtoken');"
+            f"console.log(jwt.sign({{sub:'{linha[0]}',email:'{linha[1]}',"
+            f"role:'{linha[2]}'}},process.env.JWT_SECRET,{{expiresIn:'1h'}}))"
+        )
+        r = subprocess.run(
+            ["docker", "compose", "exec", "-T", "api", "node", "-e", js],
+            capture_output=True, text=True, timeout=20,
+        )
+        tok = r.stdout.strip()
+        return tok if tok.count(".") == 2 else None
+    except (subprocess.SubprocessError, IndexError, OSError):
+        return None
 
 
 def containers_no_ar() -> bool:
@@ -83,6 +119,26 @@ else:
         except (urllib.error.URLError, TimeoutError) as e:
             ok(False, f"{rota} responde 200 ({e})")
 
+    # PLT-02: rota protegida sem token responde 401. E o comportamento que
+    # o guard global garante, e o mais caro de perder sem perceber — uma
+    # regressao aqui nao aparece na tela, so no vazamento.
+    print()
+    print("sessao")
+    for rota in ["/tracks", "/auth/me", "/settings/tokens"]:
+        try:
+            urllib.request.urlopen(API + rota, timeout=10)
+            ok(False, f"{rota} sem token deveria dar 401 (respondeu 200)")
+        except urllib.error.HTTPError as e:
+            ok(e.code == 401, f"{rota} sem token responde 401 (deu {e.code})")
+        except (urllib.error.URLError, TimeoutError) as e:
+            ok(False, f"{rota} sem token responde 401 ({e})")
+    try:
+        with urllib.request.urlopen(API + "/auth/config", timeout=10) as resp:
+            cfg = json.load(resp)
+        ok("googleClientId" in cfg, "/auth/config e publico")
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
+        ok(False, f"/auth/config e publico ({e})")
+
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -101,6 +157,16 @@ else:
                 "console",
                 lambda m: erros.append(m.text) if m.type == "error" else None,
             )
+
+            tok = token_de_teste()
+            if tok:
+                # Precisa de uma navegacao antes: localStorage e por origem,
+                # e about:blank nao tem a origem do app.
+                pg.goto(BASE, wait_until="domcontentloaded")
+                pg.evaluate(
+                    "t => localStorage.setItem('horizons.token', t)", tok
+                )
+            ok(tok is not None, "consegue abrir sessao de teste")
 
             pg.goto(f"{BASE}/invoice", wait_until="networkidle")
             ok(pg.locator("main#conteudo").count() == 1,

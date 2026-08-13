@@ -36,6 +36,15 @@ raiz. Arquivo novo na raiz do frontend precisa entrar naquele `COPY`, senão o
 build ignora em silêncio. (`src/` é recursivo, então arquivo dentro de `src/`
 entra sozinho.)
 
+**`JWT_SECRET` derruba o boot se faltar ou tiver menos de 16 caracteres.** É de
+propósito: erro de configuração do servidor não é erro de autenticação, e
+devolver 401 esconderia o problema. O compose tem um default de
+desenvolvimento; `.env.example` lista o que existe (`GOOGLE_CLIENT_ID`,
+`JWT_SECRET`, `ADMIN_EMAILS`, `ENCRYPTION_KEY`).
+
+Sem `GOOGLE_CLIENT_ID` a aplicação sobe normalmente e a tela de login **explica
+que não está configurada**, em vez de mostrar um botão que não funciona.
+
 ## Backend
 
 Um módulo por pasta, sem barrel: `x.module.ts`, `x.controller.ts`,
@@ -43,9 +52,22 @@ Um módulo por pasta, sem barrel: `x.module.ts`, `x.controller.ts`,
 
 - **`PrismaModule` é `@Global()`** — não importe nos módulos; só injete
   `PrismaService`.
-- **`CurrentUserGuard`** vai em `@UseGuards()` na classe do controller e não
-  entra em `providers`. É um stub: lê `x-user-email`, cria a conta se não
-  existir, **nunca rejeita**. Não há login de verdade.
+- **O guard é global e *fail closed*.** `AuthGuard` entra por `APP_GUARD` em
+  `AuthModule`, então **rota nova nasce protegida** — não há `@UseGuards()` em
+  controller nenhum. Para abrir, marque `@Public()`; para exigir admin,
+  `@AdminOnly()`. Esquecer o decorator não abre buraco, fecha.
+- **`@CurrentUser()` injeta o usuário já verificado** (`AuthUser`), e o guard
+  **relê o usuário do banco a cada request**. Custa um SELECT, e paga:
+  `active = false` ou papel rebaixado valem na requisição seguinte, sem
+  esperar o token de 30 dias expirar. O token é uma alegação; o banco decide.
+- **`ADMIN_EMAILS` é a fonte da verdade do papel**, reavaliada a cada login.
+  Vazio = ninguém. Promover direto no banco não sobrevive ao próximo login.
+- **Rota pública é exceção, e o healthcheck depende disso.** Só
+  `GET /auth/config` e `POST /auth/google` são `@Public()`. O healthcheck do
+  compose bate em `/api/auth/config` — se um dia ela deixar de ser pública, o
+  container fica eternamente *unhealthy*.
+- **Mexeu em rota protegida, rode `scripts/qa-rapido.py`**: ele assina um
+  token de teste com o segredo de dentro do container e confere o 401.
 - **Controller é fino**: uma linha por handler, `return this.svc.metodo(...)`,
   com tipo de retorno `Promise<XDto>` explícito. Sem `async` no controller.
 - **Serviço recebe `userId: string` como primeiro parâmetro** e sempre usa

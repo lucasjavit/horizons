@@ -153,7 +153,7 @@ body {
 
 <header class="topo">
   <h1><span>Horizons</span> · quadro</h1>
-  <p class="resumo">25 cards · 18 feitos</p>
+  <p class="resumo">25 cards · 20 feitos</p>
 </header>
 
   <aside class="sprint">
@@ -248,40 +248,9 @@ body {
       </ul>
     </section>
     <section class="coluna col-pronto" aria-labelledby="col-pronto">
-      <h2 id="col-pronto">Pronto para fazer <span class="n">2</span></h2>
+      <h2 id="col-pronto">Pronto para fazer <span class="n">0</span></h2>
       <ul>
-      <li class="cartao">
-        <a href="cards/PLT-02-login-com-google.md">
-          <div class="cabeca">
-            <span class="ident">PLT-02</span>
-            <span class="tam" title="Tamanho">M</span>
-          </div>
-          <h3>Login com Google</h3>
-          <p class="porque">É a decisão que trava o projeto desde o começo. O CurrentUserGuard lê x-user-email, cria a conta se não existir e nunca rejeita — qualquer um vira qualquer um mandando um</p>
-          <p class="bloqueio">Depende de: Conta no Google Cloud com OAuth client configurado (GOOGLE_CLIENT_ID)</p>
-        <div class="progresso" role="img"
-             aria-label="0 de 7 critérios atendidos">
-          <div class="barra"><span style="width:0%"></span></div>
-          <span class="conta">0/7</span>
-        </div>
-        </a>
-      </li>
-      <li class="cartao">
-        <a href="cards/PLT-03-migrar-contas-existentes.md">
-          <div class="cabeca">
-            <span class="ident">PLT-03</span>
-            <span class="tam" title="Tamanho">P</span>
-          </div>
-          <h3>Migrar as contas criadas pelo guard antigo</h3>
-          <p class="porque">O CurrentUserGuard cria conta a partir do header x-user-email. Já existem contas assim, e elas carregam dado real:</p>
-          <p class="bloqueio">Depende de: PLT-02 (o login em si)</p>
-        <div class="progresso" role="img"
-             aria-label="0 de 4 critérios atendidos">
-          <div class="barra"><span style="width:0%"></span></div>
-          <span class="conta">0/4</span>
-        </div>
-        </a>
-      </li>
+      <li class="vazio">Nada aqui.</li>
       </ul>
     </section>
     <section class="coluna col-fazendo" aria-labelledby="col-fazendo">
@@ -291,7 +260,7 @@ body {
       </ul>
     </section>
     <section class="coluna col-feito" aria-labelledby="col-feito">
-      <h2 id="col-feito">Feito <span class="n">18</span></h2>
+      <h2 id="col-feito">Feito <span class="n">20</span></h2>
       <ul>
       <li class="cartao">
         <a href="cards/INV-01-total-negativo.md">
@@ -543,6 +512,38 @@ body {
              aria-label="8 de 8 critérios atendidos">
           <div class="barra"><span style="width:100%"></span></div>
           <span class="conta">8/8</span>
+        </div>
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/PLT-02-login-com-google.md">
+          <div class="cabeca">
+            <span class="ident">PLT-02</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>Login com Google</h3>
+          <p class="porque">É a decisão que trava o projeto desde o começo. O CurrentUserGuard lê x-user-email, cria a conta se não existir e nunca rejeita — qualquer um vira qualquer um mandando um</p>
+          <p class="bloqueio">Depende de: Conta no Google Cloud com OAuth client configurado (GOOGLE_CLIENT_ID)</p>
+        <div class="progresso" role="img"
+             aria-label="7 de 7 critérios atendidos">
+          <div class="barra"><span style="width:100%"></span></div>
+          <span class="conta">7/7</span>
+        </div>
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/PLT-03-migrar-contas-existentes.md">
+          <div class="cabeca">
+            <span class="ident">PLT-03</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Migrar as contas criadas pelo guard antigo</h3>
+          <p class="porque">O CurrentUserGuard cria conta a partir do header x-user-email. Já existem contas assim, e elas carregam dado real:</p>
+          <p class="bloqueio">Depende de: PLT-02 (o login em si)</p>
+        <div class="progresso" role="img"
+             aria-label="4 de 4 critérios atendidos">
+          <div class="barra"><span style="width:100%"></span></div>
+          <span class="conta">4/4</span>
         </div>
         </a>
       </li>

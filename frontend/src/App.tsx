@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react'
 import {
   BrowserRouter,
   Link,
@@ -8,7 +9,12 @@ import {
 import { InvoicePage } from './pages/InvoicePage'
 // QUADRO (temporario) — remover esta linha junto com a pagina
 import { QuadroPage } from './pages/QuadroPage'
+import { LoginPage } from './pages/LoginPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { LoadingState } from './components/States'
+import { aoPerderSessao, perdeuSessao, tokenStore } from './lib/auth'
+import { api } from './lib/api'
+import type { AuthUser } from './types/api'
 import { LessonPage } from './pages/LessonPage'
 import { TrackPage } from './pages/TrackPage'
 import { TracksPage } from './pages/TracksPage'
@@ -21,9 +27,14 @@ import { TracksPage } from './pages/TracksPage'
  * portugues para o dev brasileiro. A mistura e consciente.
  */
 /** Atalho para as configuracoes, no canto direito do cabecalho. */
-function Engrenagem() {
+function Engrenagem({ admin }: { admin: boolean }) {
   const { pathname } = useLocation()
   const ativa = pathname === '/config'
+
+  // Config e area de administracao (PLT-04). Esconder o icone nao substitui a
+  // protecao da rota — o backend exige o papel —, mas evita oferecer um
+  // caminho que so daria 403.
+  if (!admin) return null
 
   return (
     <Link
@@ -34,7 +45,7 @@ function Engrenagem() {
       title="Configurações"
       aria-current={ativa ? 'page' : undefined}
       // 36px de alvo, acima dos 24px minimos da WCAG 2.5.8.
-      className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
       style={{
         background: ativa ? 'var(--surface-sunken)' : undefined,
         color: ativa ? 'var(--text)' : 'var(--text-muted)',
@@ -54,6 +65,42 @@ function Engrenagem() {
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
       </svg>
     </Link>
+  )
+}
+
+
+/** Quem esta logado, e a saida. */
+function Conta({ user }: { user: AuthUser }) {
+  return (
+    <div className="flex items-center gap-2">
+      {user.avatarUrl ? (
+        <img
+          src={user.avatarUrl}
+          // Decorativo: o nome ao lado ja identifica a conta, e um alt
+          // repetindo "Foto de Fulano" so faria o leitor de tela dizer duas
+          // vezes a mesma coisa.
+          alt=""
+          aria-hidden
+          className="h-7 w-7 shrink-0 rounded-full object-cover"
+          style={{ background: 'var(--surface-sunken)' }}
+        />
+      ) : null}
+      <span
+        className="hidden max-w-[12ch] truncate text-sm sm:inline"
+        style={{ color: 'var(--text-muted)' }}
+        title={user.email}
+      >
+        {user.name}
+      </span>
+      <button
+        type="button"
+        onClick={perdeuSessao}
+        className="shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium"
+        style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+      >
+        Sair
+      </button>
+    </div>
   )
 }
 
@@ -111,6 +158,46 @@ function NotFound() {
 }
 
 export default function App() {
+  const [user, setUser] = useState<AuthUser | null>(null)
+  // Distingue "ainda nao sei" de "nao ha sessao": sem isso a tela de login
+  // pisca antes de o token guardado ser confirmado.
+  const [conferido, setConferido] = useState(false)
+
+  useEffect(() => {
+    const ctrl = new AbortController()
+    if (!tokenStore.get()) {
+      setConferido(true)
+      return () => ctrl.abort()
+    }
+    // O token guardado so vale depois que o servidor confirma — ele pode ter
+    // expirado ou a conta ter sido desativada desde a ultima visita.
+    api
+      .me(ctrl.signal)
+      .then(setUser)
+      .catch(() => tokenStore.clear())
+      .finally(() => setConferido(true))
+    return () => ctrl.abort()
+  }, [])
+
+  const sair = useCallback(() => setUser(null), [])
+  useEffect(() => aoPerderSessao(sair), [sair])
+
+  if (!conferido) {
+    return (
+      <div className="min-h-dvh">
+        <LoadingState label="Carregando…" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-dvh">
+        <LoginPage onEntrou={setUser} />
+      </div>
+    )
+  }
+
   return (
     <BrowserRouter>
       <div className="min-h-dvh">
@@ -136,9 +223,13 @@ export default function App() {
             </Link>
             <Abas />
 
-            {/* Config fica na ponta direita, separada das abas: nao e um
-                produto como Trilhas e Invoice, e sim ajuste da aplicacao. */}
-            <Engrenagem />
+            {/* Config e conta ficam na ponta direita, separadas das abas:
+                nao sao produtos como Trilhas e Invoice. O ml-auto vive aqui,
+                e nao na engrenagem, porque ela some para quem nao e admin. */}
+            <div className="ml-auto flex items-center gap-2">
+            <Engrenagem admin={user.role === 'ADMIN'} />
+            <Conta user={user} />
+            </div>
           </div>
         </header>
 

@@ -1,6 +1,9 @@
 import axios, { AxiosError } from 'axios'
+import { perdeuSessao, tokenStore } from './auth'
 import type {
   ApiProvider,
+  AuthConfig,
+  AuthUser,
   ApiTokenInfo,
   LessonDetail,
   LessonSearchHit,
@@ -13,6 +16,25 @@ const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3333/api',
   timeout: 10_000,
 })
+
+// Anexa a sessao em toda chamada.
+http.interceptors.request.use((config) => {
+  const token = tokenStore.get()
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+// Sessao expirada ou revogada volta para a tela de login, em vez de virar um
+// erro generico em cada tela.
+http.interceptors.response.use(
+  (r) => r,
+  (error: unknown) => {
+    if (error instanceof AxiosError && error.response?.status === 401) {
+      perdeuSessao()
+    }
+    return Promise.reject(error)
+  },
+)
 
 /** Mensagem de erro legível — a API devolve `message` do Nest quando falha. */
 export function errorMessage(error: unknown): string {
@@ -29,6 +51,24 @@ export function errorMessage(error: unknown): string {
 }
 
 export const api = {
+  async authConfig(signal?: AbortSignal): Promise<AuthConfig> {
+    const { data } = await http.get<AuthConfig>('/auth/config', { signal })
+    return data
+  },
+
+  async loginComGoogle(idToken: string): Promise<{ user: AuthUser; accessToken: string }> {
+    const { data } = await http.post<{ user: AuthUser; accessToken: string }>(
+      '/auth/google',
+      { idToken },
+    )
+    return data
+  },
+
+  async me(signal?: AbortSignal): Promise<AuthUser> {
+    const { data } = await http.get<AuthUser>('/auth/me', { signal })
+    return data
+  },
+
   async listTracks(signal?: AbortSignal): Promise<TrackSummary[]> {
     const { data } = await http.get<TrackSummary[]>('/tracks', { signal })
     return data

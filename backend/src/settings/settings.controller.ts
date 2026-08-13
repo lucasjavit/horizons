@@ -1,20 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put } from '@nestjs/common';
 import { ApiProvider } from '@prisma/client';
-import { CurrentUser, type AuthUser } from '../auth/current-user';
-import { CurrentUserGuard } from '../auth/current-user.guard';
+import { AdminOnly, CurrentUser, type AuthUser } from '../auth/current-user';
 import { SetTokenDto, type ApiTokenDto } from './settings.dto';
 import { SettingsService } from './settings.service';
 
 /**
- * ATENCAO: o CurrentUserGuard ainda e o stub que aceita qualquer
- * `x-user-email` e nunca rejeita. Enquanto for assim, quem souber o e-mail
- * de alguem consegue guardar e apagar tokens no lugar dessa pessoa — o
- * segredo cifrado no banco protege contra vazamento do dump, nao contra
- * isso. Decisao consciente: vincular a usuario de verdade fica para quando o
- * login existir.
+ * Area de administracao. Antes do PLT-02 o guard era um stub que aceitava
+ * qualquer `x-user-email`, entao quem soubesse o e-mail de alguem lia os
+ * tokens daquela pessoa. Agora exige sessao real e papel de admin.
  */
 @Controller('settings/tokens')
-@UseGuards(CurrentUserGuard)
+@AdminOnly()
 export class SettingsController {
   constructor(private readonly settings: SettingsService) {}
 

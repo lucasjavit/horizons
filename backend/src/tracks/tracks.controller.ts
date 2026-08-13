@@ -1,6 +1,5 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CurrentUser, type AuthUser } from '../auth/current-user';
-import { CurrentUserGuard } from '../auth/current-user.guard';
 import { TracksService } from './tracks.service';
 import type {
   LessonDetailDto,
@@ -9,7 +8,6 @@ import type {
 } from './track.dto';
 
 @Controller('tracks')
-@UseGuards(CurrentUserGuard)
 export class TracksController {
   constructor(private readonly tracks: TracksService) {}
 

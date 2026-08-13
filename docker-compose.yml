@@ -52,7 +52,16 @@ services:
       # para um segredo de verdade — commitar chave no compose so vale
       # enquanto o app roda na rede local.
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-horizons dev key trocar antes de publicar}
-      DEFAULT_USER_EMAIL: eu@horizons.local
+      # Login com Google (PLT-02). O client id e publico — sai no HTML de
+      # qualquer site que use Google Sign-In —, entao vem por variavel so
+      # para nao amarrar o codigo a uma conta.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      # Assina a sessao. Validado no boot: menos de 16 caracteres derruba a
+      # API com erro claro, em vez de aceitar token fraco em silencio.
+      JWT_SECRET: ${JWT_SECRET:-horizons dev jwt secret trocar antes de publicar}
+      # Quem entra como admin. Vazio = ninguem. Sem default hardcoded: se a
+      # variavel sumir, o resultado seguro e ninguem ser admin, nunca alguem.
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
     ports:
       - '3333:3333'
     depends_on:
@@ -66,7 +75,7 @@ services:
           'CMD',
           'node',
           '-e',
-          "require('http').get('http://127.0.0.1:3333/api/tracks',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+          "require('http').get('http://127.0.0.1:3333/api/auth/config',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
         ]
       interval: 15s
       timeout: 5s

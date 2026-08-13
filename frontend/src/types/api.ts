@@ -111,3 +111,16 @@ export interface ApiTokenInfo {
   hint: string
   updatedAt: string
 }
+
+export interface AuthUser {
+  id: string
+  email: string
+  name: string
+  avatarUrl: string | null
+  role: string
+}
+
+export interface AuthConfig {
+  googleClientId: string | null
+  enabled: boolean
+}

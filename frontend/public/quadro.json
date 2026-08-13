@@ -291,25 +291,25 @@
     {
       "id": "PLT-02",
       "titulo": "Login com Google",
-      "estado": "pronto para fazer",
-      "coluna": "pronto",
+      "estado": "feito (13/08/2026)",
+      "coluna": "feito",
       "tamanho": "M",
       "porque": "É a decisão que trava o projeto desde o começo. O CurrentUserGuard lê x-user-email, cria a conta se não existir e nunca rejeita — qualquer um vira qualquer um mandando um header.",
       "decisao": "",
       "bloqueio": "Conta no Google Cloud com OAuth client configurado (GOOGLE_CLIENT_ID)",
-      "feitos": 0,
+      "feitos": 7,
       "total": 7
     },
     {
       "id": "PLT-03",
       "titulo": "Migrar as contas criadas pelo guard antigo",
-      "estado": "pronto para fazer",
-      "coluna": "pronto",
+      "estado": "feito (13/08/2026)",
+      "coluna": "feito",
       "tamanho": "P",
       "porque": "O CurrentUserGuard cria conta a partir do header x-user-email. Já existem contas assim, e elas carregam dado real:",
       "decisao": "",
       "bloqueio": "PLT-02 (o login em si)",
-      "feitos": 0,
+      "feitos": 4,
       "total": 4
     },
     {

@@ -1,11 +1,9 @@
-import { Body, Controller, Param, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Put } from '@nestjs/common';
 import { CurrentUser, type AuthUser } from '../auth/current-user';
-import { CurrentUserGuard } from '../auth/current-user.guard';
 import { SetCompletedDto, SetNoteDto, type ProgressDto } from './progress.dto';
 import { ProgressService } from './progress.service';
 
 @Controller('progress')
-@UseGuards(CurrentUserGuard)
 export class ProgressController {
   constructor(private readonly progress: ProgressService) {}
 

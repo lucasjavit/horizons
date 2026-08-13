@@ -7,9 +7,9 @@
 
 | Card | Título | Tam. | Estado |
 | --- | --- | --- | --- |
-| [PLT-02](../cards/PLT-02-login-com-google.md) | Login com Google | M | pronto para fazer |
-| [PLT-03](../cards/PLT-03-migrar-contas-existentes.md) | Migrar contas do guard antigo | P | pronto para fazer |
-| [JOB-01](../cards/JOB-01-provar-o-firecrawl.md) | Provar o Firecrawl | P | pronto para fazer |
+| [PLT-02](../cards/PLT-02-login-com-google.md) | Login com Google | M | **feito** (13/08) |
+| [PLT-03](../cards/PLT-03-migrar-contas-existentes.md) | Migrar contas do guard antigo | P | **feito** (13/08) |
+| [JOB-01](../cards/JOB-01-provar-o-firecrawl.md) | Provar o Firecrawl | P | **feito** (13/08) |
 | [JOB-02](../cards/JOB-02-perfil-de-busca.md) | Perfil de busca e agrupamento | M | backlog |
 | [JOB-03](../cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha | M | backlog |
 
@@ -48,3 +48,23 @@ A sprint 01 ensinou três coisas que valem aqui:
 
 Nesta sprint o risco equivalente é confiar no que a IA afirma. O card JOB-03
 carrega as quatro defesas contra isso.
+
+## Andamento (13/08/2026)
+
+Três dos cinco cards fechados. **PLT-02 e PLT-03 saíram juntos**, como o card
+previa — e não como dois trabalhos, mas como um: o `upsert` por e-mail do
+`loginComGoogle` resolve a migração sem script separado.
+
+O que a sprint 01 ensinou apareceu de novo, em outro lugar. Trocar o guard
+quebrou **duas coisas fora do card**, nenhuma delas visível no build:
+
+- o healthcheck do compose batia numa rota que passou a exigir token, e o
+  container ficaria eternamente *unhealthy*;
+- o `qa-rapido.py` passou a abrir a tela de login e reprovar tudo.
+
+As duas só apareceram porque os containers subiram de verdade. É exatamente a
+lição de "o critério é o navegador, não o build" — desta vez aplicada à
+infraestrutura, e não à tela.
+
+**Falta para entrar de verdade:** um `GOOGLE_CLIENT_ID` real. O caminho está
+verificado até onde é possível sem ele.

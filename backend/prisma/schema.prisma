@@ -13,14 +13,29 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  name      String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  progress  Progress[]
-  tokens    ApiToken[]
+  id          String     @id @default(uuid())
+  email       String     @unique
+  name        String
+  avatarUrl   String?
+  /// De onde veio a conta. Hoje so GOOGLE; o campo existe para nao precisar
+  /// de migration quando houver outro provedor.
+  provider    String     @default("GOOGLE")
+  /// `sub` do provedor. Nulo nas contas criadas pelo guard antigo, que sao
+  /// adotadas por e-mail no primeiro login (PLT-03).
+  providerId  String?
+  /// "USER" ou "ADMIN". String e nao enum: o tsconfig do front proibe enum de
+  /// TS, e o padrao da casa para dois valores e uniao de string.
+  role        String     @default("USER")
+  /// Desligar aqui derruba a sessao na requisicao seguinte, sem esperar o
+  /// token expirar — o guard rele o usuario a cada request.
+  active      Boolean    @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  progress    Progress[]
+  tokens      ApiToken[]
 
+  @@index([provider, providerId])
   @@map("users")
 }
 

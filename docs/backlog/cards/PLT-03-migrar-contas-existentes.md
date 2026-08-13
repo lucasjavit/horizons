@@ -1,6 +1,6 @@
 # PLT-03 · Migrar as contas criadas pelo guard antigo
 
-**Estado:** pronto para fazer
+**Estado:** feito (13/08/2026)
 **Tamanho:** P
 
 ## Por quê
@@ -27,10 +27,10 @@ sempre.
 
 ## Critério de aceite
 
-- [ ] Quem tinha progresso nas trilhas continua com ele depois do login
-- [ ] Os tokens de API do PLT-01 continuam acessíveis pela mesma conta
-- [ ] Não nasce conta duplicada para o mesmo e-mail
-- [ ] Conta sem `providerId` que nunca entrar pelo Google continua intacta
+- [x] Quem tinha progresso nas trilhas continua com ele depois do login
+- [x] Os tokens de API do PLT-01 continuam acessíveis pela mesma conta
+- [x] Não nasce conta duplicada para o mesmo e-mail
+- [x] Conta sem `providerId` que nunca entrar pelo Google continua intacta
 
 ## Como verificar
 
@@ -40,3 +40,28 @@ Depois do primeiro login, conferir que os dois números batem.
 ## Depende de
 
 - PLT-02 (o login em si)
+
+## Como ficou
+
+Não virou script de migração: virou o `upsert({ where: { email } })` do
+`loginComGoogle`. Conta que já existe é **adotada**; conta que não existe é
+criada. Um caminho só, sem código de migração para apagar depois — e sem nada
+parecido com o `claimOrphanData` do arguição rodando em todo login.
+
+## Verificado (13/08/2026)
+
+Antes: `eu@horizons.local` com `providerId` vazio e **3** registros de progresso.
+
+Rodado o mesmo upsert do login, com um payload de Google fingido:
+
+```
+upsert -> {"id":"3539f57c-…","email":"eu@horizons.local","name":"Eu (Google)","providerId":"G-123","role":"USER"}
+total de contas: 2
+progresso da conta: 3
+```
+
+**Mesmo `id`** — não é conta nova. O `providerId` foi preenchido, o progresso
+continua em 3, e o total de contas seguiu 2. A conta `outro@teste.com`, que
+nunca entrou pelo Google, ficou intacta com `providerId` vazio.
+
+Estado de teste desfeito depois da medição.
