@@ -142,6 +142,12 @@ else:
             li.locator("input").nth(1).fill("3")
             li.locator("input").nth(2).fill("33.33")
             pg.wait_for_timeout(500)
+            # A previa pode estar desligada (a escolha fica no localStorage).
+            # Liga antes de conferir, senao o hook reprova por uma preferencia
+            # da pessoa em vez de por um defeito.
+            if pg.locator('[aria-labelledby="preview-heading"]').count() == 0:
+                pg.get_by_role("button", name="Show preview").click()
+                pg.wait_for_timeout(600)
             previa = pg.locator('[aria-labelledby="preview-heading"]').inner_text()
             ok("$99.99" in previa, "previa mostra o mesmo valor da linha")
 

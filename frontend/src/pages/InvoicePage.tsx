@@ -97,6 +97,28 @@ export function InvoicePage() {
   // Painel do historico. Abre sozinho ao carregar SE ja houver historico —
   // e a forma de dizer "suas faturas antigas estao aqui" sem exigir um clique
   // as cegas. Fecha em 3s, mas so se a pessoa ignorar.
+  // Previa ligada por padrao — e o diferencial da ferramenta, e quem chega
+  // pela primeira vez precisa ver que existe. Desligar fica lembrado, porque
+  // quem desligou provavelmente quer assim toda vez.
+  const [previaAberta, setPreviaAberta] = useState(() => {
+    try {
+      return localStorage.getItem('horizons.invoice.preview') !== 'off'
+    } catch {
+      return true
+    }
+  })
+
+  const alternarPrevia = useCallback(() => {
+    setPreviaAberta((v) => {
+      try {
+        localStorage.setItem('horizons.invoice.preview', v ? 'off' : 'on')
+      } catch {
+        // storage bloqueado: a escolha vale so nesta sessao
+      }
+      return !v
+    })
+  }, [])
+
   const [historicoAberto, setHistoricoAberto] = useState(
     () => loadHistory().length > 0,
   )
@@ -302,10 +324,16 @@ export function InvoicePage() {
           A previa e o unico diferencial real contra um concorrente que tambem
           e um formulario — por isso ela ocupa metade da tela, e nao um canto. */}
       <div
-        className={`mx-auto grid max-w-[110rem] items-start gap-0 transition-[grid-template-columns] duration-500 ease-out motion-reduce:transition-none ${
+        className={`mx-auto grid items-start gap-0 transition-[grid-template-columns,max-width] duration-500 ease-out motion-reduce:transition-none ${
+          previaAberta ? 'max-w-[110rem]' : 'max-w-6xl'
+        } ${
           historicoAberto
-            ? 'lg:grid-cols-[18rem_minmax(0,1fr)_minmax(0,1fr)]'
-            : 'lg:grid-cols-[3rem_minmax(0,1fr)_minmax(0,1fr)]'
+            ? previaAberta
+              ? 'lg:grid-cols-[18rem_minmax(0,1fr)_minmax(0,1fr)]'
+              : 'lg:grid-cols-[18rem_minmax(0,1fr)]'
+            : previaAberta
+              ? 'lg:grid-cols-[3rem_minmax(0,1fr)_minmax(0,1fr)]'
+              : 'lg:grid-cols-[3rem_minmax(0,1fr)]'
         }`}
       >
         {/* Historico a esquerda, recolhivel. Fechado vira uma faixa estreita
@@ -379,7 +407,9 @@ export function InvoicePage() {
         </aside>
 
         <div className="px-4 py-8 sm:px-8 lg:py-12">
-          <div className="mx-auto max-w-2xl">
+          {/* Sem a previa, o formulario tem a tela toda: manter 2xl deixaria
+              uma faixa vazia a direita em vez de dar respiro ao conteudo. */}
+          <div className={`mx-auto ${previaAberta ? 'max-w-2xl' : 'max-w-4xl'}`}>
             <header className="mb-8">
               <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
                 Free invoice generator
@@ -388,6 +418,17 @@ export function InvoicePage() {
                 Professional invoices for international clients — ready in under
                 a minute.
               </p>
+              <button
+                type="button"
+                onClick={alternarPrevia}
+                aria-pressed={previaAberta}
+                className="mt-4 flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+              >
+                <span aria-hidden>{previaAberta ? '◧' : '▭'}</span>
+                {previaAberta ? 'Hide preview' : 'Show preview'}
+              </button>
+
               <ul className="mt-4 flex flex-wrap gap-2 text-xs">
                 {['No sign-up', 'Nothing leaves your browser', '7 currencies'].map(
                   (s) => (
@@ -718,7 +759,10 @@ export function InvoicePage() {
           </div>
         </div>
 
-        {/* A previa. No celular vem depois do formulario, sem posicao fixa. */}
+        {/* A previa. No celular vem depois do formulario, sem posicao fixa.
+            Desligada, a coluna sai do DOM — diferente do historico, que
+            encolhe: aqui nao ha botao morando nela, entao nada salta. */}
+        {previaAberta && (
         <aside
           className="px-4 pb-12 sm:px-8 lg:sticky lg:top-[57px] lg:max-h-[calc(100dvh-57px)] lg:overflow-y-auto lg:py-10"
           style={{ background: 'var(--surface-sunken)' }}
@@ -736,6 +780,7 @@ export function InvoicePage() {
             The downloaded PDF is the final version.
           </p>
         </aside>
+        )}
       </div>
     </main>
   )

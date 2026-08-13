@@ -234,3 +234,28 @@ As duas perguntas de produto que o `ux` levantou continuam abertas:
    no desenho. A tela diz "The downloaded PDF is the final version".
 2. A porta de entrada deve vender as trilhas com mais força? Continua uma
    linha no rodapé.
+
+
+## A prévia virou opcional (13/08/2026)
+
+Por pedido do stakeholder, a prévia passou a ser ligada e desligada por um
+botão no topo do formulário.
+
+**Continua ligada por padrão** — é o diferencial da ferramenta contra o
+concorrente, e quem chega pela primeira vez precisa ver que existe. Mas quem
+já sabe o que vai sair não deve ser obrigado a ceder metade da tela.
+
+A escolha fica lembrada no `localStorage`: quem desligou provavelmente quer
+assim toda vez.
+
+**Desligada, o formulário se alarga**: 672px → 896px, medido. Manter o
+`max-w-2xl` deixaria uma faixa vazia à direita em vez de dar respiro ao
+conteúdo — seria trocar uma coluna útil por espaço morto.
+
+Diferente do painel de histórico, a coluna da prévia **sai do DOM** quando
+desligada. Ali a coluna encolhe mas permanece, porque o botão de abrir mora
+nela; aqui não há nada para manter no lugar.
+
+O `qa-rapido.py` foi ajustado: ele checava a prévia direto e passaria a
+reprovar por uma preferência da pessoa em vez de por um defeito. Agora liga a
+prévia antes de conferir.
