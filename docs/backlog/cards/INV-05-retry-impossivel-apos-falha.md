@@ -1,6 +1,6 @@
 # INV-05 · Depois de uma falha, "Please try again" nunca funciona
 
-**Estado:** fechado como nao-viavel (12/08/2026) — mensagem corrigida
+**Estado:** feito (13/08/2026)
 **Tamanho:** P
 
 ## Por quê
@@ -39,10 +39,10 @@ do ESM. Toda retentativa rejeita a partir do cache, sem nova requisição.
 
 ## Critério de aceite
 
-- [ ] Após uma falha por rede, com a rede restaurada, clicar de novo gera o PDF
-- [ ] A retentativa dispara requisição de rede de verdade
-- [ ] Se falhar de novo, a mensagem continua aparecendo (sem travar)
-- [ ] Não é preciso recarregar a página em nenhum caso
+- [x] Após uma falha por rede, com a rede restaurada, clicar de novo gera o PDF
+- [x] A retentativa dispara requisição de rede de verdade
+- [x] Se falhar de novo, a mensagem continua aparecendo (sem travar)
+- [x] Não é preciso recarregar a página em nenhum caso
 
 ## Observações
 
@@ -129,3 +129,52 @@ um bug que atinge quem teve falha de rede no momento exato do download.
 **Fechado.** O que foi entregue: a mensagem diz a verdade ("Please reload the
 page and try again") em vez de instruir a fazer o que nao funciona. Se algum
 dia o carregamento do jsPDF mudar por outro motivo, vale reavaliar.
+
+
+---
+
+# Resolvido (13/08/2026) — o quinto caminho
+
+Eu tinha fechado este card como não-viável depois de quatro tentativas. Estava
+errado: faltava testar `<script>` **clássico** (não módulo).
+
+O UMD do jsPDF carrega por `<script src>` comum, que **não passa pelo registro
+de módulos do ESM** — é justamente o registro que guardava a rejeição para
+sempre. Testado isoladamente antes de escrever qualquer código:
+
+```
+1a tentativa (rede bloqueada): FALHOU
+2a tentativa (rede voltou):    carregou
+```
+
+## O que mudou
+
+`node_modules/jspdf/dist/jspdf.umd.min.js` e o plugin autotable foram copiados
+para `frontend/public/vendor/`. O `carregarJsPdf` injeta os dois por `<script>`,
+em ordem (o autotable depende do jsPDF já estar em `window`), e limpa a
+promessa em caso de falha para a próxima tentativa ir à rede.
+
+A mensagem de erro deixou de mandar recarregar a página: agora diz
+"Check your connection and try again", que é o que de fato funciona.
+
+## O custo, medido
+
+| | Antes (ESM) | Depois (UMD) |
+| --- | --- | --- |
+| Bundle principal | 341 KB | **351 KB** (+9 KB, do código da prévia) |
+| jsPDF no carregamento inicial | não | **não** |
+| Retry após falha de rede | impossível | **funciona** |
+| Hash de versão no arquivo | sim | **não** |
+| Tree-shaking | sim | não (já era mínimo) |
+
+Perder o hash de versão é real: um deploy novo não invalida o cache do
+`vendor/` automaticamente. Como o jsPDF só é atualizado quando alguém roda
+`npm update` de propósito, e o arquivo é imutável na prática, o risco é baixo
+— mas está registrado aqui.
+
+## A lição
+
+Fechar um card como não-viável deve significar "testei os caminhos", não
+"cansei de tentar". Eu tinha escrito no card que o que sobrava era "carregar
+o jsPDF fora do ESM" e classifiquei como caro demais sem medir. Custou 20
+linhas.

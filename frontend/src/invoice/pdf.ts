@@ -64,52 +64,79 @@ export function invoiceTotalCents(draft: InvoiceDraft): number {
 }
 
 /**
- * Carrega o jsPDF sob demanda, guardando a promessa entre chamadas.
+ * Carrega o jsPDF sob demanda, por <script> classico.
  *
- * O cache proprio guarda so o sucesso: em caso de falha ele e limpo, para a
- * proxima tentativa nao reusar a promessa rejeitada.
+ * NAO usa `import()` de proposito, e isso e o INV-05: o registro de modulos
+ * do ESM guarda a rejeicao para sempre, entao uma falha de rede deixava a
+ * pessoa sem conseguir gerar o PDF ate recarregar a pagina — e a mensagem de
+ * erro mandava tentar de novo, que era justamente o que nao funcionava.
  *
- * Isso nao resolve o INV-05, e as duas saidas obvias foram testadas e
- * descartadas:
+ * Quatro saidas foram testadas e descartadas antes desta:
  *
- * - URL dinamica (`import('jspdf?t=...')`) faz o Vite parar de separar o
- *   chunk: o bundle principal salta de 320 para 329 KB, com os 400 KB do
- *   jsPDF dentro.
- * - `fetch(url, {cache:'reload'})` antes de reimportar reaquece o cache HTTP
- *   mas nao apaga o registro de modulos do ESM, que guarda a rejeicao para
- *   sempre. Medido: continua sem gerar o PDF.
- * - `<script type="module">` injetado usa o MESMO registro de modulos, entao
- *   herda a rejeicao. Nao e via alternativa, e a mesma via com outra sintaxe.
- * - Blob URL nao resolve o import relativo interno do chunk
- *   (`Failed to resolve module specifier "./index-*.js"`).
+ * - URL dinamica no `import()` faz o Vite parar de separar o chunk (bundle
+ *   principal de 320 para 329 KB, com os 400 KB do jsPDF dentro).
+ * - `fetch(url, {cache:'reload'})` reaquece o cache HTTP, nao o registro do
+ *   ESM.
+ * - `<script type="module">` usa o MESMO registro, entao herda a rejeicao.
+ * - Blob URL nao resolve o import relativo interno do chunk.
  *
- * Por isso a mensagem de erro pede para recarregar a pagina, que e o que de
- * fato funciona. Trocar o carregamento sob demanda — que protege todo mundo
- * que so quer ler uma aula — por um retry que atinge quem teve falha de rede
- * seria mau negocio.
+ * O <script> classico e o unico que nao passa pelo registro de modulos:
+ * falhou, o proximo `appendChild` vai a rede de novo. Medido.
+ *
+ * O custo: os arquivos vivem em `public/vendor/`, fora do pipeline do Vite,
+ * entao nao tem hash de versao nem tree-shaking. Em troca, continuam fora do
+ * bundle principal — que era a razao de usar import dinamico — e quem so quer
+ * ler uma aula segue sem baixar nada disso.
  */
-let jsPdfCache: Promise<[
-  typeof import('jspdf'),
-  typeof import('jspdf-autotable'),
-]> | null = null
 
-function carregarJsPdf() {
-  if (!jsPdfCache) {
-    jsPdfCache = Promise.all([
-      import('jspdf'),
-      import('jspdf-autotable'),
-    ]) as Promise<[typeof import('jspdf'), typeof import('jspdf-autotable')]>
-    jsPdfCache.catch(() => {
-      jsPdfCache = null
+interface JanelaComJsPdf {
+  jspdf?: { jsPDF: typeof import('jspdf').jsPDF }
+}
+
+/** Guarda so o sucesso: em caso de falha, a proxima tentativa vai a rede. */
+let carregando: Promise<void> | null = null
+
+function carregarScript(src: string): Promise<void> {
+  return new Promise((ok, erro) => {
+    const s = document.createElement('script')
+    s.src = src
+    s.onload = () => ok()
+    s.onerror = () => {
+      // Remove o <script> falho: sem isso o DOM acumula tags mortas a cada
+      // tentativa, e o navegador nao reusa a que ja falhou de qualquer forma.
+      s.remove()
+      erro(new Error(`falhou ao carregar ${src}`))
+    }
+    document.head.appendChild(s)
+  })
+}
+
+async function carregarJsPdf(): Promise<typeof import('jspdf').jsPDF> {
+  const janela = window as unknown as JanelaComJsPdf
+  if (janela.jspdf?.jsPDF) return janela.jspdf.jsPDF
+
+  if (!carregando) {
+    carregando = (async () => {
+      // O autotable depende do jsPDF ja estar em window, entao a ordem
+      // importa e as duas nao podem ir em paralelo.
+      await carregarScript('/vendor/jspdf.umd.min.js')
+      await carregarScript('/vendor/jspdf.plugin.autotable.min.js')
+    })()
+    carregando.catch(() => {
+      carregando = null
     })
   }
-  return jsPdfCache
+  await carregando
+
+  const jsPDF = (window as unknown as JanelaComJsPdf).jspdf?.jsPDF
+  if (!jsPDF) throw new Error('jsPDF nao ficou disponivel apos o carregamento')
+  return jsPDF
 }
 
 export async function generateInvoicePdf(draft: InvoiceDraft): Promise<Blob> {
   // Import dinamico: as centenas de KB do jsPDF so descem quando alguem
   // realmente pede o PDF, e nao no carregamento da pagina.
-  const [{ jsPDF }, { autoTable }] = await carregarJsPdf()
+  const jsPDF = await carregarJsPdf()
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: true })
   const largura = doc.internal.pageSize.getWidth()
@@ -152,7 +179,12 @@ export async function generateInvoicePdf(draft: InvoiceDraft): Promise<Blob> {
   const yPartes = desenharPartes(doc, draft, 48, largura)
 
   const linhas = linhasValidas(draft)
-  autoTable(doc, {
+  // O plugin UMD se instala como metodo do documento, em vez de exportar
+  // uma funcao solta como a versao ESM.
+  const comAutoTable = doc as unknown as {
+    autoTable: (opcoes: Record<string, unknown>) => void
+  }
+  comAutoTable.autoTable({
     startY: yPartes + 4,
     margin: { left: MARGEM, right: MARGEM },
     head: [['DESCRIPTION', 'HOURS', 'RATE', 'AMOUNT']],

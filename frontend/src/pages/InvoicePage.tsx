@@ -199,9 +199,9 @@ export function InvoicePage() {
       setEstadoPdf('pronto')
     } catch {
       setEstadoPdf('erro')
-      // Diz a verdade: o modulo do jsPDF fica cacheado como falho pelo ESM,
-      // entao clicar de novo nao vai a rede. So recarregar resolve (INV-05).
-      setErroPdf('Could not generate the PDF. Please reload the page and try again.')
+      // Desde o INV-05 o retry funciona de verdade: o jsPDF entra por
+      // <script> classico, que nao cacheia a falha como o import() do ESM.
+      setErroPdf('Could not generate the PDF. Check your connection and try again.')
     } finally {
       // Segura a trava por um tempo minimo. Sem isso ela nao serve para nada:
       // a geracao leva 13ms com o jsPDF ja carregado, entao o botao fecha e

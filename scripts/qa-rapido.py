@@ -49,20 +49,24 @@ if not ok(r.returncode == 0, "frontend compila"):
     print(r.stdout[-1500:])
     print(r.stderr[-1500:])
 
-# 2. O jsPDF precisa continuar fora do bundle principal. E a regressao mais
-#    facil de cometer sem perceber: basta alguem trocar o import() dinamico
-#    por um import estatico e o bundle dobra em silencio.
+# 2. O jsPDF precisa continuar fora do bundle principal. Desde o INV-05 ele
+#    vive em public/vendor/ e entra por <script> classico, entao a regressao
+#    a vigiar e alguem voltar a importa-lo no codigo.
 if r.returncode == 0:
     from pathlib import Path
     assets = Path("frontend/dist/assets")
     principal = [f for f in assets.glob("index-*.js")]
     if principal:
         conteudo = principal[0].read_text(errors="ignore")
-        # Import estatico apareceria como 'from"./jspdf...' no topo do chunk.
-        estatico = 'from"./jspdf' in conteudo or "from'./jspdf" in conteudo
-        ok(not estatico, "jspdf fora do bundle principal (import dinamico)")
+        # Procura por assinatura da BIBLIOTECA, nao pelo nome: o codigo que
+        # carrega o script referencia `window.jspdf.jsPDF` legitimamente.
+        # "AcroForm" e "getTextDimensions" so existem dentro do jsPDF.
+        embutido = "AcroForm" in conteudo or "getTextDimensions" in conteudo
+        ok(not embutido, "jspdf fora do bundle principal")
         tamanho = principal[0].stat().st_size
         ok(tamanho < 450_000, f"bundle principal em {tamanho // 1024} KB (limite 440)")
+    vendor = Path("frontend/public/vendor/jspdf.umd.min.js")
+    ok(vendor.exists(), "jspdf.umd.min.js presente em public/vendor")
 
 # 3. Se os containers estiverem no ar, confere o comportamento. Se nao
 #    estiverem, pula sem reprovar: nem todo commit acontece com tudo rodando.
