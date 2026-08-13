@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { Recolhivel } from '../components/Recolhivel'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { SelectField, TextAreaField, TextField } from '../components/invoice/Field'
 import { Hint } from '../components/invoice/Hint'
@@ -372,23 +373,7 @@ export function InvoicePage() {
               </span>
             </button>
 
-            {/* grid-template-rows de 0fr para 1fr anima altura sem precisar
-                medir o conteudo. `hidden` escondia na hora, sem transicao. */}
-            <div
-              id="painel-historico"
-              aria-hidden={!historicoAberto}
-              className={`grid transition-all duration-500 ease-out motion-reduce:transition-none ${
-                historicoAberto
-                  ? 'grid-rows-[1fr] opacity-100'
-                  : 'grid-rows-[0fr] opacity-0'
-              }`}
-            >
-              <div
-                className="overflow-hidden"
-                // Tira do caminho do teclado quando fechado: sem isto o Tab
-                // pararia em botoes invisiveis de altura zero.
-                inert={!historicoAberto}
-              >
+            <Recolhivel id="painel-historico" aberto={historicoAberto}>
               <InvoiceHistory
                 entries={historico}
                 onOpen={(e) => {
@@ -400,9 +385,8 @@ export function InvoicePage() {
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}
                 onRemove={(id) => setHistorico(removeFromHistory(id))}
-                />
-              </div>
-            </div>
+              />
+            </Recolhivel>
           </div>
         </aside>
 
@@ -411,24 +395,27 @@ export function InvoicePage() {
               uma faixa vazia a direita em vez de dar respiro ao conteudo. */}
           <div className={`mx-auto ${previaAberta ? 'max-w-2xl' : 'max-w-4xl'}`}>
             <header className="mb-8">
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Free invoice generator
-              </h1>
+              <div className="flex items-start justify-between gap-4">
+                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                  Free invoice generator
+                </h1>
+                {/* A direita, na altura do titulo: e um controle da tela, nao
+                    parte do formulario. */}
+                <button
+                  type="button"
+                  onClick={alternarPrevia}
+                  aria-pressed={previaAberta}
+                  className="mt-1 flex shrink-0 items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                >
+                  <span aria-hidden>{previaAberta ? '◧' : '▭'}</span>
+                  {previaAberta ? 'Hide preview' : 'Show preview'}
+                </button>
+              </div>
               <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
                 Professional invoices for international clients — ready in under
                 a minute.
               </p>
-              <button
-                type="button"
-                onClick={alternarPrevia}
-                aria-pressed={previaAberta}
-                className="mt-4 flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-medium"
-                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-              >
-                <span aria-hidden>{previaAberta ? '◧' : '▭'}</span>
-                {previaAberta ? 'Hide preview' : 'Show preview'}
-              </button>
-
               <ul className="mt-4 flex flex-wrap gap-2 text-xs">
                 {['No sign-up', 'Nothing leaves your browser', '7 currencies'].map(
                   (s) => (
@@ -759,15 +746,14 @@ export function InvoicePage() {
           </div>
         </div>
 
-        {/* A previa. No celular vem depois do formulario, sem posicao fixa.
-            Desligada, a coluna sai do DOM — diferente do historico, que
-            encolhe: aqui nao ha botao morando nela, entao nada salta. */}
-        {previaAberta && (
+        {/* A previa. No celular vem depois do formulario, sem posicao fixa. */}
         <aside
-          className="px-4 pb-12 sm:px-8 lg:sticky lg:top-[57px] lg:max-h-[calc(100dvh-57px)] lg:overflow-y-auto lg:py-10"
+          className="lg:sticky lg:top-[57px] lg:max-h-[calc(100dvh-57px)] lg:overflow-y-auto"
           style={{ background: 'var(--surface-sunken)' }}
           aria-labelledby="preview-heading"
         >
+          <Recolhivel aberto={previaAberta}>
+          <div className="px-4 pb-12 sm:px-8 lg:py-10">
           <h2
             id="preview-heading"
             className="mb-4 pt-8 text-[0.7rem] font-bold uppercase tracking-widest lg:pt-0"
@@ -779,8 +765,9 @@ export function InvoicePage() {
           <p className="mt-4 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
             The downloaded PDF is the final version.
           </p>
+          </div>
+          </Recolhivel>
         </aside>
-        )}
       </div>
     </main>
   )

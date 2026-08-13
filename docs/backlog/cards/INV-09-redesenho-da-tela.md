@@ -259,3 +259,29 @@ nela; aqui não há nada para manter no lugar.
 O `qa-rapido.py` foi ajustado: ele checava a prévia direto e passaria a
 reprovar por uma preferência da pessoa em vez de por um defeito. Agora liga a
 prévia antes de conferir.
+
+
+## `Recolhivel`: a animação virou componente (13/08/2026)
+
+O stakeholder pediu que a prévia fechasse deslizando "como o histórico" e que
+o padrão fosse guardado para reuso. Virou
+`frontend/src/components/Recolhivel.tsx`.
+
+O truque é `grid-template-rows` de `0fr` para `1fr`: anima a altura **sem
+medir o conteúdo** em JavaScript e sem `max-height` chutado — altura fixa ou
+corta o conteúdo grande, ou deixa a animação lenta demais no pequeno.
+
+Três detalhes que o componente carrega, e que são fáceis de esquecer quando
+se repete o padrão à mão:
+
+- o filho precisa de `overflow-hidden`, senão o conteúdo vaza durante a
+  transição em vez de ser revelado aos poucos
+- fechado, recebe `inert` — sem isso o Tab para em controles invisíveis de
+  altura zero
+- respeita `prefers-reduced-motion`
+
+Aplicado no painel de histórico e na prévia. Medido ao fechar a prévia: 574px
+→ 0 em 31 alturas intermediárias.
+
+O botão também saiu do meio do formulário e foi para a **direita, na altura do
+título**: é um controle da tela, não um campo da invoice.
