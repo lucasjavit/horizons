@@ -135,7 +135,7 @@
     {
       "id": "INV-10",
       "titulo": "Clientes salvos, histórico e duplicar do mês passado",
-      "estado": "backlog",
+      "estado": "bloqueado — espera a decisão de login",
       "coluna": "backlog",
       "tamanho": "G",
       "porque": "Hoje o gerador é anônimo e roda inteiro no navegador. Isso foi decisão deliberada: quem chega do Google gera o PDF sem cadastro, e o login vira consequência do valor entregue, não pedágio.",

@@ -19,7 +19,7 @@ ele é o único card que sobrou.
 
 | Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
-| [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | trava no login; quebrar em 4 antes |
+| [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **bloqueado no login** · comportamento já definido |
 
 ## Pronto para fazer
 
