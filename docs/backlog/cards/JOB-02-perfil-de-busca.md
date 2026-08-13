@@ -61,3 +61,47 @@ Foi decisão do stakeholder, e é o que impede N perfis virarem N buscas a cada
 ## Depende de
 
 - PLT-02 (perfil precisa de dono)
+
+
+---
+
+# O perfil alimenta o prompt (13/08/2026)
+
+O prompt de busca (ver [PLT-04](PLT-04-crud-de-prompts.md)) tem dois espaços
+que este card preenche:
+
+```
+Resume:
+{{RESUME}}
+
+Filters:
+{{FILTERS}}
+```
+
+E ele já trata os três casos que o stakeholder pediu, por conta própria:
+
+- **Case A — só CV**: identifica perfil, famílias de cargo, senioridade
+- **Case B — CV + filtros**: o CV qualifica, os filtros restringem, e **filtro
+  explícito vence o CV** ("resume information is used for qualification, not to
+  override explicit filters")
+- **Case C — só filtros**: não inventa qualificação nenhuma
+
+Isso confirma o desenho deste card: os campos vêm preenchidos pelo CV e
+**editáveis** — quando a pessoa corrige um campo, ela está exercendo o Case B.
+
+## O formato dos filtros
+
+O prompt espera JSON com `job_titles`, `keywords`, `exclude_keywords`,
+`locations`, `remote`, `employment_types`, `seniority`, `salary_min`,
+`salary_max`, `currency`, `posted_within_days`, `companies`, `industries`,
+`technologies`, `visa_required`, `timezone` — todos opcionais.
+
+O `JobProfile.filtros` guarda exatamente esse formato, e a assinatura do
+`grupo` sai dos campos que mais restringem a busca: senioridade, tecnologias
+ordenadas e região.
+
+## O que NÃO vai para o prompt
+
+`{{RESUME}}` recebe o **perfil extraído**, não o texto do CV. Some o CPF, o
+endereço e o telefone antes de qualquer coisa sair daqui — o CV inteiro dentro
+do prompt viajaria para o provedor de IA com dado pessoal junto.

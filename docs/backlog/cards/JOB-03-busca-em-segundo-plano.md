@@ -75,3 +75,53 @@ inflar o salário):
 
 - JOB-01 (saber se sobra vaga aproveitável)
 - JOB-02 (o perfil e o agrupamento)
+
+
+---
+
+# Como a rodada funciona (13/08/2026)
+
+O stakeholder forneceu o prompt do agente de busca (ver
+[PLT-04](PLT-04-crud-de-prompts.md)) e decidiu a estratégia de validação:
+**raspar listagem, abrir só as boas.**
+
+## Duas fases, e o porquê
+
+O prompt manda abrir cada vaga com Firecrawl para validar. Medido no JOB-01,
+isso custa **5 créditos e ~36 s por página** — para 30 vagas, 150 créditos e
+~18 minutos, a cada 50 minutos.
+
+A listagem, por outro lado, rende **20 vagas por 5 créditos**.
+
+Então a rodada é:
+
+```
+1  search                     2 cr    → listagens (nunca vagas)
+2  raspar 3 listagens        15 cr    → ~60 vagas com titulo, empresa, URL
+3  a IA ranqueia as 60         —      → sem custo de Firecrawl
+4  abrir as ~10 melhores      50 cr   → elegibilidade e salario com evidencia
+                            ─────
+                            ~67 cr, ~8 min
+```
+
+Contra 150 créditos e 18 min abrindo todas. **A fase 4 é onde a elegibilidade
+aparece** — "aceita brasileiro" quase nunca está na listagem, e é o dado que
+justifica a feature.
+
+## Regras que saíram do JOB-01
+
+1. **URL de signup não é link de candidatura.** Medido: o Himalayas devolve
+   `himalayas.app/signup/talent?redirect=…`. Descartar `/signup`, `/login`,
+   `/register` — ou buscar o link real, ou apontar para a página do anúncio.
+2. **O prompt precisa proibir contagem de candidatos como salário**,
+   explicitamente. Foi o que resolveu — a alucinação era do prompt, não do
+   modelo.
+3. **Pedir evidência junto do valor**, para salário e elegibilidade.
+4. **Raspar listagem, não vaga individual**, na primeira fase.
+
+## `unverified` em vez de descartar
+
+O prompt do stakeholder traz algo melhor que a minha regra binária: vaga que
+não dá para verificar recebe `verification_status: "unverified"` e **continua
+aparecendo, marcada**. Descartar em silêncio esconde da pessoa que existe algo
+ali; marcar deixa ela decidir.

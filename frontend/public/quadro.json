@@ -311,6 +311,18 @@
       "bloqueio": "PLT-02 (o login em si)",
       "feitos": 0,
       "total": 4
+    },
+    {
+      "id": "PLT-04",
+      "titulo": "Config vira área de admin, com CRUD de prompts",
+      "estado": "backlog",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "O prompt de busca é o que decide a qualidade da feature inteira. O JOB-01 provou isso com número: a mesma página, com prompt explícito, saiu de 47% de vagas sem URL para 0%, e de \"Mais de 100 candidatos\" no campo salário",
+      "decisao": "",
+      "bloqueio": "PLT-02 — sem role no usuário não há admin. O guard do arguição já traz",
+      "feitos": 0,
+      "total": 7
     }
   ]
 }
