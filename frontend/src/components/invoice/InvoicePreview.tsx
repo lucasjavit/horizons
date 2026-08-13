@@ -119,7 +119,7 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
       <table className="mt-8 w-full" style={{ borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ background: VERDE, color: '#fff' }}>
-            {['DESCRIPTION', 'QTY', 'RATE', 'AMOUNT'].map((h, i) => (
+            {['DESCRIPTION', 'HOURS', 'RATE', 'AMOUNT'].map((h, i) => (
               <th
                 key={h}
                 className="px-2.5 py-2 text-[0.6rem] font-bold uppercase tracking-wider"

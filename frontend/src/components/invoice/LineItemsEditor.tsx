@@ -46,7 +46,10 @@ export function LineItemsEditor({
         style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
       >
         <span>Description</span>
-        <span>Qty</span>
+        {/* "Hours" em vez de "Qty": o caso de uso principal e o dev que
+            fatura horas trabalhadas. Serve igual para diaria ou unidade —
+            o campo aceita fracao — mas o rotulo fala com quem usa. */}
+        <span>Hours</span>
         <span>Rate</span>
         <span className="text-right">Amount</span>
         <span />
@@ -141,7 +144,7 @@ function LineItemRow({
           type="text"
           value={item.description}
           onChange={(e) => onChange(item.id, 'description', e.target.value)}
-          placeholder="Website redesign"
+          placeholder="Backend development — August"
           className="w-full rounded-md border px-3 py-2 text-sm"
           style={{
             borderColor: 'var(--border)',
@@ -153,7 +156,7 @@ function LineItemRow({
 
       <div>
         <label htmlFor={idQtd} className="mb-1 block text-xs font-medium sm:sr-only">
-          Qty <span className="sr-only">for {rotulo}</span>
+          Hours <span className="sr-only">for {rotulo}</span>
         </label>
         {/* text + inputMode em vez de type="number": o numerico descarta
             entrada invalida em silencio, muda de valor com a roda do mouse
@@ -187,7 +190,7 @@ function LineItemRow({
 
       <div>
         <label htmlFor={idRate} className="mb-1 block text-xs font-medium sm:sr-only">
-          Rate <span className="sr-only">for {rotulo}</span>
+          Hourly rate <span className="sr-only">for {rotulo}</span>
         </label>
         <input
           id={idRate}

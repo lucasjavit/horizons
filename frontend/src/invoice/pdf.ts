@@ -153,7 +153,7 @@ export async function generateInvoicePdf(draft: InvoiceDraft): Promise<Blob> {
   autoTable(doc, {
     startY: yPartes + 4,
     margin: { left: MARGEM, right: MARGEM },
-    head: [['DESCRIPTION', 'QTY', 'RATE', 'AMOUNT']],
+    head: [['DESCRIPTION', 'HOURS', 'RATE', 'AMOUNT']],
     body: linhas.map((l) => [
       l.descricao,
       String(l.qtd),
