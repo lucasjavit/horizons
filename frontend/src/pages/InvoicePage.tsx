@@ -94,9 +94,39 @@ export function InvoicePage() {
   // Invoices ja baixadas, guardadas neste navegador.
   const [historico, setHistorico] = useState<HistoryEntry[]>(() => loadHistory())
 
-  // Painel do historico. Comeca fechado: quem chega pela primeira vez nao tem
-  // historico nenhum, e quem tem prefere a tela cheia para preencher.
-  const [historicoAberto, setHistoricoAberto] = useState(false)
+  // Painel do historico. Abre sozinho ao carregar SE ja houver historico —
+  // e a forma de dizer "suas faturas antigas estao aqui" sem exigir um clique
+  // as cegas. Fecha em 3s, mas so se a pessoa ignorar.
+  const [historicoAberto, setHistoricoAberto] = useState(
+    () => loadHistory().length > 0,
+  )
+
+  // Guarda o timer do fechamento automatico para poder cancela-lo.
+  const timerHistorico = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const fixarHistorico = useCallback(() => {
+    // Qualquer sinal de interesse cancela o fechamento: passar o mouse,
+    // focar por teclado ou clicar. Fechar na mao de quem esta lendo seria
+    // pior que nunca ter aberto.
+    if (timerHistorico.current) {
+      clearTimeout(timerHistorico.current)
+      timerHistorico.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!historicoAberto) return
+    timerHistorico.current = setTimeout(() => {
+      setHistoricoAberto(false)
+      timerHistorico.current = null
+    }, 3000)
+    return () => {
+      if (timerHistorico.current) clearTimeout(timerHistorico.current)
+    }
+    // Roda uma vez, na montagem: reabrir depois e escolha da pessoa, e
+    // fechar o que ela abriu de proposito seria hostil.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Empresas emissoras salvas. Ficam fora do rascunho de propósito: valem
   // para todas as invoices, e nao so para a que esta sendo escrita.
@@ -249,7 +279,7 @@ export function InvoicePage() {
           A previa e o unico diferencial real contra um concorrente que tambem
           e um formulario — por isso ela ocupa metade da tela, e nao um canto. */}
       <div
-        className={`mx-auto grid max-w-[110rem] items-start gap-0 ${
+        className={`mx-auto grid max-w-[110rem] items-start gap-0 transition-[grid-template-columns] duration-500 ease-out motion-reduce:transition-none ${
           historicoAberto
             ? 'lg:grid-cols-[18rem_minmax(0,1fr)_minmax(0,1fr)]'
             : 'lg:grid-cols-[3rem_minmax(0,1fr)_minmax(0,1fr)]'
@@ -262,11 +292,17 @@ export function InvoicePage() {
           className="border-b lg:sticky lg:top-[57px] lg:max-h-[calc(100dvh-57px)] lg:overflow-y-auto lg:border-b-0 lg:border-r"
           style={{ borderColor: 'var(--border)' }}
           aria-labelledby="history-heading"
+          onMouseEnter={fixarHistorico}
+          onFocusCapture={fixarHistorico}
+          onPointerDown={fixarHistorico}
         >
           <div className={historicoAberto ? 'p-4' : 'p-2 lg:py-4'}>
             <button
               type="button"
-              onClick={() => setHistoricoAberto((v) => !v)}
+              onClick={() => {
+                fixarHistorico()
+                setHistoricoAberto((v) => !v)
+              }}
               aria-expanded={historicoAberto}
               aria-controls="painel-historico"
               className={`flex items-center gap-2 rounded-md border px-2.5 py-2 text-xs font-medium ${
@@ -281,7 +317,23 @@ export function InvoicePage() {
               </span>
             </button>
 
-            <div id="painel-historico" hidden={!historicoAberto}>
+            {/* grid-template-rows de 0fr para 1fr anima altura sem precisar
+                medir o conteudo. `hidden` escondia na hora, sem transicao. */}
+            <div
+              id="painel-historico"
+              aria-hidden={!historicoAberto}
+              className={`grid transition-all duration-500 ease-out motion-reduce:transition-none ${
+                historicoAberto
+                  ? 'grid-rows-[1fr] opacity-100'
+                  : 'grid-rows-[0fr] opacity-0'
+              }`}
+            >
+              <div
+                className="overflow-hidden"
+                // Tira do caminho do teclado quando fechado: sem isto o Tab
+                // pararia em botoes invisiveis de altura zero.
+                inert={!historicoAberto}
+              >
               <InvoiceHistory
                 entries={historico}
                 onOpen={(e) => {
@@ -293,7 +345,8 @@ export function InvoicePage() {
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}
                 onRemove={(id) => setHistorico(removeFromHistory(id))}
-              />
+                />
+              </div>
             </div>
           </div>
         </aside>

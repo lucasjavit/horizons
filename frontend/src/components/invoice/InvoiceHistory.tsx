@@ -47,11 +47,20 @@ export function InvoiceHistory({
     <section className="mt-4">
       <h2
         id="history-heading"
-        className="mb-3 text-[0.7rem] font-bold uppercase tracking-widest"
+        className="mb-2 text-[0.7rem] font-bold uppercase tracking-widest"
         style={{ color: 'var(--text-muted)' }}
       >
         Recent invoices
       </h2>
+
+      {/* A regra de edicao explicada em texto, e nao em tooltip: a coluna e
+          estreita demais para um painel flutuante caber sem ser cortado, e
+          esta e a informacao que evita a duvida "vou sobrescrever a antiga?"
+          — cara demais para ficar escondida atras de um hover. */}
+      <p className="mb-3 text-[0.68rem] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+        Click one to open it. Editing never overwrites — download creates a new
+        invoice and the original stays untouched.
+      </p>
 
       <ul className="flex flex-col gap-1.5">
         {entries.map((e) => {

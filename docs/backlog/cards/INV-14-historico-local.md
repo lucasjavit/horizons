@@ -90,3 +90,38 @@ o cursor mudaria de posição no meio da digitação.
 
 O painel usa `aria-expanded` e `aria-controls`, e o conteúdo fica `hidden`
 quando fechado, não desmontado — abrir e fechar não recarrega a lista.
+
+
+## Abertura automática e animação (13/08/2026)
+
+**Abre sozinho ao carregar, se já houver histórico**, e fecha em 3s. É a forma
+de dizer "suas faturas antigas estão aqui" sem exigir um clique às cegas.
+
+O detalhe que faz isso não irritar: **qualquer sinal de interesse cancela o
+fechamento** — passar o mouse, focar por teclado ou clicar. Fechar na mão de
+quem está lendo seria pior que nunca ter aberto. Sem histórico, não abre.
+
+**A animação é de 500ms**, com `grid-template-rows` de `0fr` para `1fr` — anima
+altura sem precisar medir o conteúdo. A coluna desliza junto
+(`transition-[grid-template-columns]`). Respeita `prefers-reduced-motion`.
+
+Medido ao fechar: 207px → 0 em 533ms, passando por 28 alturas intermediárias.
+
+O conteúdo fechado recebe `inert`: sem isso o Tab pararia em botões invisíveis
+de altura zero.
+
+## A regra de edição virou texto, não tooltip
+
+Tentei explicá-la num tooltip ao lado do título. **Não coube:** a coluna tem
+18rem e `overflow`, o gatilho fica no meio dela, e nenhuma largura útil cabe
+dos dois lados. Medido em três tentativas:
+
+| Tentativa | Resultado |
+| --- | --- |
+| `left-0`, 16rem | vazava para x = −79 |
+| `right-0`, 16rem | continuava cortado |
+| ancorado nas duas bordas | virou coluna de 64px por 810px de altura |
+
+O erro era insistir em CSS num problema de posição. A explicação virou **texto
+fixo no painel** — e é melhor assim: "vou sobrescrever a fatura antiga?" é
+caro demais para ficar escondido atrás de um hover.

@@ -5,6 +5,15 @@ interface HintProps {
   title: string
   /** A explicacao. Uma ou duas frases; nao e documentacao. */
   children: string
+  /**
+   * Onde o painel abre. `right` e o padrao; `left` serve quando o gatilho
+   * fica perto da borda direita.
+   *
+   * Nao ha variante para coluna estreita de proposito: tentei, e nao existe
+   * largura que caiba quando o gatilho esta no meio de uma coluna de 18rem.
+   * Nesse caso a explicacao vira texto na tela, nao tooltip.
+   */
+  align?: 'left' | 'right'
 }
 
 /**
@@ -21,7 +30,7 @@ interface HintProps {
  * a foco, com `aria-describedby` ligando o texto ao botao — assim o leitor de
  * tela le a explicacao, e nao so o icone.
  */
-export function Hint({ title, children }: HintProps) {
+export function Hint({ title, children, align = 'right' }: HintProps) {
   const id = useId()
   const [visivel, setVisivel] = useState(false)
 
@@ -59,7 +68,9 @@ export function Hint({ title, children }: HintProps) {
         <span
           id={id}
           role="tooltip"
-          className="absolute left-0 top-[calc(100%+8px)] z-30 w-64 rounded-lg border p-3 text-xs leading-relaxed shadow-xl"
+          className={`absolute top-[calc(100%+8px)] z-30 rounded-lg border p-3 text-xs leading-relaxed shadow-xl ${
+            align === 'left' ? 'right-0 w-64' : 'left-0 w-64'
+          }`}
           style={{
             background: 'var(--surface-raised)',
             borderColor: 'var(--border)',
