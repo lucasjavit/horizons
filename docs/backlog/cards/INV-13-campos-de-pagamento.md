@@ -64,3 +64,18 @@ Banco: TRAVELEX BANCO DE CAMBIO SA
 ```
 
 As linhas vazias não aparecem, e "Banco" saiu com o nome que foi digitado.
+
+
+## Posição no documento (13/08/2026)
+
+Por decisão do stakeholder, o bloco PAYMENT DETAILS passou a ficar **acima da
+tabela de itens**, entre FROM/BILL TO e DESCRIPTION.
+
+Faz sentido além da estética: quem recebe a fatura precisa saber para onde
+pagar, e essa informação não deve estar depois de uma tabela que pode ocupar
+a página inteira — numa invoice com trinta linhas, os dados bancários ficariam
+na segunda página.
+
+No PDF virou função própria (`desenharPagamento`), com rótulo à esquerda e
+valor à direita: alinhado nas duas bordas, a lista é lida como tabela e não
+como parágrafo. A prévia espelha a mesma ordem.
