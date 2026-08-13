@@ -34,10 +34,17 @@ export function InvoiceHistory({
 }: InvoiceHistoryProps) {
   const [confirmando, setConfirmando] = useState<string | null>(null)
 
-  if (entries.length === 0) return null
+  if (entries.length === 0) {
+    return (
+      <p className="mt-4 text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+        Invoices you download show up here, so you can open one again or use it
+        as the base for the next month.
+      </p>
+    )
+  }
 
   return (
-    <section aria-labelledby="history-heading" className="mt-8">
+    <section className="mt-4">
       <h2
         id="history-heading"
         className="mb-3 text-[0.7rem] font-bold uppercase tracking-widest"
@@ -66,23 +73,18 @@ export function InvoiceHistory({
                 onClick={() => onOpen(e)}
                 className="min-w-0 flex-1 text-left"
               >
-                <span className="flex items-baseline gap-2">
+                <span className="flex items-baseline justify-between gap-2">
                   <span className="font-mono text-xs font-bold">{nome}</span>
-                  <span
-                    className="min-w-0 flex-1 truncate text-xs"
-                    style={{ color: 'var(--text-muted)' }}
-                  >
-                    {cliente || '—'}
-                  </span>
                   <span className="text-xs font-semibold tabular-nums">
                     {formatCents(total, e.draft.currency)}
                   </span>
                 </span>
                 <span
-                  className="mt-0.5 block text-[0.68rem]"
+                  className="mt-0.5 flex items-baseline justify-between gap-2 text-[0.68rem]"
                   style={{ color: 'var(--text-muted)' }}
                 >
-                  {formatarData(e.savedAt)}
+                  <span className="min-w-0 truncate">{cliente || '—'}</span>
+                  <span className="shrink-0">{formatarData(e.savedAt)}</span>
                 </span>
               </button>
 

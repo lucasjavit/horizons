@@ -66,3 +66,27 @@ que histórico de verdade espera essa decisão.
 
 Este é o que funciona hoje, sem cadastro. Quando o login existir, o passo
 natural é subir o histórico local para a conta.
+
+
+## Posição na tela (13/08/2026)
+
+Por pedido do stakeholder, o histórico saiu de baixo da prévia e virou um
+**painel recolhível à esquerda**. A tela ficou com três colunas:
+
+```
+┌──────────┬──────────────────┬─────────────────┐
+│ History  │  formulário      │  live preview   │
+│ (recolhe)│                  │                 │
+└──────────┴──────────────────┴─────────────────┘
+```
+
+**Começa fechado.** Quem chega pela primeira vez não tem histórico nenhum, e
+quem tem prefere a tela cheia para preencher. O botão mostra a contagem
+("History (3)"), então dá para saber que há algo lá sem abrir.
+
+**Fechado, a coluna encolhe mas não some** (3rem em vez de 18rem). Se a coluna
+desaparecesse, o formulário saltaria de lugar a cada abertura — e o campo sob
+o cursor mudaria de posição no meio da digitação.
+
+O painel usa `aria-expanded` e `aria-controls`, e o conteúdo fica `hidden`
+quando fechado, não desmontado — abrir e fechar não recarrega a lista.

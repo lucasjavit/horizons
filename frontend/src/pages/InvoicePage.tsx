@@ -94,6 +94,10 @@ export function InvoicePage() {
   // Invoices ja baixadas, guardadas neste navegador.
   const [historico, setHistorico] = useState<HistoryEntry[]>(() => loadHistory())
 
+  // Painel do historico. Comeca fechado: quem chega pela primeira vez nao tem
+  // historico nenhum, e quem tem prefere a tela cheia para preencher.
+  const [historicoAberto, setHistoricoAberto] = useState(false)
+
   // Empresas emissoras salvas. Ficam fora do rascunho de propósito: valem
   // para todas as invoices, e nao so para a que esta sendo escrita.
   const [companies, setCompanies] = useState<Company[]>(() => loadCompanies())
@@ -244,7 +248,56 @@ export function InvoicePage() {
       {/* Duas colunas no desktop: formulario a esquerda, documento a direita.
           A previa e o unico diferencial real contra um concorrente que tambem
           e um formulario — por isso ela ocupa metade da tela, e nao um canto. */}
-      <div className="mx-auto grid max-w-[100rem] items-start gap-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div
+        className={`mx-auto grid max-w-[110rem] items-start gap-0 ${
+          historicoAberto
+            ? 'lg:grid-cols-[18rem_minmax(0,1fr)_minmax(0,1fr)]'
+            : 'lg:grid-cols-[3rem_minmax(0,1fr)_minmax(0,1fr)]'
+        }`}
+      >
+        {/* Historico a esquerda, recolhivel. Fechado vira uma faixa estreita
+            com o botao de abrir — a coluna nao some, senao o formulario
+            saltaria de lugar a cada abertura. */}
+        <aside
+          className="border-b lg:sticky lg:top-[57px] lg:max-h-[calc(100dvh-57px)] lg:overflow-y-auto lg:border-b-0 lg:border-r"
+          style={{ borderColor: 'var(--border)' }}
+          aria-labelledby="history-heading"
+        >
+          <div className={historicoAberto ? 'p-4' : 'p-2 lg:py-4'}>
+            <button
+              type="button"
+              onClick={() => setHistoricoAberto((v) => !v)}
+              aria-expanded={historicoAberto}
+              aria-controls="painel-historico"
+              className={`flex items-center gap-2 rounded-md border px-2.5 py-2 text-xs font-medium ${
+                historicoAberto ? 'w-full' : 'w-full lg:justify-center'
+              }`}
+              style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+            >
+              <span aria-hidden>{historicoAberto ? '◀' : '▶'}</span>
+              <span className={historicoAberto ? '' : 'lg:sr-only'}>
+                History
+                {historico.length > 0 && ` (${historico.length})`}
+              </span>
+            </button>
+
+            <div id="painel-historico" hidden={!historicoAberto}>
+              <InvoiceHistory
+                entries={historico}
+                onOpen={(e) => {
+                  inv.load(e.draft)
+                  setTocados({})
+                  setEnviado(false)
+                  setEstadoPdf('ocioso')
+                  setAberto(4)
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+                onRemove={(id) => setHistorico(removeFromHistory(id))}
+              />
+            </div>
+          </div>
+        </aside>
+
         <div className="px-4 py-8 sm:px-8 lg:py-12">
           <div className="mx-auto max-w-2xl">
             <header className="mb-8">
@@ -602,18 +655,6 @@ export function InvoicePage() {
           <p className="mt-4 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
             The downloaded PDF is the final version.
           </p>
-          <InvoiceHistory
-            entries={historico}
-            onOpen={(e) => {
-              inv.load(e.draft)
-              setTocados({})
-              setEnviado(false)
-              setEstadoPdf('ocioso')
-              setAberto(4)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }}
-            onRemove={(id) => setHistorico(removeFromHistory(id))}
-          />
         </aside>
       </div>
     </main>
