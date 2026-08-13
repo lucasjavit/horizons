@@ -322,8 +322,18 @@ function desenharBlocosFinais(
   yInicial: number,
   largura: number,
 ): void {
+  const pagamento = draft.paymentFields.filter((c) => c.value.trim())
   const blocos = [
-    { titulo: 'PAYMENT DETAILS', texto: draft.paymentDetails.trim() },
+    {
+      titulo: 'PAYMENT DETAILS',
+      texto: [
+        // Rotulo e valor na mesma linha, como numa invoice de verdade.
+        ...pagamento.map((c) => `${c.label.trim() || '—'}: ${c.value.trim()}`),
+        draft.paymentDetails.trim(),
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    },
     { titulo: 'NOTES / TERMS', texto: draft.notes.trim() },
   ].filter((b) => b.texto)
   if (blocos.length === 0) return

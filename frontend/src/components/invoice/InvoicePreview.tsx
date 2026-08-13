@@ -44,6 +44,10 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
     draft.from.taxId.trim() ? `Tax ID ${draft.from.taxId.trim()}` : '',
   ].filter((l) => l.trim())
 
+  // So linha com valor entra no documento: quem nao usa IBAN deixa vazio e
+  // ele nao aparece.
+  const pagamento = draft.paymentFields.filter((c) => c.value.trim())
+
   const para = [
     draft.billTo.name.trim(),
     ...draft.billTo.address.split('\n'),
@@ -171,6 +175,29 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
           </span>
         </div>
       </div>
+
+      {pagamento.length > 0 && (
+        <div className="mt-8 pt-5" style={{ borderTop: `1px solid ${LINHA}` }}>
+          <p
+            className="mb-2 text-[0.62rem] font-bold uppercase tracking-widest"
+            style={{ color: APAGADO, margin: 0 }}
+          >
+            PAYMENT DETAILS
+          </p>
+          <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+            <tbody>
+              {pagamento.map((c) => (
+                <tr key={c.id}>
+                  <td className="py-0.5 pr-4" style={{ color: APAGADO, verticalAlign: 'top' }}>
+                    {c.label.trim() || '—'}
+                  </td>
+                  <td className="py-0.5 text-right font-medium">{c.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {(draft.paymentDetails.trim() || draft.notes.trim()) && (
         <div

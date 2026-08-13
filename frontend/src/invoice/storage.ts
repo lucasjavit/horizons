@@ -1,6 +1,12 @@
 import { isCurrencyCode } from './currencies'
-import type { InvoiceDraft, LineItem } from './types'
-import { DRAFT_VERSION, emptyDraft, emptyItem, newItemId } from './types'
+import type { InvoiceDraft, LineItem, PaymentField } from './types'
+import {
+  DRAFT_VERSION,
+  defaultPaymentFields,
+  emptyDraft,
+  emptyItem,
+  newItemId,
+} from './types'
 
 const CHAVE = 'horizons.invoice.draft.v1'
 
@@ -31,6 +37,19 @@ function saneiaItens(bruto: unknown): LineItem[] {
   return itens.length > 0 ? itens : [emptyItem()]
 }
 
+function saneiaPagamento(bruto: unknown): PaymentField[] {
+  if (!Array.isArray(bruto)) return defaultPaymentFields()
+  const campos = bruto
+    .filter((c): c is Record<string, unknown> => typeof c === 'object' && c !== null)
+    .map((c) => ({
+      id: typeof c.id === 'string' && c.id ? c.id : newItemId(),
+      label: typeof c.label === 'string' ? c.label : '',
+      value: typeof c.value === 'string' ? c.value : '',
+    }))
+  // Lista vazia e valida: significa que a pessoa apagou todas as linhas.
+  return campos
+}
+
 export function loadDraft(): InvoiceDraft | null {
   let bruto: string | null = null
   try {
@@ -55,6 +74,7 @@ export function loadDraft(): InvoiceDraft | null {
       billTo: { ...base.billTo, ...salvo.billTo },
       currency: isCurrencyCode(salvo.currency) ? salvo.currency : base.currency,
       items: saneiaItens(salvo.items),
+      paymentFields: saneiaPagamento(salvo.paymentFields),
       version: DRAFT_VERSION,
     }
   } catch {

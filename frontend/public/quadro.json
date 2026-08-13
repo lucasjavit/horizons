@@ -167,6 +167,18 @@
       "bloqueio": "",
       "feitos": 5,
       "total": 5
+    },
+    {
+      "id": "INV-13",
+      "titulo": "Dados de pagamento em campos, não em texto livre",
+      "estado": "feito (13/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "O Payment era um <textarea> solto. Quem escrevia lá tinha que formatar à mão, e o PDF imprimia o bloco como um parágrafo — não como as linhas \"rótulo → valor\" que uma invoice de verdade tem.",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 8,
+      "total": 8
     }
   ]
 }

@@ -28,6 +28,20 @@ export interface Issuer extends Party {
   taxId: string
 }
 
+/**
+ * Uma linha dos dados de pagamento: rotulo e valor, os dois editaveis.
+ *
+ * Nao sao campos fixos de proposito. Quem recebe por transferencia precisa de
+ * IBAN e SWIFT; quem recebe por Wise precisa so de um e-mail. Fixar seis
+ * campos serviria bem a um caso e mal a todos os outros, entao o rotulo e
+ * dado, nao codigo.
+ */
+export interface PaymentField {
+  id: string
+  label: string
+  value: string
+}
+
 export interface InvoiceDraft {
   version: number
   invoiceNumber: string
@@ -38,7 +52,12 @@ export interface InvoiceDraft {
   from: Issuer
   billTo: Party
   items: LineItem[]
+  /**
+   * Texto livre do pagamento. Mantido para nao perder o rascunho de quem
+   * escreveu antes de os campos existirem — some da tela quando vazio.
+   */
   paymentDetails: string
+  paymentFields: PaymentField[]
   notes: string
 }
 
@@ -51,6 +70,19 @@ let contador = 0
 export function newItemId(): string {
   contador += 1
   return `li-${Date.now().toString(36)}-${contador.toString(36)}`
+}
+
+/** Os rotulos que vem prontos — os da invoice internacional mais comum. */
+export function defaultPaymentFields(): PaymentField[] {
+  return [
+    'Payment Method',
+    'IBAN',
+    'Beneficiary Name',
+    'Beneficiary Address',
+    'SWIFT Code',
+    'Bank',
+    'Bank Address',
+  ].map((label) => ({ id: newItemId(), label, value: '' }))
 }
 
 export function emptyItem(): LineItem {
@@ -76,6 +108,7 @@ export function emptyDraft(): InvoiceDraft {
     billTo: { name: '', address: '', email: '' },
     items: [emptyItem()],
     paymentDetails: '',
+    paymentFields: defaultPaymentFields(),
     notes: '',
   }
 }

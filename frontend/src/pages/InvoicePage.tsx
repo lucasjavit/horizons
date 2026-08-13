@@ -7,6 +7,7 @@ import { Hint } from '../components/invoice/Hint'
 import { InvoicePreview } from '../components/invoice/InvoicePreview'
 import { IssuerFields } from '../components/invoice/IssuerFields'
 import { LineItemsEditor } from '../components/invoice/LineItemsEditor'
+import { PaymentFieldsEditor } from '../components/invoice/PaymentFieldsEditor'
 import type { Company } from '../invoice/companies'
 import { loadCompanies, saveCompanies } from '../invoice/companies'
 import { CURRENCIES, isCurrencyCode } from '../invoice/currencies'
@@ -406,18 +407,34 @@ export function InvoicePage() {
                   texto:
                     'How you want to be paid: bank name, IBAN or account number, SWIFT or routing code, or a service like Wise or Payoneer. Missing or wrong details here are the most common reason an international transfer bounces.',
                 }}
-                resumo={draft.paymentDetails.trim() ? 'Filled in' : 'Optional'}
+                resumo={
+                  draft.paymentFields.filter((c) => c.value.trim()).length > 0
+                    ? `${draft.paymentFields.filter((c) => c.value.trim()).length} filled in`
+                    : 'Optional'
+                }
                 aberto={aberto === 3}
                 onToggle={() => setAberto(aberto === 3 ? null : 3)}
               >
-                <TextAreaField
-                  id="payment-details"
-                  label="Payment details"
-                  value={draft.paymentDetails}
-                  onChange={(v) => inv.setCampo('paymentDetails', v)}
-                  rows={5}
-                  placeholder={'Bank name\nIBAN / Account\nSWIFT / Routing\nWise, Payoneer…'}
+                <PaymentFieldsEditor
+                  fields={draft.paymentFields}
+                  onChange={inv.setPayment}
+                  onAdd={inv.addPayment}
+                  onRemove={inv.removePayment}
                 />
+                {/* So aparece para quem tinha texto livre salvo antes de os
+                    campos existirem — nao perde o rascunho de ninguem. */}
+                {draft.paymentDetails.trim() && (
+                  <div className="mt-4">
+                    <TextAreaField
+                      id="payment-details"
+                      label="Older free-text details"
+                      value={draft.paymentDetails}
+                      onChange={(v) => inv.setCampo('paymentDetails', v)}
+                      rows={3}
+                      hint="Clear this once you have moved it into the fields above."
+                    />
+                  </div>
+                )}
               </Bloco>
 
               <Bloco

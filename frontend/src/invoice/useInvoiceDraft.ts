@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { clearDraft, loadDraft, saveDraft } from './storage'
-import type { CurrencyCode, InvoiceDraft, Issuer, LineItem, Party } from './types'
-import { emptyDraft, emptyItem } from './types'
+import type {
+  CurrencyCode,
+  InvoiceDraft,
+  Issuer,
+  LineItem,
+  Party,
+  PaymentField,
+} from './types'
+import { emptyDraft, emptyItem, newItemId } from './types'
 
 // Mesmo intervalo do NoteBox das aulas, para o app ter um comportamento so.
 const DEBOUNCE_MS = 800
@@ -21,6 +28,9 @@ export interface UseInvoiceDraft {
   addItem: () => void
   removeItem: (id: string) => void
   moveItem: (id: string, direcao: -1 | 1) => void
+  setPayment: (id: string, campo: 'label' | 'value', valor: string) => void
+  addPayment: () => void
+  removePayment: (id: string) => void
   reset: () => void
 }
 
@@ -130,6 +140,37 @@ export function useInvoiceDraft(): UseInvoiceDraft {
     [alterar],
   )
 
+  const setPayment = useCallback(
+    (id: string, campo: 'label' | 'value', valor: string) =>
+      alterar((d) => ({
+        ...d,
+        paymentFields: d.paymentFields.map((c) =>
+          c.id === id ? { ...c, [campo]: valor } : c,
+        ),
+      })),
+    [alterar],
+  )
+
+  const addPayment = useCallback(
+    () =>
+      alterar((d) => {
+        const nova: PaymentField = { id: newItemId(), label: '', value: '' }
+        return { ...d, paymentFields: [...d.paymentFields, nova] }
+      }),
+    [alterar],
+  )
+
+  const removePayment = useCallback(
+    (id: string) =>
+      // Aqui, diferente das linhas de item, a lista PODE ficar vazia: quem
+      // nao quer nenhum dado bancario na fatura apaga todos.
+      alterar((d) => ({
+        ...d,
+        paymentFields: d.paymentFields.filter((c) => c.id !== id),
+      })),
+    [alterar],
+  )
+
   const reset = useCallback(() => {
     if (timer.current) clearTimeout(timer.current)
     const limpo = emptyDraft()
@@ -151,6 +192,9 @@ export function useInvoiceDraft(): UseInvoiceDraft {
     addItem,
     removeItem,
     moveItem,
+    setPayment,
+    addPayment,
+    removePayment,
     reset,
   }
 }
