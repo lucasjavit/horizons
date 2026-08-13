@@ -58,7 +58,6 @@ export interface InvoiceDraft {
    */
   paymentDetails: string
   paymentFields: PaymentField[]
-  notes: string
 }
 
 /**
@@ -109,6 +108,5 @@ export function emptyDraft(): InvoiceDraft {
     items: [emptyItem()],
     paymentDetails: '',
     paymentFields: defaultPaymentFields(),
-    notes: '',
   }
 }

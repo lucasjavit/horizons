@@ -439,28 +439,6 @@ export function InvoicePage() {
 
               <Bloco
                 numero={4}
-                titulo="Notes & terms"
-                dica={{
-                  title: 'Notes & terms',
-                  texto:
-                    'The conditions of this charge: payment window, late fee, reference period, or anything your client asked to see on the document. It prints at the bottom of the invoice.',
-                }}
-                resumo={draft.notes.trim() ? 'Filled in' : 'Optional'}
-                aberto={aberto === 4}
-                onToggle={() => setAberto(aberto === 4 ? null : 4)}
-              >
-                <TextAreaField
-                  id="notes"
-                  label="Notes / terms"
-                  value={draft.notes}
-                  onChange={(v) => inv.setCampo('notes', v)}
-                  rows={5}
-                  placeholder="Payment due within 30 days."
-                />
-              </Bloco>
-
-              <Bloco
-                numero={5}
                 titulo="Items"
                 dica={{
                   title: 'Items',
@@ -468,8 +446,8 @@ export function InvoicePage() {
                     'Hours × hourly rate gives the line amount. Fractions work, so 2.5 hours is fine. Each line is rounded to the cent before being summed, so the printed total always matches the sum of the printed lines.',
                 }}
                 resumo={`${draft.items.length} ${draft.items.length === 1 ? 'line' : 'lines'} · ${formatCents(total, draft.currency)}`}
-                aberto={aberto === 5}
-                onToggle={() => setAberto(aberto === 5 ? null : 5)}
+                aberto={aberto === 4}
+                onToggle={() => setAberto(aberto === 4 ? null : 4)}
               >
                 <LineItemsEditor
                   items={draft.items}

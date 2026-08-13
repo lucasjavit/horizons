@@ -334,7 +334,6 @@ function desenharBlocosFinais(
         .filter(Boolean)
         .join('\n'),
     },
-    { titulo: 'NOTES / TERMS', texto: draft.notes.trim() },
   ].filter((b) => b.texto)
   if (blocos.length === 0) return
 

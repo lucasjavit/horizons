@@ -199,31 +199,6 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
         </div>
       )}
 
-      {(draft.paymentDetails.trim() || draft.notes.trim()) && (
-        <div
-          className="mt-8 grid grid-cols-2 gap-8 pt-5"
-          style={{ borderTop: `1px solid ${LINHA}` }}
-        >
-          {[
-            { t: 'PAYMENT DETAILS', v: draft.paymentDetails },
-            { t: 'NOTES / TERMS', v: draft.notes },
-          ]
-            .filter((b) => b.v.trim())
-            .map((b) => (
-              <div key={b.t}>
-                <p
-                  className="mb-1.5 text-[0.62rem] font-bold uppercase tracking-widest"
-                  style={{ color: APAGADO, margin: 0 }}
-                >
-                  {b.t}
-                </p>
-                <p style={{ margin: 0, whiteSpace: 'pre-line', lineHeight: 1.5 }}>
-                  {b.v}
-                </p>
-              </div>
-            ))}
-        </div>
-      )}
     </div>
   )
 }

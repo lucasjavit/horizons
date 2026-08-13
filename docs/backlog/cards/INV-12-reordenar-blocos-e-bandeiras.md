@@ -13,8 +13,7 @@ bandeiras dos países".
 1. Invoice details
 2. Who is billing whom
 3. Payment
-4. Notes & terms
-5. Items
+4. Items
 
 Faz sentido: quem emite a mesma fatura todo mês muda só os itens. Deixá-los
 por último põe o que varia no fim, depois do que se repete.
@@ -22,12 +21,16 @@ por último põe o que varia no fim, depois do que se repete.
 **Payment e Notes viraram blocos separados**, cada um com seu campo e sua
 explicação. Antes dividiam um bloco e dois textareas lado a lado.
 
+**Notes foi removido em 13/08/2026**, por decisão do stakeholder — a invoice
+ficou com quatro blocos. Os termos de pagamento, quando necessários, cabem
+como uma linha nos campos de pagamento (INV-13), que são renomeáveis.
+
 **Bandeiras no select de moeda** — emoji, porque `<option>` não aceita `<img>`
 nem SVG. O rótulo virou `🇺🇸  USD — US Dollar`.
 
 ## Critério de aceite
 
-- [x] A ordem é 1 detalhes, 2 partes, 3 payment, 4 notes, 5 items
+- [x] A ordem é 1 detalhes, 2 partes, 3 payment, 4 items
 - [x] Payment e Notes são blocos distintos, cada um com um campo
 - [x] As 7 moedas têm bandeira
 - [x] O cálculo e a prévia continuam corretos
