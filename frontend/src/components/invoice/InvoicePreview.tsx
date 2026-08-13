@@ -184,10 +184,13 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
         </tbody>
       </table>
 
-      <div className="mt-6 flex justify-end">
+      {/* Largura cheia, igual a barra do DESCRIPTION: as duas faixas verdes
+          abrem e fecham a tabela, e a de baixo alinhada so a direita fazia o
+          documento parecer torto. */}
+      <div className="mt-6">
         <div
-          className="flex items-center justify-between gap-8 rounded px-4 py-2.5"
-          style={{ background: VERDE, color: '#fff', minWidth: '15rem' }}
+          className="flex items-center justify-between gap-8 rounded px-2.5 py-2.5"
+          style={{ background: VERDE, color: '#fff' }}
         >
           <span className="text-[0.65rem] font-bold uppercase tracking-widest">
             Total due

@@ -289,8 +289,10 @@ function desenharTotais(
   direita: number,
 ): number {
   const total = invoiceTotalCents(draft)
-  const larguraCaixa = 78
-  const x = direita - larguraCaixa
+  // Largura cheia, igual ao cabecalho da tabela: as duas faixas verdes
+  // emolduram os itens.
+  const x = MARGEM
+  const larguraCaixa = direita - MARGEM
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
