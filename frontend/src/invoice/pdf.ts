@@ -349,17 +349,24 @@ function desenharPagamento(
 
   let y = yTitulo + 5
   doc.setFontSize(9)
-  for (const c of linhas) {
+  const ALTURA = 5.4
+  linhas.forEach((c, i) => {
+    // Mesma zebra da tabela de itens. A faixa e desenhada antes do texto,
+    // senao cobriria o que ja foi escrito.
+    if (i % 2 === 0) {
+      doc.setFillColor(...ZEBRA)
+      doc.rect(MARGEM, y - 3.6, direita - MARGEM, ALTURA, 'F')
+    }
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...MUTED)
-    doc.text(c.label.trim() || '—', MARGEM, y)
+    doc.text(c.label.trim() || '—', MARGEM + 2.5, y)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(...INK)
-    // Valor a direita, como na tela: alinhar os dois lados faz a lista ser
-    // lida como tabela, nao como paragrafo.
-    doc.text(c.value.trim(), direita, y, { align: 'right' })
-    y += 4.6
-  }
+    // Valor a direita: alinhar os dois lados faz a lista ser lida como
+    // tabela, nao como paragrafo.
+    doc.text(c.value.trim(), direita - 2.5, y, { align: 'right' })
+    y += ALTURA
+  })
 
   if (livre) {
     doc.setFont('helvetica', 'normal')

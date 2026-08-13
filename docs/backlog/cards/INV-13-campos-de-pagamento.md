@@ -79,3 +79,17 @@ na segunda página.
 No PDF virou função própria (`desenharPagamento`), com rótulo à esquerda e
 valor à direita: alinhado nas duas bordas, a lista é lida como tabela e não
 como parágrafo. A prévia espelha a mesma ordem.
+
+
+## Zebra e fio dourado (13/08/2026)
+
+O bloco ganhou a **mesma zebra da tabela de itens** e o **fio dourado do
+cabeçalho** logo acima do título.
+
+A zebra não é enfeite: são sete linhas de código bancário, e sem o trilho o
+olho pula de linha entre o rótulo à esquerda e o valor à direita. Errar o
+IBAN por ler a linha errada é o tipo de falha que só aparece quando o
+pagamento não chega.
+
+No PDF a faixa é desenhada antes do texto — se fosse depois, cobriria o que já
+tinha sido escrito.

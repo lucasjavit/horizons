@@ -133,12 +133,18 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
           </p>
           <table className="w-full" style={{ borderCollapse: 'collapse' }}>
             <tbody>
-              {pagamento.map((c) => (
-                <tr key={c.id}>
-                  <td className="py-0.5 pr-4" style={{ color: APAGADO, verticalAlign: 'top' }}>
+              {/* Mesma zebra da tabela de itens: com sete linhas de codigo
+                  bancario, o olho precisa de trilho para nao pular de linha
+                  entre o rotulo e o valor. */}
+              {pagamento.map((c, i) => (
+                <tr key={c.id} style={{ background: i % 2 ? '#fff' : '#f6f8f7' }}>
+                  <td
+                    className="px-2.5 py-1"
+                    style={{ color: APAGADO, verticalAlign: 'top' }}
+                  >
                     {c.label.trim() || '—'}
                   </td>
-                  <td className="py-0.5 text-right font-medium">{c.value}</td>
+                  <td className="px-2.5 py-1 text-right font-medium">{c.value}</td>
                 </tr>
               ))}
             </tbody>
