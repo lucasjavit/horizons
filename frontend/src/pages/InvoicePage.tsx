@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { SelectField, TextAreaField, TextField } from '../components/invoice/Field'
+import { Hint } from '../components/invoice/Hint'
 import { InvoicePreview } from '../components/invoice/InvoicePreview'
 import { IssuerFields } from '../components/invoice/IssuerFields'
 import { LineItemsEditor } from '../components/invoice/LineItemsEditor'
@@ -132,9 +133,9 @@ export function InvoicePage() {
   // momento em que foi digitado.
   const errosDeLinha = useMemo(() => {
     const r: Record<string, string | undefined> = {}
-    for (const item of draft.items) Object.assign(r, validateItem(item))
+    for (const item of draft.items) Object.assign(r, validateItem(item, draft.currency))
     return r
-  }, [draft.items])
+  }, [draft.items, draft.currency])
   const aviso = useMemo(() => dueDateWarning(draft), [draft])
   const total = useMemo(() => invoiceTotalCents(draft), [draft])
 
@@ -270,6 +271,11 @@ export function InvoicePage() {
                 numero={1}
                 titulo="Invoice details"
                 resumo={`${draft.invoiceNumber.trim() || 'No number'} · ${draft.currency}`}
+                dica={{
+                  title: 'Invoice details',
+                  texto:
+                    'The invoice number identifies this charge — keep it sequential (INV-0001, INV-0002) so you and your client can track payments. The due date sets when payment is expected; 30 days is the common default.',
+                }}
                 aberto={aberto === 1}
                 onToggle={() => setAberto(aberto === 1 ? null : 1)}
               >
@@ -318,6 +324,11 @@ export function InvoicePage() {
               <Bloco
                 numero={2}
                 titulo="Who is billing whom"
+                dica={{
+                  title: 'Who is billing whom',
+                  texto:
+                    'Use the full legal name and address on both sides — mismatched details are the most common reason an invoice sits unpaid in a finance department. The Tax ID is optional, but many companies need it to process payment abroad.',
+                }}
                 resumo={
                   draft.from.name.trim() || draft.billTo.name.trim()
                     ? `${draft.from.name.trim() || '—'} → ${draft.billTo.name.trim() || '—'}`
@@ -390,6 +401,11 @@ export function InvoicePage() {
               <Bloco
                 numero={3}
                 titulo="Items"
+                dica={{
+                  title: 'Items',
+                  texto:
+                    'Hours × hourly rate gives the line amount. Fractions work, so 2.5 hours is fine. Each line is rounded to the cent before being summed, so the printed total always matches the sum of the printed lines.',
+                }}
                 resumo={`${draft.items.length} ${draft.items.length === 1 ? 'line' : 'lines'} · ${formatCents(total, draft.currency)}`}
                 aberto={aberto === 3}
                 onToggle={() => setAberto(aberto === 3 ? null : 3)}
@@ -409,6 +425,11 @@ export function InvoicePage() {
               <Bloco
                 numero={4}
                 titulo="Payment & notes"
+                dica={{
+                  title: 'Payment & notes',
+                  texto:
+                    'Payment details is where you say how to be paid: bank, IBAN, SWIFT, or a service like Wise or Payoneer. Notes carry the terms — late fees, reference period, or anything your client asked to see on the document.',
+                }}
                 resumo={
                   draft.paymentDetails.trim() || draft.notes.trim()
                     ? 'Filled in'
@@ -585,6 +606,7 @@ function Bloco({
   numero,
   titulo,
   resumo,
+  dica,
   aberto,
   onToggle,
   children,
@@ -592,6 +614,7 @@ function Bloco({
   numero: number
   titulo: string
   resumo: string
+  dica?: { title: string; texto: string }
   aberto: boolean
   onToggle: () => void
   children: ReactNode
@@ -602,13 +625,16 @@ function Bloco({
       className="rounded-xl border"
       style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
     >
-      <h2>
+      {/* A dica fica FORA do <button>: botao dentro de botao e HTML
+          invalido, e o leitor de tela anuncia so o de fora. */}
+      <div className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
+        <h2 className="min-w-0 flex-1">
         <button
           type="button"
           onClick={onToggle}
           aria-expanded={aberto}
           aria-controls={idConteudo}
-          className="flex w-full items-center gap-3 px-4 py-3.5 text-left sm:px-5"
+          className="flex w-full items-center gap-3 text-left"
         >
           <span
             aria-hidden
@@ -628,7 +654,9 @@ function Bloco({
             {aberto ? '▲' : '▼'}
           </span>
         </button>
-      </h2>
+        </h2>
+        {dica && <Hint title={dica.title}>{dica.texto}</Hint>}
+      </div>
       {/* hidden em vez de desmontar: o conteudo continua no DOM, entao o
           rascunho nao se perde e o Ctrl+F do navegador continua achando. */}
       <div id={idConteudo} hidden={!aberto} className="px-4 pb-5 sm:px-5">

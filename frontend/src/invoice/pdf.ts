@@ -44,10 +44,12 @@ function formatarData(iso: string): string {
  */
 export function linhasValidas(draft: InvoiceDraft) {
   return draft.items
-    .filter((i) => i.description.trim() || parseAmountToCents(i.rate) !== null)
+    .filter(
+      (i) => i.description.trim() || parseAmountToCents(i.rate, draft.currency) !== null,
+    )
     .map((i) => {
-      const qtd = parseQuantity(i.quantity) ?? 0
-      const rate = parseAmountToCents(i.rate) ?? 0
+      const qtd = parseQuantity(i.quantity, draft.currency) ?? 0
+      const rate = parseAmountToCents(i.rate, draft.currency) ?? 0
       return {
         descricao: i.description.trim() || '—',
         qtd,

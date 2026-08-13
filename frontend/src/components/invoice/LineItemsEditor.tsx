@@ -121,8 +121,8 @@ function LineItemRow({
   const idRate = `${uid}-rate`
 
   const valor = lineAmountCents(
-    parseQuantity(item.quantity) ?? 0,
-    parseAmountToCents(item.rate) ?? 0,
+    parseQuantity(item.quantity, currency) ?? 0,
+    parseAmountToCents(item.rate, currency) ?? 0,
   )
 
   // O rotulo mais importante da feature: sem o nome da linha, quem usa

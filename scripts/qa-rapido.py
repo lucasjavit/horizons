@@ -105,7 +105,9 @@ else:
             # A soma tem de bater com a soma das linhas impressas. Este e o
             # teste que protege o dinheiro: 3 x 33.33 = 99.99, e 0.1 dez vezes
             # nao pode virar 0.9999999999999999.
-            pg.get_by_role("button", name="Items").click()
+            # aria-controls e nao o nome: o icone de ajuda ao lado tambem
+            # tem "Items" no rotulo, e o get_by_role acharia os dois.
+            pg.locator('button[aria-controls="bloco-3"]').click()
             pg.wait_for_timeout(300)
             li = pg.locator("#bloco-3 ul li").first
             li.locator("input").nth(0).fill("Servico")
@@ -120,6 +122,15 @@ else:
             pg.wait_for_timeout(400)
             linha = li.locator("output").inner_text()
             ok(linha == "$1.01", f"1.005 arredonda para $1.01 (obtido {linha})")
+
+            # INV-11: virgula decimal. Antes disso, `26,50` virava $2.650 —
+            # cem vezes mais — e nada na tela denunciava. E o tipo de erro
+            # que faz alguem cobrar errado de um cliente de verdade.
+            li.locator("input").nth(1).fill("44")
+            li.locator("input").nth(2).fill("26,50")
+            pg.wait_for_timeout(500)
+            linha = li.locator("output").inner_text()
+            ok(linha == "$1,166.00", f"44 x 26,50 = $1,166.00 (obtido {linha})")
 
             # A previa e o PDF leem do mesmo modulo, mas sao dois desenhos
             # do mesmo documento. Este teste e o que impede de divergirem em

@@ -9,16 +9,72 @@ import type { CurrencyCode } from './types'
  */
 
 /**
+ * Moedas cuja notacao usa virgula como decimal (1.234,56).
+ *
+ * Serve para desempatar o caso ambiguo: `1.005` e mil e cinco na notacao
+ * brasileira e um e meio centavo na americana. A moeda escolhida diz qual
+ * das duas a pessoa esta usando.
+ */
+const DECIMAL_VIRGULA: ReadonlySet<string> = new Set(['BRL', 'EUR', 'CHF'])
+
+/**
+ * Descobre qual separador e o decimal e normaliza para ponto.
+ *
+ * Isto existe por causa do INV-11: o parser antigo apagava toda virgula
+ * assumindo separador de milhar, entao quem digitava `26,50` — como escreve
+ * qualquer brasileiro — recebia uma fatura de $2.650,00. Cem vezes mais, sem
+ * nada na tela denunciando.
+ *
+ * A regra: quando ha os dois separadores, **o ultimo manda**, porque e ele
+ * que separa os centavos em qualquer notacao. Com um so, decide pela
+ * quantidade de digitos depois dele.
+ */
+function normalizarSeparadores(s: string, moeda?: string): string {
+  const ultimaVirgula = s.lastIndexOf(',')
+  const ultimoPonto = s.lastIndexOf('.')
+
+  if (ultimaVirgula >= 0 && ultimoPonto >= 0) {
+    // `1.234,56` (europeu) ou `1,234.56` (americano): o que vem por ultimo
+    // e o decimal, o outro e milhar e sai.
+    return ultimaVirgula > ultimoPonto
+      ? s.replace(/\./g, '').replace(',', '.')
+      : s.replace(/,/g, '')
+  }
+
+  // Com um separador so, tres digitos depois dele sao ambiguos: `1.005` e
+  // mil e cinco no Brasil e um e meio centavo nos EUA. A moeda desempata.
+  const virgulaEhDecimal = moeda ? DECIMAL_VIRGULA.has(moeda) : false
+
+  if (ultimaVirgula >= 0) {
+    const depois = s.length - ultimaVirgula - 1
+    if (depois !== 3) return s.replace(',', '.')
+    // Numa moeda de virgula decimal, `1,005` e um e meio centavo; nas
+    // outras, a virgula so pode ser milhar.
+    return virgulaEhDecimal ? s.replace(',', '.') : s.replace(',', '')
+  }
+
+  if (ultimoPonto >= 0) {
+    const depois = s.length - ultimoPonto - 1
+    if (depois !== 3) return s
+    // Espelho do caso acima: numa moeda de virgula decimal o ponto e milhar,
+    // entao `1.005` vira mil e cinco.
+    return virgulaEhDecimal ? s.replace('.', '') : s
+  }
+
+  return s
+}
+
+/**
  * Le um valor digitado e devolve centavos inteiros, ou null se invalido.
  *
  * Baseado em string de proposito. O caminho obvio — `Math.round(n * 100)` —
  * esta errado: 1.005 * 100 vira 100.49999999999999 em float, o arredondamento
  * puxa para 100 e a fatura perde um centavo.
  */
-export function parseAmountToCents(raw: string): number | null {
-  // Remove simbolo de moeda e separador de milhar; o que sobra e digito,
-  // ponto e sinal.
-  const limpo = raw.trim().replace(/[^0-9.,-]/g, '').replace(/,/g, '')
+export function parseAmountToCents(raw: string, moeda?: string): number | null {
+  // Tira simbolo de moeda e espaco; sobram digitos, separadores e sinal.
+  const so = raw.trim().replace(/[^0-9.,-]/g, '')
+  const limpo = normalizarSeparadores(so, moeda)
   if (limpo === '' || limpo === '-') return null
 
   const m = /^(-?)(\d*)(?:\.(\d*))?$/.exec(limpo)
@@ -37,10 +93,17 @@ export function parseAmountToCents(raw: string): number | null {
   return Number.isSafeInteger(centavos) ? sinal * centavos : null
 }
 
-/** Le uma quantidade, que pode ser fracionaria (2,5 horas). */
-export function parseQuantity(raw: string): number | null {
-  const limpo = raw.trim().replace(/,/g, '.')
-  if (limpo === '') return null
+/**
+ * Le uma quantidade, que pode ser fracionaria (2,5 horas).
+ *
+ * Usa a MESMA regra de separador do valor: antes do INV-11 os dois campos da
+ * mesma linha interpretavam virgula de formas opostas, e ninguem tinha notado
+ * porque quantidade raramente leva decimal.
+ */
+export function parseQuantity(raw: string, moeda?: string): number | null {
+  const so = raw.trim().replace(/[^0-9.,-]/g, '')
+  const limpo = normalizarSeparadores(so, moeda)
+  if (limpo === '' || limpo === '-') return null
   const n = Number(limpo)
   return Number.isFinite(n) ? n : null
 }

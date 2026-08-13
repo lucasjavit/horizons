@@ -143,6 +143,18 @@
       "bloqueio": "Login de verdade. Hoje o CurrentUserGuard é um stub que lê",
       "feitos": 0,
       "total": 13
+    },
+    {
+      "id": "INV-11",
+      "titulo": "Vírgula como decimal multiplica o valor por 100",
+      "estado": "feito (13/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "É o bug mais grave que esta feature já teve. Quem digita 26,50 — como escreve qualquer brasileiro, português, alemão ou francês — recebe uma fatura de $2.650,00. Cem vezes mais.",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 8,
+      "total": 8
     }
   ]
 }

@@ -13,10 +13,10 @@ export type InvoiceErrors = Partial<Record<string, string>>
 export const MAX_VALOR = 1_000_000
 
 /** Erros de uma linha, indexados por `${id}.campo`. */
-export function validateItem(i: LineItem): InvoiceErrors {
+export function validateItem(i: LineItem, moeda?: string): InvoiceErrors {
   const e: InvoiceErrors = {}
 
-  const qtd = parseQuantity(i.quantity)
+  const qtd = parseQuantity(i.quantity, moeda)
   if (i.quantity.trim() && qtd !== null) {
     // Maior que zero, e nao >= 1: cobrar meia hora e caso de uso real.
     if (qtd <= 0) e[`${i.id}.quantity`] = 'Quantity must be greater than zero.'
@@ -24,7 +24,7 @@ export function validateItem(i: LineItem): InvoiceErrors {
       e[`${i.id}.quantity`] = `Quantity must be at most ${MAX_VALOR.toLocaleString('en-US')}.`
   }
 
-  const rate = parseAmountToCents(i.rate)
+  const rate = parseAmountToCents(i.rate, moeda)
   if (i.rate.trim() && rate !== null) {
     if (rate < 0) e[`${i.id}.rate`] = 'Rate cannot be negative.'
     else if (rate > MAX_VALOR * 100)
@@ -57,14 +57,14 @@ export function validateDraft(d: InvoiceDraft): InvoiceErrors {
     e['billTo.email'] = 'Enter a valid email address.'
 
   const validos = d.items.filter(
-    (i) => i.description.trim() && parseAmountToCents(i.rate) !== null,
+    (i) => i.description.trim() && parseAmountToCents(i.rate, d.currency) !== null,
   )
   if (validos.length === 0)
     e.items = 'Add at least one item with a description and a rate.'
 
   // Erros de linha entram no mesmo mapa, com a chave `${id}.campo`, para o
   // botao de baixar bloquear enquanto houver linha invalida.
-  for (const item of d.items) Object.assign(e, validateItem(item))
+  for (const item of d.items) Object.assign(e, validateItem(item, d.currency))
 
   return e
 }
