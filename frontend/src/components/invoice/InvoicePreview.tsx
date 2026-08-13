@@ -19,7 +19,6 @@ const TINTA = '#0f1411'
 const APAGADO = '#5c6b63' // 5,4:1 sobre branco — passa em AA
 const VERDE = '#00704a'
 const DOURADO = '#d4a017'
-const LINHA = '#e5e9e7'
 
 function formatarData(iso: string): string {
   if (!iso) return '—'
@@ -120,6 +119,29 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
         ))}
       </div>
 
+      {pagamento.length > 0 && (
+        <div className="mt-7">
+          <p
+            className="mb-2 text-[0.62rem] font-bold uppercase tracking-widest"
+            style={{ color: APAGADO, margin: 0 }}
+          >
+            PAYMENT DETAILS
+          </p>
+          <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+            <tbody>
+              {pagamento.map((c) => (
+                <tr key={c.id}>
+                  <td className="py-0.5 pr-4" style={{ color: APAGADO, verticalAlign: 'top' }}>
+                    {c.label.trim() || '—'}
+                  </td>
+                  <td className="py-0.5 text-right font-medium">{c.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <table className="mt-8 w-full" style={{ borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ background: VERDE, color: '#fff' }}>
@@ -175,29 +197,6 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
           </span>
         </div>
       </div>
-
-      {pagamento.length > 0 && (
-        <div className="mt-8 pt-5" style={{ borderTop: `1px solid ${LINHA}` }}>
-          <p
-            className="mb-2 text-[0.62rem] font-bold uppercase tracking-widest"
-            style={{ color: APAGADO, margin: 0 }}
-          >
-            PAYMENT DETAILS
-          </p>
-          <table className="w-full" style={{ borderCollapse: 'collapse' }}>
-            <tbody>
-              {pagamento.map((c) => (
-                <tr key={c.id}>
-                  <td className="py-0.5 pr-4" style={{ color: APAGADO, verticalAlign: 'top' }}>
-                    {c.label.trim() || '—'}
-                  </td>
-                  <td className="py-0.5 text-right font-medium">{c.value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
 
     </div>
   )

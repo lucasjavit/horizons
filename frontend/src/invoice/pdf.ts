@@ -177,6 +177,7 @@ export async function generateInvoicePdf(draft: InvoiceDraft): Promise<Blob> {
   doc.line(MARGEM, 38, direita, 38)
 
   const yPartes = desenharPartes(doc, draft, 48, largura)
+  const yPagamento = desenharPagamento(doc, draft, yPartes + 6, largura)
 
   const linhas = linhasValidas(draft)
   // O plugin UMD se instala como metodo do documento, em vez de exportar
@@ -185,7 +186,7 @@ export async function generateInvoicePdf(draft: InvoiceDraft): Promise<Blob> {
     autoTable: (opcoes: Record<string, unknown>) => void
   }
   comAutoTable.autoTable({
-    startY: yPartes + 4,
+    startY: yPagamento + 4,
     margin: { left: MARGEM, right: MARGEM },
     head: [['DESCRIPTION', 'HOURS', 'RATE', 'AMOUNT']],
     body: linhas.map((l) => [
@@ -218,8 +219,7 @@ export async function generateInvoicePdf(draft: InvoiceDraft): Promise<Blob> {
     .lastAutoTable
   const yTabela = tabela?.finalY ?? 120
 
-  const yTotais = desenharTotais(doc, draft, yTabela + 10, direita)
-  desenharBlocosFinais(doc, draft, yTotais + 18, largura)
+  desenharTotais(doc, draft, yTabela + 10, direita)
 
   return doc.output('blob') as Blob
 }
@@ -315,47 +315,55 @@ function desenharTotais(
   return yCaixa + 12
 }
 
-/** PAYMENT DETAILS e NOTES, lado a lado. */
-function desenharBlocosFinais(
+/**
+ * PAYMENT DETAILS, em linhas "rotulo -> valor", acima da tabela de itens.
+ *
+ * Fica antes dos itens de proposito: quem recebe a fatura precisa saber para
+ * onde pagar, e essa informacao nao deve estar depois de uma tabela que pode
+ * ocupar a pagina inteira.
+ */
+function desenharPagamento(
   doc: Doc,
   draft: InvoiceDraft,
   yInicial: number,
   largura: number,
-): void {
-  const pagamento = draft.paymentFields.filter((c) => c.value.trim())
-  const blocos = [
-    {
-      titulo: 'PAYMENT DETAILS',
-      texto: [
-        // Rotulo e valor na mesma linha, como numa invoice de verdade.
-        ...pagamento.map((c) => `${c.label.trim() || '—'}: ${c.value.trim()}`),
-        draft.paymentDetails.trim(),
-      ]
-        .filter(Boolean)
-        .join('\n'),
-    },
-  ].filter((b) => b.texto)
-  if (blocos.length === 0) return
+): number {
+  const linhas = draft.paymentFields.filter((c) => c.value.trim())
+  const livre = draft.paymentDetails.trim()
+  if (linhas.length === 0 && !livre) return yInicial
 
-  const colunaLargura = (largura - MARGEM * 2 - 10) / 2
-  blocos.forEach((bloco, i) => {
-    const x = i === 0 ? MARGEM : MARGEM + colunaLargura + 10
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(8)
-    doc.setTextColor(...MUTED)
-    doc.text(bloco.titulo, x, yInicial)
+  const direita = largura - MARGEM
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(8)
+  doc.setTextColor(...MUTED)
+  doc.text('PAYMENT DETAILS', MARGEM, yInicial)
 
+  let y = yInicial + 5
+  doc.setFontSize(9)
+  for (const c of linhas) {
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(9)
+    doc.setTextColor(...MUTED)
+    doc.text(c.label.trim() || '—', MARGEM, y)
+    doc.setFont('helvetica', 'bold')
     doc.setTextColor(...INK)
-    let y = yInicial + 5.5
-    for (const linha of bloco.texto.split('\n')) {
-      for (const parte of doc.splitTextToSize(linha, colunaLargura)) {
-        doc.text(parte, x, y)
+    // Valor a direita, como na tela: alinhar os dois lados faz a lista ser
+    // lida como tabela, nao como paragrafo.
+    doc.text(c.value.trim(), direita, y, { align: 'right' })
+    y += 4.6
+  }
+
+  if (livre) {
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...INK)
+    for (const linha of livre.split('\n')) {
+      for (const parte of doc.splitTextToSize(linha, largura - MARGEM * 2)) {
+        doc.text(parte, MARGEM, y)
         y += 4.6
       }
     }
-  })
+  }
+
+  return y
 }
 
 function rodape(
