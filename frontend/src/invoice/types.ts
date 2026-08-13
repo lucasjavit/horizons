@@ -26,6 +26,8 @@ export interface Party {
 
 export interface Issuer extends Party {
   taxId: string
+  /** Logo em data URI, copiada da empresa salva. */
+  logo?: string
 }
 
 /**

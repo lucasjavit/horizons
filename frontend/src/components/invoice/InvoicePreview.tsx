@@ -64,12 +64,23 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
       <div style={{ height: 3, background: VERDE, marginBottom: '1.75rem' }} />
 
       <div className="flex items-start justify-between gap-6">
-        <h3
-          className="text-2xl font-bold tracking-tight"
-          style={{ color: VERDE, margin: 0 }}
-        >
-          INVOICE
-        </h3>
+        {/* A logo substitui a palavra INVOICE quando existe. Altura fixa e
+            largura automatica: logo larga e baixa e logo alta e estreita
+            precisam ocupar o mesmo espaco vertical. */}
+        {draft.from.logo ? (
+          <img
+            src={draft.from.logo}
+            alt=""
+            style={{ height: '2.25rem', width: 'auto', maxWidth: '11rem', objectFit: 'contain' }}
+          />
+        ) : (
+          <h3
+            className="text-2xl font-bold tracking-tight"
+            style={{ color: VERDE, margin: 0 }}
+          >
+            INVOICE
+          </h3>
+        )}
         <dl className="text-right" style={{ margin: 0 }}>
           {[
             ['Invoice #', draft.invoiceNumber.trim() || '—'],

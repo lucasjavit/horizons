@@ -13,6 +13,14 @@ const CHAVE = 'horizons.invoice.companies.v1'
 
 export interface Company extends Issuer {
   id: string
+  /**
+   * Logo em data URI. Guardada junto da empresa, e nao no rascunho: a marca
+   * e de quem emite, nao de uma fatura especifica.
+   *
+   * Data URI e nao URL porque tudo roda no navegador — nao ha servidor para
+   * hospedar arquivo, e o PDF precisa dos bytes na hora de desenhar.
+   */
+  logo?: string
 }
 
 export function emptyCompany(): Company {
@@ -29,6 +37,10 @@ function saneia(bruto: unknown): Company[] {
       address: typeof c.address === 'string' ? c.address : '',
       email: typeof c.email === 'string' ? c.email : '',
       taxId: typeof c.taxId === 'string' ? c.taxId : '',
+      logo:
+        typeof c.logo === 'string' && c.logo.startsWith('data:image/')
+          ? c.logo
+          : undefined,
     }))
     // Empresa sem nome nao serve para escolher numa lista.
     .filter((c) => c.name.trim())

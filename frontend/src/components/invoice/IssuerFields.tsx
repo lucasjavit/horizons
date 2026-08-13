@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { Company } from '../../invoice/companies'
 import { emptyCompany } from '../../invoice/companies'
 import type { Issuer } from '../../invoice/types'
+import { lerLogo } from '../../invoice/logo'
 import { TextAreaField, TextField } from './Field'
 import { Modal } from './Modal'
 import { WARN_INK } from '../blocks/BlockRenderer'
@@ -203,6 +204,20 @@ function CompanyForm({
 }) {
   const [rascunho, setRascunho] = useState(empresa)
   const [erro, setErro] = useState<string | undefined>()
+  const [erroLogo, setErroLogo] = useState<string | undefined>()
+  const [cinza, setCinza] = useState(false)
+  const arquivoRef = useRef<HTMLInputElement>(null)
+
+  const carregarLogo = async (arquivo: File | undefined, emCinza: boolean) => {
+    if (!arquivo) return
+    setErroLogo(undefined)
+    try {
+      const lida = await lerLogo(arquivo, emCinza)
+      setRascunho((r) => ({ ...r, logo: lida.dataUri }))
+    } catch (e) {
+      setErroLogo(e instanceof Error ? e.message : 'Could not read the image.')
+    }
+  }
 
   const campo = (k: keyof Company) => (v: string) =>
     setRascunho((r) => ({ ...r, [k]: v }))
@@ -255,6 +270,71 @@ function CompanyForm({
           onChange={campo('taxId')}
           hint="Optional — CNPJ, VAT, EIN…"
         />
+
+        <div>
+          <label htmlFor="company-logo" className="mb-1 block text-sm font-medium">
+            Logo
+          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            {rascunho.logo && (
+              <img
+                src={rascunho.logo}
+                alt="Your company logo"
+                className="h-12 w-auto max-w-[8rem] rounded border object-contain p-1"
+                style={{ borderColor: 'var(--border)', background: '#fff' }}
+              />
+            )}
+            <input
+              ref={arquivoRef}
+              id="company-logo"
+              type="file"
+              accept="image/*"
+              onChange={(e) => void carregarLogo(e.target.files?.[0], cinza)}
+              className="text-xs"
+              style={{ color: 'var(--text-muted)' }}
+            />
+            {rascunho.logo && (
+              <button
+                type="button"
+                onClick={() => {
+                  setRascunho((r) => ({ ...r, logo: undefined }))
+                  if (arquivoRef.current) arquivoRef.current.value = ''
+                }}
+                className="rounded-md border px-3 py-1.5 text-xs font-medium"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+
+          <label className="mt-2 flex cursor-pointer items-center gap-2 text-xs">
+            <input
+              type="checkbox"
+              checked={cinza}
+              onChange={(e) => {
+                setCinza(e.target.checked)
+                // Reprocessa o arquivo escolhido: converter a partir da logo
+                // ja guardada perderia qualidade a cada troca.
+                void carregarLogo(arquivoRef.current?.files?.[0], e.target.checked)
+              }}
+              className="h-4 w-4 accent-[var(--brand)]"
+            />
+            <span style={{ color: 'var(--text-muted)' }}>
+              Black and white
+            </span>
+          </label>
+
+          {erroLogo && (
+            <p role="alert" className="mt-1 text-sm" style={{ color: WARN_INK }}>
+              {erroLogo}
+            </p>
+          )}
+          <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+            Optional — replaces the word "INVOICE" on the document. PNG with
+            transparency works best. Max 2 MB.
+          </p>
+        </div>
 
         <div className="mt-1 flex flex-wrap gap-3">
           <button

@@ -21,6 +21,33 @@ const BRANCO: [number, number, number] = [255, 255, 255]
 
 const MARGEM = 15
 
+/**
+ * A logo da empresa, ou a palavra INVOICE quando nao houver.
+ *
+ * A altura e fixa (14mm) e a largura sai da proporcao da imagem, para logo
+ * larga e logo alta ocuparem o mesmo espaco vertical. Se a imagem falhar por
+ * qualquer motivo, cai no texto — uma fatura sem cabecalho seria pior que uma
+ * sem logo.
+ */
+function desenharMarca(doc: Doc, draft: InvoiceDraft): void {
+  const logo = draft.from.logo
+  if (logo) {
+    try {
+      const props = doc.getImageProperties(logo)
+      const altura = 14
+      const largura = (props.width / props.height) * altura
+      doc.addImage(logo, 'PNG', MARGEM, 18, Math.min(largura, 60), altura)
+      return
+    } catch {
+      // cai no texto abaixo
+    }
+  }
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(28)
+  doc.setTextColor(...FOREST)
+  doc.text('INVOICE', MARGEM, 30)
+}
+
 /** Data ISO para o formato longo em ingles, sem depender de biblioteca. */
 function formatarData(iso: string): string {
   if (!iso) return '—'
@@ -147,10 +174,7 @@ export async function generateInvoicePdf(draft: InvoiceDraft): Promise<Blob> {
   doc.setFillColor(...FOREST)
   doc.rect(0, 0, largura, 4, 'F')
 
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(28)
-  doc.setTextColor(...FOREST)
-  doc.text('INVOICE', MARGEM, 30)
+  desenharMarca(doc, draft)
 
   // Metadados a direita, rotulo e valor em duas colunas.
   const meta: Array<[string, string]> = [

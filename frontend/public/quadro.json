@@ -203,6 +203,18 @@
       "bloqueio": "",
       "feitos": 0,
       "total": 0
+    },
+    {
+      "id": "INV-16",
+      "titulo": "Logo da empresa no lugar da palavra INVOICE",
+      "estado": "feito (13/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 7,
+      "total": 7
     }
   ]
 }

@@ -153,7 +153,13 @@ export function InvoicePage() {
     })
     setCompanyId(c.id)
     // Copia para o rascunho: o PDF le o `from`, nao a lista de empresas.
-    inv.setFromTodo({ name: c.name, address: c.address, email: c.email, taxId: c.taxId })
+    inv.setFromTodo({
+      name: c.name,
+      address: c.address,
+      email: c.email,
+      taxId: c.taxId,
+      logo: c.logo,
+    })
   }, [inv])
 
   const escolherEmpresa = useCallback((id: string | null) => {
@@ -161,7 +167,13 @@ export function InvoicePage() {
     const c = companies.find((x) => x.id === id)
     inv.setFromTodo(
       c
-        ? { name: c.name, address: c.address, email: c.email, taxId: c.taxId }
+        ? {
+            name: c.name,
+            address: c.address,
+            email: c.email,
+            taxId: c.taxId,
+            logo: c.logo,
+          }
         : { name: '', address: '', email: '', taxId: '' },
     )
   }, [companies, inv])
