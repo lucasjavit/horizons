@@ -205,10 +205,23 @@ export async function generateInvoicePdf(draft: InvoiceDraft): Promise<Blob> {
     },
     alternateRowStyles: { fillColor: ZEBRA },
     columnStyles: {
-      0: { cellWidth: 'auto' },
-      1: { cellWidth: 16, halign: 'right' },
+      0: { cellWidth: 'auto', halign: 'left' },
+      1: { cellWidth: 18, halign: 'right' },
       2: { cellWidth: 30, halign: 'right' },
-      3: { cellWidth: 32, halign: 'right' },
+      3: { cellWidth: 34, halign: 'right' },
+    },
+    // O `halign` de columnStyles vale so para o corpo: o cabecalho ficava a
+    // esquerda enquanto os valores iam para a direita — medido, RATE
+    // terminava 46pt antes do valor. `headStyles` dentro de columnStyles nao
+    // e lido pelo autotable; alinhar celula a celula e o que funciona.
+    didParseCell: (dados: {
+      section: string
+      column: { index: number }
+      cell: { styles: { halign: string } }
+    }) => {
+      if (dados.section === 'head' && dados.column.index > 0) {
+        dados.cell.styles.halign = 'right'
+      }
     },
     didDrawPage: () => rodape(doc, draft, largura, altura),
   })
