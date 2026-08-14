@@ -68,3 +68,19 @@ infraestrutura, e não à tela.
 
 **Falta para entrar de verdade:** um `GOOGLE_CLIENT_ID` real. O caminho está
 verificado até onde é possível sem ele.
+
+### Fechado depois (14/08/2026)
+
+O `GOOGLE_CLIENT_ID` real saiu, e com ele **o deploy no Coolify**
+([PLT-06](../cards/PLT-06-deploy-no-coolify.md)): o app está no ar e o login
+funciona. Entraram junto dois cards que não estavam previstos e nasceram da
+conversa: [PLT-05](../cards/PLT-05-login-desligado.md) (login desligado por um
+dia, revertido pelo próprio deploy) e
+[PLT-07](../cards/PLT-07-leitura-anonima.md) (a leitura passou a ser anônima e
+o login virou botão na barra).
+
+A sprint era "dar dono às contas e fazer a busca de vagas rodar sozinha". A
+primeira metade fechou com folga; **a busca de vagas não começou** — JOB-02 a
+JOB-05 seguem abertos. Vale registrar o desvio: a plataforma consumiu a sprint
+inteira, e não por estimativa errada — o deploy e o login não estavam no
+compromisso original, e entraram porque destravavam tudo o mais.

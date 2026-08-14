@@ -20,7 +20,6 @@ destrava o resto.
 | Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
-| [PLT-06](cards/PLT-06-deploy-no-coolify.md) | Deploy no Coolify | M | compose de produção pronto e verificado; falta servidor e domínio |
 | [PLT-04](cards/PLT-04-crud-de-prompts.md) | Config vira área de admin, com CRUD dos prompts de busca | M | agora tem `@AdminOnly()` de verdade por trás |
 | [JOB-02](cards/JOB-02-perfil-de-busca.md) | Perfil de busca e agrupamento | M | destravado pelo login — o perfil tem dono |
 | [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha a cada 50 minutos | M | ver **Antes de começar** abaixo: dois ajustes pendentes |
@@ -53,6 +52,7 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [PLT-06](cards/PLT-06-deploy-no-coolify.md) | **Deploy no Coolify** — no ar, com login funcionando | 14/08/2026 |
 | [PLT-07](cards/PLT-07-leitura-anonima.md) | **Leitura anônima** — home aberta, login na barra | 14/08/2026 |
 | [PLT-05](cards/PLT-05-login-desligado.md) | **Login desligado** por `AUTH_DISABLED` — reverter antes de publicar | 14/08/2026 |
 | [PLT-02](cards/PLT-02-login-com-google.md) | **Login com Google** — guard global *fail closed*, revogação imediata | 13/08/2026 |
@@ -82,20 +82,30 @@ _(vazio)_
 
 ## O que trava o resto
 
-**Uma coisa, e é externa:** falta um `GOOGLE_CLIENT_ID` real para entrar de
-verdade. O código está pronto e verificado até onde dá sem ele — a tela sem
-client id explica que o login não está configurado, e com um client id
-inventado o botão do Google renderiza e o próprio Google recusa. Falta criar o
-OAuth client no Google Cloud Console e cadastrar as origens.
+**Nada.** O deploy está no ar no Coolify e o login com Google funciona
+(14/08/2026, [PLT-06](cards/PLT-06-deploy-no-coolify.md)) — o que travava desde
+o começo era exatamente isso.
 
-**O risco do guard stub acabou** (13/08/2026). `x-user-email` agora responde
-**401** — medido. Os tokens de API do PLT-01 têm dono de verdade.
+O que mudou de estado:
 
-**Mas o login está desligado por decisão** (14/08/2026, [PLT-05](cards/PLT-05-login-desligado.md)).
-Com `AUTH_DISABLED=true` nenhuma rota exige token, e `/api/settings/tokens`
-responde a quem alcançar a porta 3333. Vale só em rede local — **isto não pode
-ir para o servidor assim**. Religar é trocar uma variável; o código do login
-continua inteiro e verificado.
+- **O guard stub acabou** (13/08). `x-user-email` responde **401** — medido.
+  Os tokens de API do PLT-01 têm dono de verdade.
+- **`AUTH_DISABLED` era temporário e valia só em rede local.** Em produção o
+  login está exigido; o default virou `false` nos dois compose, então esquecer
+  a variável fecha o acesso em vez de abrir.
+- **A leitura passou a ser anônima** (14/08, [PLT-07](cards/PLT-07-leitura-anonima.md)):
+  trilhas e aulas abrem sem login, e o botão do Google fica na barra. Progresso
+  e anotação continuam exigindo sessão.
+
+**Falta conferir o que está no ar.** Quatro `curl` que ninguém rodou ainda,
+listados no [PLT-06](cards/PLT-06-deploy-no-coolify.md): as rotas privadas
+respondendo 401, o `quadro.json` dando 404, a leitura anônima sem progresso, e
+a engrenagem só para admin. Nenhum deles aparece na interface — uma aplicação
+com o backlog publicado tem a mesma aparência de uma correta.
+
+**Dívida que passou a valer na internet**, e não mais só na rede local: token
+de 30 dias em `localStorage` sem refresh (um XSS lê o token), e
+`POST /auth/google` sem rate limiting. Vieram do PLT-02, registradas lá.
 
 ## Decisões já tomadas
 
@@ -123,9 +133,16 @@ Para não serem rediscutidas sem motivo novo:
   colateral é intencional: promover alguém direto no banco não sobrevive ao
   próximo login, e por isso uma promoção manual esquecida não vira permanente.
 - **Configurações é área de admin.** Deixou de ser a tela sem dono do PLT-01.
-- **O login fica desligado por enquanto** (14/08/2026). Entre desligar só a
-  tela e desligar o guard inteiro, foi escolhido o guard inteiro, com o risco
-  registrado no [PLT-05](cards/PLT-05-login-desligado.md).
+- **O login ficou desligado por um dia** (14/08/2026), com o guard inteiro
+  desligado e o risco registrado no [PLT-05](cards/PLT-05-login-desligado.md).
+  **Revertido no mesmo dia** pelo deploy: em produção o login é exigido.
+- **A leitura é anônima; entrar é opcional** (14/08/2026). Ler a aula é o que
+  convence alguém a criar conta, então pedir a conta antes de mostrar a aula
+  inverte a ordem. O login guarda progresso e anotação —
+  [PLT-07](cards/PLT-07-leitura-anonima.md).
+- **O deploy é no Coolify, a partir do `docker-compose.prod.yml`** (14/08/2026).
+  O de desenvolvimento continua no repositório e **não serve** para o servidor:
+  publica portas e fixa senha. Guia em [docs/DEPLOY.md](../DEPLOY.md).
 
 ---
 

@@ -15,10 +15,9 @@ O conteudo das aulas e autoral — escrito do zero, com tradeoffs, erros comuns
 e exercicios de auto-teste. Links para as fontes originais aparecem como
 leitura complementar, nunca como substituto do conteudo.
 
-> **Estado:** em construcao, e roda em rede local. O login com Google esta
-> implementado mas **desligado** por `AUTH_DISABLED=true` — enquanto isso,
-> nenhuma rota exige token. Veja
-> [docs/backlog/cards/PLT-05-login-desligado.md](docs/backlog/cards/PLT-05-login-desligado.md).
+> **Estado:** em construcao, publicado com [Coolify](docs/DEPLOY.md). O login
+> com Google funciona; ler trilha e aula **nao exige conta** — entrar guarda o
+> progresso e as anotacoes.
 
 ## Stack
 
@@ -139,7 +138,7 @@ token e uma alegacao; o banco decide.
 | `GOOGLE_CLIENT_ID` | Client ID do OAuth. Sem ele, a tela de login **explica** que nao esta configurado, em vez de mostrar um botao morto. |
 | `JWT_SECRET` | Assina a sessao. Minimo 16 caracteres — **derruba o boot** se faltar, porque erro de configuracao do servidor nao e erro de autenticacao. |
 | `ADMIN_EMAILS` | Quem e admin, reavaliado a cada login. **Vazio = ninguem**, sem default embutido. |
-| `AUTH_DISABLED` | Desliga o login inteiro. Com `true`, nenhuma rota exige token — **so em rede local**. |
+| `AUTH_DISABLED` | Desliga o login inteiro. Com `true`, nenhuma rota exige token — **so em rede local**, nunca no servidor. O default e `false`: esquecer a variavel fecha o acesso. |
 
 ## Estrutura
 

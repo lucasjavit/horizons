@@ -140,36 +140,49 @@ Esperado — `authDisabled` **`false`** e `enabled` **`true`**:
   variável `AUTH_DISABLED` do painel e faça redeploy.
 - `"enabled":false` → falta `GOOGLE_CLIENT_ID`; ninguém consegue entrar.
 
-**Uma rota protegida sem token, que deve responder 401:**
+**As rotas privadas sem token, que devem responder 401:**
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' https://horizons.seudominio.com/api/tracks
-```
-
-Esperado:
-
-```
-401
-```
-
-**`200` aqui é falha de segurança, não sucesso.** Significa que o login está
-desligado e a aplicação inteira está aberta na internet. Corrija na hora:
-confira `AUTH_DISABLED` no painel, remova, redeploy, e repita o comando até dar
-401.
-
-Vale repetir para as outras rotas sensíveis:
-
-```bash
-for r in tracks auth/me settings/tokens; do
+for r in auth/me settings/tokens; do
   printf '%s -> ' "$r"
   curl -s -o /dev/null -w '%{http_code}\n' "https://horizons.seudominio.com/api/$r"
 done
 ```
 
-Os três devem responder `401`.
+Os dois devem responder `401`. **`200` aqui é falha de segurança, não sucesso**
+— significa que o login está desligado e as chaves de IA estão acessíveis a
+quem abrir a URL. Corrija na hora: confira `AUTH_DISABLED` no painel, remova,
+redeploy, e repita até dar 401.
 
-**Por fim, no navegador:** abra o domínio, confirme que a tela de login aparece,
-entre com o Google e veja as trilhas carregarem. Confira nos dois temas, claro e
+**A leitura, que é pública de propósito (PLT-07):**
+
+```bash
+curl -s https://horizons.seudominio.com/api/tracks
+```
+
+Deve responder **200**, e `completedLessons` deve vir **0** em todas as
+trilhas. Um número diferente de zero sem token significaria que o progresso de
+quem entrou está aparecendo para qualquer visitante — aí sim é vazamento.
+
+> Se você seguiu uma versão anterior deste guia, ela mandava exigir 401 em
+> `/api/tracks`. Isso mudou em 14/08/2026: a leitura de trilha e aula passou a
+> ser anônima de propósito, para a pessoa poder ler antes de criar conta. O que
+> define se o login está ligado é `authDisabled` no `/api/auth/config` e o 401
+> nas rotas privadas acima — não o status de `/api/tracks`.
+
+**O backlog interno não pode estar no ar:**
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' https://horizons.seudominio.com/quadro.json
+```
+
+Esperado: **404**. Um `200` com JSON significa que o build saiu com
+`VITE_QUADRO` ligado e o backlog está público.
+
+**Por fim, no navegador:** abra o domínio. Desde o PLT-07 a home mostra as
+trilhas direto, com o botão do Google no canto da barra — não há mais tela de
+login inicial. Entre com o Google e confirme que o seu nome aparece na barra e
+que marcar uma aula como concluída passa a funcionar. Confira nos dois temas, claro e
 escuro.
 
 ---
