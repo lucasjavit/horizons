@@ -323,6 +323,18 @@
       "bloqueio": "PLT-02 — sem role no usuário não há admin. O guard do arguição já traz",
       "feitos": 0,
       "total": 7
+    },
+    {
+      "id": "PLT-05",
+      "titulo": "Login desligado por enquanto",
+      "estado": "feito (14/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 7,
+      "total": 7
     }
   ]
 }

@@ -70,7 +70,7 @@ function Engrenagem({ admin }: { admin: boolean }) {
 
 
 /** Quem esta logado, e a saida. */
-function Conta({ user }: { user: AuthUser }) {
+function Conta({ user, podeSair }: { user: AuthUser; podeSair: boolean }) {
   return (
     <div className="flex items-center gap-2">
       {user.avatarUrl ? (
@@ -92,14 +92,18 @@ function Conta({ user }: { user: AuthUser }) {
       >
         {user.name}
       </span>
-      <button
-        type="button"
-        onClick={perdeuSessao}
-        className="shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium"
-        style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-      >
-        Sair
-      </button>
+      {/* Com o login desligado, "Sair" levaria a uma tela de login que o
+          servidor nao aceita — sairia para lugar nenhum. */}
+      {podeSair && (
+        <button
+          type="button"
+          onClick={perdeuSessao}
+          className="shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium"
+          style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+        >
+          Sair
+        </button>
+      )}
     </div>
   )
 }
@@ -162,20 +166,39 @@ export default function App() {
   // Distingue "ainda nao sei" de "nao ha sessao": sem isso a tela de login
   // pisca antes de o token guardado ser confirmado.
   const [conferido, setConferido] = useState(false)
+  // Login desligado no servidor (AUTH_DISABLED). Muda duas coisas na tela:
+  // nao ha para onde sair, e a engrenagem nao pode depender de papel.
+  const [semLogin, setSemLogin] = useState(false)
 
   useEffect(() => {
     const ctrl = new AbortController()
-    if (!tokenStore.get()) {
-      setConferido(true)
-      return () => ctrl.abort()
+
+    async function abrirSessao() {
+      // Pergunta primeiro se o login esta ligado. Com AUTH_DISABLED o servidor
+      // responde a qualquer requisicao como a conta de desenvolvimento, entao
+      // /auth/me ja devolve o usuario e nao ha tela de login para mostrar.
+      try {
+        const cfg = await api.authConfig(ctrl.signal)
+        if (cfg.authDisabled) {
+          setSemLogin(true)
+          setUser(await api.me(ctrl.signal))
+          return
+        }
+      } catch {
+        // API fora do ar: cai no caminho normal e a tela de login explica.
+      }
+
+      if (!tokenStore.get()) return
+      // O token guardado so vale depois que o servidor confirma — ele pode ter
+      // expirado ou a conta ter sido desativada desde a ultima visita.
+      try {
+        setUser(await api.me(ctrl.signal))
+      } catch {
+        tokenStore.clear()
+      }
     }
-    // O token guardado so vale depois que o servidor confirma — ele pode ter
-    // expirado ou a conta ter sido desativada desde a ultima visita.
-    api
-      .me(ctrl.signal)
-      .then(setUser)
-      .catch(() => tokenStore.clear())
-      .finally(() => setConferido(true))
+
+    void abrirSessao().finally(() => setConferido(true))
     return () => ctrl.abort()
   }, [])
 
@@ -227,8 +250,12 @@ export default function App() {
                 nao sao produtos como Trilhas e Invoice. O ml-auto vive aqui,
                 e nao na engrenagem, porque ela some para quem nao e admin. */}
             <div className="ml-auto flex items-center gap-2">
-            <Engrenagem admin={user.role === 'ADMIN'} />
-            <Conta user={user} />
+            {/* Com o login desligado o backend nao checa papel, e ADMIN_EMAILS
+                costuma estar vazio: exigir ADMIN aqui esconderia a
+                Configuracoes de quem desligou o login justamente para mexer
+                nela. */}
+            <Engrenagem admin={semLogin || user.role === 'ADMIN'} />
+            <Conta user={user} podeSair={!semLogin} />
             </div>
           </div>
         </header>

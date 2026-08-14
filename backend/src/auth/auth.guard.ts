@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthService } from './auth.service';
+import { AuthService, authDesligada } from './auth.service';
 import { CHAVE_ADMIN, CHAVE_PUBLICA, type RequestWithUser } from './current-user';
 
 /**
@@ -32,6 +32,18 @@ export class AuthGuard implements CanActivate {
     if (publica) return true;
 
     const request = context.switchToHttp().getRequest<RequestWithUser>();
+
+    // Login desligado (temporario): nenhuma rota exige token, e todo mundo
+    // e a conta de desenvolvimento. Resolve o usuario do banco em vez de
+    // deixar passar sem nada — os handlers usam @CurrentUser() e quebrariam.
+    if (authDesligada()) {
+      request.user = await this.auth.usuarioDeDesenvolvimento();
+      // De proposito sem checar CHAVE_ADMIN: com o login desligado, exigir
+      // papel deixaria a Configuracoes inacessivel justamente para quem
+      // desligou o login para poder mexer nela.
+      return true;
+    }
+
     const header = String(request.headers.authorization ?? '');
     const token = header.startsWith('Bearer ') ? header.slice(7) : '';
     if (!token) {

@@ -52,6 +52,7 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [PLT-05](cards/PLT-05-login-desligado.md) | **Login desligado** por `AUTH_DISABLED` — reverter antes de publicar | 14/08/2026 |
 | [PLT-02](cards/PLT-02-login-com-google.md) | **Login com Google** — guard global *fail closed*, revogação imediata | 13/08/2026 |
 | [PLT-03](cards/PLT-03-migrar-contas-existentes.md) | Contas do guard antigo adotadas por e-mail, sem duplicar | 13/08/2026 |
 | [JOB-01](cards/JOB-01-provar-o-firecrawl.md) | Firecrawl provado — viável, e o prompt é o que decide | 13/08/2026 |
@@ -88,6 +89,12 @@ OAuth client no Google Cloud Console e cadastrar as origens.
 **O risco do guard stub acabou** (13/08/2026). `x-user-email` agora responde
 **401** — medido. Os tokens de API do PLT-01 têm dono de verdade.
 
+**Mas o login está desligado por decisão** (14/08/2026, [PLT-05](cards/PLT-05-login-desligado.md)).
+Com `AUTH_DISABLED=true` nenhuma rota exige token, e `/api/settings/tokens`
+responde a quem alcançar a porta 3333. Vale só em rede local — **isto não pode
+ir para o servidor assim**. Religar é trocar uma variável; o código do login
+continua inteiro e verificado.
+
 ## Decisões já tomadas
 
 Para não serem rediscutidas sem motivo novo:
@@ -114,6 +121,9 @@ Para não serem rediscutidas sem motivo novo:
   colateral é intencional: promover alguém direto no banco não sobrevive ao
   próximo login, e por isso uma promoção manual esquecida não vira permanente.
 - **Configurações é área de admin.** Deixou de ser a tela sem dono do PLT-01.
+- **O login fica desligado por enquanto** (14/08/2026). Entre desligar só a
+  tela e desligar o guard inteiro, foi escolhido o guard inteiro, com o risco
+  registrado no [PLT-05](cards/PLT-05-login-desligado.md).
 
 ---
 

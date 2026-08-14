@@ -122,22 +122,36 @@ else:
     # PLT-02: rota protegida sem token responde 401. E o comportamento que
     # o guard global garante, e o mais caro de perder sem perceber — uma
     # regressao aqui nao aparece na tela, so no vazamento.
+    #
+    # Com AUTH_DISABLED o esperado se inverte: as rotas respondem 200 de
+    # proposito. O teste segue o servidor em vez de exigir um valor fixo,
+    # senao viraria falha permanente enquanto o login estiver desligado — e
+    # falha que sempre falha para de ser lida.
     print()
     print("sessao")
-    for rota in ["/tracks", "/auth/me", "/settings/tokens"]:
-        try:
-            urllib.request.urlopen(API + rota, timeout=10)
-            ok(False, f"{rota} sem token deveria dar 401 (respondeu 200)")
-        except urllib.error.HTTPError as e:
-            ok(e.code == 401, f"{rota} sem token responde 401 (deu {e.code})")
-        except (urllib.error.URLError, TimeoutError) as e:
-            ok(False, f"{rota} sem token responde 401 ({e})")
+    cfg = {}
     try:
         with urllib.request.urlopen(API + "/auth/config", timeout=10) as resp:
             cfg = json.load(resp)
         ok("googleClientId" in cfg, "/auth/config e publico")
     except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
         ok(False, f"/auth/config e publico ({e})")
+
+    sem_login = cfg.get("authDisabled") is True
+    if sem_login:
+        print("  aviso   AUTH_DISABLED=true — o fail closed esta DESLIGADO")
+    esperado = 200 if sem_login else 401
+
+    for rota in ["/tracks", "/auth/me", "/settings/tokens"]:
+        try:
+            with urllib.request.urlopen(API + rota, timeout=10) as resp:
+                obtido = resp.status
+        except urllib.error.HTTPError as e:
+            obtido = e.code
+        except (urllib.error.URLError, TimeoutError) as e:
+            obtido = str(e)
+        ok(obtido == esperado,
+           f"{rota} sem token responde {esperado} (deu {obtido})")
 
     try:
         from playwright.sync_api import sync_playwright
@@ -158,7 +172,7 @@ else:
                 lambda m: erros.append(m.text) if m.type == "error" else None,
             )
 
-            tok = token_de_teste()
+            tok = None if sem_login else token_de_teste()
             if tok:
                 # Precisa de uma navegacao antes: localStorage e por origem,
                 # e about:blank nao tem a origem do app.
@@ -166,7 +180,8 @@ else:
                 pg.evaluate(
                     "t => localStorage.setItem('horizons.token', t)", tok
                 )
-            ok(tok is not None, "consegue abrir sessao de teste")
+            if not sem_login:
+                ok(tok is not None, "consegue abrir sessao de teste")
 
             pg.goto(f"{BASE}/invoice", wait_until="networkidle")
             ok(pg.locator("main#conteudo").count() == 1,

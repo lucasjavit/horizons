@@ -7,6 +7,21 @@ import type { AuthUser } from './current-user';
 /** Quanto tempo a sessao dura. */
 const VALIDADE = '30d';
 
+/**
+ * Login desligado (temporario).
+ *
+ * Com isto ligado **nenhuma rota exige token** — e o mesmo comportamento de
+ * antes do PLT-02, com o mesmo risco: quem alcanca a porta 3333 le
+ * `/api/settings/tokens`, onde vivem as chaves de IA. So vale enquanto a
+ * aplicacao roda em rede local.
+ *
+ * A leitura e por funcao, e nao por campo lido no construtor, para o teste
+ * conseguir ligar e desligar sem recriar o modulo.
+ */
+export function authDesligada(): boolean {
+  return process.env.AUTH_DISABLED === 'true';
+}
+
 /** Campos que saem daqui. Nunca o registro inteiro do banco. */
 const CAMPOS = {
   id: true,
@@ -51,12 +66,57 @@ export class AuthService {
     if (!clientId) {
       this.log.warn('GOOGLE_CLIENT_ID nao definida — o login fica indisponivel');
     }
+
+    // Grita no boot, e nao so uma vez: subir sem autenticacao e uma decisao,
+    // nao um detalhe. A linha aparece toda vez que a API sobe justamente para
+    // nao virar paisagem.
+    if (authDesligada()) {
+      this.log.warn(
+        'AUTH_DISABLED=true — NENHUMA rota exige token. As chaves de IA em ' +
+          '/api/settings/tokens ficam acessiveis a quem alcancar esta porta. ' +
+          'So use em rede local; remova a variavel para religar o login.',
+      );
+    }
   }
 
   /** O front pergunta antes de desenhar o botao, para nao mostrar algo morto. */
-  config(): { googleClientId: string | null; enabled: boolean } {
+  config(): {
+    googleClientId: string | null;
+    enabled: boolean;
+    authDisabled: boolean;
+  } {
     const googleClientId = process.env.GOOGLE_CLIENT_ID ?? null;
-    return { googleClientId, enabled: !!googleClientId };
+    return {
+      googleClientId,
+      enabled: !!googleClientId,
+      authDisabled: authDesligada(),
+    };
+  }
+
+  /**
+   * A conta usada enquanto AUTH_DISABLED esta ligada.
+   *
+   * Resolve do banco em vez de inventar um objeto: os servicos gravam com
+   * `userId`, e um id que nao existe quebraria a chave estrangeira na primeira
+   * anotacao salva. Cria a conta se ainda nao houver — o banco pode estar
+   * vazio numa maquina nova.
+   */
+  async usuarioDeDesenvolvimento(): Promise<AuthUser> {
+    const email = (process.env.DEFAULT_USER_EMAIL ?? 'eu@horizons.local').toLowerCase();
+    const user = await this.prisma.user.upsert({
+      where: { email },
+      create: {
+        email,
+        name: email.split('@')[0],
+        provider: 'DEV',
+        role: this.ehAdmin(email) ? 'ADMIN' : 'USER',
+      },
+      // Nao mexe em nada de quem ja existe: com o login desligado, esta conta
+      // costuma ser a mesma que ja tem o progresso das trilhas.
+      update: {},
+      select: CAMPOS,
+    });
+    return this.toDto(user);
   }
 
   async loginComGoogle(

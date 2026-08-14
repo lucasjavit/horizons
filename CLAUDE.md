@@ -40,7 +40,7 @@ entra sozinho.)
 propósito: erro de configuração do servidor não é erro de autenticação, e
 devolver 401 esconderia o problema. O compose tem um default de
 desenvolvimento; `.env.example` lista o que existe (`GOOGLE_CLIENT_ID`,
-`JWT_SECRET`, `ADMIN_EMAILS`, `ENCRYPTION_KEY`).
+`JWT_SECRET`, `ADMIN_EMAILS`, `ENCRYPTION_KEY`, `AUTH_DISABLED`).
 
 Sem `GOOGLE_CLIENT_ID` a aplicação sobe normalmente e a tela de login **explica
 que não está configurada**, em vez de mostrar um botão que não funciona.
@@ -52,6 +52,12 @@ Um módulo por pasta, sem barrel: `x.module.ts`, `x.controller.ts`,
 
 - **`PrismaModule` é `@Global()`** — não importe nos módulos; só injete
   `PrismaService`.
+- **`AUTH_DISABLED=true` desliga o login inteiro** (estado atual, 14/08/2026).
+  Nenhuma rota exige token e todo mundo é a conta de `DEFAULT_USER_EMAIL`. O
+  fail closed descrito abaixo fica **inativo** — `/api/settings/tokens` responde
+  a qualquer um que alcance a porta 3333. A API avisa no boot, toda vez. Para
+  religar: `AUTH_DISABLED=false` e `GOOGLE_CLIENT_ID` preenchido; o código do
+  login continua inteiro no lugar.
 - **O guard é global e *fail closed*.** `AuthGuard` entra por `APP_GUARD` em
   `AuthModule`, então **rota nova nasce protegida** — não há `@UseGuards()` em
   controller nenhum. Para abrir, marque `@Public()`; para exigir admin,
@@ -67,7 +73,10 @@ Um módulo por pasta, sem barrel: `x.module.ts`, `x.controller.ts`,
   compose bate em `/api/auth/config` — se um dia ela deixar de ser pública, o
   container fica eternamente *unhealthy*.
 - **Mexeu em rota protegida, rode `scripts/qa-rapido.py`**: ele assina um
-  token de teste com o segredo de dentro do container e confere o 401.
+  token de teste com o segredo de dentro do container e confere o 401 — ou o
+  200, se `AUTH_DISABLED` estiver ligada. O teste segue o servidor em vez de
+  exigir um valor fixo, senão viraria falha permanente, e falha que sempre
+  falha para de ser lida.
 - **Controller é fino**: uma linha por handler, `return this.svc.metodo(...)`,
   com tipo de retorno `Promise<XDto>` explícito. Sem `async` no controller.
 - **Serviço recebe `userId: string` como primeiro parâmetro** e sempre usa

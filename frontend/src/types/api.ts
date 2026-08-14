@@ -123,4 +123,6 @@ export interface AuthUser {
 export interface AuthConfig {
   googleClientId: string | null
   enabled: boolean
+  /** Login desligado no servidor: entra direto, sem tela. */
+  authDisabled: boolean
 }
