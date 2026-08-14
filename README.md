@@ -1,10 +1,24 @@
 # Horizons
 
-Plataforma pessoal de trilhas de estudo. A primeira trilha e **System Design**.
+Umbrella de produtos para o desenvolvedor brasileiro que quer trabalhar fora.
+Hoje tem duas abas:
 
-O conteudo das aulas e autoral — escrito em portugues, com tradeoffs, erros
-comuns e exercicios de auto-teste. Links para as fontes originais aparecem
-como leitura complementar, nunca como substituto do conteudo.
+- **Trilhas** — estudo estruturado, em portugues. A primeira e **System
+  Design**, com 13 modulos e 75 aulas autorais.
+- **Invoice** — gerador de invoice em ingles, que roda inteiro no navegador.
+  Sem backend, sem cadastro: o PDF sai da propria pagina.
+
+O idioma misto e deliberado. A invoice mira um publico global; as trilhas sao
+escritas para quem le em portugues.
+
+O conteudo das aulas e autoral — escrito do zero, com tradeoffs, erros comuns
+e exercicios de auto-teste. Links para as fontes originais aparecem como
+leitura complementar, nunca como substituto do conteudo.
+
+> **Estado:** em construcao, e roda em rede local. O login com Google esta
+> implementado mas **desligado** por `AUTH_DISABLED=true` — enquanto isso,
+> nenhuma rota exige token. Veja
+> [docs/backlog/cards/PLT-05-login-desligado.md](docs/backlog/cards/PLT-05-login-desligado.md).
 
 ## Stack
 
@@ -94,18 +108,38 @@ modos, entao rode um de cada vez.
 
 ## API
 
-Prefixo global `/api`. O usuario e resolvido pelo header `x-user-email`; sem
-ele, cai no usuario padrao do seed (`DEFAULT_USER_EMAIL`). Toda a logica de
-identidade esta isolada em `CurrentUserGuard`, para trocar por JWT sem tocar
-nos controllers.
+Prefixo global `/api`. A sessao e por **Google Sign-In**: o front manda o ID
+token em `POST /auth/google` e recebe um JWT, que vai em
+`Authorization: Bearer`.
+
+O `AuthGuard` e **global e fail closed** — rota nova nasce protegida a menos
+que marque `@Public()`. Esquecer o decorator fecha o acesso em vez de abrir.
+E o guard **rele o usuario do banco a cada request**: desativar a conta ou
+rebaixar o papel vale na requisicao seguinte, sem esperar o token expirar. O
+token e uma alegacao; o banco decide.
 
 | Metodo | Rota                                        | O que faz                                  |
 | ------ | ------------------------------------------- | ------------------------------------------ |
+| GET    | `/auth/config`                              | Se o login esta disponivel (**publica**)   |
+| POST   | `/auth/google`                              | Troca o ID token do Google por sessao (**publica**) |
+| GET    | `/auth/me`                                  | Confirma a sessao                          |
 | GET    | `/tracks`                                   | Trilhas publicadas, com contagem de progresso |
 | GET    | `/tracks/:slug`                             | Trilha com modulos e aulas (sem `content`) |
 | GET    | `/tracks/:trackSlug/lessons/:lessonSlug`    | Aula completa, com `content` e vizinhos    |
 | PUT    | `/progress/:lessonId`                       | Marca concluida/nao concluida (upsert)     |
 | PUT    | `/progress/:lessonId/note`                  | Salva a anotacao da aula                   |
+| GET    | `/settings/tokens`                          | Chaves de IA guardadas (**admin**)         |
+
+### Configuracao
+
+`.env.example` lista tudo. Os que importam:
+
+| Variavel | O que faz |
+| --- | --- |
+| `GOOGLE_CLIENT_ID` | Client ID do OAuth. Sem ele, a tela de login **explica** que nao esta configurado, em vez de mostrar um botao morto. |
+| `JWT_SECRET` | Assina a sessao. Minimo 16 caracteres — **derruba o boot** se faltar, porque erro de configuracao do servidor nao e erro de autenticacao. |
+| `ADMIN_EMAILS` | Quem e admin, reavaliado a cada login. **Vazio = ninguem**, sem default embutido. |
+| `AUTH_DISABLED` | Desliga o login inteiro. Com `true`, nenhuma rota exige token — **so em rede local**. |
 
 ## Estrutura
 
@@ -115,7 +149,8 @@ horizons/
 │   └── src/
 │       ├── components/    blocos, sidebar, quiz, progresso, estados
 │       ├── lib/           cliente axios e hook de carregamento
-│       ├── pages/         trilhas, trilha, aula
+│       ├── invoice/       calculo em centavo inteiro e geracao do PDF
+│       ├── pages/         trilhas, trilha, aula, invoice, login, config
 │       └── types/         espelho manual dos DTOs do backend
 ├── backend/
 │   ├── prisma/
@@ -123,7 +158,7 @@ horizons/
 │   │   ├── seed.ts        runner do seed
 │   │   └── seed/modules/  conteudo autoral, um arquivo por modulo
 │   └── src/
-│       ├── auth/          guard + decorator de usuario atual
+│       ├── auth/          Google Sign-In, guard global, decorators
 │       ├── prisma/        PrismaService global (adapter PrismaPg)
 │       ├── progress/      conclusao e anotacoes
 │       └── tracks/        trilhas e aulas
