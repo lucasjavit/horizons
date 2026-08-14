@@ -2,6 +2,7 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { OAuth2Client } from 'google-auth-library';
 import * as jwt from 'jsonwebtoken';
 import { PrismaService } from '../prisma/prisma.service';
+import type { AuthConfigDto } from './auth.dto';
 import type { AuthUser } from './current-user';
 
 /** Quanto tempo a sessao dura. */
@@ -80,11 +81,7 @@ export class AuthService {
   }
 
   /** O front pergunta antes de desenhar o botao, para nao mostrar algo morto. */
-  config(): {
-    googleClientId: string | null;
-    enabled: boolean;
-    authDisabled: boolean;
-  } {
+  config(): AuthConfigDto {
     const googleClientId = process.env.GOOGLE_CLIENT_ID ?? null;
     return {
       googleClientId,

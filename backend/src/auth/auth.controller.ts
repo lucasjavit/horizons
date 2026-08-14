@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { LoginGoogleDto } from './auth.dto';
+import type { AuthConfigDto } from './auth.dto';
 import { AuthService } from './auth.service';
 import { CurrentUser, Public, type AuthUser } from './current-user';
 
@@ -10,7 +11,7 @@ export class AuthController {
   /** Publica: o front precisa saber se ha login antes de desenhar o botao. */
   @Public()
   @Get('config')
-  config(): { googleClientId: string | null; enabled: boolean } {
+  config(): AuthConfigDto {
     return this.auth.config();
   }
 

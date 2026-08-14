@@ -1,0 +1,130 @@
+# Deploy no Coolify.
+#
+# O que muda em relacao ao docker-compose.yml de desenvolvimento, e por que:
+#
+# - **Sem `ports:`.** Quem expoe a aplicacao e o proxy do Coolify (Traefik).
+#   Publicar porta aqui furaria o roteamento e deixaria a API acessivel por
+#   fora dele, sem TLS. So o `web` recebe trafego, e por `expose`.
+# - **Sem `container_name`.** Nome fixo impede o Coolify de gerenciar o ciclo
+#   de vida e quebra se houver mais de um deploy no mesmo host.
+# - **Nenhum segredo com default.** Toda variavel usa `${VAR:?mensagem}`: se
+#   faltar, o `docker compose` **recusa subir** com a mensagem. Default de
+#   conveniencia e o que faz um servidor subir aberto sem ninguem notar.
+# - **`AUTH_DISABLED` nao existe aqui.** Em producao o login e obrigatorio. A
+#   ausencia da variavel ja significa `false` no codigo, entao nao ha o que
+#   esquecer ligado.
+#
+# As variaveis sao definidas no painel do Coolify. Veja docs/DEPLOY.md.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-horizons}
+      # Sem default: a senha de desenvolvimento e publica no repositorio.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no Coolify}
+      POSTGRES_DB: ${POSTGRES_DB:-horizons}
+    # Sem `ports`: o banco so precisa ser alcancavel pela rede interna do
+    # compose. Publicar a 5432 na internet seria o buraco mais barato de abrir
+    # e o mais caro de fechar depois.
+    volumes:
+      - horizons_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-horizons} -d ${POSTGRES_DB:-horizons}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Aplica as migrations e roda o seed, depois encerra. A api so sobe quando
+  # este contêiner termina com sucesso. Usa o estagio de build da imagem do
+  # backend, que e o unico que tem o CLI do Prisma e o ts-node.
+  migrate:
+    build:
+      context: ./backend
+      target: build
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-horizons}:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no Coolify}@db:5432/${POSTGRES_DB:-horizons}?schema=public
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-horizons}:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no Coolify}@db:5432/${POSTGRES_DB:-horizons}?schema=public
+      PORT: 3333
+      # O front chama /api no mesmo host e o nginx repassa, entao nao ha
+      # requisicao cross-origin no uso normal. Fica restrito ao dominio
+      # publico mesmo assim: `origin: true` refletiria qualquer origem.
+      CORS_ORIGIN: ${CORS_ORIGIN:?defina CORS_ORIGIN com o dominio publico, ex https://horizons.seudominio.com}
+      # Cifra os tokens de IA guardados (AES-256-GCM). Trocar depois invalida
+      # os que ja estao salvos — eles terao de ser digitados de novo.
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?defina ENCRYPTION_KEY no Coolify}
+      # Assina a sessao. O boot recusa menos de 16 caracteres.
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no Coolify (openssl rand -base64 32)}
+      # Sem ele a aplicacao sobe e a tela de login explica que o login nao
+      # esta configurado — em vez de mostrar um botao que nao funciona.
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      # Vazio = ninguem e admin. Reavaliado a cada login.
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      # AUTH_DISABLED de proposito ausente: em producao o login e obrigatorio,
+      # e o codigo so desliga quando a variavel vale exatamente 'true'.
+    expose:
+      - '3333'
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      # Bate numa rota @Public(). Se `/api/auth/config` deixar de ser publica,
+      # o contêiner fica eternamente unhealthy e o deploy nunca conclui.
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://127.0.0.1:3333/api/auth/config',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        # Caminho relativo: o nginx da propria imagem repassa /api para a api.
+        VITE_API_URL: /api
+        # A aba Quadro mostra o backlog interno — bugs conhecidos e decisoes
+        # de produto. Fica de fora do build publico. Ausente = ausente; so
+        # 'true' liga.
+        VITE_QUADRO: ''
+    restart: unless-stopped
+    # O Coolify le esta porta para configurar o Traefik. E o unico servico
+    # que recebe trafego de fora.
+    expose:
+      - '80'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1/']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  horizons_pgdata:

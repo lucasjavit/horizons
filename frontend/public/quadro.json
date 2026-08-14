@@ -335,6 +335,18 @@
       "bloqueio": "",
       "feitos": 7,
       "total": 7
+    },
+    {
+      "id": "PLT-06",
+      "titulo": "Deploy no Coolify",
+      "estado": "pronto para fazer",
+      "coluna": "pronto",
+      "tamanho": "M",
+      "porque": "O app roda em rede local desde o começo, e o docker-compose.yml reflete isso: portas publicadas no host, senha fixa no Postgres, AUTH_DISABLED com default true. Serve para desenvolver e não pode ir para o servidor assim ",
+      "decisao": "",
+      "bloqueio": "Servidor com Coolify instalado e domínio apontado",
+      "feitos": 0,
+      "total": 10
     }
   ]
 }

@@ -20,6 +20,7 @@ destrava o resto.
 | Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
+| [PLT-06](cards/PLT-06-deploy-no-coolify.md) | Deploy no Coolify | M | compose de produção pronto e verificado; falta servidor e domínio |
 | [PLT-04](cards/PLT-04-crud-de-prompts.md) | Config vira área de admin, com CRUD dos prompts de busca | M | agora tem `@AdminOnly()` de verdade por trás |
 | [JOB-02](cards/JOB-02-perfil-de-busca.md) | Perfil de busca e agrupamento | M | destravado pelo login — o perfil tem dono |
 | [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha a cada 50 minutos | M | ver **Antes de começar** abaixo: dois ajustes pendentes |

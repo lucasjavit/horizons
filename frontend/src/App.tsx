@@ -9,6 +9,11 @@ import {
 import { InvoicePage } from './pages/InvoicePage'
 // QUADRO (temporario) — remover esta linha junto com a pagina
 import { QuadroPage } from './pages/QuadroPage'
+// O quadro do backlog interno so aparece quando VITE_QUADRO=true. O build de
+// producao (docker-compose.prod.yml) passa vazio, entao a aba some e a rota
+// cai no 404 — sem apagar nada do codigo. Ausente = ausente: so a string
+// 'true' liga, para um valor esquecido como '0' ou 'false' nao abrir.
+const MOSTRA_QUADRO = import.meta.env.VITE_QUADRO === 'true'
 import { LoginPage } from './pages/LoginPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { LoadingState } from './components/States'
@@ -113,12 +118,14 @@ function Abas() {
   const abas = [
     { to: '/', label: 'Trilhas', ativa: pathname === '/' || pathname.startsWith('/t/') },
     { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
-    // QUADRO (temporario) — o quadro do backlog, para acompanhar o trabalho
-    // enquanto o projeto esta sendo construido. Aparece em qualquer build,
-    // inclusive no Docker. Remover esta entrada junto com a pagina, antes de
-    // publicar: o backlog interno nao e para o publico.
-    { to: '/quadro', label: 'Quadro', ativa: pathname === '/quadro' },
   ]
+
+  // QUADRO (temporario) — o quadro do backlog, para acompanhar o trabalho
+  // enquanto o projeto esta sendo construido. Fora do build publico: o
+  // backlog interno nao e para quem chega de fora.
+  if (MOSTRA_QUADRO) {
+    abas.push({ to: '/quadro', label: 'Quadro', ativa: pathname === '/quadro' })
+  }
 
   return (
     <nav aria-label="Produtos" className="flex items-center gap-1 text-sm">
@@ -266,8 +273,11 @@ export default function App() {
           <Route path="/t/:trackSlug/:lessonSlug" element={<LessonPage />} />
           <Route path="/invoice" element={<InvoicePage />} />
           <Route path="/config" element={<SettingsPage />} />
-          {/* QUADRO (temporario) — remover esta rota junto com a pagina */}
-          <Route path="/quadro" element={<QuadroPage />} />
+          {/* QUADRO (temporario) — remover esta rota junto com a pagina.
+              Sem a flag a rota nem e registrada, entao /quadro cai no 404:
+              esconder so a aba deixaria a URL funcionando para quem soubesse
+              digita-la. */}
+          {MOSTRA_QUADRO && <Route path="/quadro" element={<QuadroPage />} />}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

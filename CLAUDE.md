@@ -45,6 +45,21 @@ desenvolvimento; `.env.example` lista o que existe (`GOOGLE_CLIENT_ID`,
 Sem `GOOGLE_CLIENT_ID` a aplicação sobe normalmente e a tela de login **explica
 que não está configurada**, em vez de mostrar um botão que não funciona.
 
+**Há dois compose.** `docker-compose.yml` é desenvolvimento; o deploy usa
+`docker-compose.prod.yml`, que não publica portas (quem expõe é o proxy do
+Coolify), não fixa `container_name`, e usa `${VAR:?mensagem}` em todo segredo —
+faltando um, o compose **recusa subir**. Guia em [docs/DEPLOY.md](docs/DEPLOY.md).
+
+**`AUTH_DISABLED` tem default `false` nos dois.** Esquecer a variável fecha o
+acesso, nunca abre. Para desligar o login localmente, `AUTH_DISABLED=true` no
+`.env` — que não vai para o git, então a escolha fica na máquina de quem a fez.
+
+**Arquivo em `frontend/public/` vai para o `dist` mesmo com a feature
+desligada.** Foi o caso do `quadro.json`: esconder a aba não escondia o dado, e
+o backlog continuava baixável pela URL. O `Dockerfile` remove o arquivo quando
+`VITE_QUADRO` não é `true`. Feature nova escondida por flag: confira o que
+sobrou em `public/`, não só o que sumiu do bundle.
+
 ## Backend
 
 Um módulo por pasta, sem barrel: `x.module.ts`, `x.controller.ts`,

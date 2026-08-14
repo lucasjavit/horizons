@@ -69,10 +69,11 @@ services:
       # risco — quem alcancar a porta 3333 le /api/settings/tokens, onde ficam
       # as chaves de IA. So vale enquanto isto roda em rede local.
       #
-      # Para religar o login: troque para 'false' (ou apague a linha) e defina
-      # GOOGLE_CLIENT_ID. Nada mais precisa mudar; o codigo do login continua
-      # inteiro no lugar.
-      AUTH_DISABLED: ${AUTH_DISABLED:-true}
+      # O default e 'false' de proposito, e nao 'true': esquecer a variavel
+      # precisa FECHAR o acesso, nunca abrir. Quem quer o login desligado
+      # localmente escreve AUTH_DISABLED=true no `.env`, que nao vai para o
+      # git — assim a escolha e explicita e fica na maquina de quem a fez.
+      AUTH_DISABLED: ${AUTH_DISABLED:-false}
     ports:
       - '3333:3333'
     depends_on:
@@ -99,6 +100,9 @@ services:
       args:
         # Caminho relativo: o nginx da propria imagem repassa /api para a api.
         VITE_API_URL: /api
+        # Em desenvolvimento a aba Quadro fica visivel — e para isso que ela
+        # existe. O docker-compose.prod.yml passa vazio.
+        VITE_QUADRO: 'true'
     container_name: horizons-web
     restart: unless-stopped
     ports:
