@@ -262,6 +262,34 @@ itens, nada depende dela).
 
 ---
 
+## Se o botão do Google aparecer mas não deixar entrar
+
+Erro no console do navegador:
+
+```
+[GSI_LOGGER]: The given origin is not allowed for the given client ID.
+```
+
+**Confira o protocolo antes do cadastro.** O Google Sign-In só aceita origens
+`https://` — `localhost` é a única exceção. Se o domínio serve em `http`,
+cadastrar a origem no Google Cloud Console **não resolve**: o formato é
+rejeitado no próprio cadastro.
+
+Aconteceu no primeiro deploy (14/08/2026): o domínio automático do Coolify
+respondia só em `http`, e `https://` no mesmo endereço não respondia
+(`curl` devolvia `000`).
+
+A ordem que funciona:
+
+1. Ligar o HTTPS no serviço `web`, no Coolify (Let's Encrypt).
+2. Confirmar: `curl -sI https://SEU-DOMINIO/` tem de responder.
+3. Só então cadastrar a origem **com `https://`** em "Authorized JavaScript
+   origins". Redirect URIs continua vazio.
+4. Trocar `CORS_ORIGIN` para o mesmo `https://…` e redeploy.
+
+Enquanto o TLS não estiver de pé, o resto do site funciona — trilhas, aulas e
+invoice não exigem login.
+
 ## O que já foi verificado localmente (14/08/2026)
 
 Nada aqui substitui o deploy real — não há servidor nem domínio ainda —, mas

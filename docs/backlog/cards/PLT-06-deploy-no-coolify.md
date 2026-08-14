@@ -1,6 +1,6 @@
 # PLT-06 · Deploy no Coolify
 
-**Estado:** feito (14/08/2026)
+**Estado:** quase — no ar e verificado, mas o login está bloqueado pelo `http` (14/08/2026)
 **Tamanho:** M
 
 ## Por quê
@@ -34,23 +34,28 @@ há Dockerfile novo nem mudança de arquitetura.
   se faltar), o cadastro da origem no Google Cloud Console, os `curl` de
   verificação e uma seção "Se der errado" com os sintomas prováveis.
 
-O `curl` de verificação é a parte que importa: `/api/tracks` sem token tem de
-responder **401**. Um **200** ali significa que a aplicação inteira está aberta
-na internet, e o guia diz para corrigir na hora, não para anotar como pendência.
+O `curl` de verificação é a parte que importa, porque nada disso aparece na
+interface: uma aplicação com o login desligado entra direto, e uma com o
+backlog publicado tem a mesma cara de uma correta. O sinal é `authDisabled` no
+`/api/auth/config` e o **401** nas rotas privadas.
+
+(Este card foi escrito quando `/api/tracks` também exigia 401. O
+[PLT-07](PLT-07-leitura-anonima.md) tornou a leitura pública de propósito no
+mesmo dia, e o `DEPLOY.md` foi corrigido — seguir a versão antiga faria alguém
+tratar um 200 correto como falha.)
 
 ## Feito
 
-**O deploy está no ar, e o login funciona** — relatado pelo stakeholder em
-14/08/2026.
+**O deploy está no ar** desde 14/08/2026, e verificado por fora: as rotas
+privadas rejeitam, o backlog não vazou, a leitura anônima não expõe progresso.
 
-Isso fecha o que o PLT-02 tinha deixado em aberto desde o começo: o login com
-Google estava implementado e verificado até o ponto em que só o Google podia
-continuar (com um id inventado, o botão renderizava e voltava *"The given
-client ID is not found"*). Agora entrou de verdade, por um domínio público,
-com a origem cadastrada.
+**O login, porém, ainda não funciona no ar** — não por código, mas porque o
+domínio serve em `http` e o Google Sign-In exige `https`. Detalhe medido na
+seção do bloqueio, mais abaixo.
 
-Também encerra o [PLT-05](PLT-05-login-desligado.md) na prática: `AUTH_DISABLED`
-era temporário e valia só em rede local.
+Encerra o [PLT-05](PLT-05-login-desligado.md) na prática: `AUTH_DISABLED` era
+temporário e valia só em rede local. Em produção o login está exigido —
+`authDisabled: false`, medido.
 
 ## Riscos que existiram, e onde foram corrigidos
 
@@ -74,35 +79,65 @@ Vale notar o que **não** foi mudado: `ENCRYPTION_KEY` já não tinha default no
 
 ## Critério de aceite
 
-Marcados a partir do relato de quem fez o deploy — **não conferidos por mim
-contra o domínio**, que não me foi informado. Veja "O que não foi verificado".
-
 - [x] O recurso no Coolify aponta para `docker-compose.prod.yml`
 - [x] `POSTGRES_PASSWORD`, `JWT_SECRET` e `ENCRYPTION_KEY` definidas no painel
 - [x] `AUTH_DISABLED` **não** está definida no painel
-- [x] A origem pública com `https://` cadastrada em "Authorized JavaScript
-      origins"; "Authorized redirect URIs" vazio
-- [x] Entrar com Google de verdade funciona pelo domínio público
 - [x] Os containers ficam *healthy*
 - [x] A aba **Quadro** fica fora do build público
-
-Estes dependem de rodar `curl` contra o domínio e continuam abertos:
-
-- [ ] `/api/auth/me` e `/api/settings/tokens` sem token respondem **401**
-- [ ] `/api/tracks` responde **200** com `completedLessons: 0` (leitura anônima
+- [x] `/api/auth/me` e `/api/settings/tokens` sem token respondem **401**
+- [x] `/api/tracks` responde **200** com `completedLessons: 0` (leitura anônima
       do PLT-07 — **não** é mais para dar 401)
-- [ ] `/quadro.json` responde **404**
-- [ ] A engrenagem aparece só para quem está em `ADMIN_EMAILS`
+- [x] `/quadro.json` responde **404**
+- [ ] A origem pública cadastrada em "Authorized JavaScript origins" —
+      **impossível hoje**: o Google só aceita `https`, e o site é `http`
+- [ ] Entrar com Google de verdade funciona pelo domínio público — **não**
+- [ ] A engrenagem só para quem está em `ADMIN_EMAILS` — não verificável sem
+      conseguir entrar
 
-## O que não foi verificado
+## Verificado no ar (14/08/2026)
 
-O domínio não me foi passado, então **não rodei nenhum comando contra o que
-está no ar**. O que está marcado acima vem do relato do stakeholder.
+Domínio: `ojxqz4v8x7jda764e6p3k419.169.58.152.158.sslip.io`, o automático do
+Coolify.
 
-Os quatro itens abertos são os que se verificam em um minuto, e valem a pena
-justamente porque nenhum deles aparece na interface: uma aplicação com o login
-desligado ou com o backlog publicado tem exatamente a mesma aparência de uma
-correta. Os comandos estão em [docs/DEPLOY.md](../../DEPLOY.md).
+| O que | Resultado |
+| --- | --- |
+| `/api/auth/config` | `enabled: true`, **`authDisabled: false`** — login exigido |
+| `/api/auth/me`, `/api/settings/tokens` sem token | **401** nos dois |
+| `/quadro.json` | **404** — o backlog não vazou |
+| `/quadro` no navegador | "Página não encontrada" |
+| `/api/tracks` sem token | **200**, `completedLessons: 0` |
+| Aula sem sessão | **200**, `completed: false`, `note: null` — o 500 do PLT-07 não está no ar |
+| `Bearer abc.def.ghi` | **401** — token inválido não vira anônimo |
+| `PUT /progress/:id` sem sessão | **401** |
+| Navegador, claro e escuro | home nas trilhas, botão do Google na barra, sem aba Quadro, sem erro além do Google |
+
+## O bloqueio que sobrou: o site é `http`, e o Google exige `https`
+
+**O login não funciona no ar.** O botão renderiza, mas o Google recusa:
+
+```
+[GSI_LOGGER]: The given origin is not allowed for the given client ID.
+```
+
+A causa **não** é o cadastro da origem — é o protocolo. `location.origin` no ar
+é `http://ojxqz4v8x7jda764e6p3k419…`, e o Google Sign-In só aceita origens
+`https://`, com `localhost` como única exceção. Cadastrar a origem com `http`
+no Google Cloud Console não resolve: o formato é rejeitado no próprio cadastro.
+
+Medido: `https://` no mesmo domínio **não responde** (`000`), e `http://`
+devolve 200 sem redirecionar. O TLS não está ativo para este domínio.
+
+**O que resolve**, e é configuração do Coolify, não código:
+
+1. Ligar o HTTPS no serviço `web` — o Coolify emite Let's Encrypt, e com
+   domínio `sslip.io` costuma sair direto.
+2. Cadastrar a origem **com `https://`** em "Authorized JavaScript origins".
+   Redirect URIs continua vazio.
+3. Trocar `CORS_ORIGIN` para o mesmo `https://…` e fazer redeploy.
+
+Enquanto isso, tudo o que não depende de login funciona: trilhas, aulas e a
+invoice. Foi o [PLT-07](PLT-07-leitura-anonima.md) que salvou o deploy de ser
+inútil — sem a leitura anônima, o site inteiro estaria inacessível.
 
 ## Depende de
 

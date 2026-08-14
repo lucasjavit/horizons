@@ -339,13 +339,13 @@
     {
       "id": "PLT-06",
       "titulo": "Deploy no Coolify",
-      "estado": "feito (14/08/2026)",
-      "coluna": "feito",
+      "estado": "quase — no ar e verificado, mas o login está bloqueado pelo `http` (14/08/2026)",
+      "coluna": "backlog",
       "tamanho": "M",
       "porque": "O app rodava em rede local desde o começo, e o docker-compose.yml refletia isso: portas publicadas no host, senha fixa no Postgres, e AUTH_DISABLED com default true — esquecer a variável abria o acesso. Servia para desen",
       "decisao": "",
       "bloqueio": "Servidor com Coolify instalado e domínio apontado",
-      "feitos": 7,
+      "feitos": 8,
       "total": 11
     },
     {
