@@ -83,6 +83,17 @@ Um módulo por pasta, sem barrel: `x.module.ts`, `x.controller.ts`,
   esperar o token de 30 dias expirar. O token é uma alegação; o banco decide.
 - **`ADMIN_EMAILS` é a fonte da verdade do papel**, reavaliada a cada login.
   Vazio = ninguém. Promover direto no banco não sobrevive ao próximo login.
+- **`@SessaoOpcional()` não é `@Public()`.** Numa rota opcional o token, *se
+  vier*, ainda é verificado — e token inválido continua dando 401, em vez de
+  virar anônimo em silêncio (isso faria sessão expirada parecer trilha
+  zerada). É o que permite a mesma rota servir leitura anônima e, para quem
+  entrou, devolver o progresso. `@CurrentUser()` pode ser `null` ali: o
+  handler trata. Hoje só `tracks` usa.
+- **`where: { userId: null }` no Prisma não devolve vazio** — casa com as
+  linhas de `userId` nulo, que são de outra pessoa. Para "sem dono", faça
+  curto-circuito antes da consulta (`if (!userId) return ...`) ou `take: 0`.
+  Um id impossível também não serve: `'\u0000'` derruba o Postgres com
+  *invalid byte sequence for encoding UTF8*.
 - **Rota pública é exceção, e o healthcheck depende disso.** Só
   `GET /auth/config` e `POST /auth/google` são `@Public()`. O healthcheck do
   compose bate em `/api/auth/config` — se um dia ela deixar de ser pública, o

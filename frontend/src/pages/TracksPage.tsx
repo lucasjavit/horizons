@@ -3,9 +3,11 @@ import { ProgressBar } from '../components/ProgressBar'
 import { EmptyState, ErrorState, LoadingState } from '../components/States'
 import { api } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
+import { useSessao } from '../lib/sessao'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 export function TracksPage() {
+  const usuario = useSessao()
   const { data, loading, error, reload } = useAsync(
     (signal) => api.listTracks(signal),
     [],
@@ -20,10 +22,14 @@ export function TracksPage() {
     >
       <header className="mb-10">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Suas trilhas
+          {/* "Suas" so depois de entrar: sem sessao nao ha progresso guardado,
+              e o possessivo prometeria algo que a pagina nao entrega. */}
+          {usuario ? 'Suas trilhas' : 'Trilhas'}
         </h1>
         <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
-          Estudo estruturado, no seu ritmo.
+          {usuario
+            ? 'Estudo estruturado, no seu ritmo.'
+            : 'Estudo estruturado, no seu ritmo. Entre com o Google para guardar seu progresso.'}
         </p>
       </header>
 

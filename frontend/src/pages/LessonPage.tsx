@@ -4,7 +4,7 @@ import { BlockRenderer, WARN_INK } from '../components/blocks/BlockRenderer'
 import { LessonSidebar } from '../components/LessonSidebar'
 import { Quiz } from '../components/Quiz'
 import { ErrorState, LoadingState } from '../components/States'
-import { api, errorMessage } from '../lib/api'
+import { api, ehSemSessao, errorMessage } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { useKeyboardShortcuts } from '../lib/useKeyboardShortcuts'
@@ -24,6 +24,9 @@ export function LessonPage() {
 
   const [menuAberto, setMenuAberto] = useState(false)
   const [erroAcao, setErroAcao] = useState<string | null>(null)
+  // Separa "precisa entrar" de "deu errado": muda o texto de acusacao para
+  // convite, e o convite nao leva prefixo de falha.
+  const [precisaEntrar, setPrecisaEntrar] = useState(false)
 
   // Ao trocar de aula: volta ao topo e fecha o menu mobile.
   useEffect(() => {
@@ -38,6 +41,7 @@ export function LessonPage() {
     if (!dados) return
     const desejado = !dados.completed
     setErroAcao(null)
+    setPrecisaEntrar(false)
     lesson.setData({ ...dados, completed: desejado })
 
     try {
@@ -45,7 +49,15 @@ export function LessonPage() {
       track.reload() // mantém a sidebar e o progresso em dia
     } catch (err) {
       lesson.setData({ ...dados, completed: !desejado })
-      setErroAcao(errorMessage(err))
+      // Quem nao entrou recebe 401, e isso nao e uma falha: e o unico caso em
+      // que a acao pede algo da pessoa em vez de ter dado errado. "Nao foi
+      // possivel salvar: Entre para continuar" leria como defeito.
+      setPrecisaEntrar(ehSemSessao(err))
+      setErroAcao(
+        ehSemSessao(err)
+          ? 'Entre com o Google, ali em cima, para guardar seu progresso.'
+          : errorMessage(err),
+      )
     }
   }
 
@@ -181,7 +193,7 @@ export function LessonPage() {
           </button>
           {erroAcao && (
             <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }} role="alert">
-              Não foi possível salvar: {erroAcao}
+              {precisaEntrar ? erroAcao : `Não foi possível salvar: ${erroAcao}`}
             </p>
           )}
         </div>

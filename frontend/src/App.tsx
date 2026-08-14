@@ -14,10 +14,11 @@ import { QuadroPage } from './pages/QuadroPage'
 // cai no 404 — sem apagar nada do codigo. Ausente = ausente: so a string
 // 'true' liga, para um valor esquecido como '0' ou 'false' nao abrir.
 const MOSTRA_QUADRO = import.meta.env.VITE_QUADRO === 'true'
-import { LoginPage } from './pages/LoginPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { BotaoGoogle } from './components/BotaoGoogle'
 import { LoadingState } from './components/States'
 import { aoPerderSessao, perdeuSessao, tokenStore } from './lib/auth'
+import { SessaoContext } from './lib/sessao'
 import { api } from './lib/api'
 import type { AuthUser } from './types/api'
 import { LessonPage } from './pages/LessonPage'
@@ -74,8 +75,24 @@ function Engrenagem({ admin }: { admin: boolean }) {
 }
 
 
-/** Quem esta logado, e a saida. */
-function Conta({ user, podeSair }: { user: AuthUser; podeSair: boolean }) {
+/**
+ * Quem esta logado — ou o convite para entrar.
+ *
+ * Entrar deixou de ser porta e virou canto da barra: a pessoa le a trilha
+ * primeiro e decide depois. O progresso e a razao de entrar, e so faz sentido
+ * oferecer depois que ela viu o que ha para acompanhar.
+ */
+function Conta({
+  user,
+  podeSair,
+  onEntrou,
+}: {
+  user: AuthUser | null
+  podeSair: boolean
+  onEntrou: (u: AuthUser) => void
+}) {
+  if (!user) return <BotaoGoogle onEntrou={onEntrou} />
+
   return (
     <div className="flex items-center gap-2">
       {user.avatarUrl ? (
@@ -220,15 +237,11 @@ export default function App() {
     )
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-dvh">
-        <LoginPage onEntrou={setUser} />
-      </div>
-    )
-  }
-
+  // Sem portao: a aplicacao renderiza com ou sem sessao. Ler a trilha e o que
+  // convence alguem a criar conta, entao pedir a conta antes de mostrar a
+  // trilha inverte a ordem — e e o que faz a pessoa fechar a aba.
   return (
+    <SessaoContext.Provider value={user}>
     <BrowserRouter>
       <div className="min-h-dvh">
         {/* Primeiro elemento focável da página: sem ele, a sidebar da aula
@@ -261,8 +274,8 @@ export default function App() {
                 costuma estar vazio: exigir ADMIN aqui esconderia a
                 Configuracoes de quem desligou o login justamente para mexer
                 nela. */}
-            <Engrenagem admin={semLogin || user.role === 'ADMIN'} />
-            <Conta user={user} podeSair={!semLogin} />
+            <Engrenagem admin={semLogin || user?.role === 'ADMIN'} />
+            <Conta user={user} podeSair={!semLogin} onEntrou={setUser} />
             </div>
           </div>
         </header>
@@ -282,5 +295,6 @@ export default function App() {
         </Routes>
       </div>
     </BrowserRouter>
+    </SessaoContext.Provider>
   )
 }

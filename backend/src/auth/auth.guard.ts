@@ -7,7 +7,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthService, authDesligada } from './auth.service';
-import { CHAVE_ADMIN, CHAVE_PUBLICA, type RequestWithUser } from './current-user';
+import {
+  CHAVE_ADMIN,
+  CHAVE_OPCIONAL,
+  CHAVE_PUBLICA,
+  type RequestWithUser,
+} from './current-user';
 
 /**
  * Guard global: toda rota exige sessao, a menos que marque @Public().
@@ -44,12 +49,23 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
+    const opcional = this.reflector.getAllAndOverride<boolean>(CHAVE_OPCIONAL, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
     const header = String(request.headers.authorization ?? '');
     const token = header.startsWith('Bearer ') ? header.slice(7) : '';
     if (!token) {
+      // Sem token numa rota de sessao opcional: segue como anonimo. O handler
+      // recebe `null` em @CurrentUser() e devolve a versao sem progresso.
+      if (opcional) return true;
       throw new UnauthorizedException('Entre para continuar.');
     }
 
+    // Token presente e sempre verificado, inclusive em rota opcional: aceitar
+    // um token invalido em silencio faria a sessao expirada parecer trilha
+    // zerada, e a pessoa acharia que perdeu o progresso.
     const user = await this.auth.verificar(token);
     request.user = user;
 

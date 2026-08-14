@@ -142,16 +142,52 @@ else:
         print("  aviso   AUTH_DISABLED=true — o fail closed esta DESLIGADO")
     esperado = 200 if sem_login else 401
 
-    for rota in ["/tracks", "/auth/me", "/settings/tokens"]:
+    def status_sem_token(rota: str):
         try:
             with urllib.request.urlopen(API + rota, timeout=10) as resp:
-                obtido = resp.status
+                return resp.status
         except urllib.error.HTTPError as e:
-            obtido = e.code
+            return e.code
         except (urllib.error.URLError, TimeoutError) as e:
-            obtido = str(e)
+            return str(e)
+
+    # Estas continuam exigindo sessao. Sao as que guardam dado de alguem: a
+    # identidade e as chaves de IA.
+    for rota in ["/auth/me", "/settings/tokens"]:
+        obtido = status_sem_token(rota)
         ok(obtido == esperado,
            f"{rota} sem token responde {esperado} (deu {obtido})")
+
+    # Leitura de trilha e aula e publica de proposito — o conteudo e a vitrine.
+    # O que nao pode e vazar progresso: anonimo tem de ver zero concluidas,
+    # senao o dado de quem entrou estaria aparecendo para qualquer um.
+    for rota in ["/tracks", "/tracks/system-design/lessons/escalabilidade"]:
+        obtido = status_sem_token(rota)
+        ok(obtido == 200, f"{rota} e publica (deu {obtido})")
+
+    try:
+        with urllib.request.urlopen(API + "/tracks", timeout=10) as resp:
+            trilhas = json.load(resp)
+        concluidas = sum(t.get("completedLessons", 0) for t in trilhas)
+        ok(concluidas == 0,
+           f"anonimo nao ve progresso de ninguem (viu {concluidas} concluidas)")
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError,
+            ValueError) as e:
+        ok(False, f"anonimo nao ve progresso de ninguem ({e})")
+
+    # Token invalido nao pode virar anonimo em silencio: isso faria sessao
+    # expirada parecer trilha zerada, e a pessoa acharia que perdeu tudo.
+    req = urllib.request.Request(API + "/tracks",
+                                 headers={"Authorization": "Bearer abc.def.ghi"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            obtido = resp.status
+    except urllib.error.HTTPError as e:
+        obtido = e.code
+    except (urllib.error.URLError, TimeoutError) as e:
+        obtido = str(e)
+    ok(obtido == 401 or sem_login,
+       f"token invalido em rota publica responde 401 (deu {obtido})")
 
     try:
         from playwright.sync_api import sync_playwright

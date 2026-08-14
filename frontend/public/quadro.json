@@ -347,6 +347,18 @@
       "bloqueio": "Servidor com Coolify instalado e domínio apontado",
       "feitos": 0,
       "total": 10
+    },
+    {
+      "id": "PLT-07",
+      "titulo": "Leitura anônima, login na barra",
+      "estado": "feito (14/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "A tela de login era a primeira coisa que alguém via. Isso inverte a ordem do que convence: ler uma aula é o que faz alguém querer uma conta, e pedir a conta antes de mostrar a aula é o que faz fechar a aba.",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 8,
+      "total": 8
     }
   ]
 }

@@ -12,7 +12,7 @@ import type {
 export class TracksService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(userId: string): Promise<TrackSummaryDto[]> {
+  async list(userId: string | null): Promise<TrackSummaryDto[]> {
     const tracks = await this.prisma.track.findMany({
       where: { published: true },
       orderBy: { position: 'asc' },
@@ -45,7 +45,7 @@ export class TracksService {
     });
   }
 
-  async findBySlug(slug: string, userId: string): Promise<TrackDetailDto> {
+  async findBySlug(slug: string, userId: string | null): Promise<TrackDetailDto> {
     const track = await this.prisma.track.findUnique({
       where: { slug },
       select: {
@@ -143,7 +143,7 @@ export class TracksService {
   async findLesson(
     trackSlug: string,
     lessonSlug: string,
-    userId: string,
+    userId: string | null,
   ): Promise<LessonDetailDto> {
     const lesson = await this.prisma.lesson.findFirst({
       where: { slug: lessonSlug, module: { track: { slug: trackSlug } } },
@@ -167,10 +167,15 @@ export class TracksService {
             track: { select: { slug: true, title: true } },
           },
         },
-        progress: {
-          where: { userId },
-          select: { completed: true, note: true },
-        },
+        // Anonimo nao carrega progresso: `take: 0` devolve lista vazia sem
+        // inventar um id impossivel. A primeira tentativa usou um id com o
+        // byte 0x00, e o Postgres recusou com "invalid byte sequence for
+        // encoding UTF8" — 500 em toda aula aberta sem sessao. Filtrar por
+        // `null` tambem nao serve: casaria com progresso de userId nulo, que
+        // seria de outra pessoa.
+        progress: userId
+          ? { where: { userId }, select: { completed: true, note: true } }
+          : { take: 0, select: { completed: true, note: true } },
       },
     });
 
@@ -239,9 +244,13 @@ export class TracksService {
 
   /** Ids concluidos entre os informados — uma query so, em vez de N. */
   private async completedLessonIds(
-    userId: string,
+    userId: string | null,
     lessonIds: string[],
   ): Promise<Set<string>> {
+    // Anonimo nao tem progresso. O curto-circuito e obrigatorio: um
+    // `where: { userId: null }` no Prisma nao volta vazio — casa com as linhas
+    // cujo userId e nulo, que seriam de outra pessoa.
+    if (!userId) return new Set();
     if (lessonIds.length === 0) return new Set();
     const rows = await this.prisma.progress.findMany({
       where: { userId, completed: true, lessonId: { in: lessonIds } },

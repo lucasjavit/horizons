@@ -24,17 +24,32 @@ http.interceptors.request.use((config) => {
   return config
 })
 
-// Sessao expirada ou revogada volta para a tela de login, em vez de virar um
-// erro generico em cada tela.
+// Sessao expirada ou revogada derruba o login, em vez de virar um erro
+// generico em cada tela.
 http.interceptors.response.use(
   (r) => r,
   (error: unknown) => {
     if (error instanceof AxiosError && error.response?.status === 401) {
-      perdeuSessao()
+      // So quando havia uma sessao para perder. Sem esta condicao, o 401 que
+      // um anonimo recebe ao tentar marcar aula concluida seria tratado como
+      // sessao expirada — limpando um token que nao existe e disparando os
+      // ouvintes a toa. Para quem nunca entrou, 401 e resposta esperada,
+      // nao queda de sessao.
+      if (tokenStore.get()) perdeuSessao()
     }
     return Promise.reject(error)
   },
 )
+
+/**
+ * O erro e "voce precisa entrar", e nao "deu errado"?
+ *
+ * Separa o unico 401 que nao e falha: a acao pede uma sessao que a pessoa
+ * ainda nao tem. A tela usa isto para convidar em vez de acusar defeito.
+ */
+export function ehSemSessao(error: unknown): boolean {
+  return error instanceof AxiosError && error.response?.status === 401
+}
 
 /** Mensagem de erro legível — a API devolve `message` do Nest quando falha. */
 export function errorMessage(error: unknown): string {
