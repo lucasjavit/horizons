@@ -32,13 +32,12 @@ export class VagasService {
       where: { userId },
       select: { grupo: true, filtros: true },
     });
-    // Sem perfil nao ha grupo, e sem grupo nao ha o que listar. A tela mostra
-    // o convite para cadastrar.
-    if (!perfil) return [];
-
+    // Sem perfil, mostra o que a rodada achou — a tela e de busca, e uma lista
+    // vazia porque falta cadastro seria uma porta fechada onde deveria haver
+    // resultado. O perfil, quando existe, RESTRINGE ao grupo dele.
     const achadas = await this.prisma.foundJob.findMany({
       where: {
-        grupo: perfil.grupo,
+        ...(perfil ? { grupo: perfil.grupo } : {}),
         // Vaga vencida some da lista mesmo que a limpeza ainda nao tenha
         // rodado: a query nao depende do job de manutencao estar em dia.
         expiresAt: { gt: new Date() },
@@ -48,7 +47,7 @@ export class VagasService {
       take: 200,
     });
 
-    const filtros = (perfil.filtros ?? {}) as FiltrosDto;
+    const filtros = (perfil?.filtros ?? {}) as FiltrosDto;
     return achadas.filter((v) => passaNoFiltro(v, filtros)).map(toDto);
   }
 }

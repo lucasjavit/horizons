@@ -175,6 +175,13 @@ export const api = {
     return data
   },
 
+  async definirBuscaVagas(ativa: boolean): Promise<Recursos> {
+    const { data } = await http.put<Recursos>('/settings/recursos/busca-vagas', {
+      ativa,
+    })
+    return data
+  },
+
   /**
    * O perfil de busca, ou `null` para quem ainda não cadastrou.
    *

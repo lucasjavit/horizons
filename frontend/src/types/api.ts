@@ -103,7 +103,7 @@ export interface ProgressResult {
   note: string | null
 }
 
-export type ApiProvider = 'ANTHROPIC' | 'OPENAI'
+export type ApiProvider = 'ANTHROPIC' | 'OPENAI' | 'FIRECRAWL'
 
 /** O valor do token nunca vem da API — so o final, para reconhecer qual e. */
 export interface ApiTokenInfo {
@@ -197,6 +197,9 @@ export interface Recursos {
   leituraCvAtiva: boolean
   /** Sem chave de IA o recurso não pode ser ligado. */
   temChaveDeIa: boolean
+  buscaVagasAtiva: boolean
+  /** Sem token do Firecrawl a busca não pode ser ligada. */
+  temChaveFirecrawl: boolean
 }
 
 /**

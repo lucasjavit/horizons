@@ -72,6 +72,9 @@ model JobProfile {
 enum ApiProvider {
   ANTHROPIC
   OPENAI
+  /// Busca de vagas. Nao e provedor de IA — mora aqui porque o mecanismo e o
+  /// mesmo: token de terceiro, cifrado em repouso, cadastrado pelo admin.
+  FIRECRAWL
 }
 
 /// Configuracao global da aplicacao, uma linha por chave.

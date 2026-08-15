@@ -3,7 +3,7 @@ import { IsBoolean } from 'class-validator';
 import { AdminOnly } from '../auth/current-user';
 import { RecursosService, type RecursosDto } from './recursos.service';
 
-export class DefinirLeituraCvDto {
+export class DefinirFlagDto {
   @IsBoolean()
   ativa!: boolean;
 }
@@ -29,7 +29,13 @@ export class RecursosController {
 
   @Put('leitura-cv')
   @AdminOnly()
-  definirLeituraCv(@Body() body: DefinirLeituraCvDto): Promise<RecursosDto> {
+  definirLeituraCv(@Body() body: DefinirFlagDto): Promise<RecursosDto> {
     return this.recursos.definirLeituraCv(body.ativa);
+  }
+
+  @Put('busca-vagas')
+  @AdminOnly()
+  definirBuscaVagas(@Body() body: DefinirFlagDto): Promise<RecursosDto> {
+    return this.recursos.definirBuscaVagas(body.ativa);
   }
 }

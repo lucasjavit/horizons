@@ -2,12 +2,17 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ApiProvider } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
-/** Chave da flag na tabela de configuracao. */
+/** Chaves das flags na tabela de configuracao. */
 const LEITURA_CV = 'jobs.leituraCv';
+const BUSCA_VAGAS = 'jobs.buscaVagas';
 
 export interface RecursosDto {
   /** A leitura de curriculo esta ligada e funcionando. */
   leituraCvAtiva: boolean;
+  /** A busca de vagas esta ligada e funcionando. */
+  buscaVagasAtiva: boolean;
+  /** Ha token do Firecrawl cadastrado. Sem ele a busca nao pode ser ligada. */
+  temChaveFirecrawl: boolean;
   /**
    * Ha chave de IA cadastrada. Sem ela o toggle nao pode ser ligado — e a
    * tela precisa saber para explicar por que o controle esta bloqueado, em
@@ -29,21 +34,59 @@ export class RecursosService {
   constructor(private readonly prisma: PrismaService) {}
 
   async obter(): Promise<RecursosDto> {
-    const [flag, temChave] = await Promise.all([
-      this.prisma.appSetting.findUnique({
-        where: { chave: LEITURA_CV },
-        select: { valor: true },
-      }),
+    const [flagCv, flagBusca, temChave, temFirecrawl] = await Promise.all([
+      this.flag(LEITURA_CV),
+      this.flag(BUSCA_VAGAS),
       this.temChaveDeIa(),
+      this.temChaveFirecrawl(),
     ]);
 
     // A chave manda: se ela sumiu depois de o recurso ter sido ligado, o
     // recurso esta desligado de fato, e a tela precisa dizer isso — nao
-    // mostrar "ligado" e falhar no upload.
+    // mostrar "ligado" e falhar no uso.
     return {
-      leituraCvAtiva: flag?.valor === 'true' && temChave,
+      leituraCvAtiva: flagCv && temChave,
       temChaveDeIa: temChave,
+      buscaVagasAtiva: flagBusca && temFirecrawl,
+      temChaveFirecrawl: temFirecrawl,
     };
+  }
+
+  async definirBuscaVagas(ativa: boolean): Promise<RecursosDto> {
+    if (ativa && !(await this.temChaveFirecrawl())) {
+      throw new BadRequestException(
+        'Cadastre o token do Firecrawl antes de ligar a busca de vagas.',
+      );
+    }
+    await this.gravar(BUSCA_VAGAS, ativa);
+    return this.obter();
+  }
+
+  private async flag(chave: string): Promise<boolean> {
+    const linha = await this.prisma.appSetting.findUnique({
+      where: { chave },
+      select: { valor: true },
+    });
+    return linha?.valor === 'true';
+  }
+
+  private async gravar(chave: string, ativa: boolean): Promise<void> {
+    const valor = ativa ? 'true' : 'false';
+    await this.prisma.appSetting.upsert({
+      where: { chave },
+      create: { chave, valor },
+      update: { valor },
+      select: { chave: true },
+    });
+  }
+
+  private async temChaveFirecrawl(): Promise<boolean> {
+    if (process.env.FIRECRAWL_API_KEY) return true;
+    const token = await this.prisma.apiToken.findFirst({
+      where: { provider: ApiProvider.FIRECRAWL },
+      select: { id: true },
+    });
+    return token !== null;
   }
 
   async definirLeituraCv(ativa: boolean): Promise<RecursosDto> {
@@ -52,13 +95,7 @@ export class RecursosService {
         'Cadastre uma chave da Anthropic ou da OpenAI antes de ligar a leitura de curriculo.',
       );
     }
-    const valor = ativa ? 'true' : 'false';
-    await this.prisma.appSetting.upsert({
-      where: { chave: LEITURA_CV },
-      create: { chave: LEITURA_CV, valor },
-      update: { valor },
-      select: { chave: true },
-    });
+    await this.gravar(LEITURA_CV, ativa);
     return this.obter();
   }
 

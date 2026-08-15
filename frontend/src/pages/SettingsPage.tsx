@@ -4,7 +4,7 @@ import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { api, errorMessage } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
-import type { ApiProvider, ApiTokenInfo } from '../types/api'
+import type { ApiProvider, ApiTokenInfo, Recursos } from '../types/api'
 
 /**
  * Tokens de API dos provedores de IA.
@@ -42,6 +42,13 @@ const PROVEDORES: Provedor[] = [
     ondeIr: 'platform.openai.com → API keys',
     prefixo: 'sk-',
   },
+  {
+    id: 'FIRECRAWL',
+    nome: 'Firecrawl (busca de vagas)',
+    url: 'https://www.firecrawl.dev/app/api-keys',
+    ondeIr: 'firecrawl.dev → app → API keys',
+    prefixo: 'fc-',
+  },
 ]
 
 export function SettingsPage() {
@@ -63,7 +70,7 @@ export function SettingsPage() {
           Configurações
         </h1>
         <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
-          Chaves de API dos provedores de IA usados pela aplicação.
+          Chaves e tokens dos serviços que a aplicação usa.
         </p>
       </header>
 
@@ -121,12 +128,14 @@ function Recursos() {
   const [salvando, setSalvando] = useState(false)
   const [erroAcao, setErroAcao] = useState<string | null>(null)
 
-  const alternar = async () => {
-    if (!data) return
+  const alternar = async (
+    fn: (ativa: boolean) => Promise<Recursos>,
+    atual: boolean,
+  ) => {
     setErroAcao(null)
     setSalvando(true)
     try {
-      setData(await api.definirLeituraCv(!data.leituraCvAtiva))
+      setData(await fn(!atual))
     } catch (e) {
       setErroAcao(errorMessage(e))
     } finally {
@@ -154,30 +163,32 @@ function Recursos() {
         <div className="mt-5">
           {/* label envolvendo o input: o texto inteiro vira alvo de clique,
               sem precisar casar id com htmlFor. */}
-          <label className="flex cursor-pointer items-start gap-3">
-            <input
-              type="checkbox"
-              checked={data.leituraCvAtiva}
-              disabled={!data.temChaveDeIa || salvando}
-              onChange={() => void alternar()}
-              aria-describedby="leitura-cv-ajuda"
-              className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand)] disabled:opacity-50"
+          <div className="flex flex-col gap-5">
+            <Interruptor
+              id="busca-vagas"
+              titulo="Buscar vagas na web"
+              ligado={data.buscaVagasAtiva}
+              temDependencia={data.temChaveFirecrawl}
+              salvando={salvando}
+              onAlternar={() =>
+                void alternar(api.definirBuscaVagas, data.buscaVagasAtiva)
+              }
+              ajudaLigada="A busca vai à web pelo Firecrawl e traz vagas novas. Cada rodada consome créditos da conta cadastrada."
+              ajudaSemChave="Cadastre o token do Firecrawl acima para poder ligar. Sem ele a busca não sairia do lugar."
             />
-            <span>
-              <span className="block text-sm font-medium">
-                Ler currículo em PDF ou DOCX
-              </span>
-              <span
-                id="leitura-cv-ajuda"
-                className="mt-0.5 block text-sm leading-relaxed"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                {data.temChaveDeIa
-                  ? 'Em Vagas, a pessoa pode subir o currículo e os filtros vêm preenchidos. O arquivo é enviado ao provedor de IA para ser lido e não fica guardado — só stack, senioridade e anos.'
-                  : 'Cadastre uma chave da Anthropic acima para poder ligar. Sem ela o upload não funcionaria, e um interruptor ligado prometeria algo que falha na hora do uso.'}
-              </span>
-            </span>
-          </label>
+            <Interruptor
+              id="leitura-cv"
+              titulo="Ler currículo em PDF ou DOCX"
+              ligado={data.leituraCvAtiva}
+              temDependencia={data.temChaveDeIa}
+              salvando={salvando}
+              onAlternar={() =>
+                void alternar(api.definirLeituraCv, data.leituraCvAtiva)
+              }
+              ajudaLigada="A pessoa pode subir o currículo e os filtros vêm preenchidos. O arquivo é enviado ao provedor de IA para ser lido e não fica guardado — só stack, senioridade e anos."
+              ajudaSemChave="Cadastre uma chave da Anthropic acima para poder ligar. Sem ela o upload não funcionaria, e um interruptor ligado prometeria algo que falha na hora do uso."
+            />
+          </div>
 
           {erroAcao && (
             <p role="alert" className="mt-3 text-sm" style={{ color: WARN_INK }}>
@@ -187,6 +198,55 @@ function Recursos() {
         </div>
       )}
     </section>
+  )
+}
+
+/**
+ * Um recurso que depende de credencial de terceiro.
+ *
+ * Fica **desabilitado sem a dependencia**, e diz por que. Um toggle que liga
+ * sem a chave nao liga nada — so empurra a falha para o momento do uso.
+ */
+function Interruptor({
+  id,
+  titulo,
+  ligado,
+  temDependencia,
+  salvando,
+  onAlternar,
+  ajudaLigada,
+  ajudaSemChave,
+}: {
+  id: string
+  titulo: string
+  ligado: boolean
+  temDependencia: boolean
+  salvando: boolean
+  onAlternar: () => void
+  ajudaLigada: string
+  ajudaSemChave: string
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3">
+      <input
+        type="checkbox"
+        checked={ligado}
+        disabled={!temDependencia || salvando}
+        onChange={onAlternar}
+        aria-describedby={`${id}-ajuda`}
+        className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand)] disabled:opacity-50"
+      />
+      <span>
+        <span className="block text-sm font-medium">{titulo}</span>
+        <span
+          id={`${id}-ajuda`}
+          className="mt-0.5 block text-sm leading-relaxed"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {temDependencia ? ajudaLigada : ajudaSemChave}
+        </span>
+      </span>
+    </label>
   )
 }
 
