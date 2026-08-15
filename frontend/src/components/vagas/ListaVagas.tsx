@@ -31,12 +31,14 @@ export function ListaVagas() {
   if (loading) return <LoadingState label="Carregando as vagas encontradas…" />
   if (error) return <ErrorState message={error} onRetry={reload} />
 
-  if (vagas.length === 0) return <NenhumaVagaAinda />
-
   const filtroAtivo = temSelecao(selecao)
 
   return (
     <div className="flex flex-col gap-4">
+      {/* A barra aparece SEMPRE, inclusive sem vaga nenhuma. Antes ela so
+          existia quando havia resultado, e a tela vazia nao tinha filtro
+          algum — quem chegava via um aviso e mais nada, sem entender que a
+          pagina era de busca. */}
       <BarraFiltros
         opcoes={opcoes}
         onAplicar={setSelecao}
@@ -45,7 +47,9 @@ export function ListaVagas() {
         filtroAtivo={filtroAtivo}
       />
 
-      {visiveis.length === 0 ? (
+      {vagas.length === 0 ? (
+        <NenhumaVagaAinda />
+      ) : visiveis.length === 0 ? (
         // O vazio de filtro é outro problema que o vazio de lista: aqui há
         // vagas, e o que falta é afrouxar o filtro. Dizer "a busca roda
         // sozinha" seria responder a pergunta errada.
@@ -84,13 +88,14 @@ function NenhumaVagaAinda() {
       style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
     >
       <h2 id="sem-vagas-titulo" className="text-lg font-semibold">
-        Ainda não há vagas para o seu perfil
+        Nenhuma vaga ainda
       </h2>
+      {/* NAO diz "para o seu perfil": o formulario de perfil saiu da tela, e
+          prometer um perfil que a pessoa nunca criou e mentir sobre o estado
+          do sistema. */}
       <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        A busca roda sozinha a cada 50 minutos e usa o perfil que você salvou.
-        Você não precisa ficar nesta tela: <strong>nós avisamos quando
-        aparecerem vagas novas</strong>, e elas ficam guardadas aqui esperando
-        por você.
+        A busca roda sozinha a cada 50 minutos. Você não precisa ficar nesta
+        tela — as vagas ficam guardadas aqui esperando por você.
       </p>
       <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         Se a primeira rodada ainda não aconteceu, isso pode levar até uma hora.

@@ -93,10 +93,11 @@ export function DropdownFiltro({
     [marcados, onChange],
   )
 
-  // Filtro sem opção nenhuma não vira botão morto: some. Um dropdown que abre
-  // vazio é uma promessa que a lista de hoje não cumpre.
-  if (opcoes.length === 0) return null
-
+  // Sem opção o dropdown fica DESABILITADO, não some. Sumir funcionava quando
+  // havia alguma vaga; com o acervo vazio some a barra inteira, e quem chega
+  // vê um aviso e nada mais — sem entender que a página é de busca. O botão
+  // presente e apagado diz "existe este filtro, e ainda não há o que filtrar".
+  const vazio = opcoes.length === 0
   const n = marcados.length
 
   return (
@@ -105,10 +106,11 @@ export function DropdownFiltro({
         ref={botao}
         type="button"
         onClick={() => setAberto((a) => !a)}
+        disabled={vazio}
         aria-expanded={aberto}
         aria-haspopup="listbox"
         aria-controls={aberto ? idPainel : undefined}
-        className="flex min-h-9 w-full items-center justify-between gap-2 rounded-md border px-3 py-1.5 text-sm"
+        className="flex min-h-9 w-full items-center justify-between gap-2 rounded-md border px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         style={{
           borderColor: n > 0 ? 'var(--brand)' : 'var(--border)',
           background: 'var(--surface)',
