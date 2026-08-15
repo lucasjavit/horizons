@@ -34,9 +34,39 @@ model User {
   updatedAt   DateTime   @updatedAt
   progress    Progress[]
   tokens      ApiToken[]
+  jobProfile  JobProfile?
 
   @@index([provider, providerId])
   @@map("users")
+}
+
+/// O que a pessoa procura. Um por usuario.
+///
+/// Alimenta o job de 50 minutos (JOB-03): ele le os perfis ativos, agrupa
+/// pelos que tem a mesma assinatura e faz UMA busca por grupo.
+model JobProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  /// Perfil extraido do CV: stack, senioridade, anos.
+  ///
+  /// NUNCA o arquivo nem o texto bruto — some o CPF, o endereco e o telefone.
+  /// O arquivo e processado em memoria e descartado. Token se revoga; CPF nao.
+  /// Coluna Json? recebe Prisma.DbNull, nunca null.
+  cvProfile Json?
+  /// Filtros no formato que o prompt de busca espera (job_titles, keywords,
+  /// locations, remote, seniority, salary_min...). Todos opcionais.
+  filtros   Json
+  /// Assinatura dos filtros normalizados: `senioridade|stack ordenada|regiao`.
+  /// Perfis com a mesma assinatura leem as mesmas vagas — uma rodada serve a
+  /// todos. E o que impede N perfis virarem N buscas a cada 50 minutos.
+  grupo     String
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ativo, grupo])
+  @@map("job_profiles")
 }
 
 enum ApiProvider {

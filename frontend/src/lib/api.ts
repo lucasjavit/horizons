@@ -5,9 +5,11 @@ import type {
   AuthConfig,
   AuthUser,
   ApiTokenInfo,
+  JobProfile,
   LessonDetail,
   LessonSearchHit,
   ProgressResult,
+  SalvarPerfil,
   TrackDetail,
   TrackSummary,
 } from '../types/api'
@@ -144,6 +146,27 @@ export const api = {
 
   async removeToken(provider: ApiProvider): Promise<void> {
     await http.delete(`/settings/tokens/${provider}`)
+  },
+
+  /**
+   * O perfil de busca, ou `null` para quem ainda não cadastrou.
+   *
+   * O Nest devolve 200 com **corpo vazio** quando o serviço retorna `null`, e
+   * o axios entrega isso como `''` — não como `null`. Sem esta normalização a
+   * tela receberia uma string vazia e trataria como perfil existente.
+   */
+  async getJobProfile(signal?: AbortSignal): Promise<JobProfile | null> {
+    const { data } = await http.get<JobProfile | ''>('/jobs/profile', { signal })
+    return data === '' || data === null ? null : data
+  },
+
+  async saveJobProfile(body: SalvarPerfil): Promise<JobProfile> {
+    const { data } = await http.put<JobProfile>('/jobs/profile', body)
+    return data
+  },
+
+  async removeJobProfile(): Promise<void> {
+    await http.delete('/jobs/profile')
   },
 
   async setNote(lessonId: string, note: string): Promise<ProgressResult> {

@@ -112,6 +112,71 @@ export interface ApiTokenInfo {
   updatedAt: string
 }
 
+// --- Vagas (backend/src/jobs/job.dto.ts) ---
+
+export type Senioridade =
+  | 'estagio'
+  | 'junior'
+  | 'pleno'
+  | 'senior'
+  | 'staff'
+  | 'principal'
+
+export type Remoto = 'remoto' | 'hibrido' | 'presencial'
+
+export type Contrato = 'clt' | 'pj' | 'contractor' | 'freelance'
+
+/**
+ * Filtros da busca de vagas.
+ *
+ * Os nomes são `snake_case` porque é o que o prompt de busca espera — não é
+ * descuido de padrão. Todos são opcionais, e o `ValidationPipe` do backend usa
+ * `forbidNonWhitelisted`: campo fora desta lista **rejeita com 400**, não é
+ * ignorado. `companies` e `industries` existem no backend mas a tela não os
+ * oferece (decisão de produto no desenho JOB-02).
+ */
+export interface Filtros {
+  job_titles?: string[]
+  keywords?: string[]
+  exclude_keywords?: string[]
+  locations?: string[]
+  remote?: Remoto
+  employment_types?: Contrato[]
+  seniority?: Senioridade
+  /** Unidade inteira da moeda, nunca centavo — o backend exige `@IsInt()`. */
+  salary_min?: number
+  salary_max?: number
+  currency?: string
+  posted_within_days?: number
+  technologies?: string[]
+  visa_required?: boolean
+  timezone?: string
+}
+
+/** O que fica guardado do CV. Nunca o arquivo, nunca o texto bruto. */
+export interface CvProfile {
+  stack?: string[]
+  senioridade?: Senioridade
+  anos?: number
+}
+
+export interface JobProfile {
+  id: string
+  filtros: Filtros
+  cvProfile: CvProfile | null
+  /** Assinatura dos filtros. O desenho decidiu não mostrar isto na tela. */
+  grupo: string
+  ativo: boolean
+  updatedAt: string
+}
+
+/** Corpo do PUT /jobs/profile. */
+export interface SalvarPerfil {
+  filtros: Filtros
+  cvProfile?: CvProfile
+  ativo?: boolean
+}
+
 export interface AuthUser {
   id: string
   email: string

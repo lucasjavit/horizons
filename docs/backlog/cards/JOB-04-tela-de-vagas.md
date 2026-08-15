@@ -76,3 +76,20 @@ houver vagas — foi decisão do stakeholder que ninguém espera olhando.
 ## Depende de
 
 - JOB-03 (ter vaga para mostrar)
+
+
+---
+
+## ⚠️ Filtrar na exibição não é opcional (15/08/2026)
+
+O agrupamento do [JOB-02](JOB-02-perfil-de-busca.md) deixa fora da assinatura
+os filtros que não mudam *quais vagas existem*, só *quais interessam*:
+`salary_min`, `exclude_keywords`, `posted_within_days`.
+
+**Esta tela precisa reaplicá-los**, lendo o perfil de quem está olhando. Sem
+isso, a pessoa que pediu "mínimo 12k" recebe vaga de 8k, porque outra pessoa do
+mesmo grupo pediu 8k — e a interface estaria mentindo sobre um filtro que ela
+mesma ofereceu.
+
+É o tipo de defeito que não aparece em teste: a lista carrega, os cards são
+reais, e só quem conferir salário por salário percebe.
