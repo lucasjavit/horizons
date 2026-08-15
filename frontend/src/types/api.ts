@@ -215,3 +215,35 @@ export interface CvLido {
   /** Sugestões — a tela preenche os campos, e a pessoa edita. */
   filtrosSugeridos: Partial<Filtros>
 }
+
+/**
+ * Uma vaga encontrada (GET /jobs).
+ *
+ * **`null` é resposta legítima em todo campo opcional**, e a tela escreve "não
+ * informado" em vez de inventar um número. O card JOB-04 é explícito: se a
+ * tela ficar feia com campo vazio, a pressão vira preencher — e o desenho
+ * passa a causar a alucinação.
+ *
+ * `salaryTrecho` e `elegibilidadeTrecho` são o texto do anúncio de onde a IA
+ * tirou a afirmação. Ficam sob demanda no cartão: é verificável, não é
+ * confiança.
+ */
+export interface Vaga {
+  id: string
+  title: string
+  company: string
+  url: string
+  local: string | null
+  /** Domínio de origem, para a pessoa calibrar a confiança sozinha. */
+  fonte: string | null
+  regime: string | null
+  skills: string[]
+  salaryMin: number | null
+  salaryMax: number | null
+  currency: string | null
+  salaryTrecho: string | null
+  elegivelBrasil: boolean | null
+  elegibilidadeTrecho: string | null
+  postedAt: string | null
+  foundAt: string
+}

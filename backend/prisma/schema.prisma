@@ -88,6 +88,42 @@ model AppSetting {
   @@map("app_settings")
 }
 
+/// Vaga encontrada por uma rodada de busca.
+///
+/// Expira em 15 dias — e o tempo em que o processo ainda esta de pe; depois
+/// disso a lista viraria colecao de link morto. Vaga que a pessoa salva sai
+/// desta regra (JOB-05).
+model FoundJob {
+  id        String   @id @default(uuid())
+  /// Assinatura do grupo (JOB-02). Uma rodada serve a todos os perfis com a
+  /// mesma assinatura.
+  grupo     String
+  title     String
+  company   String
+  url       String
+  /// Cidade/pais como o anuncio escreveu. Nulo quando nao diz.
+  local     String?
+  /// De onde a vaga veio (dominio). Busca por IA erra, e mostrar a fonte
+  /// deixa a pessoa calibrar a confianca sozinha.
+  fonte     String?
+  /// "remoto" | "hibrido" | "presencial", ou nulo quando o anuncio nao diz.
+  /// Nulo NAO vira "remoto": campo ausente permanece ausente.
+  regime    String?
+  /// Tecnologias citadas no anuncio.
+  skills    String[]
+  /// Retrato do momento da captura, com os trechos de origem das afirmacoes
+  /// sensiveis (salario, elegibilidade) para poderem ser conferidas.
+  snapshot  Json?
+  postedAt  DateTime?
+  foundAt   DateTime @default(now())
+  expiresAt DateTime
+
+  @@unique([grupo, url])
+  @@index([grupo, foundAt])
+  @@index([expiresAt])
+  @@map("found_jobs")
+}
+
 /// Token de API de um provedor de IA, cifrado em repouso.
 model ApiToken {
   id        String      @id @default(uuid())

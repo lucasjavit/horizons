@@ -23,8 +23,9 @@ destrava o resto.
 | [PLT-04](cards/PLT-04-crud-de-prompts.md) | Config vira área de admin, com CRUD dos prompts de busca | M | agora tem `@AdminOnly()` de verdade por trás |
 | [JOB-02](cards/JOB-02-perfil-de-busca.md) | Perfil de busca e agrupamento | M | **quase** — perfil, filtros, agrupamento e tela prontos; falta ligar a leitura de CV (precisa de chave de IA) |
 | [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha a cada 50 minutos | M | ver **Antes de começar** abaixo: dois ajustes pendentes |
-| [JOB-04](cards/JOB-04-tela-de-vagas.md) | A tela das vagas encontradas | M | depende do JOB-03 |
+| [JOB-04](cards/JOB-04-tela-de-vagas.md) | A tela das vagas encontradas | M | **em andamento** (15/08) — a lista, os filtros e o cartão estão no ar; falta o painel à esquerda e o "o que falta no perfil" |
 | [JOB-05](cards/JOB-05-salvar-vaga.md) | Salvar vaga (sai da regra dos 15 dias) | P | depende do JOB-04 |
+| [APP-01](cards/APP-01-cabecalho-vaza-no-celular.md) | O cabeçalho do App vaza a largura da tela no celular | P | achado ao verificar o JOB-04; atinge o site inteiro, medido em 390px |
 
 ### Antes de começar o JOB-03
 

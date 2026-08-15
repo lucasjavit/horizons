@@ -25,6 +25,18 @@
   },
   "cards": [
     {
+      "id": "APP-01",
+      "titulo": "O cabeçalho do App vaza a largura da tela no celular",
+      "estado": "feito (15/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "Achado ao verificar o JOB-04 em 390px, em 15/08/2026. O defeito não é da tela de vagas — é do cabeçalho do App.tsx, e vale para o site inteiro.",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 4
+    },
+    {
       "id": "INV-01",
       "titulo": "Quantidade negativa gera invoice com total negativo",
       "estado": "feito (12/08/2026)",
@@ -255,7 +267,7 @@
     {
       "id": "JOB-04",
       "titulo": "A tela das vagas encontradas",
-      "estado": "backlog",
+      "estado": "em andamento (15/08/2026) — a lista está no ar; ver [O que já está entregue](#o-que-ja-esta-entregue-15082026) no fim do arquivo.",
       "coluna": "backlog",
       "tamanho": "M",
       "porque": "O valor da feature não é \"buscar vagas\" — é não ler as 40 que não serviam. A tela é onde isso se prova ou se perde.",

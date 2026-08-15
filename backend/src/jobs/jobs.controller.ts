@@ -15,10 +15,11 @@ import { memoryStorage } from 'multer';
 import { CvExtratorService } from './cv-extrator.service';
 import { CvParserService, TAMANHO_MAXIMO } from './cv-parser.service';
 import { RecursosService } from '../settings/recursos.service';
+import { VagasService } from './vagas.service';
 import { CurrentUser, type AuthUser } from '../auth/current-user';
 import { JobsService } from './jobs.service';
 import { SalvarPerfilDto } from './job.dto';
-import type { CvLidoDto, JobProfileDto } from './job.dto';
+import type { CvLidoDto, JobProfileDto, VagaDto } from './job.dto';
 
 // Sem @Public() nem @SessaoOpcional(): o perfil de busca e de alguem, e nao
 // faz sentido anonimo. O guard global ja fecha por padrao.

@@ -188,3 +188,34 @@ export interface CvLidoDto {
   /** Filtros sugeridos a partir do CV — a pessoa edita antes de salvar. */
   filtrosSugeridos: Record<string, unknown>;
 }
+
+/**
+ * Uma vaga na lista.
+ *
+ * Os campos que a IA pode ter errado vem com o trecho de origem ao lado
+ * (`salaryTrecho`, `elegibilidadeTrecho`): a tela mostra o texto do anuncio
+ * sob demanda, e isso e verificavel — nao e confianca.
+ *
+ * `null` e resposta legitima em todo campo opcional. Campo ausente permanece
+ * ausente; a tela escreve "nao informado" em vez de inventar.
+ */
+export interface VagaDto {
+  id: string;
+  title: string;
+  company: string;
+  url: string;
+  local: string | null;
+  /** Dominio de origem. Mostrar a fonte deixa a pessoa calibrar a confianca. */
+  fonte: string | null;
+  regime: string | null;
+  skills: string[];
+  salaryMin: number | null;
+  salaryMax: number | null;
+  currency: string | null;
+  /** O texto do anuncio de onde o salario saiu. */
+  salaryTrecho: string | null;
+  elegivelBrasil: boolean | null;
+  elegibilidadeTrecho: string | null;
+  postedAt: string | null;
+  foundAt: string;
+}

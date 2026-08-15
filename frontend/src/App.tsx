@@ -147,7 +147,14 @@ function Abas() {
   }
 
   return (
-    <nav aria-label="Produtos" className="flex items-center gap-1 text-sm">
+    // `min-w-0` + `overflow-x-auto`: sem os dois a nav empurra a barra e a
+    // pagina inteira ganha rolagem horizontal em telas estreitas (medido:
+    // 525px de conteudo numa viewport de 390, em Trilhas, Invoice e Vagas).
+    // A rolagem fica DENTRO da nav, que e o conteudo que de fato nao cabe.
+    <nav
+      aria-label="Produtos"
+      className="flex min-w-0 items-center gap-1 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       {abas.map((aba) => (
         <Link
           key={aba.to}

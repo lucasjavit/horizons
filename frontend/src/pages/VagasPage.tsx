@@ -6,6 +6,7 @@ import { ErrorState, LoadingState } from '../components/States'
 import { CaixaUploadCV } from '../components/vagas/CaixaUploadCV'
 import { CampoFichas } from '../components/vagas/CampoFichas'
 import { SelectField, TextField } from '../components/vagas/Field'
+import { ListaVagas } from '../components/vagas/ListaVagas'
 import { api, errorMessage } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
@@ -225,12 +226,13 @@ export function VagasPage() {
 
   return (
     <main id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+      {/* O título é da página inteira, e não só do formulário: desde o JOB-04
+          a tela tem duas partes — as vagas encontradas em cima, o perfil que
+          as encontra embaixo. */}
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Seu perfil de busca
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Vagas</h1>
         <p className="mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          A cada 50 minutos procuramos vagas que batem com este perfil. Você não
+          A cada 50 minutos procuramos vagas que batem com o seu perfil. Você não
           precisa ficar olhando — elas aparecem aqui sozinhas.
         </p>
       </header>
@@ -288,12 +290,29 @@ function Formulario() {
   // `key` remonta o formulário quando o perfil carrega: sem ele o estado
   // inicial ficaria preso no primeiro render, ainda vazio.
   return (
-    <FormularioPerfil
-      leituraCvAtiva={recursos.data?.leituraCvAtiva}
-      key={data?.updatedAt ?? 'novo'}
-      perfil={data}
-      onSalvou={(p) => setData(p)}
-    />
+    <>
+      {/* A lista só existe para quem já tem perfil. `GET /jobs` devolve `[]`
+          tanto para "sem perfil" quanto para "sem vaga", e é aqui — onde o
+          perfil já está carregado — que dá para separar os dois: sem perfil,
+          a página é o formulário, e uma lista vazia acima dele estaria
+          respondendo uma pergunta que ninguém fez ainda. */}
+      {/* `mb-12` porque o respiro não vem sozinho: a lista e o formulário são
+          irmãos aqui, e o `gap-8` do formulário só separa o que está DENTRO
+          dele — sem esta margem o "Seu perfil de busca" encosta no último
+          cartão e os dois blocos parecem um só. */}
+      {data && (
+        <div className="mb-12">
+          <ListaVagas />
+        </div>
+      )}
+
+      <FormularioPerfil
+        leituraCvAtiva={recursos.data?.leituraCvAtiva}
+        key={data?.updatedAt ?? 'novo'}
+        perfil={data}
+        onSalvou={(p) => setData(p)}
+      />
+    </>
   )
 }
 
@@ -385,6 +404,16 @@ function FormularioPerfil({
     // dois casos, sem `fixed` (que tiraria a barra do fluxo e exigiria reservar
     // espaco embaixo na mao).
     <div className="flex min-h-[calc(100dvh-8rem)] flex-col gap-8">
+      {/* O formulário só se apresenta quando NÃO é a página inteira. Para quem
+          ainda não tem perfil ele é o conteúdo principal, e um "Seu perfil de
+          busca" acima do `h1` "Vagas" seria um título repetindo o outro. */}
+      {perfil && (
+        <h2 className="border-b pb-2 text-sm font-semibold uppercase tracking-wide"
+          style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+          Seu perfil de busca
+        </h2>
+      )}
+
       <CaixaUploadCV
         ativa={leituraCvAtiva}
         onLeu={(lido) => {
@@ -635,9 +664,19 @@ function FormularioPerfil({
           salario minimo, em qualquer rolagem. `mt-auto` num container de
           altura minima resolve so quando o conteudo cabe na janela; aqui nao
           cabe. No celular o problema nao aparece porque a barra ocupa a
-          largura toda e o formulario e de uma coluna so. */}
+          largura toda e o formulario e de uma coluna so.
+
+          **JOB-04 mudou a premissa.** Aquele raciocinio valia enquanto o
+          formulario era a pagina inteira. Com a lista de vagas em cima, a
+          posicao natural da barra cai no meio do formulario TAMBEM no celular
+          — medido: a barra em y=1986 cobrindo "Seu perfil de busca", "O que
+          voce procura" e "Cargos". Por isso o `sticky` vale so quando o
+          formulario e o conteudo principal, ou seja, quando ainda nao ha
+          perfil salvo e nao existe lista acima dele. */}
       <div
-        className="sticky bottom-0 -mx-4 mt-auto border-t px-4 py-4 sm:static sm:-mx-6 sm:px-6"
+        className={`-mx-4 mt-auto border-t px-4 py-4 sm:static sm:-mx-6 sm:px-6 ${
+          perfil ? '' : 'sticky bottom-0'
+        }`}
         style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
       >
         <div className="flex flex-wrap items-center gap-3">

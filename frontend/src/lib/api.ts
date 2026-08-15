@@ -14,6 +14,7 @@ import type {
   SalvarPerfil,
   TrackDetail,
   TrackSummary,
+  Vaga,
 } from '../types/api'
 
 const http = axios.create({
@@ -193,6 +194,18 @@ export const api = {
 
   async removeJobProfile(): Promise<void> {
     await http.delete('/jobs/profile')
+  },
+
+  /**
+   * As vagas encontradas para o grupo da pessoa.
+   *
+   * Quem não tem perfil recebe `[]` — o backend não distingue "sem perfil" de
+   * "sem vaga", e é a tela que separa os dois casos usando o perfil que já
+   * carregou.
+   */
+  async listarVagas(signal?: AbortSignal): Promise<Vaga[]> {
+    const { data } = await http.get<Vaga[]>('/jobs', { signal })
+    return data
   },
 
   async setNote(lessonId: string, note: string): Promise<ProgressResult> {
