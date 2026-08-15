@@ -8,7 +8,9 @@ import type {
   JobProfile,
   LessonDetail,
   LessonSearchHit,
+  CvLido,
   ProgressResult,
+  Recursos,
   SalvarPerfil,
   TrackDetail,
   TrackSummary,
@@ -146,6 +148,30 @@ export const api = {
 
   async removeToken(provider: ApiProvider): Promise<void> {
     await http.delete(`/settings/tokens/${provider}`)
+  },
+
+  async recursos(signal?: AbortSignal): Promise<Recursos> {
+    const { data } = await http.get<Recursos>('/settings/recursos', { signal })
+    return data
+  },
+
+  /** Le o CV. multipart: o arquivo vai em memoria e nao fica no servidor. */
+  async lerCurriculo(arquivo: File): Promise<CvLido> {
+    const corpo = new FormData()
+    corpo.append('arquivo', arquivo)
+    const { data } = await http.post<CvLido>('/jobs/profile/cv', corpo, {
+      // Uma leitura de CV passa por parse + chamada de IA; os 10s do padrao
+      // matariam a requisicao antes da resposta.
+      timeout: 90_000,
+    })
+    return data
+  },
+
+  async definirLeituraCv(ativa: boolean): Promise<Recursos> {
+    const { data } = await http.put<Recursos>('/settings/recursos/leitura-cv', {
+      ativa,
+    })
+    return data
   },
 
   /**

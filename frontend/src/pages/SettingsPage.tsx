@@ -77,10 +77,10 @@ export function SettingsPage() {
       >
         <p className="font-medium">Sobre as chaves guardadas aqui</p>
         <p className="mt-1 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          Ficam no servidor, cifradas, e o valor nunca volta para a tela — só os
-          quatro últimos caracteres. Ainda assim, não existe login de verdade
-          nesta aplicação: use chaves com escopo limitado e revogue-as no
-          provedor se tiver qualquer dúvida.
+          Ficam no servidor, cifradas, e o valor nunca volta para a tela — só
+          os quatro últimos caracteres. Esta área é restrita a administradores.
+          Ainda assim, use chaves com escopo limitado e revogue-as no provedor
+          se tiver qualquer dúvida.
         </p>
       </div>
 
@@ -100,7 +100,93 @@ export function SettingsPage() {
           ))}
         </div>
       )}
+
+      <Recursos />
     </main>
+  )
+}
+
+/**
+ * Recursos que dependem de chave de IA.
+ *
+ * O interruptor fica **desabilitado sem chave**, e diz por quê. Um toggle que
+ * liga sem a dependência não liga nada — só empurra a falha para o momento em
+ * que alguém sobe um currículo e recebe erro.
+ */
+function Recursos() {
+  const { data, loading, error, reload, setData } = useAsync(
+    (signal) => api.recursos(signal),
+    [],
+  )
+  const [salvando, setSalvando] = useState(false)
+  const [erroAcao, setErroAcao] = useState<string | null>(null)
+
+  const alternar = async () => {
+    if (!data) return
+    setErroAcao(null)
+    setSalvando(true)
+    try {
+      setData(await api.definirLeituraCv(!data.leituraCvAtiva))
+    } catch (e) {
+      setErroAcao(errorMessage(e))
+    } finally {
+      setSalvando(false)
+    }
+  }
+
+  return (
+    <section
+      aria-labelledby="recursos-titulo"
+      className="mt-10 rounded-lg border p-5"
+      style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
+    >
+      <h2 id="recursos-titulo" className="text-lg font-semibold">
+        Recursos
+      </h2>
+      <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+        O que a aplicação pode fazer com as chaves acima.
+      </p>
+
+      {loading && <LoadingState label="Carregando…" />}
+      {error && <ErrorState message={error} onRetry={reload} />}
+
+      {data && (
+        <div className="mt-5">
+          {/* label envolvendo o input: o texto inteiro vira alvo de clique,
+              sem precisar casar id com htmlFor. */}
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={data.leituraCvAtiva}
+              disabled={!data.temChaveDeIa || salvando}
+              onChange={() => void alternar()}
+              aria-describedby="leitura-cv-ajuda"
+              className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--brand)] disabled:opacity-50"
+            />
+            <span>
+              <span className="block text-sm font-medium">
+                Ler currículo em PDF ou DOCX
+              </span>
+              <span
+                id="leitura-cv-ajuda"
+                className="mt-0.5 block text-sm leading-relaxed"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {data.temChaveDeIa
+                  ? 'Em Vagas, a pessoa pode subir o currículo e os filtros vêm preenchidos. O arquivo é enviado ao provedor de IA para ser lido e não fica guardado — só stack, senioridade e anos.'
+                  : 'Cadastre uma chave da Anthropic acima para poder ligar. Sem ela o upload não funcionaria, e um interruptor ligado prometeria algo que falha na hora do uso.'}
+              </span>
+            </span>
+          </label>
+
+          {erroAcao && (
+            <p role="alert" className="mt-3 text-sm" style={{ color: WARN_INK }}>
+              {erroAcao}
+            </p>
+          )}
+        </div>
+      )}
+    </section>
   )
 }
 

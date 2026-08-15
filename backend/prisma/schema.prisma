@@ -74,6 +74,20 @@ enum ApiProvider {
   OPENAI
 }
 
+/// Configuracao global da aplicacao, uma linha por chave.
+///
+/// Tabela e nao variavel de ambiente porque isto muda em tempo de execucao,
+/// pelo painel de admin: religar a leitura de CV nao pode exigir redeploy.
+/// Variavel de ambiente continua sendo o lugar de segredo e de coisa que
+/// decide o boot.
+model AppSetting {
+  chave     String   @id
+  valor     String
+  updatedAt DateTime @updatedAt
+
+  @@map("app_settings")
+}
+
 /// Token de API de um provedor de IA, cifrado em repouso.
 model ApiToken {
   id        String      @id @default(uuid())

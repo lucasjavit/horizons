@@ -269,8 +269,58 @@ Feito e verificado no navegador, nos dois temas:
   `qualquer|node.js|backend engineer|qualquer:qualquer`, confirmação na tela
 - Zero erro de console além do Google recusando `localhost` como origem
 
-**Falta**, e depende da chave de IA: o upload está desenhado e com o aviso de
-privacidade no lugar, mas o input fica **desabilitado** — a extração não foi
-ligada. O selo "do currículo" está escrito e conectado, mas nenhum fluxo o
-aciona hoje, então o render final com dado real não foi visto. Falta também a
-frase-resumo do que a IA entendeu, que o desenho previa.
+## A leitura de CV virou um interruptor (15/08/2026)
+
+**Decisão do stakeholder:** *"pode colocar a leitura do cv como um toggle na
+config para habilitar (somente se tiver a chave) e desabilitar"*.
+
+Em vez de ficar desabilitada no código até alguém editar um arquivo, a leitura
+virou um recurso que o admin liga em **Configurações → Recursos**.
+
+A regra que dá sentido ao controle: **só liga se houver chave de IA
+cadastrada.** Um interruptor que liga sem a dependência não liga nada — só
+empurra a falha para o momento em que alguém sobe um currículo e recebe erro.
+Sem chave o controle fica desabilitado e **diz por quê**.
+
+### Onde a flag é checada, e por que em dois lugares
+
+- **No servidor** (`POST /jobs/profile/cv`), antes de qualquer processamento.
+  Um recurso desligado que o servidor ainda aceita não está desligado — está
+  escondido, e qualquer um com `curl` continua gastando a chave do admin.
+- **Na tela** (`/vagas`), que nem mostra a caixa de upload. Oferecer um upload
+  que o servidor recusa é pior que não oferecer.
+
+### Guardado em tabela, não em variável de ambiente
+
+Nasceu o modelo `AppSetting` (uma linha por chave). Variável de ambiente
+continua sendo o lugar de segredo e do que decide o boot; isto muda em tempo
+de execução, pelo painel, e religar não pode exigir redeploy.
+
+**A chave manda sobre a flag.** Apagar a chave com o recurso ligado desliga o
+recurso na prática, mas a intenção do admin (`true`) fica guardada — recadastrar
+a chave religa sozinho, sem precisar mexer no toggle de novo.
+
+### Verificado (15/08/2026)
+
+| O que | Resultado |
+| --- | --- |
+| `GET /settings/recursos` sem sessão | **401** |
+| `PUT .../leitura-cv` como USER | **403** |
+| Ligar sem chave (como admin) | **400**: *"Cadastre uma chave da Anthropic ou da OpenAI antes de ligar"* |
+| Ligar com chave | `{"leituraCvAtiva":true,"temChaveDeIa":true}` |
+| Upload com o recurso desligado | **400**: *"A leitura de curriculo esta desligada"* |
+| Upload com o recurso ligado | passa o bloqueio e chega à API da Anthropic |
+| **Apagar a chave com o recurso ligado** | `leituraCvAtiva` volta a `false`; upload recusado de novo; a flag segue `true` no banco |
+| Toggle na tela, sem chave | desabilitado, explicando o motivo |
+| `/vagas` sem o recurso | caixa de upload **não aparece** |
+| `/vagas` com o recurso | input habilitado, aviso de privacidade acima dele |
+| **Erro de upload com campo preenchido** | a ficha digitada **sobreviveu** — recusa não apaga nem preenche nada |
+
+Corrigi de passagem um aviso desatualizado na tela de Configurações, que ainda
+dizia *"não existe login de verdade nesta aplicação"* — falso desde o PLT-02.
+
+**Continua faltando:** a frase-resumo do que a IA entendeu ("entendemos que você
+é backend pleno, ~5 anos") e o selo "do currículo" nos campos preenchidos, os
+dois previstos no desenho. O caminho de dados existe; falta a apresentação.
+Testar a extração de ponta a ponta depende de uma chave real — com uma chave
+falsa, o caminho vai até a API da Anthropic e volta com erro tratado.

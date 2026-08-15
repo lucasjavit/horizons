@@ -1,27 +1,72 @@
+import { useRef, useState } from 'react'
 import { WARN_INK } from '../blocks/BlockRenderer'
+import { api, errorMessage } from '../../lib/api'
+import type { CvLido } from '../../types/api'
+
+interface CaixaUploadCVProps {
+  /**
+   * O recurso está ligado no servidor (Configurações → Recursos).
+   *
+   * `undefined` enquanto a tela ainda não sabe: nesse intervalo a caixa não
+   * aparece, em vez de piscar "indisponível" e virar upload meio segundo
+   * depois.
+   */
+  ativa: boolean | undefined
+  /** O perfil lido, para a tela preencher os campos — editáveis. */
+  onLeu: (lido: CvLido) => void
+}
+
+type Estado = 'ocioso' | 'enviando' | 'lido'
 
 /**
  * A caixa de upload do currículo.
  *
- * ESTADO ATUAL: **preparada, mas desligada.** O endpoint de extração
- * (`POST /jobs/cv`) está sendo escrito em paralelo — o `CvLidoDto` já existe
- * em `backend/src/jobs/job.dto.ts`, a rota ainda não. Enquanto isso o input
- * fica `disabled` e a caixa diz que a leitura chega em seguida, em vez de
- * oferecer um botão que abriria um 404.
+ * Fica atrás de um interruptor que o admin liga em Configurações, e que só
+ * liga quando há chave de IA cadastrada. Sem o recurso ligado a caixa não
+ * aparece — oferecer um upload que o servidor recusa seria pior que não
+ * oferecer.
  *
- * O aviso de privacidade já está no lugar definitivo — **acima do botão de
- * escolher arquivo**, não em rodapé nem em modal depois da escolha. É critério
- * de aceite do card JOB-02 ("a tela avisa que o CV vai para o provedor de IA,
- * antes do upload"), e um aviso que chega depois da escolha chega tarde: a
- * decisão já foi tomada.
+ * O aviso de privacidade fica **acima do botão de escolher arquivo**, não em
+ * rodapé nem em modal depois da escolha. É critério de aceite do JOB-02, e um
+ * aviso que chega depois da escolha chega tarde: a decisão já foi tomada.
  *
- * Para ligar quando o endpoint existir: trocar o bloco desabilitado por
- * `<input type="file" accept=".pdf,.docx">` com a máquina
- * `ocioso/enviando/lido/recusado`, e as mensagens de erro da §6 do desenho.
- * Duas regras que o desenho fixa e não podem ser perdidas na ligação: recusa
- * **nunca** preenche campo, e erro de upload **nunca** apaga o que foi digitado.
+ * Duas regras do desenho que valem mais que o código bonito:
+ *
+ * - **recusa nunca preenche campo** — um CV lido errado que produz busca ruim,
+ *   sem a pessoa ver o porquê, é o pior desfecho possível;
+ * - **erro de upload nunca apaga o que foi digitado** — daí o `onLeu` só ser
+ *   chamado no caminho de sucesso.
  */
-export function CaixaUploadCV() {
+export function CaixaUploadCV({ ativa, onLeu }: CaixaUploadCVProps) {
+  const [estado, setEstado] = useState<Estado>('ocioso')
+  const [erro, setErro] = useState<string | null>(null)
+  const [nome, setNome] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Enquanto nao se sabe, nada. Ligada = upload; desligada = nem a caixa.
+  if (ativa !== true) return null
+
+  const enviar = async (arquivo: File | undefined) => {
+    if (!arquivo) return
+    setErro(null)
+    setNome(arquivo.name)
+    setEstado('enviando')
+    try {
+      const lido = await api.lerCurriculo(arquivo)
+      setEstado('lido')
+      onLeu(lido)
+    } catch (e) {
+      // Volta para ocioso, e NAO chama onLeu: nada preenchido a partir de uma
+      // leitura que falhou. O que a pessoa ja tinha digitado continua onde
+      // estava — este componente nunca escreve nos campos por conta propria.
+      setEstado('ocioso')
+      setErro(errorMessage(e))
+      // Limpa o input para o mesmo arquivo poder ser escolhido de novo: sem
+      // isto, escolher o mesmo PDF depois de um erro nao dispara onChange.
+      if (inputRef.current) inputRef.current.value = ''
+    }
+  }
+
   return (
     <section
       aria-labelledby="cv-titulo"
@@ -40,9 +85,9 @@ export function CaixaUploadCV() {
 
       {/* O aviso é um <p> com borda esquerda, e NÃO role="alert": alert
           interrompe o leitor de tela, e isto é contexto, não urgência. O id
-          existe para o futuro input apontar com aria-describedby — quem chega
-          pelo teclado ouve o aviso ao focar o botão, que é o "antes do upload"
-          de quem não enxerga a tela. */}
+          é apontado pelo input com aria-describedby — quem chega pelo teclado
+          ouve o aviso ao focar o botão, que é o "antes do upload" de quem não
+          enxerga a tela. */}
       <div
         id="cv-privacidade"
         className="mt-4 rounded-lg border border-l-4 p-3.5 text-sm"
@@ -68,20 +113,42 @@ export function CaixaUploadCV() {
           Arquivo do currículo
         </label>
         <input
+          ref={inputRef}
           id="cv-arquivo"
           type="file"
           accept=".pdf,.docx"
-          disabled
-          aria-describedby="cv-privacidade cv-em-breve"
+          disabled={estado === 'enviando'}
+          onChange={(e) => void enviar(e.target.files?.[0])}
+          aria-describedby="cv-privacidade cv-formatos"
           className="max-w-full text-sm disabled:cursor-not-allowed disabled:opacity-60"
-          style={{ color: 'var(--text-muted)' }}
+          style={{ color: 'var(--text)' }}
         />
       </div>
 
-      <p id="cv-em-breve" className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-        A leitura de currículo chega em seguida. Por enquanto, preencha os
-        filtros abaixo — o formulário funciona inteiro sem ela.
+      <p id="cv-formatos" className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+        PDF ou DOCX, até 5 MB. Currículo escaneado como imagem não dá para ler.
       </p>
+
+      {/* Um status só, com role="status": o leitor de tela anuncia sem
+          interromper, e a pessoa vidente vê o mesmo texto. */}
+      {estado === 'enviando' && (
+        <p role="status" className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+          Lendo {nome}…
+        </p>
+      )}
+
+      {estado === 'lido' && (
+        <p role="status" className="mt-3 text-sm font-medium">
+          Pronto. Confira os campos abaixo — corrija o que estiver errado antes
+          de salvar.
+        </p>
+      )}
+
+      {erro && (
+        <p role="alert" className="mt-3 text-sm" style={{ color: WARN_INK }}>
+          {erro}
+        </p>
+      )}
     </section>
   )
 }

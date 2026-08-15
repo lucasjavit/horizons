@@ -10,7 +10,13 @@ import { api, errorMessage } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { useSessao } from '../lib/sessao'
-import type { AuthUser, Contrato, Filtros, JobProfile } from '../types/api'
+import type {
+  AuthUser,
+  Contrato,
+  CvLido,
+  Filtros,
+  JobProfile,
+} from '../types/api'
 
 /**
  * Cadastro do perfil de busca de vagas (JOB-02).
@@ -271,6 +277,10 @@ function Formulario() {
     (signal) => api.getJobProfile(signal),
     [],
   )
+  // A leitura de curriculo e um recurso que o admin liga em Configuracoes, e
+  // so liga se houver chave de IA. Carrega em separado do perfil: se esta
+  // chamada falhar, o formulario continua funcionando sem a caixa de upload.
+  const recursos = useAsync((signal) => api.recursos(signal), [])
 
   if (loading) return <LoadingState label="Carregando o seu perfil…" />
   if (error) return <ErrorState message={error} onRetry={reload} />
@@ -279,6 +289,7 @@ function Formulario() {
   // inicial ficaria preso no primeiro render, ainda vazio.
   return (
     <FormularioPerfil
+      leituraCvAtiva={recursos.data?.leituraCvAtiva}
       key={data?.updatedAt ?? 'novo'}
       perfil={data}
       onSalvou={(p) => setData(p)}
@@ -289,9 +300,12 @@ function Formulario() {
 function FormularioPerfil({
   perfil,
   onSalvou,
+  leituraCvAtiva,
 }: {
   perfil: JobProfile | null
   onSalvou: (p: JobProfile) => void
+  /** `undefined` enquanto carrega: a caixa de upload nao aparece ainda. */
+  leituraCvAtiva: boolean | undefined
 }) {
   const inicial = useMemo(
     () => (perfil ? paraFormulario(perfil.filtros) : VAZIO),
@@ -307,6 +321,11 @@ function FormularioPerfil({
     perfil ? 'salvo' : 'ocioso',
   )
   const [erroSalvar, setErroSalvar] = useState<string | null>(null)
+  // O perfil lido do CV segue junto no PUT: e ele que o job de 50 minutos usa
+  // para qualificar a pessoa, alem dos filtros.
+  const [cvProfile, setCvProfile] = useState<CvLido['cvProfile'] | null>(
+    (perfil?.cvProfile as CvLido['cvProfile'] | null) ?? null,
+  )
 
   // "Salvar alterações" fica desabilitado até algo mudar, como o desenho pede.
   const mudou = useMemo(
@@ -334,14 +353,29 @@ function FormularioPerfil({
     setErroSalvar(null)
     setEstado('salvando')
     try {
-      const salvo = await api.saveJobProfile({ filtros: paraFiltros(form) })
+      const salvo = await api.saveJobProfile({
+        filtros: paraFiltros(form),
+        // `null` do extrator vira campo ausente no PUT: o DTO do backend usa
+        // opcional, e mandar null seria rejeitado pelo class-validator.
+        ...(cvProfile
+          ? {
+              cvProfile: {
+                ...(cvProfile.stack.length ? { stack: cvProfile.stack } : {}),
+                ...(cvProfile.senioridade
+                  ? { senioridade: cvProfile.senioridade }
+                  : {}),
+                ...(cvProfile.anos != null ? { anos: cvProfile.anos } : {}),
+              },
+            }
+          : {}),
+      })
       onSalvou(salvo)
       setEstado('salvo')
     } catch (e) {
       setEstado('ocioso')
       setErroSalvar(errorMessage(e))
     }
-  }, [form, onSalvou])
+  }, [form, cvProfile, onSalvou])
 
   return (
     // min-h e o mt-auto da barra andam juntos: `sticky bottom-0` gruda na
@@ -351,7 +385,29 @@ function FormularioPerfil({
     // dois casos, sem `fixed` (que tiraria a barra do fluxo e exigiria reservar
     // espaco embaixo na mao).
     <div className="flex min-h-[calc(100dvh-8rem)] flex-col gap-8">
-      <CaixaUploadCV />
+      <CaixaUploadCV
+        ativa={leituraCvAtiva}
+        onLeu={(lido) => {
+          // Só os campos que o CV realmente sugeriu — o que a pessoa já tinha
+          // digitado fica onde estava. `paraFormulario` traduz do formato da
+          // API para o do formulário (número vira string, ausente vira '').
+          const doCv = paraFormulario(lido.filtrosSugeridos as Filtros)
+          setForm((f) => ({
+            ...f,
+            ...(lido.filtrosSugeridos.job_titles?.length
+              ? { job_titles: doCv.job_titles }
+              : {}),
+            ...(lido.filtrosSugeridos.technologies?.length
+              ? { technologies: doCv.technologies }
+              : {}),
+            ...(lido.filtrosSugeridos.seniority
+              ? { seniority: doCv.seniority }
+              : {}),
+          }))
+          setCvProfile(lido.cvProfile)
+          setEstado('ocioso')
+        }}
+      />
 
       <section aria-labelledby="procura-titulo" className="flex flex-col gap-5">
         <h2

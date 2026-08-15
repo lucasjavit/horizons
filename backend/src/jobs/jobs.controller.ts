@@ -14,6 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { CvExtratorService } from './cv-extrator.service';
 import { CvParserService, TAMANHO_MAXIMO } from './cv-parser.service';
+import { RecursosService } from '../settings/recursos.service';
 import { CurrentUser, type AuthUser } from '../auth/current-user';
 import { JobsService } from './jobs.service';
 import { SalvarPerfilDto } from './job.dto';
@@ -27,6 +28,7 @@ export class JobsController {
     private readonly jobs: JobsService,
     private readonly parser: CvParserService,
     private readonly extrator: CvExtratorService,
+    private readonly recursos: RecursosService,
   ) {}
 
   @Get()
@@ -68,6 +70,16 @@ export class JobsController {
   async lerCurriculo(
     @UploadedFile() arquivo: Express.Multer.File | undefined,
   ): Promise<CvLidoDto> {
+    // O toggle e checado AQUI, e nao so na tela. Um recurso desligado que o
+    // servidor ainda aceita nao esta desligado — esta escondido, e qualquer
+    // um com curl continua gastando a chave de IA do admin.
+    const { leituraCvAtiva } = await this.recursos.obter();
+    if (!leituraCvAtiva) {
+      throw new BadRequestException(
+        'A leitura de curriculo esta desligada. Preencha os filtros a mao.',
+      );
+    }
+
     if (!arquivo) {
       throw new BadRequestException('Nenhum arquivo enviado.');
     }

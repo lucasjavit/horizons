@@ -191,3 +191,27 @@ export interface AuthConfig {
   /** Login desligado no servidor: entra direto, sem tela. */
   authDisabled: boolean
 }
+
+/** Recursos que o admin liga e desliga em tempo de execução. */
+export interface Recursos {
+  leituraCvAtiva: boolean
+  /** Sem chave de IA o recurso não pode ser ligado. */
+  temChaveDeIa: boolean
+}
+
+/**
+ * O que a leitura do currículo devolve, antes de a pessoa revisar.
+ *
+ * `null` em `senioridade` e `anos` é resposta legítima: o extrator devolve
+ * null quando o CV não diz, em vez de chutar. Por isso o tipo aqui é mais
+ * largo que `CvProfile`, onde os campos são opcionais.
+ */
+export interface CvLido {
+  cvProfile: {
+    stack: string[]
+    senioridade: Senioridade | null
+    anos: number | null
+  }
+  /** Sugestões — a tela preenche os campos, e a pessoa edita. */
+  filtrosSugeridos: Partial<Filtros>
+}
