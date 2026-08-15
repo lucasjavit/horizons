@@ -241,6 +241,16 @@ export interface Vaga {
   fonte: string | null
   regime: string | null
   skills: string[]
+  /** Área/família do cargo, como o anúncio escreveu. Ex.: "Back-end Engineer". */
+  area: string | null
+  /** Anos de experiência pedidos. Nulo é o caso comum. */
+  anosExp: number | null
+  benefits: string[]
+  degree: string | null
+  /** Logo da empresa. A tela cai nas iniciais quando falta. */
+  logoUrl: string | null
+  /** ISO-3166 alpha-2 minúsculo ("us", "br"), para a bandeirinha. */
+  paisIso: string | null
   salaryMin: number | null
   salaryMax: number | null
   currency: string | null

@@ -226,3 +226,172 @@ nota"**.
 Isso resolve na prática o que o card já discutia em "Compatibilidade em rótulo,
 não em percentual": não há nota, nem número, nem barra, nem rótulo. A ordenação
 é por data.
+
+
+---
+
+## O formato mudou: linhas densas, não cartões (15/08/2026)
+
+O stakeholder viu o resultado (cartões com borda, pílulas de filtro, formulário
+de perfil acima) e foi direto: *"você não entendeu. Eu quero um filtro igual a
+esse do mesmo modelo e que mostre as vagas em uma tabela"*, com uma captura do
+RemoteYeah.
+
+Vale registrar **por que a primeira versão errou o alvo**: eu tinha o card, que
+descreve o conteúdo do cartão (as quatro perguntas, extraído vs. inferido), e
+tratei a referência visual como detalhe de acabamento. Não era — a densidade da
+lista *é* o requisito. Um cartão com borda e três linhas de rótulo mostra 4
+vagas por tela; a linha densa mostra 8.
+
+### O que muda
+
+| | antes | agora |
+| --- | --- | --- |
+| Filtros | pílulas soltas, filtram ao clicar | **8 dropdowns** com contador, e um botão **Filtrar** |
+| Vagas | cartões com borda | **linhas densas**, divisória entre elas |
+| Idade | badge ao lado do título | **solta no topo** da linha |
+| Empresa | texto | **logo redonda**; iniciais quando falta |
+| Experiência | não existia | **`Exp: 5 anos`** ao lado do título |
+| Salário | linha rotulada | **chip verde** na faixa |
+| País | texto | **bandeirinha** no fim da faixa |
+| Perfil de busca | formulário na mesma página | **removido** — *"não vai precisar desse formulário, somente os filtros"* |
+| Upload de CV | na página | removido daqui — *"a parte do CV vai ser outra coisa"* |
+
+### Campos novos no banco
+
+`area`, `anosExp`, `benefits`, `degree`, `logoUrl`, `paisIso`. Os oito
+dropdowns da captura incluem **Benefits** e **Degree**, que não existiam.
+
+O [JOB-03](JOB-03-busca-em-segundo-plano.md) foi atualizado com a obrigação de
+preencher esses campos — sem isso a busca seria construída preenchendo metade
+da linha.
+
+### O que a remoção do formulário implica
+
+Sem formulário não há como criar perfil, e sem perfil não havia `grupo` — a
+lista ficaria eternamente vazia. A listagem passou a funcionar **sem perfil**:
+mostra o que a rodada achou, e o perfil (quando existir) restringe ao grupo
+dele.
+
+O `JobProfile` e o agrupamento **continuam** — o stakeholder decidiu que o botão
+Filtrar dispara busca ao vivo *e* pode salvar o perfil, que é o que a rodada de
+50 min vai procurar.
+
+### Entregue (15/08/2026)
+
+Arquivos novos em `frontend/src/components/vagas/`: `DropdownFiltro.tsx`
+(dropdown acessível de seleção múltipla) e `LinhaVaga.tsx` (a linha densa).
+Reescritos: `BarraFiltros.tsx` (oito dropdowns), `ListaVagas.tsx`,
+`vaga-filtro.ts` (oito eixos no lugar de cinco) e `vaga-formato.ts`.
+
+**Apagados**, com o formulário: `CartaoVaga.tsx`, `CaixaUploadCV.tsx`,
+`CampoFichas.tsx`, `Field.tsx`, `SeloOrigem.tsx`. Atenção ao homônimo — o
+`components/invoice/Field.tsx` é outro arquivo e **continua em uso**.
+
+`VagasPage.tsx` foi de **728 para 68 linhas**: era quase toda formulário.
+
+`vaga-formato.ts` perdeu sete exports que só o cartão usava (`NAO_INFORMADO`,
+`formatarSalario`, `formatarRegime`, `idadeEmDias`, `formatarIdade`,
+`formatarElegibilidade`, `formatarFonte`). O `formatarIdadeRelativa` novo conta
+em **horas**, não em dias de calendário: "há 15 horas" é o que distingue a vaga
+publicada agora da de ontem, e era o que a captura mostrava.
+
+#### Decisões que o card não previa
+
+- **O filtro não aplica sozinho.** Os dropdowns editam um rascunho e só
+  "Filtrar" o promove. Com oito eixos, aplicar a cada checkbox faria a lista
+  saltar embaixo do dedo no meio da escolha.
+- **Ausente não passa no filtro selecionado.** Quem marca "Bacharelado" pede as
+  que exigem bacharelado; a vaga que não informou não é uma delas. Não
+  contradiz "ausente permanece ausente" — aquilo vale para a *exibição*.
+- **Salário compara pelo teto** (`salaryMax ?? salaryMin`): uma faixa 90K–160K
+  atende quem pede 150K+, e olhar só o piso a descartaria.
+- **Sem cor nova no tema.** O contador verde e o chip de salário usam
+  `--brand`/`--brand-text`, que já são verdes. Medido: 6,15:1 no claro e 5,99:1
+  no escuro para o badge preenchido — um `--success` novo não ganharia
+  contraste.
+- **Os emojis 🔍 e ✕ dos botões ficaram de fora.** Não há fonte de emoji nesta
+  máquina (`fc-list | grep -c emoji` → **0**) e viravam quadrados vazios. A
+  bandeirinha ficou, porque **nunca vem sozinha**: o nome do país anda junto, e
+  sem a fonte o custo é um enfeite, não a informação.
+
+#### Critérios atendidos
+
+- [x] Lista as vagas do grupo da pessoa, por data
+- [x] Campo ausente permanece ausente — sem salário, **sem chip**; sem
+      `anosExp`, sem "Exp:"; sem `paisIso`, sem bandeira
+- [x] Sem nota, número, barra ou percentual
+- [x] Filtragem no cliente, sobre a lista carregada
+- [x] Contador "N vagas encontradas" e "12 de 240" com filtro
+- [x] Dropdown acessível: `aria-expanded`/`aria-haspopup`, Esc fecha e devolve
+      o foco ao botão, clique fora fecha, checkbox de verdade dentro
+- [x] Os dois temas e 390px
+
+#### Verificado por mim (15/08/2026)
+
+Com as 5 vagas semeadas com os campos novos (`logoUrl` vazio em todas — o que
+se vê é a queda para iniciais; a imagem em si **não foi exercitada**):
+
+| O que | Resultado |
+| --- | --- |
+| `npm run build` | limpo |
+| Funções puras | **61 casos** (33 de formato, 28 de filtro), 0 falhas |
+| Barra | 8 dropdowns, na ordem da captura |
+| Linha | idade no topo, `Exp: N anos`, chip verde, bandeira no fim |
+| Vaga sem salário/exp/país | os chips **somem**, nada de "não informado" |
+| Dropdown | badge "1", Esc devolve o foco, clique fora fecha |
+| Contador | "5 vagas encontradas" → **"4 de 5 vagas"** ao filtrar |
+| Limpar filtros | volta a 5 |
+| 390px | `scrollWidth == innerWidth` (390), painel não vaza |
+| Tema escuro | correto |
+| Erros de console | **zero** |
+| `scripts/qa-rapido.py` | tudo certo |
+| Trilhas / Invoice / Configurações | seguem de pé |
+
+#### O que não fiz
+
+- **`logoUrl` não foi testado com imagem real** — nenhuma vaga semeada tem uma.
+  O `onError` que cai nas iniciais está escrito e é o caminho que roda hoje,
+  mas a imagem carregando de fato não foi vista.
+- Os filtros **Benefícios** e **Formação** têm poucas opções nas 5 vagas de
+  exemplo (4 e 2 vagas preenchidas); o comportamento com dezenas de opções e
+  rolagem no painel não foi exercitado com dado real.
+- O card original ainda tem em aberto **fuso/overlap** e **"o que falta no
+  perfil"** — nenhum dos dois entrou aqui, e os dois seguem precisando de dado
+  novo, não de tela.
+
+
+### Verificado por mim (15/08/2026)
+
+| O que | Resultado |
+| --- | --- |
+| Oito dropdowns, na ordem da captura | ✅ |
+| Rascunho **não** aplica sozinho | badge vira 1, contador segue "5 vagas" |
+| Botão **Filtrar** | "3 de 5 vagas" |
+| **Limpar** (só aparece quando há o quê) | volta a 5 |
+| Linha densa | idade solta, iniciais na logo, `Exp: N anos`, chips, país |
+| Campo ausente | sem salário → sem chip; sem `anosExp` → sem "Exp:" |
+| Dois temas, 390px | sem vazamento, zero erro de console |
+
+**Dois ajustes que fiz depois do agente:**
+
+1. **No celular os oito dropdowns ocupavam ~400px** antes da primeira vaga — a
+   tela inteira de filtro, com a lista abaixo da dobra. Agora ficam recolhidos
+   atrás de um botão "Filtros" com contador, usando o `Recolhivel` que já
+   existia. Sempre abertos a partir de `sm`.
+2. **O parágrafo de introdução ocupava 104px** (quatro linhas no celular).
+   Virou uma linha. A primeira vaga saiu de y=430 para **y=362**, dentro da
+   dobra de 780.
+
+**Um falso positivo meu:** medi "8 dropdowns visíveis" com o painel fechado e
+achei que o recolhimento não funcionava. O `Recolhivel` usa `grid-rows-[0fr]`
+com `overflow-hidden` — altura zero, mas `offsetParent` não-nulo. Medindo a
+altura do painel: **0px fechado, 344px aberto**. Funcionava desde o começo.
+
+**Decisões do agente que mantive:** os emojis 🔍/✕ ficaram de fora dos botões
+porque esta máquina não tem fonte de emoji e viravam quadrados; a bandeirinha
+ficou porque nunca vem sozinha (o nome do país acompanha), então sem a fonte
+perde-se o enfeite, não a informação.
+
+**O que não foi exercitado:** `logoUrl` está vazio nas cinco vagas, então só o
+caminho das iniciais rodou — a imagem carregando não foi vista.

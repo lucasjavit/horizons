@@ -3,22 +3,22 @@ import { ErrorState, LoadingState } from '../States'
 import { api } from '../../lib/api'
 import { useAsync } from '../../lib/useAsync'
 import { BarraFiltros } from './BarraFiltros'
-import { CartaoVaga } from './CartaoVaga'
-import { SELECAO_VAZIA, filtrar, opcoesDe } from './vaga-filtro'
+import { LinhaVaga } from './LinhaVaga'
+import { SELECAO_VAZIA, filtrar, opcoesDe, temSelecao } from './vaga-filtro'
 import type { Selecao } from './vaga-filtro'
 
 /**
- * A lista de vagas encontradas (JOB-04).
+ * A lista de vagas encontradas.
  *
  * Ordenada por **data**, que é como o backend já devolve (`postedAt desc`,
  * `foundAt desc`) — e não por nota: o stakeholder dispensou a nota, e sem nota
  * não há ordenação por nota. Reordenar aqui só desfaria a ordem que o backend
  * escolheu.
  *
- * Convive com o formulário de perfil na mesma página: quem ainda não cadastrou
- * perfil não chega aqui, porque `GET /jobs` devolve `[]` para essa pessoa e a
- * página mostra o formulário. Quem tem perfil e ainda não tem vaga vê o vazio
- * explicativo abaixo.
+ * A filtragem é no cliente, sobre a lista já carregada: o `GET /jobs` não
+ * aceita parâmetro nenhum. A seleção aplicada vive aqui, e não dentro da barra,
+ * porque é ela que decide o que a lista mostra — a barra edita um rascunho e o
+ * entrega no clique de "Filtrar".
  */
 export function ListaVagas() {
   const { data, loading, error, reload } = useAsync((signal) => api.listarVagas(signal), [])
@@ -33,22 +33,16 @@ export function ListaVagas() {
 
   if (vagas.length === 0) return <NenhumaVagaAinda />
 
-  return (
-    <section aria-labelledby="vagas-titulo" className="flex flex-col gap-4">
-      <h2
-        id="vagas-titulo"
-        className="border-b pb-2 text-sm font-semibold uppercase tracking-wide"
-        style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-      >
-        Vagas encontradas
-      </h2>
+  const filtroAtivo = temSelecao(selecao)
 
+  return (
+    <div className="flex flex-col gap-4">
       <BarraFiltros
         opcoes={opcoes}
-        selecao={selecao}
-        onChange={setSelecao}
+        onAplicar={setSelecao}
         total={vagas.length}
         mostrando={visiveis.length}
+        filtroAtivo={filtroAtivo}
       />
 
       {visiveis.length === 0 ? (
@@ -59,13 +53,16 @@ export function ListaVagas() {
           Nenhuma das {vagas.length} vagas bate com esses filtros.
         </p>
       ) : (
-        <ul className="flex flex-col gap-3">
+        // `border-t` na lista para a primeira linha ter divisória em cima
+        // também — sem ela a primeira vaga fica colada no contador e não
+        // parece parte da mesma lista.
+        <ul className="flex flex-col border-t" style={{ borderColor: 'var(--border)' }}>
           {visiveis.map((vaga) => (
-            <CartaoVaga key={vaga.id} vaga={vaga} />
+            <LinhaVaga key={vaga.id} vaga={vaga} />
           ))}
         </ul>
       )}
-    </section>
+    </div>
   )
 }
 
@@ -90,15 +87,13 @@ function NenhumaVagaAinda() {
         Ainda não há vagas para o seu perfil
       </h2>
       <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        A busca roda sozinha a cada 50 minutos e usa o perfil que você salvou
-        aqui. Você não precisa ficar nesta tela: <strong>nós avisamos quando
+        A busca roda sozinha a cada 50 minutos e usa o perfil que você salvou.
+        Você não precisa ficar nesta tela: <strong>nós avisamos quando
         aparecerem vagas novas</strong>, e elas ficam guardadas aqui esperando
         por você.
       </p>
       <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         Se a primeira rodada ainda não aconteceu, isso pode levar até uma hora.
-        Enquanto isso, quanto mais completo o perfil abaixo, melhor o que a
-        busca traz.
       </p>
     </section>
   )

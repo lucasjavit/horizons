@@ -1,197 +1,181 @@
-import { useId, useState } from 'react'
-import type { Opcoes, Selecao } from './vaga-filtro'
-import { temSelecao } from './vaga-filtro'
+import { useCallback, useState } from 'react'
+import { Recolhivel } from '../Recolhivel'
+import { DropdownFiltro } from './DropdownFiltro'
+import { SELECAO_VAZIA, temSelecao } from './vaga-filtro'
+import type { Eixo, Opcoes, Selecao } from './vaga-filtro'
+
+/** O rótulo de cada eixo, na ordem da tela. */
+const ROTULOS: ReadonlyArray<{ eixo: Eixo; rotulo: string }> = [
+  { eixo: 'cargos', rotulo: 'Cargo' },
+  { eixo: 'experiencias', rotulo: 'Experiência' },
+  { eixo: 'contratos', rotulo: 'Tipo de contrato' },
+  { eixo: 'skills', rotulo: 'Tecnologias' },
+  { eixo: 'beneficios', rotulo: 'Benefícios' },
+  { eixo: 'paises', rotulo: 'Quero trabalhar de' },
+  { eixo: 'formacoes', rotulo: 'Formação' },
+  { eixo: 'salarios', rotulo: 'Salário anual mínimo' },
+]
 
 /**
- * A busca por texto e as pílulas de filtro, no topo da lista.
+ * A barra de oito dropdowns.
  *
- * Tudo filtra **no cliente**, sobre a lista já carregada — não há parâmetro de
- * busca no `GET /jobs`, e não se inventa um que o backend não tem.
+ * **O rascunho é local e só o botão "Filtrar" o promove.** A alternativa —
+ * aplicar a cada checkbox — foi descartada porque com oito eixos a lista
+ * saltaria embaixo do dedo no meio da escolha, e o contador "12 de 240" mudaria
+ * três vezes antes de a pessoa terminar de decidir.
  *
- * As pílulas saem do dado carregado (`opcoesDe`), então nunca aparece um
- * filtro que não filtra nada. Grupo sem opção some inteiro: uma linha "Local"
- * vazia só ocupa espaço e sugere que a informação existe.
+ * O preço é o rascunho poder divergir do que a lista mostra, e é por isso que
+ * "Filtrar" **continua habilitado mesmo sem mudança**: um botão que desabilita
+ * sozinho deixaria a pessoa sem como confirmar que o que ela vê é o que ela
+ * pediu.
  */
 export function BarraFiltros({
   opcoes,
-  selecao,
-  onChange,
+  onAplicar,
   total,
   mostrando,
+  filtroAtivo,
 }: {
   opcoes: Opcoes
-  selecao: Selecao
-  onChange: (s: Selecao) => void
-  /** Quantas vagas existem ao todo, antes de filtrar. */
+  onAplicar: (s: Selecao) => void
   total: number
-  /** Quantas sobraram depois de filtrar. */
   mostrando: number
+  /** Se há filtro **aplicado** — não o rascunho. É o que decide o contador. */
+  filtroAtivo: boolean
 }) {
-  const idBusca = useId()
-  const filtrando = temSelecao(selecao)
+  const [rascunho, setRascunho] = useState<Selecao>(SELECAO_VAZIA)
 
-  /** Liga e desliga um valor dentro de um dos grupos de pílula. */
-  const alternar = (grupo: 'skills' | 'locais' | 'fontes' | 'regimes', valor: string) => {
-    const atual = selecao[grupo]
-    onChange({
-      ...selecao,
-      [grupo]: atual.includes(valor)
-        ? atual.filter((v) => v !== valor)
-        : [...atual, valor],
-    })
-  }
+  const editar = useCallback((eixo: Eixo, valores: string[]) => {
+    setRascunho((r) => ({ ...r, [eixo]: valores }))
+  }, [])
+
+  const limpar = useCallback(() => {
+    setRascunho(SELECAO_VAZIA)
+    onAplicar(SELECAO_VAZIA)
+  }, [onAplicar])
+
+  // "Limpar" some quando não há nada para limpar — nem no rascunho, nem
+  // aplicado. Um botão que não faz nada só ocupa o lugar do que faz.
+  const podeLimpar = temSelecao(rascunho) || filtroAtivo
+
+  // Recolhido so no celular. Comeca fechado: a lista e o conteudo, o filtro e
+  // a ferramenta.
+  const [aberto, setAberto] = useState(false)
+  const quantosMarcados = ROTULOS.reduce(
+    (n, { eixo }) => n + rascunho[eixo].length,
+    0,
+  )
 
   return (
-    <div className="flex flex-col gap-3">
-      <div>
-        {/* O rótulo existe e é visível para o leitor de tela, mas não ocupa
-            linha: o placeholder sozinho não é nome acessível. */}
-        <label htmlFor={idBusca} className="sr-only">
-          Buscar título ou empresa
-        </label>
-        <input
-          id={idBusca}
-          type="search"
-          value={selecao.busca}
-          onChange={(e) => onChange({ ...selecao, busca: e.target.value })}
-          placeholder="Buscar título ou empresa…"
-          className="w-full rounded-md border px-3 py-2.5 text-sm"
-          style={{
-            borderColor: 'var(--border)',
-            background: 'var(--surface-sunken)',
-            color: 'var(--text)',
-          }}
+    <section aria-labelledby="filtros-titulo" className="flex flex-col gap-3">
+      <h2 id="filtros-titulo" className="sr-only">
+        Filtrar vagas
+      </h2>
+
+      {/* No celular os oito dropdowns empilham em coluna e ocupam ~400px
+          antes da primeira vaga — a tela inteira de filtro, e a lista some
+          abaixo da dobra. Ficam recolhidos ali, e sempre abertos a partir de
+          sm, onde cabem em duas linhas de quatro como na referencia. */}
+      <button
+        type="button"
+        onClick={() => setAberto((a) => !a)}
+        aria-expanded={aberto}
+        aria-controls="painel-filtros"
+        className="inline-flex min-h-9 items-center gap-2 self-start rounded-md border px-3 py-1.5 text-sm sm:hidden"
+        style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+      >
+        Filtros
+        {quantosMarcados > 0 && (
+          <span
+            className="rounded-full px-1.5 text-xs font-semibold"
+            style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
+          >
+            {quantosMarcados}
+          </span>
+        )}
+        <span aria-hidden>{aberto ? '▴' : '▾'}</span>
+      </button>
+
+      <div className="hidden sm:block">
+        <PainelDropdowns
+          opcoes={opcoes}
+          rascunho={rascunho}
+          editar={editar}
         />
       </div>
+      <div id="painel-filtros" className="sm:hidden">
+        <Recolhivel aberto={aberto}>
+          <PainelDropdowns opcoes={opcoes} rascunho={rascunho} editar={editar} />
+        </Recolhivel>
+      </div>
 
-      <GrupoPilulas
-        rotulo="Skills"
-        valores={opcoes.skills}
-        // Teto de 12: a lista de skills tem cauda longa, e 40 pílulas
-        // empurrariam a primeira vaga para fora da tela — o oposto do que a
-        // tela existe para fazer. As mais frequentes são as que filtram mais.
-        limite={12}
-        marcados={selecao.skills}
-        onAlternar={(v) => alternar('skills', v)}
-      />
-      <GrupoPilulas
-        rotulo="Local"
-        valores={opcoes.locais}
-        limite={8}
-        marcados={selecao.locais}
-        onAlternar={(v) => alternar('locais', v)}
-      />
-      <GrupoPilulas
-        rotulo="Escopo"
-        valores={opcoes.regimes}
-        limite={4}
-        marcados={selecao.regimes}
-        onAlternar={(v) => alternar('regimes', v)}
-      />
-      <GrupoPilulas
-        rotulo="Fonte"
-        valores={opcoes.fontes}
-        limite={8}
-        marcados={selecao.fontes}
-        onAlternar={(v) => alternar('fontes', v)}
-      />
+      <div className="flex flex-wrap items-center gap-2">
+        {/* A captura tem 🔍 e ✕ nos botões, e eles ficaram de fora: emoji
+            depende de fonte do sistema, e **esta máquina não tem nenhuma** —
+            os dois viravam quadrados vazios ao lado do texto. Um glifo
+            decorativo que falha é pior que glifo nenhum, porque o quadrado
+            parece defeito. O texto sozinho já nomeia a ação. */}
+        <button
+          type="button"
+          onClick={() => onAplicar(rascunho)}
+          className="inline-flex min-h-9 items-center rounded-md px-4 py-1.5 text-sm font-semibold"
+          style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
+        >
+          Filtrar
+        </button>
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        {/* A contagem é `aria-live`: filtrar não move o foco, e sem isto a
-            lista encolher é uma mudança silenciosa para quem não vê a tela. */}
-        <p role="status" aria-live="polite" className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          {filtrando
-            ? `${mostrando} de ${total} ${total === 1 ? 'vaga' : 'vagas'}`
-            : `${total} ${total === 1 ? 'vaga' : 'vagas'}`}
-        </p>
-
-        {filtrando && (
+        {podeLimpar && (
           <button
             type="button"
-            onClick={() => onChange({ busca: '', skills: [], locais: [], fontes: [], regimes: [] })}
-            className="flex min-h-6 items-center rounded text-sm underline underline-offset-2"
-            style={{ color: 'var(--text-muted)' }}
+            onClick={limpar}
+            className="inline-flex min-h-9 items-center rounded-md border px-4 py-1.5 text-sm"
+            style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
           >
-            limpar filtros
+            Limpar filtros
           </button>
         )}
       </div>
-    </div>
+
+      {/* O "240 jobs found" da captura. `aria-live` porque depois de clicar em
+          "Filtrar" esta é a única confirmação de que algo aconteceu — sem ela,
+          quem usa leitor de tela clica e não ouve nada mudar. */}
+      <p
+        role="status"
+        aria-live="polite"
+        className="text-sm"
+        style={{ color: 'var(--text-muted)' }}
+      >
+        {filtroAtivo
+          ? `${mostrando} de ${total} ${total === 1 ? 'vaga' : 'vagas'}`
+          : `${total} ${total === 1 ? 'vaga encontrada' : 'vagas encontradas'}`}
+      </p>
+    </section>
   )
 }
 
-/**
- * Uma linha de pílulas de um filtro só.
- *
- * `aria-pressed` e não checkbox: são botões que ligam e desligam, e o leitor
- * de tela anuncia "pressionado" — que é exatamente o estado. Cor sozinha nunca
- * marca o selecionado: a pílula ativa muda fundo **e** borda, e o
- * `aria-pressed` carrega o estado para quem não vê nenhum dos dois.
- */
-function GrupoPilulas({
-  rotulo,
-  valores,
-  limite,
-  marcados,
-  onAlternar,
+
+/** Os oito dropdowns. Extraido porque aparece duas vezes: solto no desktop,
+ *  dentro do Recolhivel no celular. */
+function PainelDropdowns({
+  opcoes,
+  rascunho,
+  editar,
 }: {
-  rotulo: string
-  valores: string[]
-  limite: number
-  marcados: string[]
-  onAlternar: (v: string) => void
+  opcoes: Opcoes
+  rascunho: Selecao
+  editar: (eixo: keyof Selecao, valores: string[]) => void
 }) {
-  // O teto existe para a barra não virar um muro de pílulas. Mas o que ficou
-  // de fora precisa ser ALCANÇÁVEL: sem isto, uma vaga mostra "Kotlin" no
-  // cartão e não há como filtrar por Kotlin — a barra estaria escondendo
-  // opções sem dizer que existem.
-  const [expandido, setExpandido] = useState(false)
-  // Um grupo sem opção não vira linha vazia — some.
-  if (valores.length === 0) return null
-
-  // O que está marcado nunca some por causa do teto: a pílula desapareceria
-  // ainda ativa, e a lista ficaria filtrada por algo invisível.
-  const dentroDoTeto = [...new Set([...marcados, ...valores.slice(0, limite)])]
-  const escondidas = valores.filter((v) => !dentroDoTeto.includes(v))
-  const visiveis = expandido ? [...dentroDoTeto, ...escondidas] : dentroDoTeto
-
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <span
-        className="mr-0.5 shrink-0 text-xs font-medium uppercase tracking-wide"
-        style={{ color: 'var(--text-muted)' }}
-      >
-        {rotulo}
-      </span>
-      {visiveis.map((valor) => {
-        const ativo = marcados.includes(valor)
-        return (
-          <button
-            key={valor}
-            type="button"
-            aria-pressed={ativo}
-            onClick={() => onAlternar(valor)}
-            className="flex min-h-6 items-center rounded-full border px-2.5 py-0.5 text-xs"
-            style={{
-              borderColor: ativo ? 'var(--brand)' : 'var(--border)',
-              background: ativo ? 'var(--brand)' : 'var(--surface)',
-              color: ativo ? 'var(--brand-text)' : 'var(--text-muted)',
-            }}
-          >
-            {valor}
-          </button>
-        )
-      })}
-      {escondidas.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setExpandido((e) => !e)}
-          className="flex min-h-6 items-center rounded-full px-2 py-0.5 text-xs underline"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          {expandido ? 'menos' : `+${escondidas.length}`}
-        </button>
-      )}
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      {ROTULOS.map(({ eixo, rotulo }) => (
+        <DropdownFiltro
+          key={eixo}
+          rotulo={rotulo}
+          opcoes={opcoes[eixo]}
+          marcados={rascunho[eixo]}
+          onChange={(v) => editar(eixo, v)}
+        />
+      ))}
     </div>
   )
 }

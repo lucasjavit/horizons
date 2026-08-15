@@ -125,3 +125,34 @@ O prompt do stakeholder traz algo melhor que a minha regra binária: vaga que
 não dá para verificar recebe `verification_status: "unverified"` e **continua
 aparecendo, marcada**. Descartar em silêncio esconde da pessoa que existe algo
 ali; marcar deixa ela decidir.
+
+
+---
+
+## Os campos que a extração precisa preencher (15/08/2026)
+
+A tela de vagas ganhou o formato que o stakeholder pediu (linhas densas, chips,
+bandeirinha), e isso **adicionou campos que a extração tem de trazer**. Sem
+isto escrito aqui, a busca seria construída preenchendo metade da linha.
+
+| Campo | O que é | Quando falta |
+| --- | --- | --- |
+| `area` | Família do cargo, como o anúncio escreveu ("Back-end Engineer") | sem chip de área |
+| `anosExp` | Anos de experiência pedidos | sem "Exp: N anos" |
+| `benefits` | Benefícios citados | sem chips de benefício |
+| `degree` | Formação exigida | sem chip de formação |
+| `logoUrl` | Logo da empresa | a tela cai nas **iniciais** |
+| `paisIso` | ISO-3166 alpha-2 (`us`, `br`) | sem bandeirinha |
+
+**A regra vale para todos: campo ausente permanece ausente.** O prompt autoriza
+`null` explicitamente, e a tela não mostra nada no lugar. Se a linha ficar feia
+com campo vazio, a pressão vira preencher — e o desenho passa a causar a
+alucinação, que é exatamente o que as quatro defesas deste card evitam.
+
+`area` sai do anúncio, **não é deduzida do título**. Deduzir é inventar com
+outro nome.
+
+`paisIso` é o mais arriscado da lista: é a IA normalizando "Remote (US)",
+"United States", "USA" e "Estados Unidos" para `us`. Vale validar contra uma
+lista fechada de ISO — código fora da lista vira `null`, não vira bandeira
+errada.

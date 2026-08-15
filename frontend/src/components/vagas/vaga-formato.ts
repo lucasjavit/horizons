@@ -3,114 +3,128 @@ import type { Vaga } from '../../types/api'
 /**
  * As traduções de dado cru para texto de tela, isoladas do JSX.
  *
- * Ficam separadas porque são a parte com regra de verdade — "não informado"
- * nunca pode virar um número, e a idade da vaga não pode arredondar para o dia
- * errado. Função pura é o que se consegue conferir sem abrir o navegador.
+ * Ficam separadas porque são a parte com regra de verdade — **ausente precisa
+ * continuar ausente** (toda função aqui devolve `null`, nunca um rótulo de
+ * preenchimento), e a idade não pode arredondar para o lado errado. Função pura
+ * é o que se consegue conferir sem abrir o navegador, e é o que os testes em
+ * `scratchpad/t-fmt2.ts` cobrem.
  */
-
-/** O rótulo único para todo campo ausente. Uma frase só, sempre a mesma. */
-export const NAO_INFORMADO = 'não informado'
 
 /**
- * O salário como o anúncio publicou, ou `null` quando não publicou.
+ * A idade solta no topo da linha: "há 15 horas", "há 1 dia", "há 3 meses".
  *
- * Devolver `null` e não a string "não informado" é de propósito: quem chama
- * precisa poder dar **tipografia diferente** para o ausente, e uma string
- * pronta apagaria essa distinção logo no primeiro uso.
+ * Diferente de `formatarIdade`, que conta só em dias de calendário e serve ao
+ * selo curto. Aqui a lista precisa da granularidade de **hora** — é o que
+ * distingue a vaga publicada agora da de ontem, e é a informação que a pessoa
+ * usa para decidir se vale abrir. Uma vaga de 3h aparecendo como "hoje" perde
+ * exatamente o que a torna interessante.
  *
- * Sem moeda não há salário legível — "120k" sem saber se é dólar ou real não
- * responde a pergunta que o card quer responder, então vira ausente também.
+ * Continua devolvendo `null` sem data: ausência não vira "agora", que faria
+ * vaga velha parecer nova.
  */
-export function formatarSalario(vaga: Vaga): string | null {
-  const { salaryMin, salaryMax, currency } = vaga
-  if (!currency) return null
-  if (salaryMin == null && salaryMax == null) return null
-
-  const n = (v: number) => {
-    // 140000 vira "140k"; 95500 vira "95,5k". Milhar cheio é como o anúncio
-    // escreve, e a fração só aparece quando existe de fato.
-    if (v >= 1000) {
-      const mil = v / 1000
-      const texto = Number.isInteger(mil)
-        ? String(mil)
-        : mil.toFixed(1).replace('.', ',')
-      return `${texto}k`
-    }
-    return String(v)
-  }
-
-  if (salaryMin != null && salaryMax != null) {
-    // Faixa degenerada ("80k–80k") é um valor só, não uma faixa.
-    if (salaryMin === salaryMax) return `${currency} ${n(salaryMin)}`
-    return `${currency} ${n(salaryMin)}–${n(salaryMax)}`
-  }
-  if (salaryMin != null) return `${currency} a partir de ${n(salaryMin)}`
-  return `${currency} até ${n(salaryMax as number)}`
-}
-
-/** O regime como texto de tela. Ausente continua ausente. */
-export function formatarRegime(regime: string | null): string | null {
-  if (!regime) return null
-  const mapa: Record<string, string> = {
-    remoto: 'Remoto',
-    hibrido: 'Híbrido',
-    presencial: 'Presencial',
-  }
-  return mapa[regime.toLowerCase()] ?? regime
-}
-
-/**
- * A idade da vaga: "hoje", "há 3d", "há 14d".
- *
- * `null` quando o anúncio não trouxe data — e ausência de data **não** vira
- * "hoje", que faria vaga velha parecer nova. É o oposto do que o card pede.
- *
- * Conta por dia de calendário, não por múltiplo de 24h: uma vaga publicada
- * ontem às 23h tem 2h de idade, e dizer "hoje" contradiz a data que a pessoa
- * vê no anúncio.
- *
- * O calendário é o **local**, o mesmo que a pessoa lê no relógio. Misturar as
- * bases aqui é fácil e silencioso: `Date.UTC(d.getFullYear(), …)` monta um
- * instante UTC a partir das partes locais, e num fuso a oeste isso jogava uma
- * vaga de hoje 01:00Z para "ontem".
- */
-export function idadeEmDias(postedAt: string | null, agora = new Date()): number | null {
+export function formatarIdadeRelativa(
+  postedAt: string | null,
+  agora = new Date(),
+): string | null {
   if (!postedAt) return null
   const data = new Date(postedAt)
   if (Number.isNaN(data.getTime())) return null
 
-  // Meia-noite local dos dois lados: a subtração passa a ser de dias inteiros.
-  const dia = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-  // `Math.round` e não `floor`: o horário de verão faz um dia ter 23h ou 25h, e
-  // `floor` transformaria essa hora a menos num dia a menos.
-  const dias = Math.round((dia(agora) - dia(data)) / 86_400_000)
-  // Data no futuro é dado ruim da origem; trata como hoje em vez de "há -2d".
-  return dias < 0 ? 0 : dias
-}
+  // Data no futuro é dado ruim da origem; trata como agora, nunca "há -2 horas".
+  const ms = Math.max(0, agora.getTime() - data.getTime())
+  const minutos = Math.floor(ms / 60_000)
 
-/** O texto curto do selo de idade. */
-export function formatarIdade(postedAt: string | null, agora = new Date()): string | null {
-  const dias = idadeEmDias(postedAt, agora)
-  if (dias === null) return null
-  if (dias === 0) return 'hoje'
-  if (dias === 1) return 'ontem'
-  return `há ${dias}d`
+  if (minutos < 60) return 'há menos de 1 hora'
+
+  const horas = Math.floor(minutos / 60)
+  if (horas < 24) return horas === 1 ? 'há 1 hora' : `há ${horas} horas`
+
+  const dias = Math.floor(horas / 24)
+  if (dias < 30) return dias === 1 ? 'há 1 dia' : `há ${dias} dias`
+
+  const meses = Math.floor(dias / 30)
+  if (meses < 12) return meses === 1 ? 'há 1 mês' : `há ${meses} meses`
+
+  const anos = Math.floor(meses / 12)
+  return anos === 1 ? 'há 1 ano' : `há ${anos} anos`
 }
 
 /**
- * A elegibilidade em uma frase.
+ * O salário do chip verde, no formato do anúncio: "US$ 150K—200K / ano".
  *
- * Os três estados são distintos de propósito: `true`, `false` e "o anúncio não
- * disse" são respostas diferentes, e colapsar o `null` em "não contrata" seria
- * inventar uma negativa que ninguém afirmou.
+ * Devolve `null` quando não há salário publicado — e o chip simplesmente não
+ * aparece. **Nunca "a combinar"**: inventar o rótulo de ausente dá à vaga sem
+ * salário a mesma presença visual da que publicou, que é o oposto do que a
+ * faixa de chips existe para mostrar.
+ *
+ * Sem moeda também é ausente: "150K" sem saber se é dólar ou real não responde
+ * a pergunta que o chip faz.
  */
-export function formatarElegibilidade(elegivel: boolean | null): string | null {
-  if (elegivel === null) return null
-  return elegivel ? 'Contrata no Brasil' : 'Não contrata do Brasil'
+export function formatarFaixaSalarial(vaga: Vaga): string | null {
+  const { salaryMin, salaryMax, currency } = vaga
+  if (!currency) return null
+  if (salaryMin == null && salaryMax == null) return null
+
+  // 150000 vira "150K"; 95500 vira "95,5K". Milhar cheio é como o anúncio
+  // escreve, e a fração só aparece quando existe de fato.
+  const n = (v: number) => {
+    if (v >= 1000) {
+      const mil = v / 1000
+      const texto = Number.isInteger(mil) ? String(mil) : mil.toFixed(1).replace('.', ',')
+      return `${texto}K`
+    }
+    return String(v)
+  }
+
+  const sufixo = ' / ano'
+  if (salaryMin != null && salaryMax != null) {
+    // Faixa degenerada ("150K—150K") é um valor só, não uma faixa.
+    if (salaryMin === salaryMax) return `${currency} ${n(salaryMin)}${sufixo}`
+    return `${currency} ${n(salaryMin)}—${n(salaryMax)}${sufixo}`
+  }
+  if (salaryMin != null) return `${currency} a partir de ${n(salaryMin)}${sufixo}`
+  return `${currency} até ${n(salaryMax as number)}${sufixo}`
 }
 
-/** O domínio da fonte, sem `www.` — é o que cabe no cartão. */
-export function formatarFonte(fonte: string | null): string | null {
-  if (!fonte) return null
-  return fonte.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '')
+/**
+ * As iniciais da empresa para o círculo, quando não há `logoUrl`.
+ *
+ * Até duas letras, das duas primeiras palavras. Descarta o que não é letra ou
+ * dígito antes de escolher — "(Remote) Co" deve dar "RC", não "(R".
+ */
+export function iniciaisDe(empresa: string): string {
+  const palavras = empresa
+    .split(/[\s\-_/]+/)
+    .map((p) => p.replace(/[^\p{L}\p{N}]/gu, ''))
+    .filter(Boolean)
+
+  if (palavras.length === 0) return '?'
+  if (palavras.length === 1) return palavras[0].slice(0, 2).toUpperCase()
+  return (palavras[0][0] + palavras[1][0]).toUpperCase()
+}
+
+/**
+ * A bandeirinha do país a partir do ISO-3166 alpha-2.
+ *
+ * Os *regional indicator symbols* ficam 127.397 posições acima de 'A' em
+ * Unicode, então somar o deslocamento a cada letra dá o par que o sistema
+ * renderiza como bandeira. Não há tabela para manter, e país novo funciona
+ * sozinho.
+ *
+ * Devolve `null` para qualquer coisa que não sejam duas letras — código
+ * inválido viraria dois quadrados vazios na tela, pior que nada.
+ */
+export function bandeiraDe(paisIso: string | null): string | null {
+  if (!paisIso) return null
+  const iso = paisIso.trim().toUpperCase()
+  if (!/^[A-Z]{2}$/.test(iso)) return null
+  return String.fromCodePoint(
+    ...[...iso].map((c) => 127_397 + (c.codePointAt(0) as number)),
+  )
+}
+
+/** "Exp: 5 anos" — e nada quando o anúncio não pediu experiência. */
+export function formatarExperiencia(anosExp: number | null): string | null {
+  if (anosExp == null) return null
+  return anosExp === 1 ? 'Exp: 1 ano' : `Exp: ${anosExp} anos`
 }

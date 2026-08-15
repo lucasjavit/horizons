@@ -209,6 +209,16 @@ export interface VagaDto {
   fonte: string | null;
   regime: string | null;
   skills: string[];
+  /** Area/familia do cargo, como o anuncio escreveu. */
+  area: string | null;
+  /** Anos de experiencia pedidos. Nulo e o caso comum. */
+  anosExp: number | null;
+  benefits: string[];
+  degree: string | null;
+  /** Logo da empresa. A tela cai nas iniciais quando falta. */
+  logoUrl: string | null;
+  /** ISO-3166 alpha-2, para a bandeirinha. */
+  paisIso: string | null;
   salaryMin: number | null;
   salaryMax: number | null;
   currency: string | null;

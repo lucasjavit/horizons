@@ -114,6 +114,20 @@ model FoundJob {
   regime    String?
   /// Tecnologias citadas no anuncio.
   skills    String[]
+  /// Area/familia do cargo ("Back-end Engineer"). Sai do anuncio, nao e
+  /// deduzida do titulo.
+  area      String?
+  /// Anos de experiencia pedidos. Nulo quando o anuncio nao diz — e a
+  /// maioria nao diz.
+  anosExp   Int?
+  /// Beneficios citados ("remote work", "health insurance").
+  benefits  String[]
+  /// Formacao exigida ("Bachelor's"). Nulo e o caso comum.
+  degree    String?
+  /// Logo da empresa. URL absoluta; a tela cai nas iniciais quando falta.
+  logoUrl   String?
+  /// ISO-3166 alpha-2 do pais, para a bandeirinha ("us", "br").
+  paisIso   String?
   /// Retrato do momento da captura, com os trechos de origem das afirmacoes
   /// sensiveis (salario, elegibilidade) para poderem ser conferidas.
   snapshot  Json?

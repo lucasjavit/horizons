@@ -12,6 +12,12 @@ const CAMPOS = {
   fonte: true,
   regime: true,
   skills: true,
+  area: true,
+  anosExp: true,
+  benefits: true,
+  degree: true,
+  logoUrl: true,
+  paisIso: true,
   snapshot: true,
   postedAt: true,
   foundAt: true,
@@ -118,6 +124,12 @@ function toDto(v: {
   fonte: string | null;
   regime: string | null;
   skills: string[];
+  area: string | null;
+  anosExp: number | null;
+  benefits: string[];
+  degree: string | null;
+  logoUrl: string | null;
+  paisIso: string | null;
   snapshot: unknown;
   postedAt: Date | null;
   foundAt: Date;
@@ -139,6 +151,12 @@ function toDto(v: {
     fonte: v.fonte,
     regime: v.regime,
     skills: v.skills,
+    area: v.area,
+    anosExp: v.anosExp,
+    benefits: v.benefits,
+    degree: v.degree,
+    logoUrl: v.logoUrl,
+    paisIso: v.paisIso,
     // Campo ausente permanece ausente: a tela mostra "nao informado" com
     // naturalidade, e nunca um numero inventado.
     salaryMin: s.salaryMin ?? null,
