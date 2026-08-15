@@ -20,7 +20,6 @@ destrava o resto.
 | Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
-| [PLT-06](cards/PLT-06-deploy-no-coolify.md) | Deploy no Coolify — **no ar**, mas o login precisa de HTTPS | P | falta ligar o TLS no Coolify; é configuração, não código |
 | [PLT-04](cards/PLT-04-crud-de-prompts.md) | Config vira área de admin, com CRUD dos prompts de busca | M | agora tem `@AdminOnly()` de verdade por trás |
 | [JOB-02](cards/JOB-02-perfil-de-busca.md) | Perfil de busca e agrupamento | M | destravado pelo login — o perfil tem dono |
 | [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha a cada 50 minutos | M | ver **Antes de começar** abaixo: dois ajustes pendentes |
@@ -53,6 +52,7 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [PLT-06](cards/PLT-06-deploy-no-coolify.md) | **Deploy no Coolify** — no ar em HTTPS, com login funcionando | 15/08/2026 |
 | [PLT-07](cards/PLT-07-leitura-anonima.md) | **Leitura anônima** — home aberta, login na barra | 14/08/2026 |
 | [PLT-05](cards/PLT-05-login-desligado.md) | **Login desligado** por `AUTH_DISABLED` — reverter antes de publicar | 14/08/2026 |
 | [PLT-02](cards/PLT-02-login-com-google.md) | **Login com Google** — guard global *fail closed*, revogação imediata | 13/08/2026 |
@@ -82,13 +82,14 @@ _(vazio)_
 
 ## O que trava o resto
 
-**Uma coisa, e é configuração de servidor:** o domínio serve em `http`, e o
-Google Sign-In só aceita origem `https`. O deploy está no ar e verificado, mas
-**ninguém consegue entrar** até o TLS ser ligado no Coolify
-([PLT-06](cards/PLT-06-deploy-no-coolify.md)).
+**Nada.** O app está no ar em HTTPS, com Let's Encrypt válido, e o login com
+Google funciona (15/08/2026, [PLT-06](cards/PLT-06-deploy-no-coolify.md)).
+Era o que travava desde o começo.
 
-O resto do site funciona sem login — trilhas, aulas e invoice — porque a
-leitura anônima entrou no mesmo dia.
+`https://ojxqz4v8x7jda764e6p3k419.169.58.152.158.sslip.io`
+
+Verificado no ar: rotas privadas em 401, `quadro.json` em 404, leitura anônima
+sem vazar progresso, e zero erro de console nos dois temas.
 
 O que mudou de estado:
 

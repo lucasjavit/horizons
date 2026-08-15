@@ -279,6 +279,33 @@ Aconteceu no primeiro deploy (14/08/2026): o domínio automático do Coolify
 respondia só em `http`, e `https://` no mesmo endereço não respondia
 (`curl` devolvia `000`).
 
+**Houve um estado intermediário que engana:** o `443` passou a responder, mas
+com o certificado errado e sem rota. Como reconhecer:
+
+```bash
+echo | openssl s_client -connect SEU-DOMINIO:443 -servername SEU-DOMINIO 2>/dev/null | grep issuer=
+```
+
+- `issuer=CN=TRAEFIK DEFAULT CERT` → o certificado é o padrão do proxy; o
+  Let's Encrypt **não** foi emitido.
+- `curl -k https://SEU-DOMINIO/` devolvendo **503** → o Traefik anuncia a porta
+  mas não tem serviço vinculado a ela.
+- `curl http://SEU-DOMINIO/.well-known/acme-challenge/x` devolvendo o **404 do
+  app** → o proxy nem está tentando validar o domínio. Se estivesse, ele
+  responderia esse caminho em vez de repassar.
+
+Nesse estado, o campo **Domains** do serviço `web` costuma estar escrito com
+`http://`. O Coolify usa o esquema dessa URL para decidir se cria a rota TLS e
+se pede o certificado.
+
+**Quando dá certo**, os três sinais mudam juntos:
+
+```
+issuer=C=US, O=Let's Encrypt, CN=YR2     # certificado real
+https://…            → 200
+http://…             → 302 (redireciona)
+```
+
 A ordem que funciona:
 
 1. Ligar o HTTPS no serviço `web`, no Coolify (Let's Encrypt).

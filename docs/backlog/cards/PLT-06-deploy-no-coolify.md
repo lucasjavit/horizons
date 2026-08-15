@@ -1,6 +1,6 @@
 # PLT-06 · Deploy no Coolify
 
-**Estado:** quase — no ar e verificado, mas o login está bloqueado pelo `http` (14/08/2026)
+**Estado:** feito (15/08/2026)
 **Tamanho:** M
 
 ## Por quê
@@ -46,12 +46,14 @@ tratar um 200 correto como falha.)
 
 ## Feito
 
-**O deploy está no ar** desde 14/08/2026, e verificado por fora: as rotas
-privadas rejeitam, o backlog não vazou, a leitura anônima não expõe progresso.
+**O deploy está no ar, em HTTPS, e o login funciona.**
 
-**O login, porém, ainda não funciona no ar** — não por código, mas porque o
-domínio serve em `http` e o Google Sign-In exige `https`. Detalhe medido na
-seção do bloqueio, mais abaixo.
+Endereço: `https://ojxqz4v8x7jda764e6p3k419.169.58.152.158.sslip.io`
+
+Isso fecha o que o PLT-02 tinha deixado em aberto desde o começo. O login
+estava implementado e verificado até o ponto em que só o Google podia
+continuar; agora a origem está aceita e o console do navegador não reclama
+mais.
 
 Encerra o [PLT-05](PLT-05-login-desligado.md) na prática: `AUTH_DISABLED` era
 temporário e valia só em rede local. Em produção o login está exigido —
@@ -88,19 +90,25 @@ Vale notar o que **não** foi mudado: `ENCRYPTION_KEY` já não tinha default no
 - [x] `/api/tracks` responde **200** com `completedLessons: 0` (leitura anônima
       do PLT-07 — **não** é mais para dar 401)
 - [x] `/quadro.json` responde **404**
-- [ ] A origem pública cadastrada em "Authorized JavaScript origins" —
-      **impossível hoje**: o Google só aceita `https`, e o site é `http`
-- [ ] Entrar com Google de verdade funciona pelo domínio público — **não**
-- [ ] A engrenagem só para quem está em `ADMIN_EMAILS` — não verificável sem
-      conseguir entrar
+- [x] A origem pública cadastrada em "Authorized JavaScript origins", com
+      `https://`; redirect URIs vazio
+- [x] O Google aceita a origem — **zero erro de console**, onde antes vinha
+      *"The given origin is not allowed"*
+- [ ] A engrenagem só para quem está em `ADMIN_EMAILS` — depende de entrar com
+      uma conta e conferir; não fiz
 
-## Verificado no ar (14/08/2026)
+## Verificado no ar
 
-Domínio: `ojxqz4v8x7jda764e6p3k419.169.58.152.158.sslip.io`, o automático do
-Coolify.
+Duas rodadas: 14/08 em `http`, e 15/08 depois do HTTPS. A tabela é a segunda.
+
+Domínio: `https://ojxqz4v8x7jda764e6p3k419.169.58.152.158.sslip.io`, o
+automático do Coolify.
 
 | O que | Resultado |
 | --- | --- |
+| Certificado | **Let's Encrypt** válido (`issuer=C=US, O=Let's Encrypt, CN=YR2`) |
+| `http://` | **302** — redireciona para HTTPS |
+
 | `/api/auth/config` | `enabled: true`, **`authDisabled: false`** — login exigido |
 | `/api/auth/me`, `/api/settings/tokens` sem token | **401** nos dois |
 | `/quadro.json` | **404** — o backlog não vazou |
@@ -109,11 +117,12 @@ Coolify.
 | Aula sem sessão | **200**, `completed: false`, `note: null` — o 500 do PLT-07 não está no ar |
 | `Bearer abc.def.ghi` | **401** — token inválido não vira anônimo |
 | `PUT /progress/:id` sem sessão | **401** |
-| Navegador, claro e escuro | home nas trilhas, botão do Google na barra, sem aba Quadro, sem erro além do Google |
+| Navegador, claro e escuro | home nas trilhas, botão do Google na barra, sem aba Quadro, **zero erro de console** |
 
-## O bloqueio que sobrou: o site é `http`, e o Google exige `https`
+## O bloqueio que existiu: `http` não serve para o Google (resolvido)
 
-**O login não funciona no ar.** O botão renderiza, mas o Google recusa:
+Por um dia o login ficou inacessível no ar. O botão renderizava, e o Google
+recusava:
 
 ```
 [GSI_LOGGER]: The given origin is not allowed for the given client ID.
@@ -127,17 +136,26 @@ no Google Cloud Console não resolve: o formato é rejeitado no próprio cadastr
 Medido: `https://` no mesmo domínio **não responde** (`000`), e `http://`
 devolve 200 sem redirecionar. O TLS não está ativo para este domínio.
 
-**O que resolve**, e é configuração do Coolify, não código:
+**Resolvido em 15/08/2026**, no painel do Coolify — nenhuma linha de código
+mudou. O caminho, na ordem que importa:
 
-1. Ligar o HTTPS no serviço `web` — o Coolify emite Let's Encrypt, e com
-   domínio `sslip.io` costuma sair direto.
-2. Cadastrar a origem **com `https://`** em "Authorized JavaScript origins".
-   Redirect URIs continua vazio.
-3. Trocar `CORS_ORIGIN` para o mesmo `https://…` e fazer redeploy.
+1. HTTPS ligado no serviço `web`; o Coolify emitiu Let's Encrypt (`issuer=CN=YR2`).
+2. A origem cadastrada **com `https://`** em "Authorized JavaScript origins".
+   Redirect URIs segue vazio.
+3. `CORS_ORIGIN` no mesmo `https://…`.
 
-Enquanto isso, tudo o que não depende de login funciona: trilhas, aulas e a
-invoice. Foi o [PLT-07](PLT-07-leitura-anonima.md) que salvou o deploy de ser
-inútil — sem a leitura anônima, o site inteiro estaria inacessível.
+A ordem não é detalhe: cadastrar a origem antes de o TLS estar de pé não
+funciona, porque o Google **rejeita URLs `http` no próprio formulário**.
+
+Houve um estado intermediário que confundiu: o `443` respondia, mas com
+`CN=TRAEFIK DEFAULT CERT` e **503** por trás — o Traefik anunciava a porta sem
+ter rota para o container. O sinal de que o certificado não tinha sido pedido
+era o `/.well-known/acme-challenge/` cair no 404 do app, em vez de ser
+respondido pelo proxy.
+
+Nesse período, tudo o que não depende de login continuou funcionando. Foi o
+[PLT-07](PLT-07-leitura-anonima.md) que salvou o deploy de ser inútil — sem a
+leitura anônima, do mesmo dia, o site inteiro estaria inacessível.
 
 ## Depende de
 

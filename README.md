@@ -15,9 +15,11 @@ O conteudo das aulas e autoral — escrito do zero, com tradeoffs, erros comuns
 e exercicios de auto-teste. Links para as fontes originais aparecem como
 leitura complementar, nunca como substituto do conteudo.
 
-> **Estado:** em construcao, publicado com [Coolify](docs/DEPLOY.md). O login
-> com Google funciona; ler trilha e aula **nao exige conta** — entrar guarda o
-> progresso e as anotacoes.
+> **Estado:** em construcao, e **no ar**:
+> [ojxqz4v8x7jda764e6p3k419.169.58.152.158.sslip.io](https://ojxqz4v8x7jda764e6p3k419.169.58.152.158.sslip.io)
+> — publicado com [Coolify](docs/DEPLOY.md). O login com Google funciona; ler
+> trilha e aula **nao exige conta**, e entrar guarda o progresso e as
+> anotacoes.
 
 ## Stack
 
