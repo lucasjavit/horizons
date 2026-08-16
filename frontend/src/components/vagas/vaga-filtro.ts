@@ -220,3 +220,30 @@ export function filtrar(vagas: Vaga[], selecao: Selecao): Vaga[] {
     return true
   })
 }
+
+/**
+ * A seleção da tela traduzida para o corpo do `POST /jobs/search`.
+ *
+ * Os nomes mudam porque os dois lados falam línguas diferentes: a tela pensa em
+ * "cargos" e "skills", e o backend usa os nomes que o prompt de busca espera
+ * (`job_titles`, `technologies`). A tradução mora aqui, num lugar só.
+ *
+ * Campo vazio é **omitido**, nunca enviado como `[]`: o `ValidationPipe` do
+ * backend rejeita o que não reconhece, e um array vazio não é um filtro — é a
+ * ausência de um.
+ */
+export function paraFiltrosApi(s: Selecao): Record<string, unknown> {
+  const f: Record<string, unknown> = {}
+  if (s.cargos.length) f.job_titles = s.cargos
+  if (s.skills.length) f.technologies = s.skills
+  if (s.paises.length) f.locations = s.paises
+  if (s.experiencias.length) f.seniority = s.experiencias[0]
+  if (s.contratos.length) f.employment_types = s.contratos
+  // O menor dos escolhidos: pedir "acima de 100k OU acima de 150k" é pedir
+  // acima de 100k.
+  if (s.salarios.length) {
+    const menor = Math.min(...s.salarios.map(Number).filter(Number.isFinite))
+    if (Number.isFinite(menor)) f.salary_min = menor
+  }
+  return f
+}

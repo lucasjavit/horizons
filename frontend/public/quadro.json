@@ -301,6 +301,18 @@
       "total": 0
     },
     {
+      "id": "JOB-07",
+      "titulo": "A busca acontece quando a pessoa clica",
+      "estado": "feito (15/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "A tela prometia uma coisa e fazia outra. Dizia *\"we search every 50 minutes — jobs show up here on their own\"* e chamava de \"No jobs yet\" um estado que era, na verdade, *\"você ainda não buscou\"*.",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",

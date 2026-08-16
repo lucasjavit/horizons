@@ -29,7 +29,7 @@ export function VagasPage() {
             104px e empurrava a primeira vaga para fora da dobra. A promessa
             ("nao precisa ficar olhando") cabe em meia frase. */}
         <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-          We search every 50 minutes — jobs show up here on their own.
+          Set your filters and search — we scan job boards and read each listing.
         </p>
       </header>
 

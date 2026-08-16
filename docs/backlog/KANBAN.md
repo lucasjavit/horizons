@@ -22,6 +22,7 @@ destrava o resto.
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
 | [PLT-04](cards/PLT-04-crud-de-prompts.md) | Config vira área de admin, com CRUD dos prompts de busca | M | agora tem `@AdminOnly()` de verdade por trás |
 | [JOB-02](cards/JOB-02-perfil-de-busca.md) | Perfil de busca e agrupamento | M | **quase** — perfil, filtros, agrupamento e tela prontos; falta ligar a leitura de CV (precisa de chave de IA) |
+| [JOB-07](cards/JOB-07-busca-ao-vivo.md) | **A busca ao vivo** — Filter dispara Firecrawl, vagas entram uma a uma | 15/08/2026 |
 | [JOB-06](cards/JOB-06-token-do-firecrawl.md) | Token do Firecrawl em Configurações | P | **feito** (15/08) — cadastro e interruptor; não busca nada ainda |
 | [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha a cada 50 minutos | M | ver **Antes de começar** abaixo: dois ajustes pendentes |
 | [JOB-04](cards/JOB-04-tela-de-vagas.md) | A tela das vagas encontradas | M | **em andamento** (15/08) — refeita no formato RemoteYeah: 8 dropdowns + linhas densas, formulario de perfil removido da pagina; falta fuso/overlap e "o que falta no perfil" |

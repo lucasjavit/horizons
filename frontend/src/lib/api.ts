@@ -19,6 +19,8 @@ import type {
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3333/api',
+  // 10s cobre as chamadas comuns. A busca de vagas nao passa por aqui: ela e
+  // SSE, e o EventSource nao tem timeout do axios.
   timeout: 10_000,
 })
 

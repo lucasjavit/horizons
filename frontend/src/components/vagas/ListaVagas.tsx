@@ -1,104 +1,138 @@
-import { useMemo, useState } from 'react'
-import { ErrorState, LoadingState } from '../States'
-import { api } from '../../lib/api'
-import { useAsync } from '../../lib/useAsync'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { WARN_INK } from '../blocks/BlockRenderer'
 import { BarraFiltros } from './BarraFiltros'
 import { LinhaVaga } from './LinhaVaga'
-import { SELECAO_VAZIA, filtrar, opcoesDe, temSelecao } from './vaga-filtro'
+import { buscarVagas } from '../../lib/busca-vagas'
+import { opcoesDe, paraFiltrosApi } from './vaga-filtro'
 import type { Selecao } from './vaga-filtro'
+import type { Vaga } from '../../types/api'
+
+type Estado = 'ocioso' | 'buscando' | 'pronto'
 
 /**
- * A lista de jobs found.
+ * A busca de vagas: escolhe os filtros, clica em Filter, e a varredura acontece
+ * na hora.
  *
- * Ordenada por **data**, que é como o backend já devolve (`postedAt desc`,
- * `foundAt desc`) — e não por nota: o stakeholder dispensou a nota, e sem nota
- * não há ordenação por nota. Reordenar aqui só desfaria a ordem que o backend
- * escolheu.
+ * **As vagas entram uma a uma, conforme são lidas.** Uma busca leva perto de um
+ * minuto (medido no JOB-01: 12s para achar os anúncios, ~36s para ler cada
+ * página), e um minuto de tela parada parece travamento. Com streaming, a
+ * primeira vaga aparece em ~15s e a pessoa vê a lista crescer.
  *
- * A filtragem é no cliente, sobre a lista já carregada: o `GET /jobs` não
- * aceita parâmetro nenhum. A seleção aplicada vive aqui, e não dentro da barra,
- * porque é ela que decide o que a lista mostra — a barra edita um rascunho e o
- * entrega no clique de "Filtrar".
+ * As opções dos dropdowns saem das vagas já encontradas — antes da primeira
+ * busca não há o que oferecer, e os controles ficam desabilitados dizendo isso.
  */
 export function ListaVagas() {
-  const { data, loading, error, reload } = useAsync((signal) => api.listarVagas(signal), [])
-  const [selecao, setSelecao] = useState<Selecao>(SELECAO_VAZIA)
+  const [vagas, setVagas] = useState<Vaga[]>([])
+  const [estado, setEstado] = useState<Estado>('ocioso')
+  const [erro, setErro] = useState<string | null>(null)
+  const [total, setTotal] = useState<number | null>(null)
+  const abortar = useRef<AbortController | null>(null)
 
-  const vagas = useMemo(() => data ?? [], [data])
   const opcoes = useMemo(() => opcoesDe(vagas), [vagas])
-  const visiveis = useMemo(() => filtrar(vagas, selecao), [vagas, selecao])
 
-  if (loading) return <LoadingState label="Loading jobs…" />
-  if (error) return <ErrorState message={error} onRetry={reload} />
+  const buscar = useCallback(async (selecao: Selecao) => {
+    // Uma busca por vez: sem isto, dois cliques em Filter escreveriam na mesma
+    // lista e o resultado seria a mistura de duas consultas.
+    abortar.current?.abort()
+    const ctrl = new AbortController()
+    abortar.current = ctrl
 
-  const filtroAtivo = temSelecao(selecao)
+    setErro(null)
+    setVagas([])
+    setTotal(null)
+    setEstado('buscando')
+
+    try {
+      for await (const ev of buscarVagas(paraFiltrosApi(selecao), ctrl.signal)) {
+        if (ctrl.signal.aborted) return
+        if (ev.tipo === 'inicio') setTotal(ev.total ?? null)
+        // A vaga entra assim que chega — este é o ponto do streaming.
+        else if (ev.tipo === 'vaga' && ev.vaga) setVagas((v) => [...v, ev.vaga!])
+        else if (ev.tipo === 'erro') setErro(ev.mensagem ?? 'Search failed.')
+      }
+      setEstado('pronto')
+    } catch (e) {
+      // Abortar é o caminho normal quando a pessoa busca de novo; não é erro.
+      if (!ctrl.signal.aborted) {
+        setErro('Search failed. Try again in a moment.')
+        setEstado('pronto')
+      }
+    }
+  }, [])
+
+  // Busca em andamento não sobrevive à saída da página: sem isto, a requisição
+  // continua rodando e gastando crédito depois de a tela sumir.
+  useEffect(() => () => abortar.current?.abort(), [])
 
   return (
     <div className="flex flex-col gap-4">
-      {/* A barra aparece SEMPRE, inclusive sem vaga nenhuma. Antes ela so
-          existia quando havia resultado, e a tela vazia nao tinha filtro
-          algum — quem chegava via um aviso e mais nada, sem entender que a
-          pagina era de busca. */}
       <BarraFiltros
         opcoes={opcoes}
-        onAplicar={setSelecao}
-        total={vagas.length}
-        mostrando={visiveis.length}
-        filtroAtivo={filtroAtivo}
+        onAplicar={(s) => void buscar(s)}
+        buscando={estado === 'buscando'}
+        encontradas={vagas.length}
       />
 
-      {vagas.length === 0 ? (
-        <NenhumaVagaAinda />
-      ) : visiveis.length === 0 ? (
-        // O vazio de filtro é outro problema que o vazio de lista: aqui há
-        // vagas, e o que falta é afrouxar o filtro. Dizer "a busca roda
-        // sozinha" seria responder a pergunta errada.
-        <p className="py-10 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
-          None of the {vagas.length} jobs match these filters.
+      {erro && (
+        <p role="alert" className="text-sm" style={{ color: WARN_INK }}>
+          {erro}
         </p>
-      ) : (
-        // `border-t` na lista para a primeira linha ter divisória em cima
-        // também — sem ela a primeira vaga fica colada no contador e não
-        // parece parte da mesma lista.
+      )}
+
+      {estado === 'buscando' && (
+        // `role="status"` e não `alert`: é progresso, não urgência — o leitor
+        // de tela anuncia sem interromper o que a pessoa está fazendo.
+        <p role="status" className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          {total === null
+            ? 'Searching job boards…'
+            : `Reading ${total} listings — ${vagas.length} done`}
+        </p>
+      )}
+
+      {vagas.length > 0 && (
         <ul className="flex flex-col border-t" style={{ borderColor: 'var(--border)' }}>
-          {visiveis.map((vaga) => (
+          {vagas.map((vaga) => (
             <LinhaVaga key={vaga.id} vaga={vaga} />
           ))}
         </ul>
+      )}
+
+      {estado === 'ocioso' && <AindaNaoBuscou />}
+
+      {estado === 'pronto' && vagas.length === 0 && !erro && (
+        <p className="py-10 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+          No jobs matched. Try fewer filters or a broader job title.
+        </p>
       )}
     </div>
   )
 }
 
 /**
- * O estado vazio — **a primeira tela de todo mundo**.
+ * A primeira tela de todo mundo.
  *
- * É a única chance de explicar que a busca roda sozinha, e o card é explícito:
- * precisa dizer que a pessoa **será avisada**, porque foi decisão do
- * stakeholder que ninguém fica esperando olhando a tela.
- *
- * Não usa o `EmptyState` de `States.tsx` de propósito: aquele é um parágrafo
- * centralizado de uma linha, e aqui o vazio tem trabalho a fazer.
+ * Diz o que fazer, não o que está faltando. O texto anterior prometia uma busca
+ * automática a cada 50 minutos — que não existe ainda — e chamava de "no jobs
+ * yet" um estado que é, na verdade, "você ainda não buscou".
  */
-function NenhumaVagaAinda() {
+function AindaNaoBuscou() {
   return (
     <section
-      aria-labelledby="sem-vagas-titulo"
+      aria-labelledby="buscar-titulo"
       className="rounded-xl border p-6"
       style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
     >
-      <h2 id="sem-vagas-titulo" className="text-lg font-semibold">
-        No jobs yet
+      <h2 id="buscar-titulo" className="text-lg font-semibold">
+        Search for jobs
       </h2>
-      {/* NAO diz "para o seu perfil": o formulario de perfil saiu da tela, e
-          prometer um perfil que a pessoa nunca criou e mentir sobre o estado
-          do sistema. */}
       <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        The search runs on its own every 50 minutes. You don't have to stay on
-        this page — jobs are kept here waiting for you.
+        Pick your filters above and hit <strong>Filter</strong>. We scan job
+        boards and read each listing — results show up here as they come in,
+        usually within a minute.
       </p>
       <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        If the first run hasn't happened yet, this can take up to an hour.
+        You can search with no filters at all, but a job title and a couple of
+        skills give much better results.
       </p>
     </section>
   )

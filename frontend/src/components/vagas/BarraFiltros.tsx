@@ -32,16 +32,14 @@ const ROTULOS: ReadonlyArray<{ eixo: Eixo; rotulo: string }> = [
 export function BarraFiltros({
   opcoes,
   onAplicar,
-  total,
-  mostrando,
-  filtroAtivo,
+  buscando,
+  encontradas,
 }: {
   opcoes: Opcoes
   onAplicar: (s: Selecao) => void
-  total: number
-  mostrando: number
+  buscando: boolean
+  encontradas: number
   /** Se há filtro **aplicado** — não o rascunho. É o que decide o contador. */
-  filtroAtivo: boolean
 }) {
   const [rascunho, setRascunho] = useState<Selecao>(SELECAO_VAZIA)
 
@@ -56,7 +54,7 @@ export function BarraFiltros({
 
   // "Limpar" some quando não há nada para limpar — nem no rascunho, nem
   // aplicado. Um botão que não faz nada só ocupa o lugar do que faz.
-  const podeLimpar = temSelecao(rascunho) || filtroAtivo
+  const podeLimpar = temSelecao(rascunho)
 
   // Recolhido so no celular. Comeca fechado: a lista e o conteudo, o filtro e
   // a ferramenta.
@@ -117,11 +115,12 @@ export function BarraFiltros({
             parece defeito. O texto sozinho já nomeia a ação. */}
         <button
           type="button"
+          disabled={buscando}
           onClick={() => onAplicar(rascunho)}
-          className="inline-flex min-h-9 items-center rounded-md px-4 py-1.5 text-sm font-semibold"
+          className="inline-flex min-h-9 items-center rounded-md px-4 py-1.5 text-sm font-semibold disabled:opacity-60"
           style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
         >
-          Filter
+          {buscando ? 'Searching…' : 'Filter'}
         </button>
 
         {podeLimpar && (
@@ -145,9 +144,9 @@ export function BarraFiltros({
         className="text-sm"
         style={{ color: 'var(--text-muted)' }}
       >
-        {filtroAtivo
-          ? `${mostrando} of ${total} ${total === 1 ? 'job' : 'jobs'}`
-          : `${total} ${total === 1 ? 'job found' : 'jobs found'}`}
+        {buscando
+          ? 'Searching…'
+          : `${encontradas} ${encontradas === 1 ? 'job found' : 'jobs found'}`}
       </p>
     </section>
   )
