@@ -18,18 +18,18 @@ import type { AuthUser } from '../types/api'
  * fileiras, e é o que a captura de referência mostra.
  */
 export function VagasPage() {
-  useDocumentTitle('Vagas')
+  useDocumentTitle('Jobs')
   const sessao = useSessao()
 
   return (
     <main id="conteudo" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Vagas</h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Jobs</h1>
         {/* Uma linha, nao quatro: no celular o paragrafo anterior ocupava
             104px e empurrava a primeira vaga para fora da dobra. A promessa
             ("nao precisa ficar olhando") cabe em meia frase. */}
         <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Buscamos a cada 50 minutos — elas aparecem aqui sozinhas.
+          We search every 50 minutes — jobs show up here on their own.
         </p>
       </header>
 

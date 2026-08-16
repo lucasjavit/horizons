@@ -135,7 +135,7 @@ function Abas() {
   const { pathname } = useLocation()
   const abas = [
     { to: '/', label: 'Trilhas', ativa: pathname === '/' || pathname.startsWith('/t/') },
-    { to: '/vagas', label: 'Vagas', ativa: pathname === '/vagas' },
+    { to: '/vagas', label: 'Jobs', ativa: pathname === '/vagas' },
     { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
   ]
 

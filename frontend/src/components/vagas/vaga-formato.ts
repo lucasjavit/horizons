@@ -34,23 +34,23 @@ export function formatarIdadeRelativa(
   const ms = Math.max(0, agora.getTime() - data.getTime())
   const minutos = Math.floor(ms / 60_000)
 
-  if (minutos < 60) return 'há menos de 1 hora'
+  if (minutos < 60) return 'just now'
 
   const horas = Math.floor(minutos / 60)
-  if (horas < 24) return horas === 1 ? 'há 1 hora' : `há ${horas} horas`
+  if (horas < 24) return horas === 1 ? '1 hour ago' : `${horas} hours ago`
 
   const dias = Math.floor(horas / 24)
-  if (dias < 30) return dias === 1 ? 'há 1 dia' : `há ${dias} dias`
+  if (dias < 30) return dias === 1 ? '1 day ago' : `${dias} days ago`
 
   const meses = Math.floor(dias / 30)
-  if (meses < 12) return meses === 1 ? 'há 1 mês' : `há ${meses} meses`
+  if (meses < 12) return meses === 1 ? '1 month ago' : `${meses} months ago`
 
   const anos = Math.floor(meses / 12)
-  return anos === 1 ? 'há 1 ano' : `há ${anos} anos`
+  return anos === 1 ? '1 year ago' : `${anos} years ago`
 }
 
 /**
- * O salário do chip verde, no formato do anúncio: "US$ 150K—200K / ano".
+ * O salário do chip verde, no formato do anúncio: "US$ 150K—200K / year".
  *
  * Devolve `null` quando não há salário publicado — e o chip simplesmente não
  * aparece. **Nunca "a combinar"**: inventar o rótulo de ausente dá à vaga sem
@@ -76,7 +76,7 @@ export function formatarFaixaSalarial(vaga: Vaga): string | null {
     return String(v)
   }
 
-  const sufixo = ' / ano'
+  const sufixo = ' / year'
   if (salaryMin != null && salaryMax != null) {
     // Faixa degenerada ("150K—150K") é um valor só, não uma faixa.
     if (salaryMin === salaryMax) return `${currency} ${n(salaryMin)}${sufixo}`
@@ -126,5 +126,5 @@ export function bandeiraDe(paisIso: string | null): string | null {
 /** "Exp: 5 anos" — e nada quando o anúncio não pediu experiência. */
 export function formatarExperiencia(anosExp: number | null): string | null {
   if (anosExp == null) return null
-  return anosExp === 1 ? 'Exp: 1 ano' : `Exp: ${anosExp} anos`
+  return anosExp === 1 ? 'Exp: 1 year' : `Exp: ${anosExp} years`
 }

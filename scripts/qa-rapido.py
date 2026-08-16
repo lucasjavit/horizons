@@ -165,15 +165,22 @@ else:
         obtido = status_sem_token(rota)
         ok(obtido == 200, f"{rota} e publica (deu {obtido})")
 
-    try:
-        with urllib.request.urlopen(API + "/tracks", timeout=10) as resp:
-            trilhas = json.load(resp)
-        concluidas = sum(t.get("completedLessons", 0) for t in trilhas)
-        ok(concluidas == 0,
-           f"anonimo nao ve progresso de ninguem (viu {concluidas} concluidas)")
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError,
-            ValueError) as e:
-        ok(False, f"anonimo nao ve progresso de ninguem ({e})")
+    # Com AUTH_DISABLED nao existe anonimo: toda requisicao E a conta de
+    # desenvolvimento, entao ver o progresso dela e o comportamento correto.
+    # Cobrar isolamento aqui seria falha permanente enquanto o login estiver
+    # desligado — e falha que sempre falha para de ser lida.
+    if sem_login:
+        print("  pulado  isolamento de progresso (AUTH_DISABLED: nao ha anonimo)")
+    else:
+        try:
+            with urllib.request.urlopen(API + "/tracks", timeout=10) as resp:
+                trilhas = json.load(resp)
+            concluidas = sum(t.get("completedLessons", 0) for t in trilhas)
+            ok(concluidas == 0,
+               f"anonimo nao ve progresso de ninguem (viu {concluidas} concluidas)")
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError,
+                ValueError) as e:
+            ok(False, f"anonimo nao ve progresso de ninguem ({e})")
 
     # Token invalido nao pode virar anonimo em silencio: isso faria sessao
     # expirada parecer trilha zerada, e a pessoa acharia que perdeu tudo.

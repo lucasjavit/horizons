@@ -1,8 +1,10 @@
 # Horizons — convenções do projeto
 
 Umbrella de produtos para o desenvolvedor que quer trabalhar fora do Brasil.
-Hoje tem duas abas: **Trilhas** (estudo, em português) e **Invoice** (gerador,
-em inglês). O idioma misto é deliberado — a invoice mira um público global.
+Hoje tem três abas: **Trilhas** (estudo, em português), **Jobs** (busca de
+vagas, em inglês) e **Invoice** (gerador, em inglês). O idioma misto é
+deliberado: as trilhas são para quem lê em português; vagas e invoice miram o
+mercado global.
 
 Stack: NestJS 11 + Prisma 7 + Postgres 16 · React 19 + Vite 8 + Tailwind v4 ·
 tudo em Docker.

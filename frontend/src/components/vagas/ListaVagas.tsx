@@ -8,7 +8,7 @@ import { SELECAO_VAZIA, filtrar, opcoesDe, temSelecao } from './vaga-filtro'
 import type { Selecao } from './vaga-filtro'
 
 /**
- * A lista de vagas encontradas.
+ * A lista de jobs found.
  *
  * Ordenada por **data**, que é como o backend já devolve (`postedAt desc`,
  * `foundAt desc`) — e não por nota: o stakeholder dispensou a nota, e sem nota
@@ -28,7 +28,7 @@ export function ListaVagas() {
   const opcoes = useMemo(() => opcoesDe(vagas), [vagas])
   const visiveis = useMemo(() => filtrar(vagas, selecao), [vagas, selecao])
 
-  if (loading) return <LoadingState label="Carregando as vagas encontradas…" />
+  if (loading) return <LoadingState label="Loading jobs…" />
   if (error) return <ErrorState message={error} onRetry={reload} />
 
   const filtroAtivo = temSelecao(selecao)
@@ -54,7 +54,7 @@ export function ListaVagas() {
         // vagas, e o que falta é afrouxar o filtro. Dizer "a busca roda
         // sozinha" seria responder a pergunta errada.
         <p className="py-10 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
-          Nenhuma das {vagas.length} vagas bate com esses filtros.
+          None of the {vagas.length} jobs match these filters.
         </p>
       ) : (
         // `border-t` na lista para a primeira linha ter divisória em cima
@@ -88,17 +88,17 @@ function NenhumaVagaAinda() {
       style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
     >
       <h2 id="sem-vagas-titulo" className="text-lg font-semibold">
-        Nenhuma vaga ainda
+        No jobs yet
       </h2>
       {/* NAO diz "para o seu perfil": o formulario de perfil saiu da tela, e
           prometer um perfil que a pessoa nunca criou e mentir sobre o estado
           do sistema. */}
       <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        A busca roda sozinha a cada 50 minutos. Você não precisa ficar nesta
-        tela — as vagas ficam guardadas aqui esperando por você.
+        The search runs on its own every 50 minutes. You don't have to stay on
+        this page — jobs are kept here waiting for you.
       </p>
       <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        Se a primeira rodada ainda não aconteceu, isso pode levar até uma hora.
+        If the first run hasn't happened yet, this can take up to an hour.
       </p>
     </section>
   )

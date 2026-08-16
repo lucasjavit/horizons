@@ -6,14 +6,14 @@ import type { Eixo, Opcoes, Selecao } from './vaga-filtro'
 
 /** O rótulo de cada eixo, na ordem da tela. */
 const ROTULOS: ReadonlyArray<{ eixo: Eixo; rotulo: string }> = [
-  { eixo: 'cargos', rotulo: 'Cargo' },
-  { eixo: 'experiencias', rotulo: 'Experiência' },
-  { eixo: 'contratos', rotulo: 'Tipo de contrato' },
-  { eixo: 'skills', rotulo: 'Tecnologias' },
-  { eixo: 'beneficios', rotulo: 'Benefícios' },
-  { eixo: 'paises', rotulo: 'Quero trabalhar de' },
-  { eixo: 'formacoes', rotulo: 'Formação' },
-  { eixo: 'salarios', rotulo: 'Salário anual mínimo' },
+  { eixo: 'cargos', rotulo: 'Job title' },
+  { eixo: 'experiencias', rotulo: 'Experience' },
+  { eixo: 'contratos', rotulo: 'Employment type' },
+  { eixo: 'skills', rotulo: 'Skills' },
+  { eixo: 'beneficios', rotulo: 'Benefits' },
+  { eixo: 'paises', rotulo: 'I want to work from' },
+  { eixo: 'formacoes', rotulo: 'Degree' },
+  { eixo: 'salarios', rotulo: 'Minimum yearly salary' },
 ]
 
 /**
@@ -69,7 +69,7 @@ export function BarraFiltros({
   return (
     <section aria-labelledby="filtros-titulo" className="flex flex-col gap-3">
       <h2 id="filtros-titulo" className="sr-only">
-        Filtrar vagas
+        Filter jobs
       </h2>
 
       {/* No celular os oito dropdowns empilham em coluna e ocupam ~400px
@@ -84,7 +84,7 @@ export function BarraFiltros({
         className="inline-flex min-h-9 items-center gap-2 self-start rounded-md border px-3 py-1.5 text-sm sm:hidden"
         style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
       >
-        Filtros
+        Filters
         {quantosMarcados > 0 && (
           <span
             className="rounded-full px-1.5 text-xs font-semibold"
@@ -121,7 +121,7 @@ export function BarraFiltros({
           className="inline-flex min-h-9 items-center rounded-md px-4 py-1.5 text-sm font-semibold"
           style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
         >
-          Filtrar
+          Filter
         </button>
 
         {podeLimpar && (
@@ -146,8 +146,8 @@ export function BarraFiltros({
         style={{ color: 'var(--text-muted)' }}
       >
         {filtroAtivo
-          ? `${mostrando} de ${total} ${total === 1 ? 'vaga' : 'vagas'}`
-          : `${total} ${total === 1 ? 'vaga encontrada' : 'vagas encontradas'}`}
+          ? `${mostrando} of ${total} ${total === 1 ? 'job' : 'jobs'}`
+          : `${total} ${total === 1 ? 'job found' : 'jobs found'}`}
       </p>
     </section>
   )

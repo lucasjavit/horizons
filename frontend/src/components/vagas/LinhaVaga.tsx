@@ -16,7 +16,7 @@ import {
  * faz vinte vagas parecerem vinte objetos; a linha faz parecer uma lista, que é
  * o que se varre com o olho.
  *
- * **Campo ausente não aparece.** Nenhum "não informado", nenhum traço, nenhum
+ * **Campo ausente não aparece.** Nenhum "not stated", nenhum traço, nenhum
  * "a combinar": um rótulo de ausente ocupa o mesmo espaço do dado presente e
  * ensina o olho a parar no lugar errado. A linha simplesmente encolhe.
  */
