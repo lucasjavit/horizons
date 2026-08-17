@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react'
 import { Recolhivel } from '../Recolhivel'
 import { DropdownFiltro } from './DropdownFiltro'
-import { SELECAO_VAZIA, temSelecao } from './vaga-filtro'
-import type { Eixo, Opcoes, Selecao } from './vaga-filtro'
+import { CATALOGO, SELECAO_VAZIA, temSelecao } from './vaga-filtro'
+import type { Eixo, Selecao } from './vaga-filtro'
 
 /** O rótulo de cada eixo, na ordem da tela. */
 const ROTULOS: ReadonlyArray<{ eixo: Eixo; rotulo: string }> = [
@@ -30,15 +30,16 @@ const ROTULOS: ReadonlyArray<{ eixo: Eixo; rotulo: string }> = [
  * pediu.
  */
 export function BarraFiltros({
-  opcoes,
   onAplicar,
   buscando,
   encontradas,
+  jaBuscou,
 }: {
-  opcoes: Opcoes
   onAplicar: (s: Selecao) => void
   buscando: boolean
   encontradas: number
+  /** Houve ao menos uma busca. Antes disso não há resultado a relatar. */
+  jaBuscou: boolean
   /** Se há filtro **aplicado** — não o rascunho. É o que decide o contador. */
 }) {
   const [rascunho, setRascunho] = useState<Selecao>(SELECAO_VAZIA)
@@ -96,14 +97,13 @@ export function BarraFiltros({
 
       <div className="hidden sm:block">
         <PainelDropdowns
-          opcoes={opcoes}
           rascunho={rascunho}
           editar={editar}
         />
       </div>
       <div id="painel-filtros" className="sm:hidden">
         <Recolhivel aberto={aberto}>
-          <PainelDropdowns opcoes={opcoes} rascunho={rascunho} editar={editar} />
+          <PainelDropdowns rascunho={rascunho} editar={editar} />
         </Recolhivel>
       </div>
 
@@ -136,18 +136,23 @@ export function BarraFiltros({
       </div>
 
       {/* O "240 jobs found" da captura. `aria-live` porque depois de clicar em
-          "Filtrar" esta é a única confirmação de que algo aconteceu — sem ela,
-          quem usa leitor de tela clica e não ouve nada mudar. */}
-      <p
-        role="status"
-        aria-live="polite"
-        className="text-sm"
-        style={{ color: 'var(--text-muted)' }}
-      >
-        {buscando
-          ? 'Searching…'
-          : `${encontradas} ${encontradas === 1 ? 'job found' : 'jobs found'}`}
-      </p>
+          "Filter" esta é a única confirmação de que algo aconteceu — sem ela,
+          quem usa leitor de tela clica e não ouve nada mudar.
+
+          Só aparece DEPOIS de buscar: "0 jobs found" numa tela que ninguém
+          pesquisou ainda afirma um resultado que não houve. */}
+      {(buscando || jaBuscou) && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-sm"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {buscando
+            ? 'Searching…'
+            : `${encontradas} ${encontradas === 1 ? 'job found' : 'jobs found'}`}
+        </p>
+      )}
     </section>
   )
 }
@@ -156,11 +161,9 @@ export function BarraFiltros({
 /** Os oito dropdowns. Extraido porque aparece duas vezes: solto no desktop,
  *  dentro do Recolhivel no celular. */
 function PainelDropdowns({
-  opcoes,
   rascunho,
   editar,
 }: {
-  opcoes: Opcoes
   rascunho: Selecao
   editar: (eixo: keyof Selecao, valores: string[]) => void
 }) {
@@ -170,7 +173,7 @@ function PainelDropdowns({
         <DropdownFiltro
           key={eixo}
           rotulo={rotulo}
-          opcoes={opcoes[eixo]}
+          opcoes={CATALOGO[eixo]}
           marcados={rascunho[eixo]}
           onChange={(v) => editar(eixo, v)}
         />

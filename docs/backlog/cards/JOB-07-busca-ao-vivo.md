@@ -94,3 +94,42 @@ que ver rodando.
 A busca automática a cada 50 minutos, com perfil salvo e aviso por e-mail. É a
 outra metade do [JOB-03](JOB-03-busca-em-segundo-plano.md) — o stakeholder
 separou explicitamente: *"é uma funcionalidade diferente"*.
+
+
+---
+
+## O filtro alimenta a busca, não peneira a página (15/08/2026)
+
+Reportado com print: *"o filtro em vagas é somente para ajudar a fazer a busca
+de vagas na internet, não para filtrar na página"*. O sintoma estava na captura:
+**"7 jobs found" sem ninguém ter buscado nada**.
+
+Duas coisas erradas, e a segunda era a real:
+
+1. O contador aparecia antes de qualquer busca. "0 jobs found" numa tela que
+   ninguém pesquisou **afirma um resultado que não houve**. Agora só aparece
+   depois de buscar.
+2. **As opções dos dropdowns eram derivadas das vagas em tela.** Isso é lógica
+   de peneirar página, e criava um círculo: só dava para procurar "Kotlin" se
+   alguma vaga já visível tivesse Kotlin. Com o banco vazio, os oito dropdowns
+   ficavam desabilitados — um formulário de busca que não deixa buscar.
+
+Agora cada eixo tem um **catálogo fixo**: 12 cargos, 6 senioridades, 4 tipos de
+contrato, 39 tecnologias, 8 benefícios, 16 locais, 4 formações e 6 faixas de
+salário. Um formulário de busca oferece o que se *pode* procurar, inclusive o
+que ainda não apareceu.
+
+Dois detalhes da tradução para a API:
+
+- **"Worldwide" não é lugar** — é a ausência de restrição geográfica. Vai como
+  `remote: 'remoto'`, não como `locations: ['Worldwide']`, senão a busca
+  procuraria um país com esse nome.
+- `experiencias` e `contratos` usam os valores que o backend aceita
+  (`senior`, `pj`…), com rótulo em inglês só na tela. Mandar o rótulo seria 400
+  do `ValidationPipe`.
+
+Medido depois, com o **banco vazio**: nenhum contador antes de buscar,
+dropdowns habilitados, 12 opções em Job title.
+
+`opcoesDe()` e `filtrar()` saíram — eram do modelo antigo, e `filtrar()` já não
+tinha nenhum chamador.

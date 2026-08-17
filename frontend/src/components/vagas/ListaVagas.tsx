@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { WARN_INK } from '../blocks/BlockRenderer'
 import { BarraFiltros } from './BarraFiltros'
 import { LinhaVaga } from './LinhaVaga'
 import { buscarVagas } from '../../lib/busca-vagas'
-import { opcoesDe, paraFiltrosApi } from './vaga-filtro'
+import { paraFiltrosApi } from './vaga-filtro'
 import type { Selecao } from './vaga-filtro'
 import type { Vaga } from '../../types/api'
 
@@ -18,8 +18,10 @@ type Estado = 'ocioso' | 'buscando' | 'pronto'
  * página), e um minuto de tela parada parece travamento. Com streaming, a
  * primeira vaga aparece em ~15s e a pessoa vê a lista crescer.
  *
- * As opções dos dropdowns saem das vagas já encontradas — antes da primeira
- * busca não há o que oferecer, e os controles ficam desabilitados dizendo isso.
+ * Os dropdowns oferecem um catálogo fixo, e não o que já apareceu na tela: eles
+ * alimentam a busca, não peneiram a página. Derivar as opções das vagas criava
+ * um círculo — só dava para procurar "Kotlin" se alguma vaga visível já tivesse
+ * Kotlin.
  */
 export function ListaVagas() {
   const [vagas, setVagas] = useState<Vaga[]>([])
@@ -27,8 +29,6 @@ export function ListaVagas() {
   const [erro, setErro] = useState<string | null>(null)
   const [total, setTotal] = useState<number | null>(null)
   const abortar = useRef<AbortController | null>(null)
-
-  const opcoes = useMemo(() => opcoesDe(vagas), [vagas])
 
   const buscar = useCallback(async (selecao: Selecao) => {
     // Uma busca por vez: sem isto, dois cliques em Filter escreveriam na mesma
@@ -67,10 +67,10 @@ export function ListaVagas() {
   return (
     <div className="flex flex-col gap-4">
       <BarraFiltros
-        opcoes={opcoes}
         onAplicar={(s) => void buscar(s)}
         buscando={estado === 'buscando'}
         encontradas={vagas.length}
+        jaBuscou={estado !== 'ocioso'}
       />
 
       {erro && (
