@@ -97,43 +97,11 @@ export function ListaVagas() {
         </ul>
       )}
 
-      {estado === 'ocioso' && <AindaNaoBuscou />}
-
       {estado === 'pronto' && vagas.length === 0 && !erro && (
         <p className="py-10 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
           No jobs matched. Try fewer filters or a broader job title.
         </p>
       )}
     </div>
-  )
-}
-
-/**
- * A primeira tela de todo mundo.
- *
- * Diz o que fazer, não o que está faltando. O texto anterior prometia uma busca
- * automática a cada 50 minutos — que não existe ainda — e chamava de "no jobs
- * yet" um estado que é, na verdade, "você ainda não buscou".
- */
-function AindaNaoBuscou() {
-  return (
-    <section
-      aria-labelledby="buscar-titulo"
-      className="rounded-xl border p-6"
-      style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
-    >
-      <h2 id="buscar-titulo" className="text-lg font-semibold">
-        Search for jobs
-      </h2>
-      <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        Pick your filters above and hit <strong>Filter</strong>. We scan job
-        boards and read each listing — results show up here as they come in,
-        usually within a minute.
-      </p>
-      <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        You can search with no filters at all, but a job title and a couple of
-        skills give much better results.
-      </p>
-    </section>
   )
 }
