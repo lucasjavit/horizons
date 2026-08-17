@@ -151,3 +151,64 @@ relógio estourar.
   localhost.
 - Dos quatro números da estimativa de latência, **só dois são medidos**
   (`search` 12s, `scrape` 36s, do JOB-01). Os outros são estimativa.
+
+
+---
+
+## A primeira busca real (17/08/2026)
+
+O stakeholder forneceu o token. **A busca funciona: 6 vagas reais em 25s.**
+
+| | |
+| --- | --- |
+| Elastic | USD 133k–211k · *"$133k-$211k per year"* |
+| Reddit | USD 190,8k–267,1k · *"💵 $190.8k - $267.1k / year"* |
+| Motion Recruitment | USD 150k–170k · *"$150k - $170k"* |
+| Photon | USD 37k–132k · *"37K-132K Annually"* |
+| Robert Half | **sem salário** — barrado corretamente |
+
+### Quatro bugs, todos achados rodando de verdade
+
+**1. Rate limit matava a busca inteira, em silêncio.** A primeira execução voltou
+em 6s com **zero vagas**. Causa: 13 `scrape` em paralelo contra um limite de
+**14 req/min**, e as 13 falharam juntas. Não havia nada no log — o
+`.catch(() => null)` engolia o erro.
+
+Corrigido com lotes de 3 e teto de 8 páginas. **Paralelismo sem teto não é mais
+rápido: é mais rápido para levar 429.** E o erro agora vai para o log.
+
+**2. Salário implausível: `USD 286.000–936.000`.** O anúncio dizia
+**"$55 – 100.00 / Hourly"**, e a IA converteu por hora para anual — errando.
+Foi o **trecho de origem** que permitiu ver, exatamente o mecanismo que o
+JOB-01 exigiu.
+
+Duas correções: o prompt proíbe converter (valor por hora/mês/dia → `null`), e
+**o código valida** — o número extraído precisa aparecer na frase citada.
+
+> Isto confirma o padrão do JOB-08: a regra que vira verificação em código
+> segura; a que fica como prosa no prompt, não. O prompt já dizia "never invent
+> salary" — e o salário foi inventado assim mesmo.
+
+**3. A validação nasceu rígida demais** e rejeitou `$190.8k - $267.1k / year`,
+que é legítimo. Os anúncios escrevem o mesmo número de três formas: `$190,800`,
+`$190.8k` e `$150k`. Agora as três passam; período curto (hora/mês/dia)
+continua barrado.
+
+**4. Empresa `"."` e `"Not specified"`.** Um cartão com empresa "." não ajuda
+ninguém a decidir se vale clicar, e passa a impressão de que o resto do dado
+também é lixo. Nasceu `empresaValida()`.
+
+### O que a busca real revelou sobre o `search`
+
+Os três primeiros resultados foram **Indeed, ZipRecruiter e LinkedIn**. O filtro
+de agregadores está trabalhando — mas o `search` devolve majoritariamente isso,
+o que confirma o achado do JOB-01 e explica por que sobram poucas URLs boas.
+
+Vale investigar consultas mais dirigidas (`site:greenhouse.io`, `site:lever.co`)
+quando o prompt de planejamento for transportado.
+
+### Custo medido
+
+25–31s por busca, dentro do teto de 60s. **Nenhuma das estimativas anteriores
+de latência se confirmou** — a conta de ~59s presumia 15 páginas em paralelo, o
+que o rate limit não permite.

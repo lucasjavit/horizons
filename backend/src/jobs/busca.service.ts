@@ -69,9 +69,13 @@ const INSTRUCAO = `Extraia os dados desta vaga.
 Regras:
 - Devolva null quando o anuncio nao disser. NUNCA chute salario, senioridade,
   elegibilidade ou pais.
-- salaryMin/salaryMax sao ANUAIS. Se o anuncio der valor mensal ou por hora,
-  converta; se nao der para converter com seguranca, devolva null.
+- salaryMin/salaryMax sao ANUAIS e so saem de valor ANUAL publicado. Se o
+  anuncio der valor POR HORA, POR MES ou POR DIA, devolva null nos dois — nao
+  converta. Medido em 17/08/2026: "$55 - 100.00 / Hourly" virou 286.000-936.000.
+  Um salario errado na tela e pior que "not stated".
 - salaryTrecho e elegibilidadeTrecho sao o TEXTO EXATO da pagina. Nao parafraseie.
+- Os numeros de salaryMin/salaryMax TEM de aparecer em salaryTrecho. Se voce
+  nao consegue citar a frase com o numero, o salario nao esta publicado: null.
 - "Mais de 100 candidatos", "competitivo" e "a combinar" NAO sao salario.
 - paisIso e ISO-3166 alpha-2 minusculo (us, br, pt). Se a vaga for remota sem
   pais definido, devolva null — remoto nao e um pais.
@@ -87,6 +91,17 @@ const ISO_VALIDOS = new Set([
   'it','se','no','dk','fi','ch','at','be','cz','ro','ua','in','au','nz','jp',
   'sg','za','ae','il','uy','pe','cr','gr','hu','hr','bg','sk','si','lt','lv','ee',
 ]);
+
+/**
+ * Quantas paginas abrir por busca.
+ *
+ * O teto e do rate limit, nao do relogio: o plano gratuito do Firecrawl da 14
+ * req/min, e o `search` ja consome uma.
+ */
+const TETO_PAGINAS = 8;
+
+/** Quantas em paralelo. Acima disto, o 429 chega antes do resultado. */
+const LOTE = 3;
 
 export interface EventoBusca {
   tipo: 'inicio' | 'vaga' | 'fim' | 'erro';
@@ -142,14 +157,33 @@ export class BuscaService {
       return;
     }
 
-    yield { tipo: 'inicio', total: urls.length };
+    const alvo = urls.slice(0, TETO_PAGINAS);
+    yield { tipo: 'inicio', total: alvo.length };
 
-    // Em paralelo, mas emitindo na ordem em que ficam prontas: a primeira vaga
-    // aparece em ~15s em vez de ~60s.
-    const pendentes = urls.map((url) => this.lerVaga(fc, url));
-    for (const promessa of pendentes) {
-      const vaga = await promessa.catch(() => null);
-      if (vaga) yield { tipo: 'vaga', vaga };
+    // Em lotes, e nao tudo de uma vez.
+    //
+    // Medido em 17/08/2026 com token real: disparar 13 scrapes em paralelo
+    // estourou o rate limit do Firecrawl (14 req/min no plano gratuito) e as
+    // 13 falharam JUNTAS — a busca voltou em 6s com zero vaga. Paralelismo
+    // sem teto nao e mais rapido: e mais rapido para levar 429.
+    //
+    // O lote preserva o streaming (a vaga aparece quando fica pronta) sem
+    // gastar a cota inteira num piscar.
+    for (let i = 0; i < alvo.length; i += LOTE) {
+      const lote = alvo.slice(i, i + LOTE);
+      const prontas = await Promise.all(
+        lote.map((url) =>
+          this.lerVaga(fc, url).catch((e) => {
+            // Antes o erro morria num `.catch(() => null)` mudo, e a busca
+            // voltava vazia sem nada no log — foi o que escondeu o rate limit.
+            this.log.warn(`scrape falhou (${url}): ${String(e).slice(0, 160)}`);
+            return null;
+          }),
+        ),
+      );
+      for (const vaga of prontas) {
+        if (vaga) yield { tipo: 'vaga', vaga };
+      }
     }
 
     yield { tipo: 'fim' };
@@ -188,7 +222,7 @@ export class BuscaService {
     // titulo, empresa e a marca de um anuncio vale mais que um booleano que o
     // modelo errou.
     const pareceVaga =
-      !!titulo && !!empresa && (temSinalDeVaga(j) || j.ehVaga === true);
+      !!titulo && empresaValida(empresa) && (temSinalDeVaga(j) || j.ehVaga === true);
     if (!pareceVaga) return null;
 
     // Vaga fechada nao entra. A regra critica 10 do prompt do stakeholder
@@ -197,6 +231,19 @@ export class BuscaService {
     if (j.estaFechada === true) return null;
 
     const iso = texto(j.paisIso)?.toLowerCase();
+
+    // O salario so passa se o trecho de origem sustentar o numero.
+    const trechoSal = texto(j.salaryTrecho);
+    const min = salario(j.salaryMin);
+    const max = salario(j.salaryMax);
+    const minOk = salarioConfere(min, trechoSal);
+    const maxOk = salarioConfere(max, trechoSal);
+    if ((min !== null && !minOk) || (max !== null && !maxOk)) {
+      this.log.warn(
+        `salario descartado (${url}): ${min}-${max} nao confere com ${JSON.stringify(trechoSal)?.slice(0, 80)}`,
+      );
+    }
+
     return {
       // Id sintetico: esta vaga nao foi gravada, e a tela precisa de chave.
       id: url,
@@ -214,10 +261,12 @@ export class BuscaService {
       logoUrl: null,
       // ISO fora da lista vira null: melhor sem bandeira que com a errada.
       paisIso: iso && ISO_VALIDOS.has(iso) ? iso : null,
-      salaryMin: salario(j.salaryMin),
-      salaryMax: salario(j.salaryMax),
+      salaryMin: minOk ? min : null,
+      salaryMax: maxOk ? max : null,
       currency: texto(j.currency)?.toUpperCase().slice(0, 3) ?? null,
-      salaryTrecho: texto(j.salaryTrecho),
+      // Sem numero valido, o trecho tambem nao vai: citar uma frase sob um
+      // campo vazio confunde mais do que ajuda.
+      salaryTrecho: minOk && maxOk ? trechoSal : null,
       elegivelBrasil: typeof j.elegivelBrasil === 'boolean' ? j.elegivelBrasil : null,
       elegibilidadeTrecho: texto(j.elegibilidadeTrecho),
       postedAt: dataIso(j.postedAt),
@@ -306,6 +355,41 @@ function salario(v: unknown): number | null {
 }
 
 /**
+ * O salario e confiavel?
+ *
+ * O trecho de origem deixou de ser so exibicao e virou VALIDACAO: se o numero
+ * extraido nao aparece na frase citada, ele foi calculado — e calculo e onde a
+ * IA erra. Medido em 17/08/2026: a Robert Half publicava "$55 - 100.00 /
+ * Hourly" e a extracao devolveu 286.000-936.000 anuais.
+ *
+ * Isto e o padrao que o JOB-08 identificou funcionando: a regra que vira
+ * verificacao em codigo segura; a que fica como prosa no prompt, nao.
+ */
+function salarioConfere(valor: number | null, trecho: string | null): boolean {
+  if (valor === null) return true;
+  if (!trecho) return false;
+  const t = trecho.toLowerCase();
+  // Por hora / mes / dia nao vira anual aqui — se o anuncio cita periodo curto,
+  // qualquer numero anual saiu de conta, nao da pagina.
+  if (/\/\s*(hour|hr|hora)|hourly|per hour|\/\s*(month|mes)|monthly|per month|\/\s*day|daily/.test(t)) {
+    return false;
+  }
+  // Os digitos do valor precisam estar no texto. As tres formas que os
+  // anuncios usam para o mesmo numero, medidas em buscas reais:
+  //   190800  → "$190,800"   (cheio)
+  //   190800  → "$190.8k"    (milhar com decimal)
+  //   150000  → "$150k"      (milhar redondo)
+  const so = t.replace(/[^0-9]/g, '');
+  const cheio = String(valor);
+  const milhar = String(Math.round(valor / 1000));
+  // "190.8k" vira "1908" depois de tirar o nao-digito; o valor 190800 dividido
+  // por 100 da 1908. Sem esta forma, "$190.8k / year" era rejeitado como se
+  // fosse invencao — e e um anuncio legitimo.
+  const decimal = String(Math.round(valor / 100));
+  return so.includes(cheio) || so.includes(milhar) || so.includes(decimal);
+}
+
+/**
  * A pagina tem a cara de um anuncio?
  *
  * Serve de contrapeso ao `ehVaga`: um anuncio com requisitos, skills e
@@ -330,4 +414,24 @@ function dataIso(v: unknown): string | null {
   // Data no futuro ou anterior a 2000 e dado ruim da origem, nao publicacao.
   if (d.getTime() > agora + 86_400_000 || d.getFullYear() < 2000) return null;
   return d.toISOString();
+}
+
+/**
+ * A empresa e um nome, ou e o modelo dizendo que nao achou?
+ *
+ * Medido em 17/08/2026, numa busca real: voltaram `"."` e `"Not specified"`
+ * como nome de empresa. Um cartao com empresa "." nao ajuda ninguem a decidir
+ * se vale clicar, e passa a impressao de que o resto do dado tambem e lixo.
+ */
+const NAO_E_EMPRESA = new Set([
+  'not specified', 'unknown', 'n/a', 'na', 'none', 'not stated',
+  'not provided', 'company', 'confidential', '-', '.', '--',
+]);
+function empresaValida(nome: string | null): nome is string {
+  if (!nome) return false;
+  const limpo = nome.trim().toLowerCase();
+  if (limpo.length < 2) return false;
+  if (NAO_E_EMPRESA.has(limpo)) return false;
+  // Precisa ter ao menos uma letra: "123" e "..." nao sao nome de empresa.
+  return /\p{L}/u.test(nome);
 }
