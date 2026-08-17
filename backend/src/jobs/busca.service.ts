@@ -114,9 +114,13 @@ export interface EventoBusca {
 /**
  * A busca ao vivo, disparada pelo botao Filter.
  *
- * Duas fases, como o JOB-01 mediu: o `search` devolve agregadores em vez de
- * vagas, e abrir cada pagina individualmente custa 36s. Entao a listagem vem
- * primeiro (20 anuncios de uma vez), e so as paginas promissoras sao abertas.
+ * Duas fases, como o JOB-01 mediu: abrir cada pagina custa ~36s, entao o
+ * `search` acha os enderecos de uma vez e so depois as paginas sao lidas.
+ *
+ * A consulta e dirigida aos ATS (`montarConsulta`), e isso e o que separa esta
+ * versao da anterior: antes o `search` devolvia pagina de listagem — "140
+ * results", "903 positions" — e a extracao inventava uma vaga a partir de um
+ * indice. O JOB-09 mediu a consequencia; o JOB-10 mediu a causa.
  *
  * Emite evento a evento porque uma busca leva ~1 minuto: a vaga aparece na
  * tela quando fica pronta, em vez de a pessoa encarar tela parada ate o fim.
@@ -139,10 +143,16 @@ export class BuscaService {
 
     let urls: string[];
     try {
-      const achados = await fc.search(consulta, { limit: 20 });
-      // `search` devolve agregador (Indeed, LinkedIn) tanto quanto anuncio.
-      // Filtrar dominio aqui e o que impede a fase 2 de gastar tempo abrindo
-      // pagina de busca de outro site.
+      // `limit` casa com `TETO_PAGINAS`: pedir 20 para usar 8 custava 4
+      // creditos em vez de 2 (o `search` cobra 2 ate limit:10 e 4 acima disso,
+      // medido em 17/08/2026) e jogava 12 URLs fora. Com a consulta dirigida
+      // aos ATS, os 8 primeiros ja sao anuncios — nao ha lixo para descartar.
+      const achados = await fc.search(consulta, { limit: TETO_PAGINAS });
+      // O filtro de agregador fica como rede de seguranca. Ele nao e mais a
+      // defesa principal: o `site:` da consulta e que mantem listagem fora, e
+      // medir provou que so excluir dominio nao resolvia — sem os `site:`,
+      // banir Indeed e LinkedIn ainda dava 1 vaga em 20, porque o ranking
+      // repunha a vaga com outra pagina de categoria.
       urls = (achados.web ?? [])
         .map((r) => ('url' in r ? r.url : undefined))
         .filter((u): u is string => !!u && !ehAgregador(u));
@@ -267,8 +277,15 @@ export class BuscaService {
       // Sem numero valido, o trecho tambem nao vai: citar uma frase sob um
       // campo vazio confunde mais do que ajuda.
       salaryTrecho: minOk && maxOk ? trechoSal : null,
-      elegivelBrasil: typeof j.elegivelBrasil === 'boolean' ? j.elegivelBrasil : null,
-      elegibilidadeTrecho: texto(j.elegibilidadeTrecho),
+      // Afirmacao de elegibilidade EXIGE citacao — a mesma regra que o salario
+      // logo acima ja seguia.
+      //
+      // "Nao disse" nao e "nao aceita". O JOB-09 achou a Elastic na tela com
+      // `elegivelBrasil: false` e `elegibilidadeTrecho: null`: a pagina nunca
+      // falou de contratacao no Brasil, e mesmo assim a tela dizia a alguem
+      // que aquela empresa nao o contrataria. Sem trecho, o campo e `null`, e
+      // `null` a tela ja sabe mostrar como "nao informado".
+      ...elegibilidade(j),
       postedAt: dataIso(j.postedAt),
       foundAt: new Date().toISOString(),
     };
@@ -292,6 +309,72 @@ export class BuscaService {
 }
 
 /** A consulta que vai para o `search`, montada dos filtros da tela. */
+/**
+ * Os tres ATS que a busca persegue.
+ *
+ * Sao os sistemas onde a propria empresa publica a vaga, entao cada URL e UMA
+ * vaga: `greenhouse.io/pinterest/jobs/4902175` tem um cargo, uma empresa, uma
+ * data. Nao ha quarto ou quinto aqui de proposito — medido em 17/08/2026, tres
+ * ATS deram 20/20 paginas de vaga e cinco cairam para 17/20, porque os dois
+ * extras diluem o ranking sem acrescentar anuncio.
+ */
+const ATS = ['greenhouse.io', 'lever.co', 'ashbyhq.com'];
+
+/**
+ * A consulta que sai para a web.
+ *
+ * **O `site:` dos ATS e o que faz a busca funcionar.** Sem ele a consulta
+ * devolve pagina de LISTAGEM, nao vaga: medido em 17/08/2026, "Backend
+ * Engineer Java remote jobs hiring" trouxe 10 resultados e ZERO eram anuncios —
+ * eram `roberthalf.com/.../java-developer` ("140 results"),
+ * `remoterocketship.com/us/jobs/backend-engineer` ("903 positions"),
+ * `workingnomads.com/remote-java-jobs`. A mesma consulta com os tres `site:`
+ * trouxe 10 de 10 anuncios reais, com empresa e id proprio.
+ *
+ * Isso corrige na origem o que o JOB-09 mediu na saida. Uma pagina de listagem
+ * nao tem UMA data de publicacao, UMA empresa nem UMA clausula de
+ * elegibilidade — pedir esses campos dela e pedir que o modelo escolha um card
+ * entre cinquenta, e por isso a mesma URL voltava com empresa diferente a cada
+ * busca (Tripadvisor numa, Elastic na seguinte).
+ *
+ * O que se perde: cobertura. Vaga publicada fora desses tres ATS nao aparece.
+ * Com teto de 8 paginas o negocio e bom — 8 vagas verdadeiras valem mais que
+ * 20 linhas em que metade e ficcao —, mas e a primeira coisa a rever se um dia
+ * o teto subir.
+ *
+ * `jobs hiring` saiu: medido neutro (20/20 com e sem), e palavra a toa numa
+ * consulta com `site:` so compete com os termos que importam.
+ */
+/**
+ * Frases que o modelo escreve quando a pagina NAO fala de elegibilidade.
+ *
+ * Nao sao citacoes — sao a ausencia de uma, redigida como se fosse. Na busca
+ * de 17/08/2026 a Robert Half voltou com `elegibilidadeTrecho: "nao
+ * mencionado"`, e o codigo aceitou aquilo como prova.
+ */
+const NAO_E_CITACAO =
+  /^(nao|não|not)\s+(mencionad|informad|especificad|stated|specified|mentioned)|^(n\/?a|none|unknown|desconhecid)/i;
+
+/**
+ * O par elegibilidade + trecho, resolvido junto.
+ *
+ * Os dois campos nao sao independentes: um `false` sem citacao e uma acusacao
+ * sem fonte. Decidi-los no mesmo lugar impede que um mude sem o outro.
+ */
+function elegibilidade(j: Record<string, unknown>): {
+  elegivelBrasil: boolean | null;
+  elegibilidadeTrecho: string | null;
+} {
+  const trecho = texto(j.elegibilidadeTrecho);
+  const citacao = trecho && !NAO_E_CITACAO.test(trecho.trim()) ? trecho : null;
+  const afirmado = typeof j.elegivelBrasil === 'boolean' ? j.elegivelBrasil : null;
+  // Sem citacao nao ha afirmacao — nem a positiva. Dizer "aceita brasileiro"
+  // sem base faria alguem se candidatar a toa, que e o espelho do erro.
+  return citacao === null
+    ? { elegivelBrasil: null, elegibilidadeTrecho: null }
+    : { elegivelBrasil: afirmado, elegibilidadeTrecho: citacao };
+}
+
 function montarConsulta(f: FiltrosDto): string {
   const partes: string[] = [];
   if (f.job_titles?.length) partes.push(f.job_titles.join(' OR '));
@@ -300,7 +383,9 @@ function montarConsulta(f: FiltrosDto): string {
   if (f.technologies?.length) partes.push(f.technologies.slice(0, 4).join(' '));
   if (f.remote === 'remoto') partes.push('remote');
   if (f.locations?.length) partes.push(f.locations[0]);
-  partes.push('jobs hiring');
+  // Por ultimo: o operador restringe a consulta inteira, e deixa-lo no fim
+  // mantem os termos do cargo no comeco, onde pesam mais no ranking.
+  partes.push(`(${ATS.map((d) => `site:${d}`).join(' OR ')})`);
   return partes.join(' ');
 }
 

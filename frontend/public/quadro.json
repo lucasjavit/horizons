@@ -325,6 +325,30 @@
       "total": 0
     },
     {
+      "id": "JOB-09",
+      "titulo": "A vaga só afirma o que consegue citar",
+      "estado": "feito (17/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "A auditoria de 17/08 abriu as páginas de origem das 6 vagas que a busca tinha devolvido e conferiu campo a campo. Está em [docs/design/JOB-09-auditoria-das-vagas.md](../../design/JOB-09-auditoria-das-vagas.md).",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-10",
+      "titulo": "A busca mira os ATS em vez de perguntar solto",
+      "estado": "feito (17/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "A busca real rodou com token válido pela primeira vez em 17/08 e entregou 6 vagas, mas gastando quase todo o teto de páginas em página errada. A medição está em [docs/design/JOB-10-consultas-dirigidas.md](../../design/JO",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",

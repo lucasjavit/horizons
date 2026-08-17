@@ -21,7 +21,7 @@ destrava o resto.
 | --- | --- | --- | --- |
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
 | [PLT-04](cards/PLT-04-crud-de-prompts.md) | Config vira área de admin, com CRUD dos prompts de busca | M | agora tem `@AdminOnly()` de verdade por trás |
-| [JOB-08](cards/JOB-08-prompt-de-busca.md) | O prompt do stakeholder vira o motor da busca | G | **prioridade** — o QA achou vaga aberta sendo descartada |
+| [JOB-08](cards/JOB-08-prompt-de-busca.md) | O prompt do stakeholder vira o motor da busca | G | o descarte de vaga aberta caiu com o JOB-10; sobram os **sete níveis de elegibilidade** e o **dedup** |
 | [JOB-02](cards/JOB-02-perfil-de-busca.md) | Perfil de busca e agrupamento | M | **quase** — perfil, filtros, agrupamento e tela prontos; falta ligar a leitura de CV (precisa de chave de IA) |
 | [JOB-07](cards/JOB-07-busca-ao-vivo.md) | **A busca ao vivo** — Filter dispara Firecrawl, vagas entram uma a uma | 15/08/2026 |
 | [JOB-06](cards/JOB-06-token-do-firecrawl.md) | Token do Firecrawl em Configurações | P | **feito** (15/08) — cadastro e interruptor; não busca nada ainda |
@@ -56,6 +56,8 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [JOB-10](cards/JOB-10-consultas-dirigidas.md) | **A busca mira os ATS** — 8 URLs viram 8 vagas, contra 8 → 6 | 17/08/2026 |
+| [JOB-09](cards/JOB-09-vaga-so-afirma-o-que-cita.md) | **A vaga só afirma o que cita** — fim do "não contrata brasileiro" sem fonte | 17/08/2026 |
 | [PLT-06](cards/PLT-06-deploy-no-coolify.md) | **Deploy no Coolify** — no ar em HTTPS, com login funcionando | 15/08/2026 |
 | [PLT-07](cards/PLT-07-leitura-anonima.md) | **Leitura anônima** — home aberta, login na barra | 14/08/2026 |
 | [PLT-05](cards/PLT-05-login-desligado.md) | **Login desligado** por `AUTH_DISABLED` — reverter antes de publicar | 14/08/2026 |
