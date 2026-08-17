@@ -349,6 +349,18 @@
       "total": 0
     },
     {
+      "id": "JOB-11",
+      "titulo": "Página de listagem dentro do ATS ainda passa",
+      "estado": "aberto (17/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "P",
+      "porque": "O [JOB-10](JOB-10-consultas-dirigidas.md) tirou do caminho a listagem de job board (roberthalf.com/.../java-developer, \"140 results\"). Sobrou uma versão menor do mesmo problema, dentro dos ATS.",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",

@@ -321,6 +321,22 @@ export class BuscaService {
 const ATS = ['greenhouse.io', 'lever.co', 'ashbyhq.com'];
 
 /**
+ * Como cada regiao aparece escrita num anuncio de verdade.
+ *
+ * A sigla sozinha nao serve de consulta: quem publica vaga aberta a America
+ * Latina escreve de varios jeitos, e "LATAM" e so um deles. Os termos entram
+ * entre aspas para casarem como frase — sem elas, "Latin America" viraria
+ * `latin OR america` e traria qualquer vaga nos EUA.
+ *
+ * "Brazil" entra porque a vaga que cita o Brasil nominalmente e exatamente a
+ * que interessa. So os tres primeiros vao para a consulta (`slice(0, 3)`):
+ * termo demais dilui o cargo, que e o que mais importa no ranking.
+ */
+const TERMOS_REGIAO: Record<string, string[]> = {
+  latam: ['LATAM', 'Latin America', 'Brazil'],
+};
+
+/**
  * A consulta que sai para a web.
  *
  * **O `site:` dos ATS e o que faz a busca funcionar.** Sem ele a consulta
@@ -382,7 +398,20 @@ function montarConsulta(f: FiltrosDto): string {
   if (f.seniority) partes.push(f.seniority);
   if (f.technologies?.length) partes.push(f.technologies.slice(0, 4).join(' '));
   if (f.remote === 'remoto') partes.push('remote');
-  if (f.locations?.length) partes.push(f.locations[0]);
+  // A regiao entra como termos soltos, e NAO como um segundo grupo `(A OR B)`.
+  //
+  // Medido em 17/08/2026, e foi uma regressao minha: com dois grupos entre
+  // parenteses — `(site:... OR ...)` e `("LATAM" OR "Latin America" OR ...)` —
+  // a consulta fica restrita demais e o buscador **abandona o `site:`** em vez
+  // de devolver vazio. As 5 URLs voltaram todas de fora dos ATS
+  // (remoterocketship, terminal.io), que e exatamente a pagina de listagem que
+  // o JOB-10 tinha acabado de tirar do caminho.
+  //
+  // Soltos, os termos so pesam no ranking DENTRO dos ATS, que e o papel deles:
+  // aproximar a vaga certa, nao redefinir onde procurar.
+  const termos = f.regiao ? TERMOS_REGIAO[f.regiao] : undefined;
+  if (termos) partes.push(termos.slice(0, 3).join(' '));
+  else if (f.locations?.length) partes.push(f.locations[0]);
   // Por ultimo: o operador restringe a consulta inteira, e deixa-lo no fim
   // mantem os termos do cargo no comeco, onde pesam mais no ranking.
   partes.push(`(${ATS.map((d) => `site:${d}`).join(' OR ')})`);

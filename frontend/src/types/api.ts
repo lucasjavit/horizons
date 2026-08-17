@@ -124,6 +124,9 @@ export type Senioridade =
 
 export type Remoto = 'remoto' | 'hibrido' | 'presencial'
 
+/** Espelha `REGIOES` do backend. */
+export type Regiao = 'latam'
+
 export type Contrato = 'clt' | 'pj' | 'contractor' | 'freelance'
 
 /**
@@ -141,6 +144,14 @@ export interface Filtros {
   exclude_keywords?: string[]
   locations?: string[]
   remote?: Remoto
+  /**
+   * Região, não país — hoje só `'latam'`.
+   *
+   * Separada de `locations` porque o backend a expande nos termos que os
+   * anúncios usam ("Latin America", "South America", "Brazil"), em vez de
+   * mandar a sigla crua para a busca.
+   */
+  regiao?: Regiao
   employment_types?: Contrato[]
   seniority?: Senioridade
   /** Unidade inteira da moeda, nunca centavo — o backend exige `@IsInt()`. */

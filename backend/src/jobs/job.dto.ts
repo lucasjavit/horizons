@@ -25,6 +25,16 @@ export const SENIORIDADES = [
 /** Regimes de trabalho. */
 export const REMOTOS = ['remoto', 'hibrido', 'presencial'] as const;
 
+/**
+ * Regioes que a busca sabe expandir.
+ *
+ * So `latam` por enquanto: e a que interessa a quem procura do Brasil, porque
+ * uma vaga aberta a America Latina costuma nao exigir mudanca de pais nem
+ * cruzar mais de duas horas de fuso. Regiao nova aqui pede a lista de termos
+ * correspondente em `TERMOS_REGIAO` (busca.service.ts).
+ */
+export const REGIOES = ['latam'] as const;
+
 /** Vinculos. */
 export const CONTRATOS = ['clt', 'pj', 'contractor', 'freelance'] as const;
 
@@ -71,6 +81,18 @@ export class FiltrosDto {
   @IsOptional()
   @IsIn(REMOTOS)
   remote?: string;
+
+  /**
+   * Uma regiao inteira, e nao um pais.
+   *
+   * Separado de `locations` porque nao e um lugar que se escreva na consulta:
+   * "LATAM" literal acha so quem usa a sigla, e perde o anuncio que diz "Latin
+   * America" ou "South America" — a mesma vaga. Quem expande e o
+   * `montarConsulta`.
+   */
+  @IsOptional()
+  @IsIn(REGIOES)
+  regiao?: string;
 
   @IsOptional()
   @IsArray()

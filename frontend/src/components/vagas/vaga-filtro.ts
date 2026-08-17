@@ -99,10 +99,14 @@ export const CATALOGO: Record<Eixo, Opcao[]> = {
     'Visa sponsorship',
   ].map((v) => ({ valor: v, rotulo: v })),
 
-  // "Worldwide" primeiro porque é o que interessa a quem procura do Brasil: a
-  // vaga que aceita candidato de qualquer lugar.
+  // "Worldwide" e "LATAM" primeiro porque são o que interessa a quem procura
+  // do Brasil: a vaga que aceita candidato de qualquer lugar, e a que abre a
+  // região sem exigir mudança de país. Os dois não são lugares — são a
+  // ausência de uma restrição e uma região inteira. `paraFiltrosApi` os
+  // traduz; não viram `locations`.
   paises: [
     'Worldwide',
+    'LATAM',
     'Brazil', 'United States', 'Canada', 'Portugal', 'Spain', 'Germany',
     'Netherlands', 'United Kingdom', 'Ireland', 'France', 'Poland',
     'Argentina', 'Mexico', 'Australia', 'Singapore',
@@ -150,11 +154,15 @@ export function paraFiltrosApi(s: Selecao): Record<string, unknown> {
   // Só um: o backend aceita uma senioridade, não uma lista.
   if (s.experiencias.length) f.seniority = s.experiencias[0]
 
-  // "Worldwide" não é lugar — é a ausência de restrição geográfica, e mandá-lo
-  // como local faria a busca procurar por um país chamado Worldwide.
-  const lugares = s.paises.filter((p) => p !== 'Worldwide')
+  // Nem "Worldwide" nem "LATAM" são lugares, e mandá-los como `locations`
+  // faria a busca procurar por um país com esse nome. "Worldwide" é a ausência
+  // de restrição; "LATAM" é uma região, que o backend sabe expandir nos termos
+  // que os anúncios de fato usam ("Latin America", "South America", "Americas
+  // time zones") — a sigla sozinha acharia só quem a escreve com essas letras.
+  const lugares = s.paises.filter((p) => p !== 'Worldwide' && p !== 'LATAM')
   if (lugares.length) f.locations = lugares
   if (s.paises.includes('Worldwide')) f.remote = 'remoto'
+  if (s.paises.includes('LATAM')) f.regiao = 'latam'
 
   // O menor dos escolhidos: pedir "acima de 100k OU acima de 150k" é pedir
   // acima de 100k.
