@@ -32,9 +32,35 @@ const SCHEMA_VAGA = {
     salaryTrecho: { type: ['string', 'null'], description: 'O texto exato do anuncio de onde o salario saiu.' },
     elegivelBrasil: { type: ['boolean', 'null'], description: 'Contrata quem mora no Brasil? null se nao disser.' },
     elegibilidadeTrecho: { type: ['string', 'null'] },
-    ehVaga: { type: 'boolean', description: 'false se a pagina nao for um anuncio de vaga.' },
+    ehVaga: {
+      type: 'boolean',
+      description:
+        'true se ESTA pagina descreve UMA vaga. Uma pagina de vaga hospedada ' +
+        'num board (greenhouse, lever, getro) CONTINUA sendo uma vaga — ' +
+        'classifique o conteudo, nao o site que hospeda.',
+    },
+    estaFechada: {
+      type: 'boolean',
+      description:
+        'true so quando a pagina DIZ que a vaga fechou ("no longer accepting ' +
+        'applications", "position filled", "this job is closed"). Na duvida, false.',
+    },
+    ehListagem: {
+      type: 'boolean',
+      description:
+        'true se a pagina lista VARIAS vagas em vez de descrever uma. Nesse ' +
+        'caso nao invente uma: marque true e deixe o resto vazio.',
+    },
+    applicationUrl: {
+      type: ['string', 'null'],
+      description: 'O link de candidatura, quando a pagina der um. null se nao houver.',
+    },
+    postedAt: {
+      type: ['string', 'null'],
+      description: 'Data de publicacao em ISO 8601 (2026-08-15). null se a pagina nao disser.',
+    },
   },
-  required: ['title', 'company', 'skills', 'ehVaga'],
+  required: ['title', 'company', 'skills', 'ehVaga', 'estaFechada', 'ehListagem'],
   additionalProperties: false,
 } as const;
 
@@ -49,7 +75,11 @@ Regras:
 - "Mais de 100 candidatos", "competitivo" e "a combinar" NAO sao salario.
 - paisIso e ISO-3166 alpha-2 minusculo (us, br, pt). Se a vaga for remota sem
   pais definido, devolva null — remoto nao e um pais.
-- Se a pagina nao for um anuncio de vaga (lista, busca, login), ehVaga: false.`;
+- Uma pagina de vaga hospedada num board (greenhouse, lever, ashby, getro)
+  CONTINUA sendo uma vaga. Classifique o CONTEUDO, nao o site que hospeda.
+- Se a pagina LISTA varias vagas, marque ehListagem: true e nao invente uma
+  delas. Se for busca ou login, ehVaga: false.
+- estaFechada so e true quando a pagina DIZ que fechou. Na duvida, false.`;
 
 /** Paises cujo codigo aceitamos. Fora daqui vira null, nao vira bandeira errada. */
 const ISO_VALIDOS = new Set([
@@ -134,13 +164,37 @@ export class BuscaService {
     });
 
     const j = (doc as { json?: Record<string, unknown> }).json;
-    if (!j || j.ehVaga !== true) return null;
+    if (!j) return null;
+
+    // Pagina de listagem nao vira vaga. O schema e de UM objeto, entao sem
+    // isto o modelo e forcado a inventar uma vaga a partir de N: medido pelo
+    // QA, weworkremotely.com/remote-jobs voltou duas vezes com empresas
+    // DIFERENTES ("Remote Talent Cloud", depois "Braze").
+    if (j.ehListagem === true) return null;
 
     const titulo = texto(j.title);
     const empresa = texto(j.company);
-    // Vaga sem titulo, empresa ou URL nao entra: no JOB-01, 47% vinham sem URL,
-    // e um cartao que nao da para clicar nao serve para nada.
-    if (!titulo || !empresa) return null;
+
+    // O DESCARTE EXIGE EVIDENCIA, e nao ausencia de confirmacao.
+    //
+    // Antes era `if (j.ehVaga !== true) return null`, e isso jogava fora vaga
+    // boa: medido pelo QA em 15/08/2026, a Easyship voltou `ehVaga: false` com
+    // salario, 13 skills e a vaga ABERTA — o modelo classificou o site que
+    // hospeda ("Search job openings across the network"), nao a vaga. Tres de
+    // tres paginas no Getro morreram assim, justamente a classe
+    // greenhouse/lever/ashby que queremos preferir.
+    //
+    // Agora `ehVaga: false` so descarta quando NAO ha os dados de uma vaga. Ter
+    // titulo, empresa e a marca de um anuncio vale mais que um booleano que o
+    // modelo errou.
+    const pareceVaga =
+      !!titulo && !!empresa && (temSinalDeVaga(j) || j.ehVaga === true);
+    if (!pareceVaga) return null;
+
+    // Vaga fechada nao entra. A regra critica 10 do prompt do stakeholder
+    // ("remove clearly closed jobs") nunca tinha sido transportada: uma vaga da
+    // Reddit ja fechada ainda devolvia salaryMin 190800.
+    if (j.estaFechada === true) return null;
 
     const iso = texto(j.paisIso)?.toLowerCase();
     return {
@@ -166,7 +220,7 @@ export class BuscaService {
       salaryTrecho: texto(j.salaryTrecho),
       elegivelBrasil: typeof j.elegivelBrasil === 'boolean' ? j.elegivelBrasil : null,
       elegibilidadeTrecho: texto(j.elegibilidadeTrecho),
-      postedAt: null,
+      postedAt: dataIso(j.postedAt),
       foundAt: new Date().toISOString(),
     };
   }
@@ -249,4 +303,31 @@ function salario(v: unknown): number | null {
   if (typeof v !== 'number' || !Number.isFinite(v)) return null;
   if (v < 10_000 || v > 2_000_000) return null;
   return Math.round(v);
+}
+
+/**
+ * A pagina tem a cara de um anuncio?
+ *
+ * Serve de contrapeso ao `ehVaga`: um anuncio com requisitos, skills e
+ * descricao continua sendo um anuncio mesmo que o modelo tenha olhado o
+ * cabecalho do board e respondido `false`.
+ */
+function temSinalDeVaga(j: Record<string, unknown>): boolean {
+  const skills = Array.isArray(j.skills) ? j.skills.length : 0;
+  const temSalario = j.salaryMin != null || j.salaryTrecho != null;
+  const temContexto = !!texto(j.area) || j.anosExp != null || !!texto(j.local);
+  // Dois sinais independentes: um sozinho e fraco demais para sustentar uma
+  // pagina que o modelo classificou como nao-vaga.
+  return [skills >= 3, temSalario, temContexto].filter(Boolean).length >= 2;
+}
+
+/** Data em ISO, quando a pagina deu uma que faca sentido. */
+function dataIso(v: unknown): string | null {
+  if (typeof v !== 'string' || !v.trim()) return null;
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return null;
+  const agora = Date.now();
+  // Data no futuro ou anterior a 2000 e dado ruim da origem, nao publicacao.
+  if (d.getTime() > agora + 86_400_000 || d.getFullYear() < 2000) return null;
+  return d.toISOString();
 }

@@ -73,7 +73,19 @@ export function LinhaVaga({ vaga }: { vaga: Vaga }) {
               // O único chip colorido. Verde da marca, que é o que a pessoa
               // procura primeiro na linha — e o resto fica neutro para que
               // este seja de fato o que salta.
-              <Chip destaque>{salario}</Chip>
+              //
+              // Com trecho de origem, vira botão: clicar mostra o TEXTO EXATO
+              // do anúncio de onde o número saiu. É a mitigação que o JOB-01
+              // exigiu — "USD 150k" tem a mesma aparência se for extraído ou
+              // alucinado, e a única diferença que a pessoa pode conferir é
+              // poder ler a frase original.
+              <Chip
+                destaque
+                trecho={vaga.salaryTrecho}
+                rotuloTrecho="Where this salary came from"
+              >
+                {salario}
+              </Chip>
             )}
 
             {vaga.skills.map((s) => (
@@ -93,7 +105,10 @@ export function LinhaVaga({ vaga }: { vaga: Vaga }) {
                 texto ao lado, a falta da fonte custa um enfeite; sem ele,
                 custaria a informação. */}
             {(bandeira || vaga.local) && (
-              <Chip>
+              <Chip
+                trecho={vaga.elegibilidadeTrecho}
+                rotuloTrecho="Where this eligibility came from"
+              >
                 {bandeira && <span aria-hidden>{bandeira} </span>}
                 {vaga.local ?? vaga.paisIso?.toUpperCase()}
               </Chip>
@@ -148,20 +163,66 @@ function Logo({ vaga }: { vaga: Vaga }) {
 function Chip({
   children,
   destaque = false,
+  trecho = null,
+  rotuloTrecho,
 }: {
   children: React.ReactNode
   destaque?: boolean
+  /** O texto exato do anúncio de onde este dado saiu. */
+  trecho?: string | null
+  rotuloTrecho?: string
 }) {
+  const [aberto, setAberto] = useState(false)
+  const estilo = destaque
+    ? { borderColor: 'var(--brand)', color: 'var(--brand)', fontWeight: 600 }
+    : { borderColor: 'var(--border)', color: 'var(--text-muted)' }
+
+  // Sem trecho, o chip é só um rótulo: não vira botão que não faz nada.
+  if (!trecho) {
+    return (
+      <li className="rounded-md border px-2 py-0.5 text-xs" style={estilo}>
+        {children}
+      </li>
+    )
+  }
+
   return (
-    <li
-      className="rounded-md border px-2 py-0.5 text-xs"
-      style={
-        destaque
-          ? { borderColor: 'var(--brand)', color: 'var(--brand)', fontWeight: 600 }
-          : { borderColor: 'var(--border)', color: 'var(--text-muted)' }
-      }
-    >
-      {children}
+    <li className="relative">
+      <button
+        type="button"
+        onClick={() => setAberto((a) => !a)}
+        aria-expanded={aberto}
+        // O `title` e o rótulo acessível dizem que há algo a ver: um chip que
+        // é botão sem parecer botão é um clique que ninguém descobre.
+        title={rotuloTrecho}
+        aria-label={`${rotuloTrecho}. ${aberto ? 'Hide' : 'Show'} the original text.`}
+        className="flex min-h-6 items-center gap-1 rounded-md border px-2 py-0.5 text-xs"
+        style={estilo}
+      >
+        {children}
+        <span aria-hidden style={{ opacity: 0.6 }}>
+          {aberto ? '▴' : '▾'}
+        </span>
+      </button>
+
+      {aberto && (
+        // Citação literal, em fonte mono e entre aspas: precisa PARECER
+        // transcrição, não texto que a aplicação escreveu.
+        <div
+          role="note"
+          className="absolute left-0 top-full z-10 mt-1 w-72 rounded-md border p-2.5 text-xs leading-relaxed shadow-lg"
+          style={{
+            borderColor: 'var(--border)',
+            background: 'var(--surface-raised)',
+            color: 'var(--text)',
+          }}
+        >
+          <span className="mb-1 block text-[0.65rem] uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+            From the listing
+          </span>
+          <q className="font-mono">{trecho}</q>
+        </div>
+      )}
     </li>
   )
 }
