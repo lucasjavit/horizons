@@ -361,6 +361,18 @@
       "total": 0
     },
     {
+      "id": "JOB-12",
+      "titulo": "URL de vaga não se valida por status HTTP",
+      "estado": "aberto (18/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "P",
+      "porque": "Medido em 18/08, com curl -L -o /dev/null -w \"%{http_code} %{url_effective}\":",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",
