@@ -42,6 +42,51 @@ Isso é o oposto do problema que o [JOB-09](../../../docs/backlog/cards/JOB-09-v
 tratou: aqui o salário **vem do campo**, não de uma citação que precisa ser
 conferida.
 
+## `fontes.yaml` — a configuração de fontes
+
+Veio de `config/sources.yaml` do look4job, e tem o que o `empresas.yaml` não
+tem: **de onde buscar quando não há ATS+slug**.
+
+### `apis` — cinco APIs de vagas remotas, sem chave
+
+Testadas em 18/08/2026:
+
+| API | Devolveu | Campo que interessa |
+| --- | ---: | --- |
+| Arbeitnow | 175 | `remote`, `location` |
+| Remotive | 17 | **`candidate_required_location`** |
+| Himalayas | ok | `locationRestrictions`, `currency`, `expiryDate` |
+| RemoteOK | não testado | — |
+| WeWorkRemotely | RSS, não testado | — |
+
+**`candidate_required_location` é a pergunta de elegibilidade como campo.** Em
+40 pedidas / 17 devolvidas, 6 diziam "Worldwide". Não precisa de IA para ler.
+
+Ressalva medida: o Remotive é fraco para dev — das 17, a maioria era marketing,
+freelance writer e sales. Volume pequeno e categoria mista. O Arbeitnow devolveu
+175 numa chamada e merece um teste melhor.
+
+### `search_profile` — o Horizons descrito em YAML
+
+```yaml
+stack: ["Java", "Spring Boot"]
+remote: ["Worldwide", "LATAM"]
+must_accept: "Brazil"
+scope: "somente vagas internacionais"
+```
+
+É a mesma decisão de produto que o filtro LATAM (JOB-04) implementou na tela.
+
+### `watchlist` — ~90 startups sem API
+
+Cursor, Baseten, Cognition, Dub, Distyl. Página de carreira própria, sem ATS
+consultável. **É aqui que o Firecrawl continua fazendo sentido** — e só aqui.
+
+### `linkedin` — desligado, e deve continuar
+
+`enabled: false`, com o risco anotado no próprio arquivo: endpoint não
+documentado, rate limit por IP. O Horizons já decidiu evitar LinkedIn e Indeed.
+
 ## Duas armadilhas medidas
 
 **`hiring_countries` é da EMPRESA, não da vaga.** Em 10 empresas com "Brazil"

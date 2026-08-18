@@ -1,0 +1,187 @@
+# Fontes de vagas do look4job.
+# Novas fontes podem ser cadastradas aqui (ou pelo front, futuramente).
+# ats: greenhouse | lever | ashby | workable | workday | maxun | firecrawl | custom  -> define qual coletor usar.
+# workday:   empresas em *.myworkdayjobs.com — API JSON nao documentada porem estavel
+#            (POST /wday/cxs/{tenant}/{site}/jobs); requer campos tenant e site.
+# maxun:     site sem API — robo treinado na UI do Maxun (https://github.com/getmaxun/maxun);
+#            requer campo robot_id. Deterministico; bom para fontes fixas de alto valor.
+# firecrawl: site sem API — extracao por schema via Firecrawl self-hosted
+#            (https://github.com/firecrawl/firecrawl); so precisa da URL. Bom para a watchlist.
+# custom:    ainda sem coletor definido (candidato a virar maxun ou firecrawl).
+
+search_profile:
+  stack: ["Java", "Spring Boot"]
+  seniority: ["Senior", "Pleno/Senior"]
+  remote: ["Worldwide", "LATAM"]
+  must_accept: "Brazil"
+  scope: "somente vagas internacionais"
+
+apis:
+  - name: Remotive
+    url: https://remotive.com/api/remote-jobs?category=software-dev
+  - name: RemoteOK
+    url: https://remoteok.com/api
+  - name: Arbeitnow
+    url: https://www.arbeitnow.com/api/job-board-api
+  - name: WeWorkRemotely
+    url: https://weworkremotely.com/categories/remote-back-end-programming-jobs.rss
+  - name: Himalayas
+    url: https://himalayas.app/jobs/api
+
+linkedin:
+  # Coletor OPT-IN (app/collectors/linkedin.py). Usa o endpoint publico de busca que o
+  # LinkedIn serve a visitantes DESLOGADOS — sem cookie de sessao, sem ler perfis.
+  # Para ligar: LINKEDIN_ENABLED=1 no backend/.env. Riscos: endpoint nao documentado
+  # (pode mudar ou passar a exigir login) e rate limit por IP. Paginacao curta (4 paginas)
+  # e pausa de 4s entre paginas.
+  enabled: false
+  search_url: "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=java%20spring%20boot&location=Worldwide&f_WT=2"
+
+companies:
+  # --- Lote 1: empresas globais com contratacao internacional ---
+  - { name: Canonical,       url: "https://canonical.com/careers",                  ats: greenhouse }
+  - { name: GitLab,          url: "https://about.gitlab.com/jobs",                  ats: greenhouse }
+  - { name: Elastic,         url: "https://www.elastic.co/careers",                 ats: custom }
+  - { name: Camunda,         url: "https://camunda.com/careers/all-jobs",           ats: greenhouse }
+  - { name: Deel,            url: "https://jobs.ashbyhq.com/deel",                  ats: ashby }
+  - { name: Docker,          url: "https://www.docker.com/careers",                 ats: greenhouse }
+  - { name: SFOX,            url: "https://job-boards.greenhouse.io/sfox",          ats: greenhouse }
+  - { name: HashiCorp,       url: "https://www.hashicorp.com/careers",              ats: greenhouse }
+  - { name: Stripe,          url: "https://stripe.com/jobs",                        ats: custom }
+  - { name: Coinbase,        url: "https://www.coinbase.com/careers",               ats: greenhouse }
+  - { name: Datadog,         url: "https://careers.datadoghq.com",                  ats: custom }
+  - { name: MongoDB,         url: "https://www.mongodb.com/careers",                ats: greenhouse }
+  - { name: Confluent,       url: "https://careers.confluent.io",                   ats: custom }
+  - { name: Snowflake,       url: "https://careers.snowflake.com",                  ats: custom }
+  - { name: Redis,           url: "https://redis.io/careers",                       ats: greenhouse }
+  - { name: Grafana Labs,    url: "https://grafana.com/about/careers",              ats: greenhouse }
+  - { name: ClickHouse,      url: "https://clickhouse.com/company/careers",         ats: greenhouse }
+  - { name: Airbyte,         url: "https://airbyte.com/careers",                    ats: greenhouse }
+  - { name: Temporal,        url: "https://temporal.io/careers",                    ats: greenhouse }
+  - { name: PlanetScale,     url: "https://planetscale.com/careers",                ats: custom }
+  - { name: Turing,          url: "https://www.turing.com/jobs",                    ats: custom }
+  # Built In: job board (nao ATS) sem API/RSS publico (verificado em 31/07) — so via scraping (T10b).
+  # US-centric: no coletor, filtrar para remote worldwide (perfil exige aceitar Brasil).
+  - { name: BuiltIn (board), url: "https://builtin.com/jobs/remote",                ats: custom }
+  - { name: Toptal,          url: "https://www.toptal.com/careers",                 ats: custom }
+  - { name: Crossover,       url: "https://www.crossover.com/jobs",                 ats: custom }
+  - { name: Clevertech,      url: "https://www.clevertech.biz/careers",             ats: custom }
+  - { name: X-Team,          url: "https://x-team.com/jobs",                        ats: custom }
+  - { name: FullStack Labs,  url: "https://www.fullstacklabs.co/careers",           ats: custom }
+  - { name: BairesDev,       url: "https://www.bairesdev.com/careers",              ats: custom }
+  - { name: Andela,          url: "https://andela.com/careers",                     ats: greenhouse }
+  - { name: EPAM,            url: "https://careers.epam.com",                       ats: custom }
+  - { name: GlobalLogic,     url: "https://www.globallogic.com/careers",            ats: custom }
+  # --- Lote 2: Java Backend / Spring / AWS ---
+  - { name: Adyen,           url: "https://careers.adyen.com",                      ats: greenhouse }
+  - { name: Cleo,            url: "https://cleo.com/careers",                       ats: custom }
+  - { name: VelocityEHS,     url: "https://www.ehs.com/careers",                    ats: custom }
+  - { name: SOPHiA GENETICS, url: "https://www.sophiagenetics.com/careers",         ats: custom }
+  - { name: Acquia,          url: "https://www.acquia.com/careers",                 ats: custom }
+  - { name: Akka,            url: "https://akka.io/careers",                        ats: custom }
+  - { name: Algorand,        url: "https://algorand.co/careers",                    ats: custom }
+  - { name: BandLab,         url: "https://www.bandlab.com/careers",                ats: custom }
+  - { name: BetterUp,        url: "https://www.betterup.com/careers",               ats: greenhouse }
+  - { name: BILL,            url: "https://www.bill.com/careers",                   ats: custom }
+  - { name: Apply Digital,   url: "https://www.applydigital.com/careers",           ats: custom }
+  - { name: CoinMarketCap,   url: "https://coinmarketcap.com/careers",              ats: custom }
+  - { name: Databento,       url: "https://databento.com/careers",                  ats: custom }
+  - { name: Monks,           url: "https://www.monks.com/careers",                  ats: custom }
+  - { name: Riverbed,        url: "https://www.riverbed.com/careers",               ats: custom }
+  - { name: Plaid,           url: "https://plaid.com/careers",                      ats: lever }
+  - { name: Okta,            url: "https://www.okta.com/company/careers",           ats: greenhouse }
+  - { name: Twilio,          url: "https://www.twilio.com/company/jobs",            ats: greenhouse }
+  - { name: Cloudflare,      url: "https://www.cloudflare.com/careers",             ats: greenhouse }
+  - { name: Cockroach Labs,  url: "https://www.cockroachlabs.com/careers",          ats: greenhouse }
+  - { name: Postman,         url: "https://www.postman.com/company/careers",        ats: custom }
+  - { name: LaunchDarkly,    url: "https://launchdarkly.com/careers",               ats: greenhouse }
+  - { name: New Relic,       url: "https://newrelic.com/about/careers",             ats: custom }
+  - { name: Nutanix,         url: "https://www.nutanix.com/company/careers",        ats: custom }
+  - { name: PagerDuty,       url: "https://careers.pagerduty.com",                  ats: greenhouse }
+  - { name: Red Hat,         url: "https://www.redhat.com/en/jobs",                 ats: custom }
+  # Atlassian saiu do Lever (404 desde 01/08); esta no SmartRecruiters (API publica ok) — aguarda coletor (card B9).
+  - { name: Atlassian,       url: "https://www.atlassian.com/company/careers",      ats: custom }
+
+# Watchlist adicional (startups/paginas diversas coladas pelo usuario).
+# A maioria e AI/startup pequena — triagem futura; as com ATS conhecido ja marcadas.
+watchlist:
+  - https://acuityhealth.io/
+  - https://www.adaptivesecurity.com/careers
+  - https://alephneuro.com/careers
+  - https://app.dover.com/jobs/usealloy
+  - https://www.tryarcanist.com/hiring
+  - https://jobs.ashbyhq.com/ataraxis-ai
+  - https://www.baseten.co/resources/careers/
+  - https://baselayer.com/about/#careers
+  - https://brainforge.ai/careers/
+  - https://citizen.com/careers
+  - https://www.cloudeagle.ai/careers
+  - https://jobs.ashbyhq.com/cognition/811c3f5a-b26d-4162-b49b-93890a91794d
+  - https://jobs.ashbyhq.com/conduct
+  - https://www.usecrunched.com/careers
+  - https://cursor.com/careers
+  - https://www.distyl.ai/careers
+  - https://dub.co/careers
+  - https://jobs.ashbyhq.com/Edison%20Scientific
+  - https://www.enzo.health/careers
+  - https://exa.ai/careers
+  - https://f2.ai/careers
+  - https://fal.ai/careers
+  - https://www.firecrawl.dev/careers
+  - https://jobs.lever.co/Flex/
+  - https://www.formation.bio/careers
+  - https://careers.gamma.app/
+  - https://www.glean.com/careers
+  - https://www.greptile.com/careers
+  - https://happenstance.ai/careers
+  - https://jobs.ashbyhq.com/happl
+  - https://jobs.ashbyhq.com/hotplate
+  - https://indices.io/careers
+  - https://careers.initiointelligence.com/
+  - https://www.judgmentlabs.ai/careers
+  - https://legora.com/careers
+  - https://lovable.dev/careers
+  - https://www.merge.dev/careers
+  - https://www.minerva.io/company
+  - https://www.mintlify.com/careers
+  - https://moolaah.finance/careers
+  - https://moment.com/careers
+  - https://wellfound.com/jobs/3651273-frontend-full-stack-engineer
+  - https://neosigma.ai/careers
+  - https://www.niural.com/careers
+  - https://odindynamics.ai/careers
+  - https://parallel.ai/careers
+  - https://jobs.ashbyhq.com/pantograph
+  - https://teampascal.com/company/about#open-roles
+  - https://photonhealth.com/careers
+  - https://www.port.io/careers
+  - https://postq.dev/careers#open-roles
+  - https://primitivelabs.ai/careers
+  - https://job-boards.greenhouse.io/pulumicorporation/jobs/7782236003
+  - https://jobs.ashbyhq.com/qualified-health-pbc
+  - https://jobs.lever.co/RadicalAI
+  - https://risingwave.com/
+  - https://roadrunner.ai/
+  - https://job-boards.greenhouse.io/sidecarhealth
+  - https://jobs.ashbyhq.com/SigNoz
+  - https://www.sim.ai/careers
+  - https://www.slash.com/company/careers
+  - https://www.somapix.com/growth-partner
+  - https://jobs.lever.co/sphere-laboratories
+  - https://www.structify.ai/careers
+  - https://sudowrite.com/jobs/mobile
+  - https://supabase.com/careers
+  - https://tandem-ai-partner.notion.site/Tandem-Intelligence-Inc-Careers-38fcf5eea9eb801696cbc45387140347
+  - https://www.tenex.co/careers
+  - https://tern.travel/careers
+  - https://tesana.ai/en/about
+  - https://jobs.ashbyhq.com/arcadeai
+  - https://jobs.ashbyhq.com/windmill
+  - https://www.varickagents.com/careers
+  - https://www.ycombinator.com/companies/veritus/jobs
+  - https://jobs.ashbyhq.com/virio
+  - https://jobs.ashbyhq.com/vitalize/ad6831f1-c0a9-4f6a-9a4c-6a78c48a3ce9
+  - https://www.watchtowerlabs.ai
+  - https://whitecircle.com/careers
+  - https://jobs.ashbyhq.com/xbowcareers
+  - https://www.8090.ai/careers

@@ -7,10 +7,6 @@ companies:
   priority: high
   hiring_countries:
   - Canada
-  - China
-  - India
-  - Japan
-  - Taiwan
   - United States
 - name: GitLab
   url: https://about.gitlab.com/jobs
@@ -20,9 +16,6 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - France
-  - India
-  - Japan
   - Singapore
   - Switzerland
   - United Arab Emirates
