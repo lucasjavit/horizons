@@ -11,7 +11,7 @@ Os arquivos foram gerados lá por `probe_sources.py` e verificados por
 
 | Arquivo | O que é | Itens |
 | --- | --- | ---: |
-| `empresas.yaml` | empresas **curadas**, com ATS, slug e países | 1.953 |
+| `empresas.yaml` | empresas **curadas e filtradas por país**, com ATS e slug | 866 |
 | `slugs-greenhouse.json` | todo board conhecido do Greenhouse | 8.333 |
 | `slugs-bamboohr.json` | idem, BambooHR | 11.316 |
 | `slugs-lever.json` | idem, Lever | 4.367 |
@@ -19,6 +19,35 @@ Os arquivos foram gerados lá por `probe_sources.py` e verificados por
 
 `empresas.yaml` é o dado rico: `name`, `url`, `ats`, `slug`, `priority` e
 `hiring_countries`. **118 empresas declaram contratar no Brasil.**
+
+### O filtro por país (18/08/2026)
+
+Das 1.953 originais ficaram **866**, pelas regiões que interessam ao produto:
+United States, Australia, Brazil, LATAM, Europa, Canada e United Arab Emirates.
+Roda por `scripts/filtrar-empresas.py`.
+
+| ATS | Empresas |
+| --- | ---: |
+| greenhouse | 276 |
+| workday | 136 |
+| lever | 127 |
+| ashby | 121 |
+| workable | 90 |
+| bamboohr | 88 |
+| recruitee | 22 |
+
+**"Latam" e "Europe" não existem no arquivo** — `hiring_countries` só tem país
+individual (139 valores distintos). O script expande as duas em 17 e 34 países.
+
+O critério é **união**: fica quem contrata em ao menos um dos alvos. Empresa que
+só contrata nos EUA continua valendo — quem decide é o `elegivelBrasil` da
+vaga, não este arquivo.
+
+**Das 1.087 removidas, 1.012 não tinham `hiring_countries` preenchido.** Ou
+seja: a maioria saiu por falta de dado, e não por país errado. As demais eram
+Índia, Indonésia, Turquia e Japão. Se um dia faltar volume, essas 1.012 são o
+primeiro lugar a olhar — provavelmente há empresa boa entre elas, só não
+verificada.
 
 Os `slugs-*.json` são listas cruas de identificador de board — sem nome de
 empresa, sem país. Servem para descobrir boards que a curadoria não alcançou.
