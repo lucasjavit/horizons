@@ -39,9 +39,17 @@ Roda por `scripts/filtrar-empresas.py`.
 **"Latam" e "Europe" não existem no arquivo** — `hiring_countries` só tem país
 individual (139 valores distintos). O script expande as duas em 17 e 34 países.
 
-O critério é **união**: fica quem contrata em ao menos um dos alvos. Empresa que
-só contrata nos EUA continua valendo — quem decide é o `elegivelBrasil` da
-vaga, não este arquivo.
+O filtro tem **duas etapas**:
+
+1. **Quais empresas ficam** — união: fica quem contrata em ao menos um dos
+   alvos. Empresa que só contrata nos EUA continua valendo; quem decide
+   elegibilidade é a vaga, não este arquivo.
+2. **Quais países ficam dentro de cada empresa** — a lista é podada. Sem isso a
+   Deel entrava por causa do Brasil e trazia China, Índia e Japão junto.
+
+Resultado: **5.011 → 3.418** menções de país, e o arquivo passou de 139 países
+distintos para **54** — todos dentro do escopo. `India`, que tinha 323
+menções, não aparece mais.
 
 **Das 1.087 removidas, 1.012 não tinham `hiring_countries` preenchido.** Ou
 seja: a maioria saiu por falta de dado, e não por país errado. As demais eram

@@ -42,10 +42,19 @@ def main() -> int:
     d = yaml.safe_load(origem.read_text())
     todas = d['companies']
 
-    mantidas = [
-        e for e in todas
-        if ALVO.intersection(e.get('hiring_countries') or [])
-    ]
+    # Duas etapas, e a segunda e o que o stakeholder pediu em 18/08: nao
+    # basta escolher QUAIS empresas ficam, a lista DENTRO de cada uma tambem
+    # e podada. Sem isso a Deel entrava por causa do Brasil e trazia China,
+    # India e Japao junto — paises que nao interessam a quem procura daqui.
+    mantidas = []
+    for e in todas:
+        paises = e.get('hiring_countries') or []
+        dentro = sorted(ALVO.intersection(paises))
+        if not dentro:
+            continue
+        podada = dict(e)
+        podada['hiring_countries'] = dentro
+        mantidas.append(podada)
 
     saida = RAIZ / 'empresas.yaml'
     saida.write_text(
@@ -58,7 +67,10 @@ def main() -> int:
     )
 
     fora = len(todas) - len(mantidas)
+    antes = sum(len(e.get('hiring_countries') or []) for e in todas)
+    depois = sum(len(e['hiring_countries']) for e in mantidas)
     print(f'{len(todas)} empresas -> {len(mantidas)} mantidas ({fora} fora)')
+    print(f'paises listados: {antes} -> {depois}')
     ats = {}
     for e in mantidas:
         ats[e.get('ats', '?')] = ats.get(e.get('ats', '?'), 0) + 1

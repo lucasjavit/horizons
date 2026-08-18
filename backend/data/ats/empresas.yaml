@@ -20,7 +20,6 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - Singapore
   - Switzerland
   - United Arab Emirates
   - United Kingdom
@@ -31,8 +30,38 @@ companies:
   slug: deel
   priority: high
   hiring_countries:
+  - Argentina
+  - Australia
+  - Austria
+  - Belgium
   - Brazil
   - Canada
+  - Colombia
+  - Croatia
+  - Cyprus
+  - Czechia
+  - Denmark
+  - Ecuador
+  - Finland
+  - France
+  - Germany
+  - Greece
+  - Hungary
+  - Iceland
+  - Ireland
+  - Italy
+  - Mexico
+  - Netherlands
+  - Norway
+  - Peru
+  - Portugal
+  - Romania
+  - Serbia
+  - Slovakia
+  - Spain
+  - Sweden
+  - Switzerland
+  - Ukraine
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -43,7 +72,6 @@ companies:
   priority: high
   hiring_countries:
   - Australia
-  - India
   - Mexico
   - Poland
   - United States
@@ -55,7 +83,6 @@ companies:
   hiring_countries:
   - Brazil
   - Colombia
-  - India
   - United Arab Emirates
   - United States
 - name: Crossover
@@ -80,17 +107,13 @@ companies:
   - Belgium
   - Brazil
   - Canada
-  - China
   - Czechia
   - France
   - Germany
-  - India
   - Italy
-  - Japan
   - Mexico
   - Netherlands
   - Poland
-  - Singapore
   - Spain
   - Sweden
   - United Arab Emirates
@@ -112,11 +135,7 @@ companies:
   hiring_countries:
   - France
   - Germany
-  - India
-  - Japan
   - Netherlands
-  - Singapore
-  - South Korea
   - United Kingdom
   - United States
 - name: New Relic
@@ -129,15 +148,8 @@ companies:
   - Australia
   - Canada
   - Germany
-  - India
-  - Indonesia
   - Ireland
-  - Japan
-  - New Zealand
-  - Singapore
-  - South Korea
   - Spain
-  - Thailand
   - United Kingdom
   - United States
 - name: cursor
@@ -154,7 +166,6 @@ companies:
   priority: high
   hiring_countries:
   - Australia
-  - Türkiye
   - United Kingdom
   - United States
 - name: firecrawl
@@ -163,7 +174,6 @@ companies:
   slug: firecrawl
   priority: high
   hiring_countries:
-  - India
   - Nicaragua
   - United States
 - name: Flex
@@ -174,10 +184,8 @@ companies:
   hiring_countries:
   - Brazil
   - Bulgaria
-  - India
   - Mexico
   - Peru
-  - South Africa
   - Spain
 - name: glean
   url: https://www.glean.com/careers
@@ -186,9 +194,6 @@ companies:
   priority: high
   hiring_countries:
   - Australia
-  - India
-  - Japan
-  - Singapore
   - Sweden
   - United Kingdom
   - United States
@@ -208,7 +213,6 @@ companies:
   priority: high
   hiring_countries:
   - Australia
-  - India
   - Mexico
   - Poland
   - United States
@@ -220,10 +224,8 @@ companies:
   hiring_countries:
   - Brazil
   - Bulgaria
-  - India
   - Mexico
   - Peru
-  - South Africa
   - Spain
 - name: sidecarhealth
   url: https://job-boards.greenhouse.io/sidecarhealth
@@ -232,7 +234,6 @@ companies:
   priority: high
   hiring_countries:
   - Australia
-  - India
   - Mexico
   - Poland
   - United States
@@ -244,10 +245,8 @@ companies:
   hiring_countries:
   - Brazil
   - Bulgaria
-  - India
   - Mexico
   - Peru
-  - South Africa
   - Spain
 - name: supabase
   url: https://supabase.com/careers
@@ -285,7 +284,6 @@ companies:
   hiring_countries:
   - Germany
   - Poland
-  - Türkiye
 - name: Jagex
   url: https://apply.workable.com/jagex-limited/
   ats: workable
@@ -323,11 +321,7 @@ companies:
   - Australia
   - Belgium
   - Brazil
-  - India
-  - Indonesia
-  - Philippines
   - Poland
-  - South Africa
   - Spain
   - Sweden
 - name: Rockstar Games
@@ -338,7 +332,6 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - India
   - Spain
   - United Kingdom
   - United States
@@ -348,7 +341,6 @@ companies:
   slug: sumo-digital
   priority: low
   hiring_countries:
-  - India
   - United Kingdom
 - name: Rocksteady Studios
   url: https://warnerbros.wd5.myworkdayjobs.com/en-US/global/jobs?q=Rocksteady%20Studio
@@ -365,7 +357,6 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - China
   - Ireland
   - Poland
   - Spain
@@ -386,8 +377,6 @@ companies:
   slug: warnerbros.wd5.myworkdayjobs.com/global
   priority: low
   hiring_countries:
-  - Hong Kong
-  - Singapore
   - United Kingdom
 - name: Crystal Dynamics
   url: https://job-boards.greenhouse.io/crystaldynamics
@@ -410,12 +399,7 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - China
   - Germany
-  - Israel
-  - Japan
-  - Singapore
-  - South Korea
   - United States
 - name: Playq
   url: https://job-boards.greenhouse.io/playq
@@ -441,10 +425,8 @@ companies:
   hiring_countries:
   - Canada
   - France
-  - India
   - Ireland
   - Spain
-  - Türkiye
   - United Kingdom
   - United States
 - name: Twitch
@@ -453,7 +435,6 @@ companies:
   slug: twitch
   priority: low
   hiring_countries:
-  - Japan
   - Sweden
   - United Kingdom
   - United States
@@ -464,11 +445,8 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - China
   - Czechia
   - Ireland
-  - Japan
-  - South Korea
   - Spain
   - United Kingdom
   - United States
@@ -519,8 +497,6 @@ companies:
   slug: roblox
   priority: low
   hiring_countries:
-  - India
-  - South Korea
   - United States
 - name: PlaytestCloud
   url: https://playtestcloud.recruitee.com/
@@ -537,9 +513,6 @@ companies:
   hiring_countries:
   - Australia
   - Brazil
-  - Japan
-  - Singapore
-  - South Korea
   - United Kingdom
   - United States
 - name: King
@@ -559,7 +532,6 @@ companies:
   slug: sperasoft
   priority: low
   hiring_countries:
-  - Armenia
   - Malta
   - Poland
   - Romania
@@ -651,29 +623,20 @@ companies:
   - Belgium
   - Brazil
   - Canada
-  - China
   - Denmark
   - Finland
   - France
   - Germany
-  - Hong Kong
-  - India
-  - Israel
-  - Japan
   - Mexico
   - Netherlands
   - Poland
   - Romania
-  - Singapore
-  - South Korea
   - Sweden
   - Switzerland
-  - Taiwan
   - Ukraine
   - United Arab Emirates
   - United Kingdom
   - United States
-  - Vietnam
 - name: Valeo
   url: https://valeo.wd3.myworkdayjobs.com/en-US/valeo_jobs/
   ats: workday
@@ -682,29 +645,17 @@ companies:
   hiring_countries:
   - Belgium
   - Brazil
-  - China
   - Czechia
-  - Egypt
   - France
   - Germany
   - Hungary
-  - India
-  - Indonesia
   - Ireland
   - Italy
-  - Japan
-  - Malaysia
   - Mexico
-  - Morocco
   - Netherlands
   - Poland
   - Romania
-  - South Korea
   - Spain
-  - Sri Lanka
-  - Thailand
-  - Tunisia
-  - Türkiye
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -721,14 +672,9 @@ companies:
   - Colombia
   - Germany
   - Hungary
-  - India
   - Lithuania
-  - Malaysia
   - Mexico
   - Netherlands
-  - New Zealand
-  - Philippines
-  - Singapore
   - Spain
   - United Kingdom
   - United States
@@ -742,7 +688,6 @@ companies:
   - Australia
   - Brazil
   - Germany
-  - India
   - Mexico
   - Sweden
   - United Arab Emirates
@@ -759,15 +704,8 @@ companies:
   - Canada
   - France
   - Germany
-  - Hong Kong
-  - India
-  - Indonesia
   - Ireland
-  - Japan
   - Mexico
-  - Singapore
-  - South Korea
-  - Türkiye
   - United States
 - name: Voldex
   url: https://jobs.ashbyhq.com/Voldex
@@ -792,7 +730,6 @@ companies:
   slug: spellbrush
   priority: low
   hiring_countries:
-  - Japan
   - United States
 - name: Hightouch
   url: aaaaaaaaaaaaaaaaaaaa
@@ -802,7 +739,6 @@ companies:
   hiring_countries:
   - Australia
   - France
-  - India
   - United Kingdom
   - United States
 - name: The New York Times
@@ -811,14 +747,7 @@ companies:
   slug: thenewyorktimes
   priority: low
   hiring_countries:
-  - Afghanistan
   - Belgium
-  - Hong Kong
-  - India
-  - Israel
-  - Japan
-  - Senegal
-  - South Korea
   - United Kingdom
   - United States
 - name: Tencent
@@ -830,22 +759,11 @@ companies:
   - Australia
   - Brazil
   - Canada
-  - China
   - France
   - Germany
-  - Hong Kong
-  - India
-  - Indonesia
-  - Japan
-  - Malaysia
   - Netherlands
-  - New Zealand
   - Poland
-  - Saudi Arabia
-  - Singapore
-  - South Korea
   - Sweden
-  - Thailand
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -865,8 +783,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
-  - Puerto Rico
   - United Kingdom
   - United States
 - name: Gardens Interactive
@@ -875,46 +791,31 @@ companies:
   slug: Gardens
   priority: low
   hiring_countries:
-  - Algeria
   - Argentina
   - Australia
   - Belgium
   - Brazil
   - Canada
-  - China
   - Colombia
   - Costa Rica
   - Czechia
   - Denmark
   - Dominican Republic
-  - Egypt
   - Estonia
   - France
   - Germany
   - Greece
   - Guatemala
-  - Hong Kong
-  - India
-  - Indonesia
   - Ireland
-  - Israel
   - Italy
-  - Japan
-  - Kenya
   - Mexico
-  - Pakistan
   - Peru
-  - Philippines
   - Poland
   - Portugal
   - Romania
-  - Saudi Arabia
   - Serbia
-  - Singapore
-  - South Africa
   - Spain
   - Switzerland
-  - Taiwan
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -926,7 +827,6 @@ companies:
   hiring_countries:
   - Canada
   - Ireland
-  - Japan
   - Mexico
   - Netherlands
   - United Kingdom
@@ -993,8 +893,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - Hong Kong
-  - Singapore
   - United States
 - name: Xsolla
   url: https://jobs.lever.co/xsolla
@@ -1002,18 +900,12 @@ companies:
   slug: xsolla
   priority: low
   hiring_countries:
-  - Azerbaijan
   - Brazil
   - Canada
-  - China
   - Cyprus
   - Germany
-  - Hong Kong
-  - Japan
-  - Malaysia
   - Mexico
   - Serbia
-  - South Korea
   - United States
 - name: Tentworks Interactive
   url: https://apply.workable.com/tentworks-interactive/
@@ -1021,7 +913,6 @@ companies:
   slug: tentworks-interactive
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Kolibri Games
   url: https://jobs.lever.co/kolibrigames
@@ -1036,8 +927,6 @@ companies:
   slug: testronic
   priority: low
   hiring_countries:
-  - Japan
-  - Philippines
   - Poland
   - United Kingdom
   - United States
@@ -1070,16 +959,12 @@ companies:
   slug: wargamingwelcometothejungle
   priority: low
   hiring_countries:
-  - China
   - Cyprus
   - Czechia
   - Germany
-  - Japan
   - Lithuania
   - Poland
   - Serbia
-  - Singapore
-  - South Korea
   - Ukraine
   - United Kingdom
   - United States
@@ -1091,13 +976,7 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - China
-  - India
-  - Japan
-  - Malaysia
   - Romania
-  - Singapore
-  - South Korea
   - Spain
   - Sweden
   - United Kingdom
@@ -1108,7 +987,6 @@ companies:
   slug: visualconcepts
   priority: low
   hiring_countries:
-  - China
   - Hungary
   - United States
 - name: 'skybox labs '
@@ -1125,9 +1003,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - China
-  - Japan
-  - South Korea
   - United Kingdom
 - name: 31st Union
   url: https://boards.greenhouse.io/31stunion
@@ -1151,7 +1026,6 @@ companies:
   priority: low
   hiring_countries:
   - Colombia
-  - New Zealand
 - name: Compulsion Games
   url: https://compulsiongames.bamboohr.com/careers
   ats: bamboohr
@@ -1168,7 +1042,6 @@ companies:
   - Belgium
   - Canada
   - Ireland
-  - Malaysia
   - Poland
   - Spain
   - United Kingdom
@@ -1178,9 +1051,6 @@ companies:
   slug: lnw.wd5.myworkdayjobs.com/SciPlayExternalCareersSite
   priority: low
   hiring_countries:
-  - India
-  - Israel
-  - Türkiye
   - Ukraine
   - United States
 - name: Housemarque
@@ -1209,10 +1079,7 @@ companies:
   - Canada
   - France
   - Italy
-  - Japan
   - Netherlands
-  - Singapore
-  - South Korea
   - Spain
   - United Kingdom
   - United States
@@ -1223,12 +1090,8 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
-  - Japan
   - Mexico
-  - Philippines
   - Poland
-  - Taiwan
   - United States
 - name: Tech Mahindra
   url: https://careers.techmahindra.com/CurrentOpportunity.aspx
@@ -1236,7 +1099,6 @@ companies:
   slug: techmahindra
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Glance
   url: https://boards.greenhouse.io/glance
@@ -1244,8 +1106,6 @@ companies:
   slug: glance
   priority: low
   hiring_countries:
-  - India
-  - Japan
   - United States
 - name: hutch
   url: https://apply.workable.com/hutch
@@ -1315,26 +1175,18 @@ companies:
   slug: adobe.wd5.myworkdayjobs.com/external_experienced
   priority: low
   hiring_countries:
-  - Armenia
   - Australia
   - Belgium
   - Brazil
   - Colombia
   - France
   - Germany
-  - India
   - Ireland
   - Italy
-  - Japan
   - Netherlands
   - Poland
   - Romania
-  - Saudi Arabia
-  - Singapore
-  - South Korea
   - Switzerland
-  - Taiwan
-  - Thailand
   - United Kingdom
   - United States
 - name: Rebellion
@@ -1365,9 +1217,7 @@ companies:
   priority: low
   hiring_countries:
   - Brazil
-  - India
   - Ireland
-  - Israel
   - Mexico
   - United States
 - name: Synechron
@@ -1378,11 +1228,8 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - Hong Kong
-  - India
   - Luxembourg
   - Mexico
-  - Saudi Arabia
   - Serbia
   - United Arab Emirates
   - United States
@@ -1399,50 +1246,30 @@ companies:
   - Brazil
   - Canada
   - Chile
-  - China
   - Colombia
   - Costa Rica
   - Czechia
-  - Egypt
   - Finland
   - France
   - Germany
-  - Ghana
   - Greece
-  - Hong Kong
   - Hungary
-  - India
-  - Indonesia
   - Ireland
-  - Israel
   - Italy
-  - Japan
-  - Malaysia
   - Mexico
   - Netherlands
   - Norway
   - Panama
-  - Philippines
   - Poland
   - Portugal
-  - Puerto Rico
   - Romania
-  - Russia
-  - Saudi Arabia
-  - Singapore
   - Slovakia
-  - South Africa
-  - South Korea
   - Spain
-  - Sri Lanka
   - Sweden
   - Switzerland
-  - Taiwan
-  - Türkiye
   - United Arab Emirates
   - United Kingdom
   - United States
-  - Vietnam
 - name: 'Illumina
 
     '
@@ -1455,30 +1282,18 @@ companies:
   - Austria
   - Brazil
   - Canada
-  - China
   - Colombia
   - France
   - Germany
-  - India
-  - Indonesia
-  - Israel
   - Italy
-  - Japan
   - Mexico
   - Netherlands
   - Norway
-  - Saudi Arabia
-  - Singapore
-  - South Africa
-  - South Korea
   - Spain
   - Sweden
-  - Taiwan
-  - Türkiye
   - United Arab Emirates
   - United Kingdom
   - United States
-  - Vietnam
 - name: Groupon
   url: https://boards.greenhouse.io/groupon
   ats: greenhouse
@@ -1493,7 +1308,6 @@ companies:
   - Ecuador
   - France
   - Germany
-  - India
   - Ireland
   - Netherlands
   - Peru
@@ -1522,36 +1336,23 @@ companies:
   - Austria
   - Brazil
   - Canada
-  - China
   - Colombia
   - Costa Rica
   - Croatia
   - Czechia
   - Germany
-  - Hong Kong
-  - India
-  - Indonesia
   - Ireland
-  - Israel
   - Italy
-  - Japan
-  - Jordan
-  - Malaysia
   - Mexico
   - Netherlands
   - Norway
   - Poland
   - Portugal
   - Romania
-  - Saudi Arabia
   - Serbia
-  - Singapore
-  - South Korea
   - Spain
   - Sweden
   - Switzerland
-  - Taiwan
-  - Thailand
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -1571,27 +1372,17 @@ companies:
   - Australia
   - Brazil
   - Canada
-  - China
   - Colombia
   - Costa Rica
   - Czechia
   - France
   - Germany
   - Greece
-  - India
-  - Indonesia
   - Ireland
-  - Japan
-  - Malaysia
   - Mexico
   - Poland
   - Romania
-  - Saudi Arabia
-  - Singapore
   - Spain
-  - Taiwan
-  - Thailand
-  - Tunisia
   - United Kingdom
   - United States
 - name: bounteous
@@ -1601,7 +1392,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - Mexico
   - United Kingdom
   - United States
@@ -1612,9 +1402,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
-  - Israel
-  - Taiwan
   - United States
 - name: Eventbrite
   url: https://boards.greenhouse.io/eventbriteinc
@@ -1624,7 +1411,6 @@ companies:
   hiring_countries:
   - Argentina
   - Australia
-  - India
   - Ireland
   - Spain
   - United Kingdom
@@ -1643,7 +1429,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - South Korea
   - United States
 - name: Skydance
   url: https://jobs.lever.co/skydance
@@ -1668,10 +1453,7 @@ companies:
   priority: low
   hiring_countries:
   - Brazil
-  - China
-  - Indonesia
   - Mexico
-  - Singapore
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -1684,18 +1466,11 @@ companies:
   - Argentina
   - Australia
   - Canada
-  - China
   - France
   - Germany
-  - Hong Kong
-  - India
-  - Japan
   - Mexico
   - Netherlands
-  - Singapore
-  - South Korea
   - Sweden
-  - The Bahamas
   - United Kingdom
   - United States
 - name: Dream Games
@@ -1704,7 +1479,6 @@ companies:
   slug: dreamgames
   priority: low
   hiring_countries:
-  - Türkiye
   - United Kingdom
 - name: Double Eleven
   url: https://apply.workable.com/double-eleven/
@@ -1712,7 +1486,6 @@ companies:
   slug: double-eleven
   priority: low
   hiring_countries:
-  - Malaysia
   - United Kingdom
 - name: Devoted Studios
   url: https://apply.workable.com/devoted-studios-1/
@@ -1764,11 +1537,7 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - Indonesia
-  - Japan
   - Mexico
-  - Singapore
-  - Thailand
   - United Kingdom
   - United States
 - name: 'Atomic cartoons '
@@ -1798,13 +1567,9 @@ companies:
   - Denmark
   - Germany
   - Hungary
-  - India
   - Italy
   - Poland
-  - Singapore
-  - Taiwan
   - United States
-  - Vietnam
 - name: appzen
   url: https://jobs.lever.co/appzen
   ats: lever
@@ -1812,7 +1577,6 @@ companies:
   priority: low
   hiring_countries:
   - Germany
-  - India
   - United Kingdom
   - United States
 - name: Crunchyroll
@@ -1821,11 +1585,7 @@ companies:
   slug: crunchyroll
   priority: low
   hiring_countries:
-  - India
-  - Japan
   - Mexico
-  - South Korea
-  - Thailand
   - United Kingdom
   - United States
 - name: turtle rock studios
@@ -1871,7 +1631,6 @@ companies:
   slug: mobentertainment
   priority: low
   hiring_countries:
-  - Japan
   - United States
 - name: Socialpoint
   url: https://job-boards.greenhouse.io/socialpoint
@@ -1886,12 +1645,8 @@ companies:
   slug: seedify-fund
   priority: low
   hiring_countries:
-  - India
-  - Indonesia
   - Netherlands
-  - Philippines
   - Portugal
-  - Vietnam
 - name: Push Gaming
   url: https://pushgaming.teamtailor.com/jobs
   ats: bamboohr
@@ -1899,7 +1654,6 @@ companies:
   priority: low
   hiring_countries:
   - Brazil
-  - Isle of Man
   - Malta
   - United Kingdom
 - name: Digital extremes
@@ -1937,13 +1691,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - India
-  - Israel
-  - Japan
-  - New Zealand
-  - Philippines
-  - Singapore
-  - South Korea
   - United States
 - name: Green man gaming
   url: https://apply.workable.com/green-man-gaming
@@ -1968,9 +1715,6 @@ companies:
   slug: animocabrands
   priority: low
   hiring_countries:
-  - Hong Kong
-  - Malaysia
-  - Singapore
   - United Arab Emirates
   - United States
 - name: Blazing Griffin
@@ -1987,8 +1731,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - Japan
-  - Singapore
   - United States
 - name: LBC Studios
   url: https://lbcstudiosca.bamboohr.com/careers
@@ -2003,9 +1745,7 @@ companies:
   slug: bold
   priority: low
   hiring_countries:
-  - India
   - Poland
-  - Puerto Rico
   - United States
 - name: broadcom
   url: https://broadcom.wd1.myworkdayjobs.com/External_Career
@@ -2013,28 +1753,17 @@ companies:
   slug: broadcom.wd1.myworkdayjobs.com/External_Career
   priority: low
   hiring_countries:
-  - Armenia
   - Australia
   - Belgium
   - Bulgaria
   - Canada
-  - China
   - Czechia
   - Denmark
   - France
   - Germany
-  - Hong Kong
-  - India
   - Ireland
-  - Israel
   - Italy
-  - Japan
-  - Malaysia
-  - Saudi Arabia
-  - Singapore
-  - South Korea
   - Spain
-  - Taiwan
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -2044,7 +1773,6 @@ companies:
   slug: transunion.wd5.myworkdayjobs.com/TransUnion
   priority: low
   hiring_countries:
-  - Botswana
   - Brazil
   - Canada
   - Chile
@@ -2053,16 +1781,8 @@ companies:
   - Dominican Republic
   - Ecuador
   - Guatemala
-  - Hong Kong
-  - India
   - Ireland
-  - Kenya
-  - Lesotho
   - Mexico
-  - Namibia
-  - Philippines
-  - Rwanda
-  - South Africa
   - Spain
   - United Kingdom
   - United States
@@ -2102,11 +1822,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - India
-  - Japan
-  - Malaysia
-  - New Zealand
-  - Philippines
 - name: ARVORE Immersive Experiences
   url: https://arvore.bamboohr.com/careers
   ats: bamboohr
@@ -2144,24 +1859,17 @@ companies:
   - Australia
   - Belgium
   - Canada
-  - China
   - Czechia
   - Denmark
   - France
   - Germany
   - Hungary
-  - India
   - Ireland
   - Italy
-  - Japan
-  - Malaysia
   - Netherlands
-  - Philippines
   - Poland
   - Portugal
   - Romania
-  - Saudi Arabia
-  - Singapore
   - Slovakia
   - Spain
   - Sweden
@@ -2177,25 +1885,18 @@ companies:
   - Belgium
   - Canada
   - Chile
-  - China
   - France
   - Germany
-  - Hong Kong
   - Hungary
-  - India
   - Ireland
   - Italy
-  - Japan
   - Luxembourg
   - Mexico
   - Netherlands
   - Serbia
-  - Singapore
-  - South Korea
   - Spain
   - Sweden
   - Switzerland
-  - Taiwan
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -2269,9 +1970,6 @@ companies:
   - Costa Rica
   - France
   - Germany
-  - India
-  - Israel
-  - Japan
   - Netherlands
   - United Kingdom
   - United States
@@ -2296,10 +1994,8 @@ companies:
   slug: dpsgames
   priority: low
   hiring_countries:
-  - China
   - Cyprus
   - Czechia
-  - Japan
   - Lithuania
   - Poland
   - Serbia
@@ -2315,7 +2011,6 @@ companies:
   - Lithuania
   - Poland
   - Serbia
-  - South Korea
   - Ukraine
   - United Kingdom
 - name: Easybrain
@@ -2324,7 +2019,6 @@ companies:
   slug: easybrain
   priority: low
   hiring_countries:
-  - Belarus
   - Cyprus
   - Poland
 - name: Exient
@@ -2467,9 +2161,7 @@ companies:
   slug: supercell
   priority: low
   hiring_countries:
-  - China
   - Finland
-  - South Korea
   - United Kingdom
   - United States
 - name: System Era Softworks
@@ -2493,8 +2185,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
-  - Japan
   - Mexico
   - United Kingdom
   - United States
@@ -2504,8 +2194,6 @@ companies:
   slug: zeptolab
   priority: low
   hiring_countries:
-  - Georgia
-  - Kazakhstan
   - Serbia
 - name: Seismic Squirrel
   url: https://seismicsquirrel.bamboohr.com/jobs/
@@ -2534,7 +2222,6 @@ companies:
   slug: moonbug-entertainment
   priority: low
   hiring_countries:
-  - Singapore
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -2545,8 +2232,6 @@ companies:
   priority: low
   hiring_countries:
   - France
-  - Türkiye
-  - Vietnam
 - name: Lighthouse Games
   url: https://apply.workable.com/lighthousegames/
   ats: workable
@@ -2562,11 +2247,8 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - Gibraltar
   - Ireland
-  - Isle of Man
   - Malta
-  - Philippines
   - Poland
   - Romania
   - United Kingdom
@@ -2577,11 +2259,6 @@ companies:
   slug: inmobi
   priority: low
   hiring_countries:
-  - China
-  - India
-  - Japan
-  - Saudi Arabia
-  - Singapore
   - United Kingdom
   - United States
 - name: Hacksaw Studios
@@ -2689,7 +2366,6 @@ companies:
   priority: low
   hiring_countries:
   - Germany
-  - India
   - United Kingdom
   - United States
 - name: Localsoft games
@@ -2712,7 +2388,6 @@ companies:
   slug: triggerfish
   priority: low
   hiring_countries:
-  - South Africa
   - United Kingdom
 - name: Azerion
   url: https://azerion.bamboohr.com/careers
@@ -2785,7 +2460,6 @@ companies:
   slug: LunchboxEntertainment
   priority: low
   hiring_countries:
-  - Indonesia
   - Ireland
   - United Kingdom
   - United States
@@ -2795,7 +2469,6 @@ companies:
   slug: huuuge
   priority: low
   hiring_countries:
-  - Israel
   - Poland
 - name: Trackman
   url: https://trackman.recruitee.com/
@@ -2809,11 +2482,8 @@ companies:
   - Denmark
   - Dominican Republic
   - Germany
-  - Japan
-  - New Zealand
   - Sweden
   - Switzerland
-  - Thailand
   - United Kingdom
   - United States
 - name: Scorewarrior
@@ -2856,7 +2526,6 @@ companies:
   priority: low
   hiring_countries:
   - Belgium
-  - Indonesia
 - name: 'kaizen gaming '
   url: https://job-boards.greenhouse.io/embed/job_board?for=kaizengaming
   ats: greenhouse
@@ -2872,7 +2541,6 @@ companies:
   - Czechia
   - Denmark
   - Germany
-  - Ghana
   - Greece
   - Malta
   - Peru
@@ -2983,8 +2651,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - Hong Kong
-  - Singapore
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -2995,11 +2661,8 @@ companies:
   priority: low
   hiring_countries:
   - Brazil
-  - China
   - France
   - Germany
-  - Japan
-  - Singapore
   - United Kingdom
   - United States
 - name: FanDuel
@@ -3031,8 +2694,6 @@ companies:
   priority: low
   hiring_countries:
   - Germany
-  - India
-  - Türkiye
 - name: Tripwire Interactive
   url: aaaaaaaaaaaaaaaaaaaa
   ats: greenhouse
@@ -3056,15 +2717,8 @@ companies:
   - Belgium
   - Brazil
   - Canada
-  - China
-  - India
   - Italy
-  - Kuwait
   - Netherlands
-  - Qatar
-  - Saudi Arabia
-  - Singapore
-  - South Korea
   - Spain
   - United Arab Emirates
   - United Kingdom
@@ -3076,14 +2730,9 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - China
   - France
   - Germany
-  - Hong Kong
-  - India
   - Italy
-  - Japan
-  - Singapore
   - United Kingdom
   - United States
 - name: Brainrider
@@ -3100,7 +2749,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United States
 - name: 'Masterclass '
   url: https://www.masterclass.com/careers
@@ -3128,25 +2776,15 @@ companies:
   - Austria
   - Brazil
   - Canada
-  - China
   - Costa Rica
   - Finland
   - Germany
-  - India
   - Ireland
-  - Israel
-  - Japan
-  - Malaysia
   - Mexico
   - Poland
   - Romania
-  - Saudi Arabia
-  - Singapore
-  - South Korea
-  - Taiwan
   - United Kingdom
   - United States
-  - Vietnam
 - name: NCR Atleos
   url: https://ncratleos.wd1.myworkdayjobs.com/ext_apacatleos
   ats: workday
@@ -3154,12 +2792,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - Fiji
-  - India
-  - Malaysia
-  - New Zealand
-  - Philippines
-  - Singapore
   - United States
 - name: HeadSpin
   url: https://headspin.bamboohr.com/jobs/
@@ -3167,7 +2799,6 @@ companies:
   slug: headspin
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Everlane
   url: https://boards.greenhouse.io/everlane
@@ -3184,7 +2815,6 @@ companies:
   hiring_countries:
   - Australia
   - Netherlands
-  - South Korea
   - United Kingdom
   - United States
 - name: Mythic Talent
@@ -3216,9 +2846,7 @@ companies:
   - Italy
   - Mexico
   - Netherlands
-  - Singapore
   - Spain
-  - Thailand
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -3229,7 +2857,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - Mauritius
   - United States
 - name: Universal Music Group
   url: https://umusic.wd5.myworkdayjobs.com/UMGUS
@@ -3255,10 +2882,6 @@ companies:
   - Australia
   - Brazil
   - Canada
-  - China
-  - India
-  - Singapore
-  - Taiwan
   - United Kingdom
   - United States
 - name: Unilever
@@ -3267,10 +2890,8 @@ companies:
   slug: unilever.wd3.myworkdayjobs.com/Unilever_Experienced_Professionals
   priority: low
   hiring_countries:
-  - Algeria
   - Argentina
   - Australia
-  - Bangladesh
   - Belgium
   - Brazil
   - Bulgaria
@@ -3281,40 +2902,21 @@ companies:
   - Denmark
   - Dominican Republic
   - Ecuador
-  - Egypt
   - El Salvador
   - France
   - Germany
-  - Ghana
   - Guatemala
   - Honduras
   - Hungary
-  - India
-  - Indonesia
   - Italy
-  - Kazakhstan
-  - Kenya
-  - Laos
   - Lithuania
-  - Malaysia
   - Mexico
-  - Myanmar (Burma)
   - Netherlands
-  - Pakistan
-  - Philippines
   - Poland
-  - Saudi Arabia
-  - Singapore
-  - South Africa
-  - South Korea
-  - Sri Lanka
-  - Thailand
-  - Türkiye
   - United Arab Emirates
   - United Kingdom
   - United States
   - Uruguay
-  - Vietnam
 - name: RAPP
   url: https://boards.greenhouse.io/rapp
   ats: greenhouse
@@ -3322,10 +2924,7 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - Egypt
   - Germany
-  - Malaysia
-  - Mauritius
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -3337,7 +2936,6 @@ companies:
   hiring_countries:
   - Australia
   - Costa Rica
-  - India
   - United Kingdom
   - United States
 - name: WongDoody
@@ -3349,11 +2947,8 @@ companies:
   - Australia
   - Canada
   - Germany
-  - Hong Kong
-  - India
   - Netherlands
   - Serbia
-  - Taiwan
   - United Kingdom
   - United States
 - name: Matte projects
@@ -3372,20 +2967,13 @@ companies:
   - Australia
   - Brazil
   - Canada
-  - China
   - Colombia
   - France
-  - Hong Kong
-  - India
-  - Malaysia
   - Mexico
-  - New Zealand
   - Poland
-  - Singapore
   - Spain
   - United Kingdom
   - United States
-  - Vietnam
 - name: Walmart
   url: aaaaaaaaaaaaaaaaaaaa
   ats: workday
@@ -3393,7 +2981,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United States
 - name: Mojang
   url: https://boards.greenhouse.io/mojangab
@@ -3409,7 +2996,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United States
 - name: Univision
   url: https://univision.wd1.myworkdayjobs.com/en-US/External/
@@ -3434,94 +3020,46 @@ companies:
   slug: pwc.wd3.myworkdayjobs.com/Global_Experienced_Careers
   priority: low
   hiring_countries:
-  - Albania
   - Argentina
   - Austria
-  - Bahrain
-  - Bangladesh
-  - Barbados
   - Belgium
-  - Bermuda
   - Bolivia
-  - Bosnia and Herzegovina
   - Brazil
-  - British Virgin Islands
   - Bulgaria
-  - Cambodia
   - Canada
-  - Cayman Islands
-  - China
   - Costa Rica
   - Croatia
   - Cyprus
   - Czechia
-  - Democratic Republic of the Congo
   - Denmark
   - Dominican Republic
   - Ecuador
-  - Egypt
   - France
-  - Georgia
-  - Gibraltar
   - Greece
   - Guatemala
-  - Guernsey
   - Hungary
-  - India
-  - Indonesia
-  - Iraq
   - Ireland
-  - Isle of Man
-  - Israel
   - Italy
-  - Jamaica
-  - Jersey
-  - Jordan
-  - Kazakhstan
-  - Kenya
   - Latvia
-  - Lebanon
   - Luxembourg
-  - Malaysia
   - Malta
-  - Mauritius
   - Mexico
-  - Monaco
-  - Mongolia
-  - Morocco
   - Netherlands
-  - New Zealand
   - Nicaragua
-  - Nigeria
-  - Oman
-  - Pakistan
-  - Papua New Guinea
   - Peru
-  - Philippines
   - Poland
   - Portugal
-  - Qatar
   - Romania
-  - Saudi Arabia
   - Serbia
-  - Singapore
   - Slovakia
   - Slovenia
-  - South Africa
   - Spain
-  - Sri Lanka
   - Switzerland
-  - Taiwan
-  - Thailand
-  - Trinidad and Tobago
-  - Tunisia
   - Ukraine
   - United Arab Emirates
   - United Kingdom
   - United States
-  - Uzbekistan
   - Venezuela
-  - Vietnam
 - name: CAE
   url: https://cae.wd3.myworkdayjobs.com/en-US/career
   ats: workday
@@ -3531,32 +3069,20 @@ companies:
   - Australia
   - Austria
   - Brazil
-  - Brunei
   - Canada
   - Chile
-  - China
   - Colombia
   - Denmark
   - France
   - Germany
   - Greece
   - Hungary
-  - India
-  - Indonesia
   - Ireland
   - Italy
-  - Malaysia
   - Mexico
   - Netherlands
-  - New Zealand
-  - Philippines
   - Poland
-  - Qatar
-  - Saudi Arabia
-  - Singapore
-  - South Korea
   - Spain
-  - Taiwan
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -3609,15 +3135,10 @@ companies:
   - Belgium
   - Brazil
   - Canada
-  - China
   - Colombia
   - France
   - Germany
-  - Hong Kong
-  - Japan
   - Mexico
-  - Singapore
-  - South Korea
   - Spain
   - Sweden
   - United Kingdom
@@ -3630,9 +3151,7 @@ companies:
   hiring_countries:
   - Brazil
   - Croatia
-  - Gibraltar
   - Malta
-  - North Macedonia
   - United States
 - name: TransPerfect
   url: https://tgs.recruitee.com
@@ -3645,9 +3164,7 @@ companies:
   - Austria
   - Belgium
   - Brazil
-  - Cameroon
   - Canada
-  - China
   - Colombia
   - Costa Rica
   - Croatia
@@ -3656,35 +3173,20 @@ companies:
   - Finland
   - France
   - Germany
-  - Hong Kong
-  - India
-  - Israel
-  - Japan
   - Lithuania
-  - Malaysia
   - Mexico
-  - Mongolia
-  - Morocco
   - Netherlands
   - Norway
-  - Philippines
   - Poland
   - Portugal
-  - Puerto Rico
   - Romania
-  - Saudi Arabia
   - Serbia
-  - Singapore
-  - South Africa
-  - South Korea
   - Spain
   - Sweden
   - Switzerland
-  - Taiwan
   - United Arab Emirates
   - United Kingdom
   - United States
-  - Vietnam
 - name: Mercury
   url: aaaaaaaaaaaaaaaaaaaa
   ats: greenhouse
@@ -3718,8 +3220,6 @@ companies:
   - Australia
   - Canada
   - Germany
-  - India
-  - Saudi Arabia
   - Sweden
   - Switzerland
   - United Kingdom
@@ -3766,12 +3266,8 @@ companies:
   - Canada
   - France
   - Germany
-  - India
-  - Japan
   - Mexico
   - Poland
-  - Singapore
-  - South Korea
   - Spain
   - Sweden
   - Ukraine
@@ -3791,7 +3287,6 @@ companies:
   slug: Joyteractive
   priority: low
   hiring_countries:
-  - Belarus
   - Cyprus
   - Poland
 - name: Sorare
@@ -3814,7 +3309,6 @@ companies:
   slug: ello
   priority: low
   hiring_countries:
-  - Kenya
   - United States
 - name: Beyond Sports
   url: https://jobs.ashbyhq.com/beyondsports
@@ -3864,8 +3358,6 @@ companies:
   - Colombia
   - France
   - Germany
-  - Japan
-  - South Korea
   - United Kingdom
   - United States
 - name: Whalar
@@ -3925,41 +3417,19 @@ companies:
   priority: low
   hiring_countries:
   - Argentina
-  - Armenia
   - Australia
-  - Bahrain
   - Brazil
-  - Cameroon
   - Czechia
   - France
-  - Ghana
   - Greece
-  - Hong Kong
-  - Indonesia
   - Italy
-  - Japan
-  - Kazakhstan
-  - Kenya
-  - Kyrgyzstan
   - Mexico
-  - Moldova
-  - Morocco
-  - New Zealand
-  - Pakistan
   - Peru
-  - Philippines
   - Portugal
-  - South Africa
-  - South Korea
   - Spain
-  - Taiwan
-  - Thailand
-  - Türkiye
   - Ukraine
   - United Arab Emirates
   - United Kingdom
-  - Uzbekistan
-  - Vietnam
 - name: Yahoo
   url: https://ouryahoo.wd5.myworkdayjobs.com/careers
   ats: workday
@@ -3969,13 +3439,7 @@ companies:
   - Australia
   - Canada
   - Germany
-  - Hong Kong
-  - India
   - Ireland
-  - Israel
-  - Japan
-  - Singapore
-  - Taiwan
   - United Kingdom
   - United States
 - name: Mapbox
@@ -3985,13 +3449,9 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - Belarus
-  - China
   - Finland
   - Germany
-  - Japan
   - Poland
-  - Singapore
   - United Kingdom
   - United States
 - name: Prophecy
@@ -4000,7 +3460,6 @@ companies:
   slug: prophecysimpledatalabs
   priority: low
   hiring_countries:
-  - India
   - United Kingdom
   - United States
 - name: AeroSpike
@@ -4012,11 +3471,6 @@ companies:
   - Australia
   - Canada
   - Germany
-  - India
-  - Indonesia
-  - Israel
-  - Singapore
-  - Thailand
   - United Kingdom
   - United States
 - name: zeta
@@ -4025,7 +3479,6 @@ companies:
   slug: zeta
   priority: low
   hiring_countries:
-  - India
   - United Kingdom
   - United States
 - name: TALA
@@ -4034,20 +3487,14 @@ companies:
   slug: tala
   priority: low
   hiring_countries:
-  - India
-  - Kenya
   - Mexico
-  - Philippines
   - United States
-  - Vietnam
 - name: Toku
   url: aaaaaaaaaaaaaaaaaaaa
   ats: lever
   slug: toku
   priority: low
   hiring_countries:
-  - India
-  - Philippines
   - Switzerland
   - United States
 - name: FICO
@@ -4060,18 +3507,10 @@ companies:
   - Brazil
   - Canada
   - Germany
-  - India
-  - Indonesia
   - Italy
-  - Japan
   - Mexico
   - Netherlands
-  - New Zealand
-  - Philippines
-  - Singapore
-  - South Africa
   - Sweden
-  - Thailand
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -4083,8 +3522,6 @@ companies:
   hiring_countries:
   - Australia
   - Chile
-  - India
-  - Singapore
   - United States
 - name: Semtech
   url: https://semtech.wd1.myworkdayjobs.com/SemtechCareers/1/refreshFacet/318c8bb6f553100021d223d9780d30be
@@ -4093,14 +3530,9 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - China
   - France
-  - India
-  - Japan
-  - Malaysia
   - Mexico
   - Switzerland
-  - Taiwan
   - United Kingdom
   - United States
 - name: Saviynt
@@ -4113,11 +3545,7 @@ companies:
   - Canada
   - France
   - Germany
-  - India
-  - Japan
-  - Philippines
   - Poland
-  - Singapore
   - United Kingdom
   - United States
 - name: Balbix
@@ -4126,7 +3554,6 @@ companies:
   slug: balbix
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Nium
   url: aaaaaaaaaaaaaaaaaaaa
@@ -4137,15 +3564,10 @@ companies:
   - Australia
   - Brazil
   - Canada
-  - Hong Kong
-  - India
-  - Japan
   - Lithuania
   - Malta
   - Mexico
   - Netherlands
-  - Saudi Arabia
-  - Singapore
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -4155,7 +3577,6 @@ companies:
   slug: safe
   priority: low
   hiring_countries:
-  - India
   - United Kingdom
   - United States
 - name: Sabre India
@@ -4167,23 +3588,14 @@ companies:
   - Australia
   - Brazil
   - Chile
-  - China
   - Colombia
   - Germany
-  - Hong Kong
-  - India
   - Italy
-  - Kazakhstan
-  - Malaysia
   - Mexico
   - Netherlands
   - Poland
   - Portugal
-  - Saudi Arabia
-  - Singapore
-  - South Korea
   - Spain
-  - Thailand
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -4195,7 +3607,6 @@ companies:
   priority: low
   hiring_countries:
   - France
-  - India
   - Mexico
   - Romania
   - United Kingdom
@@ -4207,7 +3618,6 @@ companies:
   priority: low
   hiring_countries:
   - Colombia
-  - India
   - United States
 - name: Syniverse
   url: https://syniverse.wd1.myworkdayjobs.com/SyniverseCareers
@@ -4215,10 +3625,7 @@ companies:
   slug: syniverse.wd1.myworkdayjobs.com/SyniverseCareers
   priority: low
   hiring_countries:
-  - China
   - Costa Rica
-  - Hong Kong
-  - India
   - Luxembourg
   - United Arab Emirates
   - United States
@@ -4233,7 +3640,6 @@ companies:
   - Canada
   - France
   - Germany
-  - India
   - Netherlands
   - Portugal
   - Spain
@@ -4244,7 +3650,6 @@ companies:
   slug: sinch
   priority: low
   hiring_countries:
-  - India
   - Spain
   - Sweden
 - name: Sumo logic
@@ -4256,10 +3661,6 @@ companies:
   - Australia
   - Costa Rica
   - Germany
-  - India
-  - Japan
-  - Singapore
-  - South Korea
   - United Kingdom
   - United States
 - name: Sword Health
@@ -4282,7 +3683,6 @@ companies:
   - Austria
   - Canada
   - Finland
-  - Gibraltar
   - Malta
   - Poland
   - Spain
@@ -4302,41 +3702,23 @@ companies:
   priority: low
   hiring_countries:
   - Argentina
-  - Armenia
   - Australia
   - Belgium
   - Brazil
   - Canada
   - Chile
-  - China
   - Colombia
   - Czechia
-  - Egypt
   - France
   - Germany
-  - Hong Kong
-  - India
-  - Indonesia
-  - Israel
   - Italy
-  - Japan
-  - Kenya
-  - Malaysia
   - Mexico
-  - Morocco
   - Netherlands
-  - New Zealand
   - Poland
   - Portugal
-  - Qatar
   - Romania
-  - Saudi Arabia
-  - Singapore
-  - South Africa
-  - South Korea
   - Spain
   - Switzerland
-  - Taiwan
   - Ukraine
   - United Arab Emirates
   - United Kingdom
@@ -4359,28 +3741,16 @@ companies:
   - Finland
   - France
   - Germany
-  - India
-  - Indonesia
   - Ireland
-  - Israel
   - Italy
-  - Japan
   - Mexico
   - Netherlands
-  - New Zealand
   - Norway
   - Peru
-  - Philippines
   - Portugal
-  - Saudi Arabia
-  - Singapore
-  - South Africa
-  - South Korea
   - Spain
   - Sweden
   - Switzerland
-  - Taiwan
-  - Thailand
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -4390,13 +3760,6 @@ companies:
   slug: nahc
   priority: low
   hiring_countries:
-  - China
-  - Hong Kong
-  - Japan
-  - Malaysia
-  - Singapore
-  - Taiwan
-  - Thailand
   - United Arab Emirates
   - United States
 - name: Spaulding Ridge
@@ -4406,8 +3769,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
-  - Philippines
   - Spain
   - Sweden
   - United Kingdom
@@ -4423,35 +3784,22 @@ companies:
   - Belgium
   - Canada
   - Chile
-  - China
   - Colombia
   - Dominican Republic
   - France
   - Germany
   - Greece
-  - Hong Kong
-  - India
-  - Indonesia
   - Ireland
   - Italy
-  - Japan
-  - Malaysia
   - Mexico
   - Netherlands
-  - New Zealand
   - Norway
   - Poland
   - Portugal
   - Romania
-  - Singapore
-  - South Africa
-  - South Korea
   - Spain
   - Sweden
   - Switzerland
-  - Taiwan
-  - Thailand
-  - Türkiye
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -4476,9 +3824,6 @@ companies:
   slug: tencent.wd1.myworkdayjobs.com/timi_careers
   priority: low
   hiring_countries:
-  - China
-  - Japan
-  - Singapore
   - United Kingdom
 - name: Hedra
   url: https://jobs.ashbyhq.com/hedra
@@ -4513,16 +3858,11 @@ companies:
   - Canada
   - France
   - Germany
-  - India
   - Italy
   - Mexico
   - Netherlands
-  - Singapore
-  - South Africa
-  - South Korea
   - Spain
   - Switzerland
-  - Taiwan
   - United Kingdom
   - United States
 - name: Light Speed Studios
@@ -4545,7 +3885,6 @@ companies:
   slug: Onehouse
   priority: low
   hiring_countries:
-  - India
   - United Kingdom
   - United States
 - name: Haleon
@@ -4560,51 +3899,30 @@ companies:
   - Brazil
   - Canada
   - Chile
-  - China
   - Colombia
   - Germany
   - Greece
-  - Hong Kong
   - Hungary
-  - India
-  - Indonesia
   - Ireland
-  - Israel
   - Italy
-  - Japan
-  - Kazakhstan
-  - Kenya
-  - Malaysia
   - Mexico
-  - Pakistan
   - Panama
   - Poland
-  - Puerto Rico
   - Romania
-  - Singapore
   - Slovakia
   - Spain
-  - Sri Lanka
   - Sweden
   - Switzerland
-  - Taiwan
-  - Türkiye
   - Ukraine
   - United Kingdom
   - United States
-  - Vietnam
 - name: Moloco
   url: https://boards.greenhouse.io/moloco
   ats: greenhouse
   slug: moloco
   priority: low
   hiring_countries:
-  - China
   - France
-  - India
-  - Japan
-  - Singapore
-  - South Korea
   - United Kingdom
   - United States
 - name: Instawork
@@ -4613,8 +3931,6 @@ companies:
   slug: instawork
   priority: low
   hiring_countries:
-  - India
-  - Singapore
   - United States
 - name: Lytx, Inc.
   url: https://lytx.wd1.myworkdayjobs.com/Lytx
@@ -4622,8 +3938,6 @@ companies:
   slug: lytx.wd1.myworkdayjobs.com/Lytx
   priority: low
   hiring_countries:
-  - India
-  - Israel
   - United Kingdom
   - United States
 - name: GoDaddy
@@ -4636,10 +3950,8 @@ companies:
   - Belgium
   - Bulgaria
   - Canada
-  - China
   - Colombia
   - France
-  - India
   - Romania
   - Serbia
   - United Kingdom
@@ -4653,7 +3965,6 @@ companies:
   - Australia
   - Canada
   - Germany
-  - India
   - Ireland
   - United Kingdom
   - United States
@@ -4665,9 +3976,7 @@ companies:
   hiring_countries:
   - Australia
   - Brazil
-  - India
   - Italy
-  - Japan
   - Mexico
   - Netherlands
   - Spain
@@ -4683,17 +3992,12 @@ companies:
   - Canada
   - France
   - Germany
-  - India
-  - Israel
   - Italy
   - Poland
-  - Singapore
-  - South Africa
   - Sweden
   - Switzerland
   - United Kingdom
   - United States
-  - Vietnam
 - name: Toast
   url: https://boards.greenhouse.io/embed/job_board?for=Toast
   ats: greenhouse
@@ -4702,9 +4006,7 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - India
   - Ireland
-  - Taiwan
   - United Kingdom
   - United States
 - name: Highspot
@@ -4715,7 +4017,6 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - India
   - United Kingdom
   - United States
 - name: HackerRank
@@ -4724,7 +4025,6 @@ companies:
   slug: hackerrank
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Banyan Software
   url: https://boards.greenhouse.io/banyansoftware/
@@ -4737,9 +4037,7 @@ companies:
   - Denmark
   - France
   - Germany
-  - India
   - Netherlands
-  - New Zealand
   - Norway
   - Sweden
   - United Kingdom
@@ -4751,15 +4049,9 @@ companies:
   priority: low
   hiring_countries:
   - Brazil
-  - China
   - Colombia
   - France
-  - Hong Kong
-  - India
-  - Japan
   - Mexico
-  - Philippines
-  - Saudi Arabia
   - United Kingdom
   - United States
 - name: Arkose Labs
@@ -4770,7 +4062,6 @@ companies:
   hiring_countries:
   - Argentina
   - Australia
-  - India
   - United States
 - name: TVH
   url: https://tvh.wd3.myworkdayjobs.com/JobsatTVH
@@ -4783,16 +4074,11 @@ companies:
   - Canada
   - France
   - Germany
-  - India
   - Italy
-  - New Zealand
   - Poland
   - Romania
-  - Singapore
-  - South Africa
   - Spain
   - Sweden
-  - Türkiye
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -4803,7 +4089,6 @@ companies:
   priority: low
   hiring_countries:
   - Germany
-  - India
   - United States
 - name: Vendavo
   url: https://jobs.lever.co/vendavo
@@ -4813,7 +4098,6 @@ companies:
   hiring_countries:
   - Czechia
   - Germany
-  - India
   - United Kingdom
   - United States
 - name: Ion
@@ -4825,20 +4109,12 @@ companies:
   - Austria
   - Brazil
   - Canada
-  - China
   - France
   - Germany
-  - Hong Kong
   - Hungary
-  - India
-  - Indonesia
   - Ireland
   - Italy
-  - Malaysia
   - Mexico
-  - Moldova
-  - Singapore
-  - South Korea
   - Spain
   - United Arab Emirates
   - United Kingdom
@@ -4850,7 +4126,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United States
 - name: Zuora
   url: https://www.zuora.com/careers-search-jobs/
@@ -4859,11 +4134,8 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - China
   - Costa Rica
   - Germany
-  - India
-  - Japan
   - United Kingdom
   - United States
 - name: Motorola solutions
@@ -4872,53 +4144,34 @@ companies:
   slug: motorolasolutions.wd5.myworkdayjobs.com/Careers
   priority: low
   hiring_countries:
-  - Algeria
   - Argentina
   - Australia
   - Austria
-  - Azerbaijan
   - Brazil
   - Canada
   - Chile
   - Colombia
   - Denmark
-  - Egypt
   - Finland
   - France
   - Germany
   - Greece
-  - Hong Kong
-  - India
-  - Indonesia
   - Ireland
-  - Israel
   - Italy
-  - Japan
   - Lithuania
-  - Malaysia
   - Mexico
   - Netherlands
   - Norway
   - Peru
   - Poland
   - Portugal
-  - Puerto Rico
-  - Qatar
   - Romania
-  - Saudi Arabia
-  - Singapore
-  - South Africa
-  - South Korea
   - Spain
   - Sweden
-  - Taiwan
-  - Thailand
-  - Türkiye
   - Ukraine
   - United Arab Emirates
   - United Kingdom
   - United States
-  - Vietnam
 - name: Wrike
   url: https://boards.greenhouse.io/wrike
   ats: greenhouse
@@ -4932,9 +4185,7 @@ companies:
   - Estonia
   - France
   - Germany
-  - India
   - Ireland
-  - Japan
   - United States
 - name: Clearwater Analytics
   url: https://clearwateranalytics.wd1.myworkdayjobs.com/Clearwater_Analytics_Careers
@@ -4946,12 +4197,8 @@ companies:
   - Austria
   - France
   - Germany
-  - Hong Kong
-  - India
   - Ireland
-  - Japan
   - Luxembourg
-  - Singapore
   - United Kingdom
   - United States
 - name: beghou consulting
@@ -4960,7 +4207,6 @@ companies:
   slug: beghouconsulting
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Likewize
   url: ''
@@ -4970,7 +4216,6 @@ companies:
   hiring_countries:
   - Canada
   - Germany
-  - India
   - United Kingdom
   - United States
 - name: PHINIA
@@ -4980,19 +4225,14 @@ companies:
   priority: low
   hiring_countries:
   - Brazil
-  - China
   - France
   - Germany
-  - India
   - Italy
   - Mexico
   - Poland
   - Romania
-  - Singapore
-  - South Korea
   - Spain
   - Sweden
-  - Türkiye
   - United Kingdom
   - United States
 - name: dun bradstreet
@@ -5003,25 +4243,19 @@ companies:
   hiring_countries:
   - Austria
   - Belgium
-  - Bosnia and Herzegovina
   - Canada
-  - China
   - Croatia
   - Czechia
   - Denmark
   - Finland
   - Germany
-  - Hong Kong
   - Hungary
-  - India
   - Ireland
   - Norway
   - Poland
   - Serbia
-  - Singapore
   - Sweden
   - Switzerland
-  - Taiwan
   - United Kingdom
   - United States
 - name: AccelData
@@ -5031,7 +4265,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United Kingdom
   - United States
 - name: Silicon Labs
@@ -5041,15 +4274,10 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - China
   - Finland
   - France
   - Germany
   - Hungary
-  - India
-  - Singapore
-  - South Korea
-  - Taiwan
   - United States
 - name: conga
   url: https://job-boards.greenhouse.io/conga
@@ -5062,7 +4290,6 @@ companies:
   - Canada
   - France
   - Germany
-  - India
   - United Kingdom
   - United States
 - name: Cubic corporation
@@ -5074,11 +4301,6 @@ companies:
   - Australia
   - Canada
   - Germany
-  - India
-  - New Zealand
-  - Qatar
-  - Saudi Arabia
-  - Singapore
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -5089,7 +4311,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United States
 - name: Capco
   url: https://boards.greenhouse.io/capco/
@@ -5100,12 +4321,8 @@ companies:
   - Belgium
   - Brazil
   - Canada
-  - Hong Kong
-  - India
   - Italy
-  - Malaysia
   - Poland
-  - Singapore
   - Switzerland
   - United Kingdom
   - United States
@@ -5118,23 +4335,15 @@ companies:
   - Belgium
   - Brazil
   - Canada
-  - China
   - Finland
   - France
   - Germany
   - Greece
-  - India
   - Ireland
-  - Israel
   - Italy
-  - Japan
   - Mexico
-  - Morocco
   - Poland
-  - Singapore
-  - South Korea
   - Sweden
-  - Taiwan
   - United Kingdom
   - United States
 - name: FalconX
@@ -5143,9 +4352,7 @@ companies:
   slug: falconx
   priority: low
   hiring_countries:
-  - India
   - Malta
-  - Singapore
   - United Kingdom
   - United States
 - name: affinidi
@@ -5166,9 +4373,7 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - India
   - Mexico
-  - Singapore
   - United Kingdom
   - United States
 - name: Reltio
@@ -5178,7 +4383,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - Portugal
   - United Kingdom
   - United States
@@ -5190,20 +4394,11 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - China
   - Ecuador
-  - India
-  - Indonesia
-  - Malaysia
   - Mexico
-  - Nigeria
-  - Pakistan
   - Romania
-  - Singapore
-  - Türkiye
   - United Kingdom
   - United States
-  - Uzbekistan
 - name: Merqube
   url: https://job-boards.greenhouse.io/merqube
   ats: greenhouse
@@ -5211,7 +4406,6 @@ companies:
   priority: low
   hiring_countries:
   - Chile
-  - India
   - United Kingdom
   - United States
 - name: CommerceIQ
@@ -5221,7 +4415,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United Kingdom
   - United States
 - name: Archipelago
@@ -5230,7 +4423,6 @@ companies:
   slug: onarchipelago
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Jellyfish
   url: https://careers.smartrecruiters.com/Jellyfish1
@@ -5240,83 +4432,47 @@ companies:
   hiring_countries:
   - Australia
   - Austria
-  - Bahrain
-  - Bangladesh
   - Belgium
-  - Bermuda
   - Brazil
   - Bulgaria
   - Canada
-  - China
   - Colombia
   - Costa Rica
   - Croatia
   - Czechia
   - Denmark
-  - Egypt
-  - Fiji
   - Finland
   - France
-  - Georgia
   - Germany
   - Guatemala
-  - Hong Kong
   - Hungary
-  - India
-  - Indonesia
   - Ireland
-  - Israel
   - Italy
-  - Japan
-  - Kazakhstan
-  - Kenya
-  - Lebanon
   - Luxembourg
-  - Malaysia
-  - Mauritius
   - Mexico
-  - Morocco
-  - Nepal
   - Netherlands
-  - New Zealand
   - Nicaragua
-  - Nigeria
   - Norway
-  - Pakistan
   - Peru
-  - Philippines
   - Poland
   - Portugal
-  - Qatar
   - Romania
-  - Russia
-  - Saudi Arabia
   - Serbia
-  - Singapore
   - Slovenia
-  - South Africa
-  - South Korea
   - Spain
-  - Sri Lanka
   - Sweden
   - Switzerland
-  - Taiwan
-  - Thailand
-  - Tunisia
-  - Türkiye
   - Ukraine
   - United Arab Emirates
   - United Kingdom
   - United States
   - Uruguay
-  - Vietnam
 - name: 'Zelis '
   url: https://zelis.wd1.myworkdayjobs.com/ZelisCareers
   ats: workday
   slug: zelis.wd1.myworkdayjobs.com/ZelisCareers
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Axi
   url: https://job-boards.greenhouse.io/axicorpfinancialservicesptyltd
@@ -5326,11 +4482,7 @@ companies:
   hiring_countries:
   - Australia
   - Cyprus
-  - India
-  - Malaysia
-  - Philippines
   - Poland
-  - Singapore
   - United Arab Emirates
   - United Kingdom
 - name: Sailpoint
@@ -5348,23 +4500,13 @@ companies:
   - Finland
   - France
   - Germany
-  - Hong Kong
-  - India
-  - Israel
   - Italy
-  - Japan
   - Mexico
   - Netherlands
-  - New Zealand
-  - Philippines
   - Poland
-  - Singapore
-  - South Africa
-  - South Korea
   - Spain
   - Sweden
   - Switzerland
-  - Taiwan
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -5376,8 +4518,6 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - China
-  - India
   - Italy
   - Netherlands
   - United States
@@ -5390,23 +4530,17 @@ companies:
   - Australia
   - Brazil
   - Canada
-  - China
   - Colombia
   - Denmark
   - Estonia
   - Finland
   - France
   - Germany
-  - Hong Kong
-  - India
-  - Japan
   - Lithuania
   - Mexico
   - Netherlands
-  - Philippines
   - Poland
   - Portugal
-  - Singapore
   - Spain
   - Sweden
   - United Arab Emirates
@@ -5418,16 +4552,9 @@ companies:
   slug: mendix
   priority: low
   hiring_countries:
-  - China
   - Germany
-  - India
-  - Indonesia
   - Italy
-  - Japan
   - Netherlands
-  - Singapore
-  - South Korea
-  - Thailand
   - United Kingdom
   - United States
 - name: Matic Robots
@@ -5444,7 +4571,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - Singapore
   - United Kingdom
   - United States
 - name: Image Engine
@@ -5469,9 +4595,7 @@ companies:
   hiring_countries:
   - Canada
   - Finland
-  - India
   - Ireland
-  - Singapore
   - United Kingdom
   - United States
 - name: Remote
@@ -5485,26 +4609,16 @@ companies:
   - Belgium
   - Brazil
   - Canada
-  - Caribbean Netherlands
   - Costa Rica
-  - Egypt
   - France
-  - Hong Kong
-  - India
-  - Japan
-  - Malaysia
   - Mexico
   - Netherlands
-  - New Zealand
   - Nicaragua
   - Peru
-  - Philippines
   - Poland
   - Portugal
-  - Singapore
   - Slovakia
   - Spain
-  - Taiwan
   - United Kingdom
   - United States
 - name: Reddit
@@ -5516,11 +4630,9 @@ companies:
   - Australia
   - Canada
   - Germany
-  - India
   - Ireland
   - Italy
   - Netherlands
-  - Singapore
   - Spain
   - Sweden
   - United Kingdom
@@ -5531,19 +4643,8 @@ companies:
   slug: appier
   priority: low
   hiring_countries:
-  - China
-  - Hong Kong
-  - Indonesia
-  - Japan
-  - Malaysia
   - Netherlands
-  - Singapore
-  - South Korea
-  - Taiwan
-  - Thailand
-  - Türkiye
   - United States
-  - Vietnam
 - name: Fortra
   url: https://boards.greenhouse.io/fortra
   ats: greenhouse
@@ -5551,13 +4652,10 @@ companies:
   priority: low
   hiring_countries:
   - Argentina
-  - Armenia
   - Australia
   - Canada
   - Colombia
-  - Malaysia
   - Netherlands
-  - Saudi Arabia
   - Spain
   - Sweden
   - United Arab Emirates
@@ -5600,8 +4698,6 @@ companies:
   priority: low
   hiring_countries:
   - Germany
-  - Hong Kong
-  - India
   - Mexico
   - Portugal
   - United States
@@ -5611,8 +4707,6 @@ companies:
   slug: truecaller
   priority: low
   hiring_countries:
-  - Egypt
-  - India
   - Sweden
 - name: ' Many Chat Inc.'
   url: https://boards.greenhouse.io/embed/job_board?for=manychat&b=https%3A%2F%2Fcareers.manychat.com%2Fus
@@ -5620,7 +4714,6 @@ companies:
   slug: manychat
   priority: low
   hiring_countries:
-  - Armenia
   - Brazil
   - Honduras
   - Netherlands
@@ -5664,9 +4757,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - China
-  - Philippines
-  - Singapore
   - United States
 - name: Make
   url: https://boards.greenhouse.io/make?t=552d1fcc3us
@@ -5695,8 +4785,6 @@ companies:
   - Australia
   - Canada
   - France
-  - India
-  - Singapore
   - United Kingdom
   - United States
 - name: In The Pocket
@@ -5722,7 +4810,6 @@ companies:
   slug: britive
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Sourcegraph Inc.
   url: https://boards.greenhouse.io/sourcegraph91
@@ -5758,7 +4845,6 @@ companies:
   slug: kinetik
   priority: low
   hiring_countries:
-  - Bangladesh
   - United States
 - name: Alten Technology
   url: https://boards.greenhouse.io/altentechnologyusa
@@ -5773,7 +4859,6 @@ companies:
   slug: arcadiacareers
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Auros Global
   url: https://boards.greenhouse.io/aurosglobal/
@@ -5782,8 +4867,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - Hong Kong
-  - India
   - Peru
   - United Kingdom
   - United States
@@ -5807,7 +4890,6 @@ companies:
   slug: blinkhealth
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Cavnue
   url: https://boards.greenhouse.io/cavnue/
@@ -5839,16 +4921,10 @@ companies:
   - Argentina
   - Australia
   - Belgium
-  - India
-  - Israel
-  - Japan
-  - Philippines
-  - Singapore
   - Slovenia
   - Sweden
   - United Kingdom
   - United States
-  - Vietnam
 - name: Diligent Corporation
   url: https://boards.greenhouse.io/diligentcorporation
   ats: greenhouse
@@ -5861,13 +4937,9 @@ companies:
   - France
   - Germany
   - Hungary
-  - India
-  - Indonesia
   - Ireland
-  - Japan
   - Mexico
   - Netherlands
-  - South Africa
   - Spain
   - United Arab Emirates
   - United Kingdom
@@ -5878,8 +4950,6 @@ companies:
   slug: ethoslife
   priority: low
   hiring_countries:
-  - India
-  - Singapore
   - United States
 - name: Fictiv
   url: https://boards.greenhouse.io/fictiv/jobs/7121003002?gh_src=a0ed43272us&source=LinkedIn&utm_source=outscal.com&utm_campaign=outscal_jobs&utm_medium=outscal_job_portal&utm_content=outscal_job_apply&utm_term=outscal_jobs
@@ -5887,8 +4957,6 @@ companies:
   slug: fictiv
   priority: low
   hiring_countries:
-  - China
-  - India
   - Mexico
   - United States
 - name: Globalization Partners
@@ -5899,19 +4967,15 @@ companies:
   hiring_countries:
   - Brazil
   - Canada
-  - China
   - Colombia
   - Germany
-  - India
   - Ireland
   - Italy
   - Mexico
   - Netherlands
-  - Philippines
   - Poland
   - Portugal
   - Romania
-  - Singapore
   - Spain
   - United Kingdom
   - United States
@@ -5930,9 +4994,6 @@ companies:
   priority: low
   hiring_countries:
   - Colombia
-  - India
-  - Malaysia
-  - Singapore
   - United Kingdom
   - United States
 - name: legion
@@ -5941,7 +5002,6 @@ companies:
   slug: legion
   priority: low
   hiring_countries:
-  - India
   - Mexico
   - Romania
   - United States
@@ -5952,10 +5012,7 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - Mexico
-  - Pakistan
-  - Taiwan
   - United Kingdom
   - United States
 - name: OKX
@@ -5967,15 +5024,9 @@ companies:
   - Argentina
   - Australia
   - Brazil
-  - Hong Kong
   - Hungary
-  - Malaysia
   - Malta
   - Mexico
-  - Seychelles
-  - Singapore
-  - The Bahamas
-  - Türkiye
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -5986,10 +5037,8 @@ companies:
   priority: low
   hiring_countries:
   - France
-  - India
   - Ireland
   - Poland
-  - Tunisia
   - United Kingdom
   - United States
 - name: Quilt
@@ -6012,7 +5061,6 @@ companies:
   slug: simplisafe
   priority: low
   hiring_countries:
-  - India
   - United Kingdom
   - United States
 - name: Single Store
@@ -6024,7 +5072,6 @@ companies:
   - Costa Rica
   - France
   - Germany
-  - India
   - Portugal
   - United Kingdom
   - United States
@@ -6042,7 +5089,6 @@ companies:
   slug: techstars57
   priority: low
   hiring_countries:
-  - Japan
   - United Kingdom
   - United States
 - name: Tellius
@@ -6051,7 +5097,6 @@ companies:
   slug: tellius
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: The Orchard
   url: https://boards.greenhouse.io/theorchard
@@ -6061,15 +5106,10 @@ companies:
   hiring_countries:
   - Canada
   - Chile
-  - China
   - France
   - Germany
-  - India
-  - Indonesia
   - Italy
   - Mexico
-  - South Korea
-  - Thailand
   - United Kingdom
   - United States
 - name: VDC
@@ -6087,16 +5127,11 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - Egypt
   - Germany
-  - India
   - Mexico
-  - Saudi Arabia
-  - Singapore
   - United Arab Emirates
   - United Kingdom
   - United States
-  - Vietnam
 - name: WebFX
   url: https://jobs.lever.co/webfx/
   ats: lever
@@ -6104,14 +5139,10 @@ companies:
   priority: low
   hiring_countries:
   - Argentina
-  - Belize
   - Canada
   - El Salvador
   - Guatemala
-  - Indonesia
   - Mexico
-  - Philippines
-  - South Africa
   - United Kingdom
   - United States
 - name: Anavation
@@ -6132,15 +5163,11 @@ companies:
   - Denmark
   - France
   - Germany
-  - India
   - Italy
   - Mexico
   - Netherlands
-  - New Zealand
-  - Philippines
   - Poland
   - Spain
-  - Thailand
   - United Kingdom
   - United States
 - name: Redhorse Corp
@@ -6158,9 +5185,6 @@ companies:
   hiring_countries:
   - Australia
   - Germany
-  - India
-  - Japan
-  - Singapore
   - Switzerland
   - United Arab Emirates
   - United Kingdom
@@ -6172,7 +5196,6 @@ companies:
   priority: low
   hiring_countries:
   - Costa Rica
-  - India
   - United States
 - name: Xepelin
   url: https://jobs.lever.co/xepelin
@@ -6199,8 +5222,6 @@ companies:
   priority: low
   hiring_countries:
   - Argentina
-  - India
-  - Philippines
   - United States
 - name: Normalyze
   url: https://jobs.lever.co/normalyze
@@ -6208,7 +5229,6 @@ companies:
   slug: normalyze
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: WaveApps
   url: https://jobs.lever.co/waveapps
@@ -6247,7 +5267,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - India
   - United Kingdom
   - United States
 - name: Actian
@@ -6260,7 +5279,6 @@ companies:
   - Austria
   - France
   - Germany
-  - India
   - Italy
   - Netherlands
   - Spain
@@ -6276,7 +5294,6 @@ companies:
   - Australia
   - France
   - Germany
-  - India
   - Lithuania
   - Netherlands
   - United Kingdom
@@ -6289,7 +5306,6 @@ companies:
   hiring_countries:
   - Ireland
   - Mexico
-  - Saudi Arabia
   - United Arab Emirates
   - United States
 - name: cyara
@@ -6299,7 +5315,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - India
   - Ireland
   - United Kingdom
   - United States
@@ -6309,8 +5324,6 @@ companies:
   slug: entrata
   priority: low
   hiring_countries:
-  - India
-  - Israel
   - Netherlands
   - United States
 - name: extreme network
@@ -6327,18 +5340,13 @@ companies:
   - Finland
   - France
   - Germany
-  - Hong Kong
-  - India
   - Ireland
   - Italy
-  - Japan
   - Mexico
   - Norway
-  - Singapore
   - Spain
   - Sweden
   - Switzerland
-  - Taiwan
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -6348,7 +5356,6 @@ companies:
   slug: flowlife
   priority: low
   hiring_countries:
-  - Saudi Arabia
   - United States
 - name: HHA Exchange
   url: https://jobs.lever.co/hhaexchange
@@ -6370,7 +5377,6 @@ companies:
   slug: jmawireless
   priority: low
   hiring_countries:
-  - India
   - Ireland
   - Italy
   - United States
@@ -6380,7 +5386,6 @@ companies:
   slug: levelai
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: PPfa
   url: https://jobs.lever.co/ppfa
@@ -6410,9 +5415,6 @@ companies:
   priority: low
   hiring_countries:
   - Costa Rica
-  - India
-  - Israel
-  - South Africa
   - United Kingdom
   - United States
 - name: sofar sounds
@@ -6429,19 +5431,14 @@ companies:
   - Denmark
   - Germany
   - Greece
-  - Greenland
   - Ireland
-  - Japan
   - Lithuania
   - Luxembourg
   - Netherlands
-  - New Zealand
-  - Philippines
   - Poland
   - Portugal
   - Slovakia
   - Slovenia
-  - South Africa
   - Spain
   - United Kingdom
   - United States
@@ -6456,13 +5453,8 @@ companies:
   - Brazil
   - Canada
   - France
-  - India
   - Ireland
-  - Japan
   - Mexico
-  - Singapore
-  - South Korea
-  - Thailand
   - United States
 - name: whoop
   url: https://jobs.lever.co/whoop/
@@ -6472,7 +5464,6 @@ companies:
   hiring_countries:
   - Germany
   - Ireland
-  - Qatar
   - United Arab Emirates
   - United States
 - name: world relief
@@ -6489,7 +5480,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - Mexico
   - Romania
   - United Kingdom
@@ -6509,7 +5499,6 @@ companies:
   slug: integrant
   priority: low
   hiring_countries:
-  - Egypt
   - United States
 - name: fortanix
   url: https://apply.workable.com/fortanix/
@@ -6517,7 +5506,6 @@ companies:
   slug: fortanix
   priority: low
   hiring_countries:
-  - India
   - Netherlands
   - United Arab Emirates
 - name: blend
@@ -6526,7 +5514,6 @@ companies:
   slug: applications
   priority: low
   hiring_countries:
-  - India
   - Uruguay
 - name: 'reversing labs '
   url: https://apply.workable.com/reversinglabs/
@@ -6581,7 +5568,6 @@ companies:
   - Bulgaria
   - Canada
   - Ireland
-  - Israel
   - Ukraine
   - United Kingdom
   - United States
@@ -6595,24 +5581,16 @@ companies:
   - Belgium
   - Brazil
   - Canada
-  - China
   - Czechia
   - Finland
   - France
   - Germany
-  - India
   - Italy
-  - Japan
-  - Malaysia
   - Mexico
   - Netherlands
   - Romania
   - Serbia
-  - Singapore
-  - South Korea
   - Spain
-  - Taiwan
-  - Thailand
   - United Kingdom
   - United States
 - name: Marvell
@@ -6623,19 +5601,11 @@ companies:
   hiring_countries:
   - Argentina
   - Canada
-  - China
   - Germany
-  - India
-  - Israel
   - Italy
-  - Japan
   - Romania
-  - Singapore
-  - South Korea
   - Spain
-  - Taiwan
   - United States
-  - Vietnam
 - name: nissan
   url: https://alliance.wd3.myworkdayjobs.com/en-US/nissanjobs
   ats: workday
@@ -6645,14 +5615,10 @@ companies:
   - Belgium
   - Brazil
   - France
-  - India
-  - Japan
   - Mexico
   - Netherlands
-  - South Africa
   - Spain
   - Sweden
-  - Thailand
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -6665,13 +5631,9 @@ companies:
   - Australia
   - France
   - Germany
-  - India
   - Italy
-  - Japan
   - Mexico
   - Poland
-  - Singapore
-  - Taiwan
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -6683,17 +5645,11 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - China
   - Denmark
   - France
   - Germany
-  - Hong Kong
-  - India
-  - Japan
   - Netherlands
   - Romania
-  - Singapore
-  - South Africa
   - Spain
   - United Kingdom
   - United States
@@ -6704,16 +5660,7 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - China
   - Germany
-  - Hong Kong
-  - India
-  - Indonesia
-  - Japan
-  - Saudi Arabia
-  - Singapore
-  - South Korea
-  - Türkiye
   - United Kingdom
   - United States
 - name: Cineplex
@@ -6731,11 +5678,9 @@ companies:
   hiring_countries:
   - France
   - Germany
-  - India
   - Italy
   - Mexico
   - Spain
-  - Taiwan
   - United Kingdom
   - United States
 - name: Razer
@@ -6745,23 +5690,12 @@ companies:
   priority: low
   hiring_countries:
   - Brazil
-  - China
   - France
   - Germany
-  - Hong Kong
-  - Indonesia
-  - Japan
-  - Malaysia
   - Netherlands
-  - Philippines
   - Poland
-  - Singapore
-  - South Korea
-  - Taiwan
-  - Thailand
   - United Kingdom
   - United States
-  - Vietnam
 - name: Trend Micro
   url: https://trendmicro.wd3.myworkdayjobs.com/External
   ats: workday
@@ -6775,41 +5709,22 @@ companies:
   - Canada
   - Colombia
   - Denmark
-  - Egypt
   - France
   - Germany
-  - Hong Kong
-  - India
-  - Indonesia
   - Ireland
   - Italy
-  - Japan
-  - Kazakhstan
-  - Kuwait
   - Luxembourg
-  - Malaysia
   - Mexico
-  - Morocco
   - Netherlands
-  - New Zealand
   - Panama
   - Peru
-  - Philippines
   - Poland
-  - Saudi Arabia
-  - Singapore
-  - South Africa
-  - South Korea
   - Spain
   - Sweden
   - Switzerland
-  - Taiwan
-  - Thailand
-  - Türkiye
   - United Arab Emirates
   - United Kingdom
   - United States
-  - Vietnam
 - name: Trellix
   url: https://trellix.wd1.myworkdayjobs.com/EnterpriseCareers
   ats: workday
@@ -6823,20 +5738,10 @@ companies:
   - Colombia
   - France
   - Germany
-  - India
-  - Indonesia
   - Ireland
-  - Israel
-  - Japan
-  - Malaysia
   - Mexico
   - Netherlands
-  - Philippines
   - Poland
-  - Saudi Arabia
-  - Singapore
-  - South Africa
-  - South Korea
   - Spain
   - United Arab Emirates
   - United Kingdom
@@ -6849,19 +5754,14 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - China
   - Czechia
   - France
   - Germany
-  - India
   - Ireland
   - Italy
-  - Japan
   - Luxembourg
-  - Malaysia
   - Netherlands
   - Norway
-  - South Korea
   - Switzerland
   - United Kingdom
   - United States
@@ -6874,7 +5774,6 @@ companies:
   - Canada
   - France
   - Germany
-  - India
   - Sweden
   - United Kingdom
   - United States
@@ -6894,11 +5793,8 @@ companies:
   hiring_countries:
   - France
   - Germany
-  - India
   - Mexico
-  - Philippines
   - Poland
-  - Thailand
   - United Kingdom
   - United States
 - name: Rocket
@@ -6914,14 +5810,10 @@ companies:
   - Costa Rica
   - France
   - Germany
-  - India
   - Italy
-  - Japan
   - Lithuania
   - Mexico
   - Netherlands
-  - Philippines
-  - Singapore
   - Spain
   - Sweden
   - United Kingdom
@@ -6932,9 +5824,6 @@ companies:
   slug: janestreet
   priority: low
   hiring_countries:
-  - Hong Kong
-  - India
-  - Singapore
   - United Kingdom
   - United States
 - name: Tide
@@ -6946,10 +5835,8 @@ companies:
   - Bulgaria
   - France
   - Germany
-  - India
   - Lithuania
   - Luxembourg
-  - Philippines
   - Romania
   - Serbia
   - Ukraine
@@ -6963,10 +5850,7 @@ companies:
   - Brazil
   - France
   - Germany
-  - India
   - Ireland
-  - Japan
-  - Singapore
   - United Kingdom
   - United States
 - name: Vercel
@@ -6977,7 +5861,6 @@ companies:
   hiring_countries:
   - Australia
   - Germany
-  - Japan
   - United Kingdom
   - United States
 - name: N26
@@ -7007,15 +5890,8 @@ companies:
   slug: newglobesandbox
   priority: low
   hiring_countries:
-  - Burkina Faso
-  - Guinea
-  - India
   - Netherlands
-  - Nigeria
-  - Rwanda
-  - Togo
   - United States
-  - Zambia
 - name: Scale AI
   url: https://job-boards.greenhouse.io/scaleai/
   ats: greenhouse
@@ -7024,9 +5900,7 @@ companies:
   hiring_countries:
   - Argentina
   - Hungary
-  - Japan
   - Mexico
-  - Qatar
   - United Kingdom
   - United States
 - name: Workato
@@ -7035,29 +5909,21 @@ companies:
   slug: workato
   priority: low
   hiring_countries:
-  - Armenia
   - Australia
   - Bulgaria
   - Canada
   - Costa Rica
   - Cyprus
   - France
-  - Georgia
   - Germany
   - Greece
-  - India
   - Ireland
-  - Israel
   - Italy
-  - Japan
   - Mexico
   - Netherlands
-  - Philippines
   - Poland
   - Portugal
   - Serbia
-  - Singapore
-  - South Korea
   - Spain
   - Sweden
   - United Kingdom
@@ -7068,7 +5934,6 @@ companies:
   slug: poppulo
   priority: low
   hiring_countries:
-  - India
   - Ireland
   - United Arab Emirates
   - United Kingdom
@@ -7080,7 +5945,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - Italy
   - United Kingdom
   - United States
@@ -7090,7 +5954,6 @@ companies:
   slug: flexerasoftware.wd1.myworkdayjobs.com/revenera
   priority: low
   hiring_countries:
-  - India
   - United Kingdom
   - United States
 - name: The Mill Adventure
@@ -7114,7 +5977,6 @@ companies:
   slug: whitehatgaming
   priority: low
   hiring_countries:
-  - South Africa
   - United Kingdom
 - name: 'Rush street interactive '
   url: https://boards.greenhouse.io/rushstreetinteractive
@@ -7151,7 +6013,6 @@ companies:
   slug: powtoon
   priority: low
   hiring_countries:
-  - Israel
   - United Kingdom
   - United States
 - name: AIFund
@@ -7161,7 +6022,6 @@ companies:
   priority: low
   hiring_countries:
   - Spain
-  - Taiwan
   - United States
 - name: vizrt
   url: https://apply.workable.com/vizrt/
@@ -7169,7 +6029,6 @@ companies:
   slug: vizrt
   priority: low
   hiring_countries:
-  - India
   - Sweden
   - Switzerland
   - United Arab Emirates
@@ -7182,7 +6041,6 @@ companies:
   priority: low
   hiring_countries:
   - Brazil
-  - Philippines
   - United States
 - name: 'codeninja '
   url: https://apply.workable.com/codeninjapk/
@@ -7190,8 +6048,6 @@ companies:
   slug: codeninjapk
   priority: low
   hiring_countries:
-  - Pakistan
-  - Saudi Arabia
   - United States
 - name: Pachama
   url: aaaaaaaaaaaaaaaaaaaa
@@ -7224,7 +6080,6 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - South Africa
   - United Kingdom
   - United States
 - name: CME Group
@@ -7233,9 +6088,6 @@ companies:
   slug: cmegroup.wd1.myworkdayjobs.com/cme_careers
   priority: low
   hiring_countries:
-  - India
-  - Japan
-  - Singapore
   - United Kingdom
   - United States
 - name: Addepar
@@ -7246,8 +6098,6 @@ companies:
   hiring_countries:
   - Brazil
   - Canada
-  - India
-  - Singapore
   - Switzerland
   - United Arab Emirates
   - United Kingdom
@@ -7258,7 +6108,6 @@ companies:
   slug: smartbear
   priority: low
   hiring_countries:
-  - India
   - Ireland
   - Poland
   - United Kingdom
@@ -7269,9 +6118,7 @@ companies:
   slug: sandvik.wd3.myworkdayjobs.com/gibbscam-jobs
   priority: low
   hiring_countries:
-  - India
   - Italy
-  - Japan
   - United States
 - name: PayPal
   url: https://paypal.wd1.myworkdayjobs.com/en-US/jobs
@@ -7282,24 +6129,15 @@ companies:
   - Australia
   - Brazil
   - Canada
-  - China
   - France
   - Germany
   - Guatemala
-  - Hong Kong
-  - India
   - Ireland
-  - Israel
   - Italy
-  - Japan
   - Luxembourg
   - Mexico
   - Netherlands
-  - Philippines
   - Poland
-  - Russia
-  - Singapore
-  - South Korea
   - Spain
   - Sweden
   - United Arab Emirates
@@ -7313,7 +6151,6 @@ companies:
   hiring_countries:
   - Canada
   - Ireland
-  - Japan
   - United States
 - name: Telnyx
   url: https://boards.greenhouse.io/telnyx54
@@ -7323,7 +6160,6 @@ companies:
   hiring_countries:
   - Australia
   - Brazil
-  - India
   - Ireland
   - Mexico
   - Netherlands
@@ -7331,7 +6167,6 @@ companies:
   - United Arab Emirates
   - United Kingdom
   - United States
-  - Vietnam
 - name: Saxo Bank
   url: https://saxobank.wd3.myworkdayjobs.com/CareeratSaxoBank/
   ats: workday
@@ -7342,10 +6177,7 @@ companies:
   - Czechia
   - Denmark
   - France
-  - India
-  - Japan
   - Netherlands
-  - Singapore
   - Switzerland
   - United Arab Emirates
   - United Kingdom
@@ -7356,7 +6188,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - Poland
   - Portugal
   - United States
@@ -7366,7 +6197,6 @@ companies:
   slug: globalhealthcareexchangeinc
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Tekion Corp
   url: https://job-boards.greenhouse.io/tekion?gh_src=859b721f3us
@@ -7375,7 +6205,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United States
 - name: Stibo Systems
   url: https://stibosystems.wd3.myworkdayjobs.com/careers-at-stibo-systems
@@ -7386,8 +6215,6 @@ companies:
   - Brazil
   - Denmark
   - Germany
-  - India
-  - Japan
   - Mexico
   - Poland
   - United Kingdom
@@ -7398,7 +6225,6 @@ companies:
   slug: oportun
   priority: low
   hiring_countries:
-  - India
   - Mexico
   - United States
 - name: Nice
@@ -7413,14 +6239,8 @@ companies:
   - Colombia
   - Czechia
   - Germany
-  - India
-  - Israel
-  - Japan
   - Mexico
   - Netherlands
-  - Philippines
-  - Singapore
-  - South Africa
   - United Kingdom
   - United States
 - name: Bestex Research
@@ -7429,7 +6249,6 @@ companies:
   slug: bestex-research
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Simcorp
   url: https://simcorp.wd3.myworkdayjobs.com/en-US/SimCorp_Jobs
@@ -7445,16 +6264,10 @@ companies:
   - Denmark
   - France
   - Germany
-  - Hong Kong
-  - India
   - Italy
-  - Japan
   - Mexico
   - Netherlands
-  - Philippines
   - Poland
-  - Saudi Arabia
-  - Singapore
   - Spain
   - United Kingdom
   - United States
@@ -7465,7 +6278,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - Mexico
   - United States
 - name: Findem
@@ -7475,7 +6287,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United States
 - name: 'Fandom '
   url: https://about.fandom.com/careers/
@@ -7492,7 +6303,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - Netherlands
   - United States
 - name: Axon
@@ -7508,11 +6318,9 @@ companies:
   - France
   - Germany
   - Netherlands
-  - Saudi Arabia
   - Spain
   - United Kingdom
   - United States
-  - Vietnam
 - name: Lirio
   url: aaaaaaaaaaaaaaaaaaaa
   ats: greenhouse
@@ -7541,7 +6349,6 @@ companies:
   slug: fusegames
   priority: low
   hiring_countries:
-  - Türkiye
   - United Kingdom
 - name: Side
   url: https://apply.workable.com/sideinc/
@@ -7554,15 +6361,9 @@ companies:
   - Canada
   - Colombia
   - Germany
-  - India
-  - Japan
-  - Malaysia
-  - Philippines
   - Portugal
   - Romania
-  - Saudi Arabia
   - Sweden
-  - Taiwan
   - United Kingdom
   - United States
 - name: Coda
@@ -7572,18 +6373,9 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - China
   - Germany
-  - India
-  - Indonesia
-  - Japan
-  - Malaysia
   - Netherlands
-  - Philippines
-  - Singapore
   - Slovakia
-  - Taiwan
-  - Thailand
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -7594,7 +6386,6 @@ companies:
   priority: low
   hiring_countries:
   - Argentina
-  - India
   - Mexico
   - United States
 - name: Seamount
@@ -7610,7 +6401,6 @@ companies:
   slug: gatherai
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: sound cloud
   url: https://boards.greenhouse.io/soundcloud71
@@ -7635,7 +6425,6 @@ companies:
   slug: innophaseiot
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Warner Bros - NetherRealm Studios
   url: https://warnerbros.wd5.myworkdayjobs.com/en-US/global/jobs?q=NetherRealm%20Studios
@@ -7652,7 +6441,6 @@ companies:
   slug: warnerbros.wd5.myworkdayjobs.com/en-US/global
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Aristocrat
   url: https://aristocrat.wd3.myworkdayjobs.com/AristocratExternalCareersSite/
@@ -7663,10 +6451,7 @@ companies:
   - Australia
   - Bulgaria
   - Canada
-  - India
-  - Israel
   - Mexico
-  - North Macedonia
   - Poland
   - Spain
   - United Kingdom
@@ -7679,8 +6464,6 @@ companies:
   hiring_countries:
   - Canada
   - Ireland
-  - Japan
-  - Singapore
 - name: Keywords International
   url: https://apply.workable.com/keywords-intl1/#jobs
   ats: workable
@@ -7688,7 +6471,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United States
 - name: Sprinkler
   url: https://sprinklr.wd1.myworkdayjobs.com/careers/
@@ -7701,16 +6483,10 @@ companies:
   - Canada
   - France
   - Germany
-  - India
   - Ireland
   - Italy
-  - Japan
   - Mexico
   - Netherlands
-  - Qatar
-  - Saudi Arabia
-  - Singapore
-  - South Korea
   - Spain
   - Switzerland
   - United Arab Emirates
@@ -7788,7 +6564,6 @@ companies:
   - Mexico
   - Poland
   - Romania
-  - South Africa
 - name: brightline studios
   url: https://brightline.bamboohr.com/careers
   ats: bamboohr
@@ -7827,7 +6602,6 @@ companies:
   - Finland
   - Spain
   - Sweden
-  - Türkiye
 - name: Off world studios
   url: https://owi.bamboohr.com/careers
   ats: bamboohr
@@ -7845,10 +6619,6 @@ companies:
   - Canada
   - Czechia
   - Germany
-  - Hong Kong
-  - India
-  - Japan
-  - Philippines
   - Sweden
   - United Kingdom
   - United States
@@ -7875,25 +6645,17 @@ companies:
   - Argentina
   - Austria
   - Brazil
-  - China
   - Colombia
-  - Eswatini
   - France
   - Germany
-  - India
   - Italy
-  - Japan
   - Mexico
-  - Namibia
   - Netherlands
   - Peru
   - Poland
   - Portugal
   - Slovakia
-  - South Africa
-  - South Korea
   - Spain
-  - Thailand
   - United Kingdom
   - United States
 - name: Wildlight
@@ -7944,8 +6706,6 @@ companies:
   slug: jetbrains
   priority: low
   hiring_countries:
-  - Armenia
-  - China
   - Cyprus
   - Czechia
   - Germany
@@ -7983,7 +6743,6 @@ companies:
   priority: low
   hiring_countries:
   - Germany
-  - India
   - Serbia
   - Slovenia
   - United States
@@ -8007,13 +6766,10 @@ companies:
   - Germany
   - Greece
   - Hungary
-  - India
   - Ireland
   - Italy
-  - Japan
   - Mexico
   - Netherlands
-  - South Korea
   - Spain
   - United Kingdom
   - United States
@@ -8031,16 +6787,12 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - Belarus
   - Canada
-  - China
   - Cyprus
   - Germany
-  - Indonesia
   - Lithuania
   - Poland
   - Serbia
-  - Singapore
   - Spain
   - Ukraine
   - United Kingdom
@@ -8079,7 +6831,6 @@ companies:
   slug: guardianlife.wd5.myworkdayjobs.com/Guardian-Life-Careers
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Fantasy
   url: https://jobs.lever.co/fantasy
@@ -8102,7 +6853,6 @@ companies:
   slug: drivemode
   priority: low
   hiring_countries:
-  - Japan
   - United States
 - name: Payactive
   url: https://jobs.lever.co/payactiv
@@ -8117,7 +6867,6 @@ companies:
   slug: gala
   priority: low
   hiring_countries:
-  - Pakistan
   - United States
 - name: Converse.AI
   url: https://jobs.lever.co/ConverseNow
@@ -8125,7 +6874,6 @@ companies:
   slug: ConverseNow
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: frames store
   url: https://framestore.recruitee.com/
@@ -8135,7 +6883,6 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - India
   - United Kingdom
   - United States
 - name: Bright Edge
@@ -8144,7 +6891,6 @@ companies:
   slug: brightedge
   priority: low
   hiring_countries:
-  - India
   - United Kingdom
   - United States
 - name: 'Steamroller technology '
@@ -8167,7 +6913,6 @@ companies:
   slug: ema
   priority: low
   hiring_countries:
-  - India
   - United Kingdom
   - United States
 - name: Scout
@@ -8184,11 +6929,7 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - India
   - Ireland
-  - Malaysia
-  - Philippines
-  - Singapore
   - United Kingdom
   - United States
 - name: Virtue Inc.
@@ -8212,24 +6953,15 @@ companies:
   - France
   - Germany
   - Greece
-  - Hong Kong
   - Hungary
-  - India
-  - Indonesia
   - Ireland
-  - Malaysia
   - Mexico
   - Netherlands
   - Peru
   - Poland
-  - Puerto Rico
   - Romania
   - Serbia
-  - Singapore
   - Spain
-  - Taiwan
-  - Thailand
-  - Türkiye
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -8243,11 +6975,7 @@ companies:
   - Canada
   - France
   - Germany
-  - India
-  - Indonesia
   - Netherlands
-  - Singapore
-  - South Africa
   - United Kingdom
   - United States
 - name: quience
@@ -8257,12 +6985,8 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - China
   - Germany
-  - Hong Kong
-  - India
   - Peru
-  - Sri Lanka
   - United Kingdom
   - United States
 - name: WebTech Corporation
@@ -8275,25 +6999,16 @@ companies:
   - Brazil
   - Canada
   - Chile
-  - China
   - Czechia
   - France
   - Germany
-  - Guinea
-  - Hong Kong
-  - India
   - Italy
-  - Kazakhstan
   - Mexico
   - Netherlands
-  - North Macedonia
   - Norway
   - Poland
-  - South Africa
-  - South Korea
   - Spain
   - Sweden
-  - Thailand
   - United Kingdom
   - United States
 - name: Cerence
@@ -8304,12 +7019,7 @@ companies:
   hiring_countries:
   - Belgium
   - Canada
-  - China
   - Germany
-  - India
-  - Japan
-  - South Korea
-  - Taiwan
   - United States
 - name: Aptive
   url: https://aptiv.wd5.myworkdayjobs.com/APTIV_CAREERS
@@ -8319,25 +7029,17 @@ companies:
   hiring_countries:
   - Austria
   - Canada
-  - China
   - Czechia
   - France
   - Germany
   - Honduras
   - Hungary
-  - India
   - Ireland
   - Italy
   - Mexico
-  - Morocco
-  - North Macedonia
   - Poland
   - Portugal
-  - Saudi Arabia
-  - South Korea
   - Sweden
-  - Tunisia
-  - Türkiye
   - United States
 - name: London stock Exchange
   url: https://lseg.wd3.myworkdayjobs.com/Careers/
@@ -8350,31 +7052,17 @@ companies:
   - Belgium
   - Brazil
   - Canada
-  - China
   - Costa Rica
   - Denmark
-  - Egypt
   - France
   - Germany
-  - Hong Kong
-  - India
   - Ireland
-  - Japan
-  - Malaysia
   - Mexico
   - Norway
-  - Philippines
   - Poland
   - Romania
-  - Saudi Arabia
-  - Singapore
-  - South Africa
-  - South Korea
-  - Sri Lanka
   - Sweden
   - Switzerland
-  - Taiwan
-  - Thailand
   - United Kingdom
   - United States
 - name: 'UPF Industries '
@@ -8392,7 +7080,6 @@ companies:
   hiring_countries:
   - Canada
   - Germany
-  - India
   - Spain
   - United Kingdom
   - United States
@@ -8410,7 +7097,6 @@ companies:
   priority: low
   hiring_countries:
   - Belgium
-  - China
   - France
   - Poland
   - Sweden
@@ -8431,7 +7117,6 @@ companies:
   priority: low
   hiring_countries:
   - Germany
-  - India
   - United States
 - name: Goliath games
   url: https://apply.workable.com/goliathgroup
@@ -8451,11 +7136,8 @@ companies:
   - Australia
   - Canada
   - France
-  - India
   - Ireland
-  - Japan
   - Netherlands
-  - South Korea
   - United Kingdom
   - United States
 - name: Vertx Inc.
@@ -8484,18 +7166,7 @@ companies:
   slug: sonymusicasiacareers
   priority: low
   hiring_countries:
-  - China
-  - Hong Kong
-  - India
-  - Indonesia
-  - Malaysia
-  - Philippines
-  - Singapore
-  - South Korea
-  - Taiwan
-  - Thailand
   - United Arab Emirates
-  - Vietnam
 - name: Comscore
   url: https://comscore.wd5.myworkdayjobs.com/External
   ats: workday
@@ -8504,7 +7175,6 @@ companies:
   hiring_countries:
   - Brazil
   - Chile
-  - India
   - United Kingdom
   - United States
 - name: Go guardian
@@ -8513,7 +7183,6 @@ companies:
   slug: goguardian
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Betson Group
   url: https://job-boards.greenhouse.io/betsson
@@ -8525,7 +7194,6 @@ companies:
   - Brazil
   - Colombia
   - Estonia
-  - Georgia
   - Greece
   - Lithuania
   - Malta
@@ -8539,16 +7207,10 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - Bangladesh
   - Brazil
   - Colombia
-  - India
-  - Indonesia
   - Ireland
-  - Malaysia
   - Portugal
-  - Saudi Arabia
-  - South Africa
   - Sweden
   - United Arab Emirates
   - United Kingdom
@@ -8562,9 +7224,6 @@ companies:
   - Argentina
   - Australia
   - Canada
-  - India
-  - Japan
-  - Philippines
   - United Kingdom
   - United States
 - name: firesprit
@@ -8588,10 +7247,7 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - China
   - Germany
-  - India
-  - Japan
   - United Kingdom
   - United States
 - name: 'Olg '
@@ -8617,11 +7273,7 @@ companies:
   hiring_countries:
   - Australia
   - Canada
-  - Hong Kong
   - Mexico
-  - Singapore
-  - South Korea
-  - Taiwan
   - United Kingdom
   - United States
 - name: SideFX
@@ -8645,7 +7297,6 @@ companies:
   priority: low
   hiring_countries:
   - Canada
-  - India
   - United States
 - name: Pixle Pool
   url: https://pixelpool.recruitee.com
@@ -8684,7 +7335,6 @@ companies:
   - Australia
   - Canada
   - Costa Rica
-  - India
   - Ireland
   - Netherlands
   - United Kingdom
@@ -8796,7 +7446,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - New Zealand
 - name: Tamatem
   url: https://apply.workable.com/tamatem/?lng=en#jobs
   ats: workable
@@ -8839,14 +7488,10 @@ companies:
   - Colombia
   - France
   - Germany
-  - India
   - Ireland
-  - Japan
   - Mexico
   - Netherlands
   - Poland
-  - Singapore
-  - South Africa
   - Spain
   - Sweden
   - United Arab Emirates
@@ -8867,7 +7512,6 @@ companies:
   hiring_countries:
   - Australia
   - Germany
-  - India
   - Italy
   - Mexico
   - Netherlands
@@ -8904,7 +7548,6 @@ companies:
   hiring_countries:
   - Brazil
   - Costa Rica
-  - Israel
   - United States
 - name: Maersk
   url: https://maersk.wd3.myworkdayjobs.com/Maersk_Careers
@@ -8914,40 +7557,24 @@ companies:
   hiring_countries:
   - Argentina
   - Australia
-  - Bahrain
   - Brazil
-  - Cambodia
   - Canada
   - Chile
-  - China
   - Colombia
   - Czechia
   - Denmark
   - France
   - Germany
-  - Guinea
   - Hungary
-  - India
-  - Israel
-  - Japan
-  - Malaysia
   - Mexico
-  - Morocco
-  - Myanmar (Burma)
   - Netherlands
   - Peru
   - Poland
-  - Singapore
-  - South Africa
   - Spain
   - Sweden
-  - Taiwan
-  - Thailand
-  - Türkiye
   - United Arab Emirates
   - United Kingdom
   - United States
-  - Vietnam
 - name: Blue Yonder
   url: https://jda.wd5.myworkdayjobs.com/JDA_Careers
   ats: workday
@@ -8957,13 +7584,9 @@ companies:
   - Australia
   - France
   - Germany
-  - India
   - Italy
-  - Japan
   - Mexico
   - Poland
-  - Singapore
-  - Taiwan
   - United Arab Emirates
   - United Kingdom
   - United States
@@ -8980,16 +7603,10 @@ companies:
   - Colombia
   - Denmark
   - Germany
-  - India
-  - Indonesia
   - Ireland
-  - Israel
-  - Japan
   - Mexico
   - Romania
-  - Singapore
   - Spain
-  - Taiwan
   - United Kingdom
   - United States
 - name: Windranger
@@ -8998,9 +7615,6 @@ companies:
   slug: windranger
   priority: low
   hiring_countries:
-  - Indonesia
-  - Singapore
-  - Uganda
   - United Kingdom
   - United States
 - name: Thatgamecompany
@@ -9009,9 +7623,6 @@ companies:
   slug: Thatgamecompany
   priority: low
   hiring_countries:
-  - China
-  - Indonesia
-  - Japan
   - United States
 - name: Authzed
   url: https://jobs.ashbyhq.com/authzed
@@ -9041,23 +7652,15 @@ companies:
   - Denmark
   - France
   - Germany
-  - Hong Kong
-  - India
   - Italy
-  - Japan
   - Mexico
   - Netherlands
-  - Saudi Arabia
   - Serbia
-  - Singapore
-  - South Korea
   - Spain
   - Sweden
   - Switzerland
-  - Taiwan
   - United Kingdom
   - United States
-  - Vietnam
 - name: Aledade
   url: https://jobs.lever.co/aledade
   ats: lever
@@ -9096,9 +7699,7 @@ companies:
   - Canada
   - France
   - Germany
-  - India
   - Netherlands
-  - Singapore
   - Sweden
   - United Kingdom
   - United States
@@ -9125,7 +7726,6 @@ companies:
   hiring_countries:
   - Australia
   - Netherlands
-  - Singapore
   - United States
 - name: Aiwyn
   url: https://jobs.ashbyhq.com/aiwyn
@@ -9176,7 +7776,6 @@ companies:
   slug: cointracker
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: CookUnity
   url: https://boards.greenhouse.io/cookunity
@@ -9213,7 +7812,6 @@ companies:
   - Finland
   - France
   - Germany
-  - Japan
   - Mexico
   - Netherlands
   - Poland
@@ -9248,9 +7846,7 @@ companies:
   priority: low
   hiring_countries:
   - Brazil
-  - Indonesia
   - Poland
-  - Taiwan
   - United States
 - name: Mercor
   url: https://jobs.ashbyhq.com/mercor
@@ -9258,7 +7854,6 @@ companies:
   slug: mercor
   priority: low
   hiring_countries:
-  - South Korea
   - United States
 - name: favorited
   url: https://jobs.ashbyhq.com/favorited
@@ -9306,7 +7901,6 @@ companies:
   slug: outschool
   priority: low
   hiring_countries:
-  - South Korea
   - United States
 - name: Guild
   url: https://boards.greenhouse.io/guild
@@ -9344,7 +7938,6 @@ companies:
   slug: instabase
   priority: low
   hiring_countries:
-  - India
   - United Kingdom
   - United States
 - name: Magic School
@@ -9401,11 +7994,7 @@ companies:
   hiring_countries:
   - Australia
   - Brazil
-  - India
-  - Israel
-  - Japan
   - Mexico
-  - Singapore
   - United Kingdom
   - United States
 - name: PermitFlow
@@ -9424,9 +8013,7 @@ companies:
   - Brazil
   - Canada
   - Ireland
-  - Japan
   - Mexico
-  - Singapore
   - Switzerland
   - United States
 - name: Plain
@@ -9451,7 +8038,6 @@ companies:
   priority: low
   hiring_countries:
   - Mexico
-  - Nigeria
   - United States
 - name: Ramp
   url: https://jobs.ashbyhq.com/ramp
@@ -9495,7 +8081,6 @@ companies:
   slug: regrello
   priority: low
   hiring_countries:
-  - India
   - Mexico
   - United States
 - name: Runway
@@ -9504,7 +8089,6 @@ companies:
   slug: runway
   priority: low
   hiring_countries:
-  - Japan
   - United Kingdom
   - United States
 - name: Sesame
@@ -9513,7 +8097,6 @@ companies:
   slug: sesame
   priority: low
   hiring_countries:
-  - Taiwan
   - United States
 - name: Shield AI
   url: https://jobs.lever.co/shieldai
@@ -9522,15 +8105,11 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - India
-  - Japan
   - Netherlands
   - Norway
   - Poland
   - Romania
-  - South Korea
   - Spain
-  - Taiwan
   - Ukraine
   - United Arab Emirates
   - United Kingdom
@@ -9541,7 +8120,6 @@ companies:
   slug: semgrep
   priority: low
   hiring_countries:
-  - Singapore
   - United Kingdom
   - United States
 - name: Snappr
@@ -9552,7 +8130,6 @@ companies:
   hiring_countries:
   - Colombia
   - Mexico
-  - Philippines
   - United States
 - name: Sierra
   url: https://jobs.ashbyhq.com/sierra
@@ -9563,7 +8140,6 @@ companies:
   - Canada
   - France
   - Netherlands
-  - Singapore
   - Spain
   - United Kingdom
   - United States
@@ -9573,7 +8149,6 @@ companies:
   slug: sift
   priority: low
   hiring_countries:
-  - India
   - Ireland
   - Poland
   - Ukraine
@@ -9661,11 +8236,7 @@ companies:
   - Belgium
   - France
   - Germany
-  - India
   - Ireland
-  - Japan
-  - Singapore
-  - South Korea
   - Switzerland
   - United Kingdom
   - United States
@@ -9677,9 +8248,6 @@ companies:
   hiring_countries:
   - France
   - Germany
-  - Japan
-  - Singapore
-  - South Korea
   - United Kingdom
   - United States
 - name: Zapier
@@ -9688,7 +8256,6 @@ companies:
   slug: zapier
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: Deepmind
   url: https://boards.greenhouse.io/deepmind
@@ -9697,8 +8264,6 @@ companies:
   priority: low
   hiring_countries:
   - France
-  - India
-  - Singapore
   - Switzerland
   - United Kingdom
   - United States
@@ -9721,7 +8286,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - Indonesia
   - Poland
   - United Kingdom
 - name: Reflection AI
@@ -9777,10 +8341,6 @@ companies:
   slug: moniepoint
   priority: low
   hiring_countries:
-  - Ghana
-  - India
-  - Nigeria
-  - Pakistan
   - Spain
   - United Kingdom
 - name: Upgrade
@@ -9813,7 +8373,6 @@ companies:
   priority: low
   hiring_countries:
   - Germany
-  - Israel
   - Netherlands
   - United States
 - name: Linear
@@ -9908,7 +8467,6 @@ companies:
   priority: low
   hiring_countries:
   - Australia
-  - Bosnia and Herzegovina
   - Costa Rica
   - Germany
   - United Kingdom
@@ -9978,7 +8536,6 @@ companies:
   priority: low
   hiring_countries:
   - Mexico
-  - Philippines
   - United States
 - name: LILA Sciences
   url: https://boards.greenhouse.io/lilasciences
@@ -10008,7 +8565,6 @@ companies:
   slug: furtherai
   priority: low
   hiring_countries:
-  - India
   - United States
 - name: FleetWorks
   url: https://jobs.ashbyhq.com/fleetworks
