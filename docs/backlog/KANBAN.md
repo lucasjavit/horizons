@@ -27,6 +27,7 @@ destrava o resto.
 | [JOB-06](cards/JOB-06-token-do-firecrawl.md) | Token do Firecrawl em Configurações | P | **feito** (15/08) — cadastro e interruptor; não busca nada ainda |
 | [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha a cada 50 minutos | M | ver **Antes de começar** abaixo: dois ajustes pendentes |
 | [JOB-04](cards/JOB-04-tela-de-vagas.md) | A tela das vagas encontradas | M | **em andamento** (15/08) — refeita no formato RemoteYeah: 8 dropdowns + linhas densas, formulario de perfil removido da pagina; falta fuso/overlap e "o que falta no perfil" |
+| [JOB-17](cards/JOB-17-catalogo-de-ats.md) | Catálogo de 1.953 empresas do look4job + API de ATS grátis | M | medido (18/08) — 199 vagas numa chamada, mas só 4 de 771 eram BR/LATAM |
 | [JOB-12](cards/JOB-12-url-de-vaga-nao-se-valida-por-status.md) | URL de vaga não se valida por status HTTP | P | medido (18/08) — id inventado dá 200, vaga real dá 403 |
 | [JOB-11](cards/JOB-11-listagem-dentro-do-ats.md) | Página de listagem dentro do ATS ainda passa | P | medido (17/08) — 2 de 7 vagas vieram do quadro da empresa, não de um anúncio |
 | [JOB-05](cards/JOB-05-salvar-vaga.md) | Salvar vaga (sai da regra dos 15 dias) | P | depende do JOB-04 |

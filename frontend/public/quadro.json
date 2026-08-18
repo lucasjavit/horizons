@@ -409,6 +409,18 @@
       "total": 0
     },
     {
+      "id": "JOB-17",
+      "titulo": "Catálogo de ATS do look4job como fonte de vagas",
+      "estado": "medido (18/08/2026) — falta decidir",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",
