@@ -2,6 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ApiProvider } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
+/** Provedores de IA que a busca sabe usar. */
+export type IaDaBusca = 'anthropic' | 'openai';
+
 /** Chaves das flags na tabela de configuracao. */
 const LEITURA_CV = 'jobs.leituraCv';
 /**
@@ -16,6 +19,9 @@ const LEITURA_CV = 'jobs.leituraCv';
  * ja mexeu no interruptor.
  */
 const FIRECRAWL_ATIVO = 'jobs.buscaVagas';
+
+/** Qual IA a busca prefere. Preferencia, nao exigencia — ver `iaDaBusca`. */
+const IA_DA_BUSCA = 'jobs.iaDaBusca';
 
 export interface RecursosDto {
   /** A leitura de curriculo esta ligada e funcionando. */
@@ -34,6 +40,12 @@ export interface RecursosDto {
    * dizer isso ANTES de alguem clicar em Filter.
    */
   buscaPossivel: boolean;
+  /** A IA preferida para a busca, como o admin escolheu. */
+  iaPreferida: IaDaBusca;
+  /** A que vai ser usada de fato — cai na outra se a preferida nao tem chave. */
+  iaEfetiva: IaDaBusca | null;
+  temChaveAnthropic: boolean;
+  temChaveOpenAi: boolean;
   /**
    * Ha chave de IA cadastrada. Sem ela o toggle nao pode ser ligado — e a
    * tela precisa saber para explicar por que o controle esta bloqueado, em
@@ -62,6 +74,12 @@ export class RecursosService {
       this.temChaveFirecrawl(),
     ]);
 
+    const [pref, temAnthropic, temOpenAi] = await Promise.all([
+      this.iaPreferida(),
+      this.temChaveDe(ApiProvider.ANTHROPIC),
+      this.temChaveDe(ApiProvider.OPENAI),
+    ]);
+
     // A chave manda: se ela sumiu depois de o recurso ter sido ligado, o
     // recurso esta desligado de fato, e a tela precisa dizer isso — nao
     // mostrar "ligado" e falhar no uso.
@@ -73,6 +91,10 @@ export class RecursosService {
       // Um motor OU o outro. Firecrawl desligado nao fecha a busca — passa a
       // vez para a IA.
       buscaPossivel: (flagFirecrawl && temFirecrawl) || temChave,
+      iaPreferida: pref,
+      iaEfetiva: escolherIa(pref, temAnthropic, temOpenAi),
+      temChaveAnthropic: temAnthropic,
+      temChaveOpenAi: temOpenAi,
     };
   }
 
@@ -126,11 +148,63 @@ export class RecursosService {
 
   /** Existe token de algum provedor de IA cadastrado? */
   private async temChaveDeIa(): Promise<boolean> {
-    if (process.env.ANTHROPIC_API_KEY) return true;
+    const [a, o] = await Promise.all([
+      this.temChaveDe(ApiProvider.ANTHROPIC),
+      this.temChaveDe(ApiProvider.OPENAI),
+    ]);
+    return a || o;
+  }
+
+  private async temChaveDe(provider: ApiProvider): Promise<boolean> {
+    if (provider === ApiProvider.ANTHROPIC && process.env.ANTHROPIC_API_KEY) return true;
+    if (provider === ApiProvider.OPENAI && process.env.OPENAI_API_KEY) return true;
     const token = await this.prisma.apiToken.findFirst({
-      where: { provider: ApiProvider.ANTHROPIC },
+      where: { provider },
       select: { id: true },
     });
     return token !== null;
   }
+
+  /** A escolha gravada. `anthropic` e o default de quem nunca escolheu. */
+  private async iaPreferida(): Promise<IaDaBusca> {
+    const linha = await this.prisma.appSetting.findUnique({
+      where: { chave: IA_DA_BUSCA },
+      select: { valor: true },
+    });
+    return linha?.valor === 'openai' ? 'openai' : 'anthropic';
+  }
+
+  async definirIaDaBusca(ia: IaDaBusca): Promise<RecursosDto> {
+    // Nao exige chave: e uma PREFERENCIA. Escolher a que ainda nao tem chave e
+    // legitimo — a pessoa esta dizendo qual quer usar quando cadastrar, e ate
+    // la a outra atende.
+    await this.prisma.appSetting.upsert({
+      where: { chave: IA_DA_BUSCA },
+      create: { chave: IA_DA_BUSCA, valor: ia },
+      update: { valor: ia },
+      select: { chave: true },
+    });
+    return this.obter();
+  }
+}
+
+/**
+ * Qual IA vai rodar de fato.
+ *
+ * A escolha do admin e preferencia, e nao exigencia: se a preferida nao tem
+ * chave, a outra atende. Uma busca que funciona vale mais que uma que respeita
+ * a configuracao e nao devolve nada — e a tela mostra qual esta valendo, para
+ * a divergencia nao virar surpresa.
+ */
+function escolherIa(
+  preferida: IaDaBusca,
+  temAnthropic: boolean,
+  temOpenAi: boolean,
+): IaDaBusca | null {
+  if (preferida === 'anthropic') {
+    if (temAnthropic) return 'anthropic';
+    return temOpenAi ? 'openai' : null;
+  }
+  if (temOpenAi) return 'openai';
+  return temAnthropic ? 'anthropic' : null;
 }

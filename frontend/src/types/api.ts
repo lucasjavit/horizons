@@ -127,6 +127,9 @@ export type Remoto = 'remoto' | 'hibrido' | 'presencial'
 /** Espelha `REGIOES` do backend. */
 export type Regiao = 'latam'
 
+/** Espelha `IaDaBusca` do backend. */
+export type IaDaBusca = 'anthropic' | 'openai'
+
 export type Contrato = 'clt' | 'pj' | 'contractor' | 'freelance'
 
 /**
@@ -214,6 +217,12 @@ export interface Recursos {
   buscaPossivel: boolean
   /** Sem token do Firecrawl a busca não pode ser ligada. */
   temChaveFirecrawl: boolean
+  /** A IA escolhida pelo admin para a busca. */
+  iaPreferida: IaDaBusca
+  /** A que roda de fato — cai na outra se a preferida não tem chave. */
+  iaEfetiva: IaDaBusca | null
+  temChaveAnthropic: boolean
+  temChaveOpenAi: boolean
 }
 
 /**

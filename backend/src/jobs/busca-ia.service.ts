@@ -1,12 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { ApiProvider } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { decifrar } from '../settings/crypto';
+import {
+  INSTRUCAO_BUSCA,
+  SCHEMA_BUSCA,
+  descreverPedido,
+  normalizar,
+} from './busca-ia.comum';
 import type { FiltrosDto, VagaDto } from './job.dto';
+import type { IaDaBusca } from '../settings/recursos.service';
 
 /**
- * A busca de vagas pela IA, sem Firecrawl.
+ * A busca de vagas pela IA, sem Firecrawl — com Claude ou com ChatGPT.
  *
  * **A IA nao sabe vaga de cabeca — ela precisa procurar.** Medido em
  * 18/08/2026: perguntado por vagas abertas sem acesso a web, o modelo acertou
@@ -15,122 +23,71 @@ import type { FiltrosDto, VagaDto } from './job.dto';
  * vaga em Greenhouse/Lever/Ashby sao opacos e nao memorizaveis; eu produziria
  * uma URL bem formada que da 404".
  *
- * Por isso este servico usa a ferramenta `web_search`: quem procura e a IA, e
- * o resultado vem da web de agora — nao da memoria do treino, que fecha em
- * maio/2026 e ja esta tres meses atras.
- *
- * A diferenca para o `BuscaService`: la o Firecrawl abre cada pagina (5
- * creditos e ~36s cada, teto de 8 por causa do rate limit); aqui a IA busca e
- * le em uma chamada so. Sai mais barato e mais rapido, e entra menos fundo em
- * cada anuncio — o `web_search` traz trecho, nao a pagina inteira.
+ * Por isso os dois caminhos usam busca na web de verdade — `web_search` na
+ * Anthropic, `web_search` na Responses API da OpenAI. O que muda e a forma da
+ * chamada; o que se pede, a instrucao e as defesas sao os mesmos, e moram em
+ * `busca-ia.comum.ts` para nao divergirem.
  */
-
-/** O mesmo formato de vaga do Firecrawl: a tela nao sabe qual motor rodou. */
-const SCHEMA = {
-  type: 'object',
-  properties: {
-    vagas: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          title: { type: 'string' },
-          company: { type: 'string' },
-          url: {
-            type: 'string',
-            description:
-              'A URL EXATA que apareceu na busca. Nunca monte uma URL a ' +
-              'partir de um padrao: id de vaga e opaco, e uma URL inventada ' +
-              'parece valida e da 404.',
-          },
-          local: { type: ['string', 'null'] },
-          skills: { type: 'array', items: { type: 'string' } },
-          salaryMin: { type: ['integer', 'null'] },
-          salaryMax: { type: ['integer', 'null'] },
-          currency: { type: ['string', 'null'] },
-          salaryTrecho: {
-            type: ['string', 'null'],
-            description:
-              'O TEXTO EXATO do anuncio que mostra o salario. Sem ele, ' +
-              'salaryMin e salaryMax ficam null.',
-          },
-          elegivelBrasil: {
-            type: ['boolean', 'null'],
-            description:
-              'Contrata quem mora no Brasil? null se a pagina nao disser. ' +
-              '"Nao disse" NAO e "nao aceita".',
-          },
-          elegibilidadeTrecho: {
-            type: ['string', 'null'],
-            description: 'O TEXTO EXATO que sustenta elegivelBrasil.',
-          },
-          ehVaga: {
-            type: 'boolean',
-            description:
-              'false se for pagina de listagem/busca em vez de UM anuncio.',
-          },
-        },
-        required: ['title', 'company', 'url', 'ehVaga'],
-      },
-    },
-  },
-  required: ['vagas'],
-} as const;
-
-const INSTRUCAO = `Voce procura vagas de emprego reais e abertas usando a busca na web.
-
-REGRAS QUE NAO SE NEGOCIAM:
-
-1. **Toda vaga vem de um resultado de busca.** Se voce nao buscou, nao existe.
-   Nunca liste uma vaga de memoria: vaga abre e fecha em dias, e o que voce
-   lembra do treino ja venceu.
-
-2. **URL e copiada, nunca montada.** Se a busca nao devolveu a URL, a vaga
-   nao entra. Montar "job-boards.greenhouse.io/<empresa>/jobs/<numero>" a
-   partir do padrao produz link que da 404 e parece verdadeiro.
-
-3. **Salario so com o trecho que o prova.** Sem o texto do anuncio, os campos
-   de salario ficam null. Nao converta valor por hora em anual.
-
-4. **Elegibilidade so com citacao.** Se a pagina nao fala de contratar no
-   Brasil, elegivelBrasil e null — nao false. Dizer a alguem que uma empresa
-   nao o contrataria, sem base, e o pior erro possivel aqui.
-
-5. **Pagina de listagem nao e vaga.** "140 results", "903 positions" e um
-   indice, nao um anuncio: marque ehVaga: false.
-
-Prefira greenhouse.io, lever.co e ashbyhq.com — nesses a URL indexada e o
-proprio anuncio. Devolva ate 15 vagas. Menos vagas verdadeiras vale mais que
-muitas duvidosas.`;
-
 @Injectable()
 export class BuscaIaService {
   private readonly log = new Logger(BuscaIaService.name);
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Ha chave da Anthropic cadastrada? E o que decide se este motor existe. */
+  /** Ha chave de algum provedor? E o que decide se este motor existe. */
   async disponivel(): Promise<boolean> {
-    return (await this.chave()) !== null;
+    const [a, o] = await Promise.all([
+      this.chave(ApiProvider.ANTHROPIC),
+      this.chave(ApiProvider.OPENAI),
+    ]);
+    return a !== null || o !== null;
   }
 
-  async buscar(filtros: FiltrosDto, consulta: string): Promise<VagaDto[]> {
-    const chave = await this.chave();
-    if (!chave) return [];
+  /**
+   * Busca com a IA escolhida, caindo na outra se a escolhida nao tem chave.
+   *
+   * O `qual` vem da configuracao (`iaEfetiva`), mas a checagem se repete aqui:
+   * o servico nao pode depender de quem o chama ter feito a conta certa.
+   */
+  async buscar(
+    filtros: FiltrosDto,
+    consulta: string,
+    qual: IaDaBusca,
+  ): Promise<VagaDto[]> {
+    const preferida = qual === 'openai' ? ApiProvider.OPENAI : ApiProvider.ANTHROPIC;
+    const outra = qual === 'openai' ? ApiProvider.ANTHROPIC : ApiProvider.OPENAI;
 
+    const chavePref = await this.chave(preferida);
+    if (chavePref) {
+      return preferida === ApiProvider.OPENAI
+        ? this.comOpenAi(chavePref, filtros, consulta)
+        : this.comAnthropic(chavePref, filtros, consulta);
+    }
+
+    const chaveOutra = await this.chave(outra);
+    if (!chaveOutra) return [];
+    this.log.log(
+      `${preferida} sem chave — buscando com ${outra}`,
+    );
+    return outra === ApiProvider.OPENAI
+      ? this.comOpenAi(chaveOutra, filtros, consulta)
+      : this.comAnthropic(chaveOutra, filtros, consulta);
+  }
+
+  private async comAnthropic(
+    chave: string,
+    filtros: FiltrosDto,
+    consulta: string,
+  ): Promise<VagaDto[]> {
     const client = new Anthropic({ apiKey: chave });
-    const pedido = descreverPedido(filtros, consulta);
-
-    let bruto: string;
     try {
       const resposta = await client.messages.create({
         model: 'claude-opus-5',
         max_tokens: 8000,
-        system: INSTRUCAO,
-        // A busca na web e o que separa este servico de um gerador de ficcao.
+        system: INSTRUCAO_BUSCA,
         tools: [{ type: 'web_search_20260209', name: 'web_search' }],
-        output_config: { format: { type: 'json_schema', schema: SCHEMA } },
-        messages: [{ role: 'user', content: pedido }],
+        output_config: { format: { type: 'json_schema', schema: SCHEMA_BUSCA } },
+        messages: [{ role: 'user', content: descreverPedido(filtros, consulta) }],
       });
 
       // Refusal e 200 com content vazio: ler content[0] direto quebraria aqui.
@@ -138,22 +95,75 @@ export class BuscaIaService {
         this.log.warn('busca por IA recusada pelo modelo');
         return [];
       }
-
       const bloco = resposta.content.find((b) => b.type === 'text');
       if (!bloco || bloco.type !== 'text') return [];
-      bruto = bloco.text;
+      return this.ler(bloco.text);
     } catch (e) {
-      this.log.error(`busca por IA falhou: ${String(e).slice(0, 300)}`);
+      this.log.error(`busca com Anthropic falhou: ${String(e).slice(0, 300)}`);
       return [];
     }
-
-    const lido = JSON.parse(bruto) as { vagas: Record<string, unknown>[] };
-    return (lido.vagas ?? []).map((v) => normalizar(v)).filter((v): v is VagaDto => v !== null);
   }
 
-  private async chave(): Promise<string | null> {
+  /**
+   * O caminho da OpenAI.
+   *
+   * A API e outra: `responses.create` em vez de `messages.create`, `text.format`
+   * em vez de `output_config`, e o resultado sai em `output_text` em vez de um
+   * bloco de conteudo.
+   */
+  private async comOpenAi(
+    chave: string,
+    filtros: FiltrosDto,
+    consulta: string,
+  ): Promise<VagaDto[]> {
+    const client = new OpenAI({ apiKey: chave });
+    try {
+      const resposta = await client.responses.create({
+        model: 'gpt-5.6',
+        tools: [{ type: 'web_search' }],
+        input: [
+          { role: 'system', content: INSTRUCAO_BUSCA },
+          { role: 'user', content: descreverPedido(filtros, consulta) },
+        ],
+        text: {
+          format: {
+            type: 'json_schema',
+            name: 'vagas',
+            schema: SCHEMA_BUSCA as unknown as Record<string, unknown>,
+          },
+        },
+      });
+      return this.ler(resposta.output_text ?? '');
+    } catch (e) {
+      this.log.error(`busca com OpenAI falhou: ${String(e).slice(0, 300)}`);
+      return [];
+    }
+  }
+
+  /** O JSON vira vaga, com as defesas do JOB-09 e JOB-10 aplicadas. */
+  private ler(bruto: string): VagaDto[] {
+    if (!bruto.trim()) return [];
+    let lido: { vagas?: Record<string, unknown>[] };
+    try {
+      lido = JSON.parse(bruto) as { vagas?: Record<string, unknown>[] };
+    } catch {
+      this.log.warn('resposta da IA nao era JSON valido');
+      return [];
+    }
+    return (lido.vagas ?? [])
+      .map((v) => normalizar(v))
+      .filter((v): v is VagaDto => v !== null);
+  }
+
+  private async chave(provider: ApiProvider): Promise<string | null> {
+    const env =
+      provider === ApiProvider.ANTHROPIC
+        ? process.env.ANTHROPIC_API_KEY
+        : process.env.OPENAI_API_KEY;
+    if (env) return env;
+
     const guardado = await this.prisma.apiToken.findFirst({
-      where: { provider: ApiProvider.ANTHROPIC },
+      where: { provider },
       select: { secret: true },
       orderBy: { updatedAt: 'desc' },
     });
@@ -161,92 +171,8 @@ export class BuscaIaService {
     try {
       return decifrar(guardado.secret);
     } catch {
-      this.log.error('token da Anthropic nao pode ser decifrado');
+      this.log.error(`token ${provider} nao pode ser decifrado`);
       return null;
     }
-  }
-}
-
-/** O pedido em prosa, a partir dos mesmos filtros que a tela ja manda. */
-function descreverPedido(f: FiltrosDto, consulta: string): string {
-  const linhas = [`Procure vagas para esta consulta: ${consulta}`, ''];
-  if (f.job_titles?.length) linhas.push(`Cargos: ${f.job_titles.join(', ')}`);
-  if (f.seniority) linhas.push(`Senioridade: ${f.seniority}`);
-  if (f.technologies?.length) linhas.push(`Tecnologias: ${f.technologies.join(', ')}`);
-  if (f.regiao === 'latam') {
-    linhas.push(
-      'Regiao: America Latina. Vale vaga que aceite candidato no Brasil, ' +
-        'na LATAM, ou "Americas time zones".',
-    );
-  }
-  if (f.locations?.length) linhas.push(`Locais: ${f.locations.join(', ')}`);
-  if (f.remote === 'remoto') linhas.push('Somente remoto.');
-  if (f.salary_min) linhas.push(`Salario minimo anual: ${f.salary_min}.`);
-  return linhas.join('\n');
-}
-
-/**
- * A saida da IA vira `VagaDto`, com as mesmas defesas do motor do Firecrawl.
- *
- * Nao e paranoia duplicada: o schema obriga o formato, nao a verdade. Um
- * modelo pode devolver `ehVaga: true` numa pagina de listagem, ou salario sem
- * trecho — e ai a defesa aqui e a ultima que existe.
- */
-function normalizar(v: Record<string, unknown>): VagaDto | null {
-  const url = texto(v.url);
-  const title = texto(v.title);
-  const company = texto(v.company);
-  if (!url || !title || !company) return null;
-  // URL tem de ser http(s) de verdade: o modelo as vezes devolve caminho solto.
-  if (!/^https?:\/\/\S+$/i.test(url)) return null;
-  if (v.ehVaga === false) return null;
-
-  const trechoSal = texto(v.salaryTrecho);
-  const comSal = trechoSal !== null;
-  const trechoEleg = texto(v.elegibilidadeTrecho);
-
-  return {
-    id: url,
-    title,
-    company,
-    url,
-    fonte: dominio(url),
-    local: texto(v.local),
-    regime: null,
-    skills: Array.isArray(v.skills) ? v.skills.filter((s): s is string => typeof s === 'string') : [],
-    area: null,
-    anosExp: null,
-    benefits: [],
-    degree: null,
-    logoUrl: null,
-    paisIso: null,
-    // Sem trecho, sem numero — a mesma regra do JOB-09.
-    salaryMin: comSal ? inteiro(v.salaryMin) : null,
-    salaryMax: comSal ? inteiro(v.salaryMax) : null,
-    currency: comSal ? (texto(v.currency)?.toUpperCase().slice(0, 3) ?? null) : null,
-    salaryTrecho: trechoSal,
-    // Afirmacao de elegibilidade exige citacao. "Nao disse" nao e "nao aceita".
-    elegivelBrasil: trechoEleg && typeof v.elegivelBrasil === 'boolean' ? v.elegivelBrasil : null,
-    elegibilidadeTrecho: trechoEleg,
-    postedAt: null,
-    foundAt: new Date().toISOString(),
-  };
-}
-
-function texto(v: unknown): string | null {
-  if (typeof v !== 'string') return null;
-  const t = v.trim();
-  return t.length > 0 ? t : null;
-}
-
-function inteiro(v: unknown): number | null {
-  return typeof v === 'number' && Number.isFinite(v) ? Math.round(v) : null;
-}
-
-function dominio(url: string): string {
-  try {
-    return new URL(url).hostname.replace(/^www\./, '');
-  } catch {
-    return '';
   }
 }

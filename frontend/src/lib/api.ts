@@ -9,6 +9,7 @@ import type {
   LessonDetail,
   LessonSearchHit,
   CvLido,
+  IaDaBusca,
   ProgressResult,
   Recursos,
   SalvarPerfil,
@@ -173,6 +174,13 @@ export const api = {
   async definirLeituraCv(ativa: boolean): Promise<Recursos> {
     const { data } = await http.put<Recursos>('/settings/recursos/leitura-cv', {
       ativa,
+    })
+    return data
+  },
+
+  async definirIaDaBusca(ia: IaDaBusca): Promise<Recursos> {
+    const { data } = await http.put<Recursos>('/settings/recursos/ia-da-busca', {
+      ia,
     })
     return data
   },

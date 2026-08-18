@@ -4,6 +4,7 @@ import { Firecrawl } from 'firecrawl';
 import { PrismaService } from '../prisma/prisma.service';
 import { BuscaIaService } from './busca-ia.service';
 import { RecursosService } from '../settings/recursos.service';
+import type { IaDaBusca } from '../settings/recursos.service';
 import { decifrar } from '../settings/crypto';
 import type { FiltrosDto, VagaDto } from './job.dto';
 
@@ -142,7 +143,7 @@ export class BuscaService {
     // O interruptor decide o motor, e nao so a existencia da chave: com o
     // Firecrawl desligado a chave continua cadastrada, e usa-la assim mesmo
     // faria o interruptor nao significar nada.
-    const { firecrawlAtivo } = await this.recursos.obter();
+    const { firecrawlAtivo, iaEfetiva } = await this.recursos.obter();
     const chave = firecrawlAtivo ? await this.chave() : null;
 
     // Firecrawl desligado ou sem chave: a IA assume.
@@ -165,7 +166,7 @@ export class BuscaService {
           ? 'Firecrawl sem chave — buscando pela IA'
           : 'Firecrawl desligado — buscando pela IA',
       );
-      yield* this.buscarPelaIa(filtros, consulta);
+      yield* this.buscarPelaIa(filtros, consulta, iaEfetiva ?? 'anthropic');
       return;
     }
 
@@ -331,8 +332,9 @@ export class BuscaService {
   private async *buscarPelaIa(
     filtros: FiltrosDto,
     consulta: string,
+    qual: IaDaBusca,
   ): AsyncGenerator<EventoBusca> {
-    const vagas = await this.ia.buscar(filtros, consulta);
+    const vagas = await this.ia.buscar(filtros, consulta, qual);
     yield { tipo: 'inicio', total: vagas.length };
     for (const vaga of vagas) yield { tipo: 'vaga', vaga };
     yield { tipo: 'fim' };

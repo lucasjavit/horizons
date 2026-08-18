@@ -397,6 +397,18 @@
       "total": 0
     },
     {
+      "id": "JOB-15",
+      "titulo": "Escolher a IA da busca em Configurações",
+      "estado": "feito (18/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "Depois do [JOB-14](JOB-14-interruptor-do-firecrawl.md), desligar o Firecrawl levava a uma tela vazia — o motor de IA só falava com a Anthropic, e a única chave de IA cadastrada era da OpenAI. O stakeholder viu o sintoma ",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",

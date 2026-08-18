@@ -1,11 +1,20 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
-import { IsBoolean } from 'class-validator';
+import { IsBoolean, IsIn } from 'class-validator';
 import { AdminOnly } from '../auth/current-user';
-import { RecursosService, type RecursosDto } from './recursos.service';
+import {
+  RecursosService,
+  type RecursosDto,
+  type IaDaBusca,
+} from './recursos.service';
 
 export class DefinirFlagDto {
   @IsBoolean()
   ativa!: boolean;
+}
+
+export class DefinirIaDto {
+  @IsIn(['anthropic', 'openai'])
+  ia!: IaDaBusca;
 }
 
 /**
@@ -37,5 +46,11 @@ export class RecursosController {
   @AdminOnly()
   definirBuscaVagas(@Body() body: DefinirFlagDto): Promise<RecursosDto> {
     return this.recursos.definirBuscaVagas(body.ativa);
+  }
+
+  @Put('ia-da-busca')
+  @AdminOnly()
+  definirIaDaBusca(@Body() body: DefinirIaDto): Promise<RecursosDto> {
+    return this.recursos.definirIaDaBusca(body.ia);
   }
 }

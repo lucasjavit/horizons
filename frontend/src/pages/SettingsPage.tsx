@@ -4,7 +4,7 @@ import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { api, errorMessage } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
-import type { ApiProvider, ApiTokenInfo, Recursos } from '../types/api'
+import type { ApiProvider, ApiTokenInfo, IaDaBusca, Recursos } from '../types/api'
 
 /**
  * Tokens de API dos provedores de IA.
@@ -128,6 +128,18 @@ function Recursos() {
   const [salvando, setSalvando] = useState(false)
   const [erroAcao, setErroAcao] = useState<string | null>(null)
 
+  const alternarIa = async (ia: IaDaBusca) => {
+    setErroAcao(null)
+    setSalvando(true)
+    try {
+      setData(await api.definirIaDaBusca(ia))
+    } catch (e) {
+      setErroAcao(errorMessage(e))
+    } finally {
+      setSalvando(false)
+    }
+  }
+
   const alternar = async (
     fn: (ativa: boolean) => Promise<Recursos>,
     atual: boolean,
@@ -176,6 +188,11 @@ function Recursos() {
               ajudaLigada="A busca abre cada anúncio pelo Firecrawl: traz salário, skills e elegibilidade com o trecho que os comprova. Custa créditos e abre até 8 vagas por busca."
               ajudaDesligada="Desligado, a busca continua funcionando — passa a ser feita pela IA, que encontra mais vagas e mais rápido, com menos detalhe de cada uma."
               ajudaSemChave="Cadastre o token do Firecrawl acima para poder ligar. Sem ele a busca é feita pela IA."
+            />
+            <EscolhaDeIa
+              data={data}
+              salvando={salvando}
+              onEscolher={(ia) => void alternarIa(ia)}
             />
             <Interruptor
               id="leitura-cv"
@@ -260,6 +277,74 @@ function Interruptor({
         </span>
       </span>
     </label>
+  )
+}
+
+/**
+ * Qual IA faz a busca quando o Firecrawl esta desligado.
+ *
+ * **E preferencia, nao exigencia.** Escolher a que ainda nao tem chave e
+ * legitimo — a pessoa diz qual quer usar quando cadastrar, e ate la a outra
+ * atende. Por isso a opcao sem chave fica selecionavel, e a tela avisa qual
+ * esta valendo de fato em vez de silenciosamente usar outra.
+ */
+function EscolhaDeIa({
+  data,
+  salvando,
+  onEscolher,
+}: {
+  data: Recursos
+  salvando: boolean
+  onEscolher: (ia: IaDaBusca) => void
+}) {
+  const opcoes: { id: IaDaBusca; nome: string; temChave: boolean }[] = [
+    { id: 'anthropic', nome: 'Claude (Anthropic)', temChave: data.temChaveAnthropic },
+    { id: 'openai', nome: 'ChatGPT (OpenAI)', temChave: data.temChaveOpenAi },
+  ]
+  const caiuNaOutra =
+    data.iaEfetiva !== null && data.iaEfetiva !== data.iaPreferida
+
+  return (
+    <fieldset className="border-0 p-0">
+      <legend className="text-sm font-medium">IA que faz a busca</legend>
+      <p className="mt-0.5 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+        Usada quando o Firecrawl está desligado.
+      </p>
+
+      <div className="mt-2.5 flex flex-col gap-2">
+        {opcoes.map((o) => (
+          <label key={o.id} className="flex cursor-pointer items-center gap-2.5">
+            <input
+              type="radio"
+              name="ia-da-busca"
+              checked={data.iaPreferida === o.id}
+              disabled={salvando}
+              onChange={() => onEscolher(o.id)}
+              className="h-4 w-4 shrink-0 accent-[var(--brand)] disabled:opacity-50"
+            />
+            <span className="text-sm">
+              {o.nome}
+              {!o.temChave && (
+                <span style={{ color: 'var(--text-muted)' }}> — sem chave cadastrada</span>
+              )}
+            </span>
+          </label>
+        ))}
+      </div>
+
+      {caiuNaOutra && (
+        <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+          Sem chave da escolhida, a busca está usando{' '}
+          {data.iaEfetiva === 'openai' ? 'ChatGPT' : 'Claude'}.
+        </p>
+      )}
+      {data.iaEfetiva === null && (
+        <p className="mt-2 text-sm" style={{ color: WARN_INK }}>
+          Nenhuma das duas tem chave. Com o Firecrawl desligado, a busca não
+          tem como rodar.
+        </p>
+      )}
+    </fieldset>
   )
 }
 

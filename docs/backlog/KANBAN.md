@@ -60,6 +60,7 @@ _(vazio)_
 | --- | --- | --- |
 | [JOB-10](cards/JOB-10-consultas-dirigidas.md) | **A busca mira os ATS** — 8 URLs viram 8 vagas, contra 8 → 6 | 17/08/2026 |
 | [JOB-09](cards/JOB-09-vaga-so-afirma-o-que-cita.md) | **A vaga só afirma o que cita** — fim do "não contrata brasileiro" sem fonte | 17/08/2026 |
+| [JOB-15](cards/JOB-15-escolha-da-ia.md) | **Escolher a IA da busca** — Claude ou ChatGPT, com fallback; 15 vagas contra 7 | 18/08/2026 |
 | [JOB-14](cards/JOB-14-interruptor-do-firecrawl.md) | **"Ativar Firecrawl"** — desligado passa a busca para a IA, em vez de parar tudo | 18/08/2026 |
 | [JOB-13](cards/JOB-13-busca-pela-ia.md) | **Busca pela IA** — segundo motor, com `web_search`; falta chave real para conferir | 18/08/2026 |
 | [PLT-06](cards/PLT-06-deploy-no-coolify.md) | **Deploy no Coolify** — no ar em HTTPS, com login funcionando | 15/08/2026 |
