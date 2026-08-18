@@ -385,6 +385,18 @@
       "total": 0
     },
     {
+      "id": "JOB-14",
+      "titulo": "O interruptor é do Firecrawl, não da busca",
+      "estado": "feito (18/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "O stakeholder desmarcou *\"Buscar vagas na web\"* esperando desligar o Firecrawl, e a busca inteira parou. A leitura dele estava certa e o produto é que estava errado: depois do [JOB-13](JOB-13-busca-pela-ia.md) existem do",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",

@@ -23,10 +23,13 @@ export class BuscaController {
 
   @Post()
   async buscar(@Body() filtros: FiltrosDto, @Res() res: Response): Promise<void> {
-    // O interruptor e checado AQUI, nao so na tela: recurso desligado que a API
-    // ainda aceita nao esta desligado, esta escondido — e cada busca gasta
-    // credito da conta do admin.
-    const { buscaVagasAtiva } = await this.recursos.obter();
+    // Checado AQUI, e nao so na tela: recurso desligado que a API ainda aceita
+    // nao esta desligado, esta escondido — e cada busca gasta credito.
+    //
+    // O que se checa e se EXISTE MOTOR, e nao se o Firecrawl esta ligado. O
+    // interruptor do Firecrawl escolhe o motor; desliga-lo passa a vez para a
+    // IA em vez de fechar a busca.
+    const { buscaPossivel } = await this.recursos.obter();
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -39,8 +42,12 @@ export class BuscaController {
       res.write(`data: ${JSON.stringify(dado)}\n\n`);
     };
 
-    if (!buscaVagasAtiva) {
-      enviar({ tipo: 'erro', mensagem: 'Job search is turned off. Ask an admin to enable it in Settings.' });
+    if (!buscaPossivel) {
+      enviar({
+        tipo: 'erro',
+        mensagem:
+          'Job search needs a key. Ask an admin to add a Firecrawl token or an Anthropic key in Settings.',
+      });
       res.end();
       return;
     }

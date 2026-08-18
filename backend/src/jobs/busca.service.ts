@@ -3,6 +3,7 @@ import { ApiProvider } from '@prisma/client';
 import { Firecrawl } from 'firecrawl';
 import { PrismaService } from '../prisma/prisma.service';
 import { BuscaIaService } from './busca-ia.service';
+import { RecursosService } from '../settings/recursos.service';
 import { decifrar } from '../settings/crypto';
 import type { FiltrosDto, VagaDto } from './job.dto';
 
@@ -133,13 +134,18 @@ export class BuscaService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ia: BuscaIaService,
+    private readonly recursos: RecursosService,
   ) {}
 
   async *buscar(filtros: FiltrosDto): AsyncGenerator<EventoBusca> {
     const consulta = montarConsulta(filtros);
-    const chave = await this.chave();
+    // O interruptor decide o motor, e nao so a existencia da chave: com o
+    // Firecrawl desligado a chave continua cadastrada, e usa-la assim mesmo
+    // faria o interruptor nao significar nada.
+    const { firecrawlAtivo } = await this.recursos.obter();
+    const chave = firecrawlAtivo ? await this.chave() : null;
 
-    // Sem Firecrawl, a IA assume — se houver chave da Anthropic.
+    // Firecrawl desligado ou sem chave: a IA assume.
     //
     // Os dois motores existem porque tem forcas opostas. O Firecrawl abre a
     // pagina inteira (salario, skills, elegibilidade com citacao) mas custa 5
@@ -154,7 +160,11 @@ export class BuscaService {
         };
         return;
       }
-      this.log.log('Firecrawl ausente — buscando pela IA');
+      this.log.log(
+        firecrawlAtivo
+          ? 'Firecrawl sem chave — buscando pela IA'
+          : 'Firecrawl desligado — buscando pela IA',
+      );
       yield* this.buscarPelaIa(filtros, consulta);
       return;
     }

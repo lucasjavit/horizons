@@ -208,7 +208,10 @@ export interface Recursos {
   leituraCvAtiva: boolean
   /** Sem chave de IA o recurso não pode ser ligado. */
   temChaveDeIa: boolean
-  buscaVagasAtiva: boolean
+  /** O Firecrawl está ligado e utilizável. Desligado = busca pela IA. */
+  firecrawlAtivo: boolean
+  /** Há ao menos um motor de busca utilizável. */
+  buscaPossivel: boolean
   /** Sem token do Firecrawl a busca não pode ser ligada. */
   temChaveFirecrawl: boolean
 }

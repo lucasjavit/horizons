@@ -4,15 +4,36 @@ import { PrismaService } from '../prisma/prisma.service';
 
 /** Chaves das flags na tabela de configuracao. */
 const LEITURA_CV = 'jobs.leituraCv';
-const BUSCA_VAGAS = 'jobs.buscaVagas';
+/**
+ * O motor da busca, e nao um liga-desliga da busca.
+ *
+ * Ligada: o Firecrawl abre cada anuncio (fundo, caro, teto de 8 por causa do
+ * rate limit). Desligada: a busca continua acontecendo, pela IA com
+ * `web_search` — mais anuncio, menos profundidade em cada um.
+ *
+ * O nome da chave continua `jobs.buscaVagas` porque ja existe linha gravada no
+ * banco com ele; renomear pediria migracao para nao perder a escolha de quem
+ * ja mexeu no interruptor.
+ */
+const FIRECRAWL_ATIVO = 'jobs.buscaVagas';
 
 export interface RecursosDto {
   /** A leitura de curriculo esta ligada e funcionando. */
   leituraCvAtiva: boolean;
-  /** A busca de vagas esta ligada e funcionando. */
-  buscaVagasAtiva: boolean;
-  /** Ha token do Firecrawl cadastrado. Sem ele a busca nao pode ser ligada. */
+  /**
+   * O Firecrawl esta ligado E utilizavel.
+   *
+   * Desligado nao significa busca desligada: significa busca pela IA.
+   */
+  firecrawlAtivo: boolean;
+  /** Ha token do Firecrawl cadastrado. Sem ele o interruptor nao liga. */
   temChaveFirecrawl: boolean;
+  /**
+   * Ha ao menos um motor utilizavel — Firecrawl ligado com chave, ou chave de
+   * IA. Sem nenhum, a busca nao tem de onde tirar vaga, e a tela precisa
+   * dizer isso ANTES de alguem clicar em Filter.
+   */
+  buscaPossivel: boolean;
   /**
    * Ha chave de IA cadastrada. Sem ela o toggle nao pode ser ligado — e a
    * tela precisa saber para explicar por que o controle esta bloqueado, em
@@ -34,9 +55,9 @@ export class RecursosService {
   constructor(private readonly prisma: PrismaService) {}
 
   async obter(): Promise<RecursosDto> {
-    const [flagCv, flagBusca, temChave, temFirecrawl] = await Promise.all([
+    const [flagCv, flagFirecrawl, temChave, temFirecrawl] = await Promise.all([
       this.flag(LEITURA_CV),
-      this.flag(BUSCA_VAGAS),
+      this.flag(FIRECRAWL_ATIVO),
       this.temChaveDeIa(),
       this.temChaveFirecrawl(),
     ]);
@@ -47,20 +68,22 @@ export class RecursosService {
     return {
       leituraCvAtiva: flagCv && temChave,
       temChaveDeIa: temChave,
-      // Qualquer um dos dois motores serve: Firecrawl abre a pagina inteira,
-      // a IA busca na web. Sem nenhum dos dois nao ha de onde tirar vaga.
-      buscaVagasAtiva: flagBusca && (temFirecrawl || temChave),
+      firecrawlAtivo: flagFirecrawl && temFirecrawl,
       temChaveFirecrawl: temFirecrawl,
+      // Um motor OU o outro. Firecrawl desligado nao fecha a busca — passa a
+      // vez para a IA.
+      buscaPossivel: (flagFirecrawl && temFirecrawl) || temChave,
     };
   }
 
   async definirBuscaVagas(ativa: boolean): Promise<RecursosDto> {
-    if (ativa && !(await this.temChaveFirecrawl()) && !(await this.temChaveDeIa())) {
+    // So o Firecrawl importa aqui: e o motor que este interruptor liga.
+    if (ativa && !(await this.temChaveFirecrawl())) {
       throw new BadRequestException(
-        'Cadastre o token do Firecrawl ou a chave da Anthropic antes de ligar a busca de vagas.',
+        'Cadastre o token do Firecrawl antes de ligar o Firecrawl.',
       );
     }
-    await this.gravar(BUSCA_VAGAS, ativa);
+    await this.gravar(FIRECRAWL_ATIVO, ativa);
     return this.obter();
   }
 

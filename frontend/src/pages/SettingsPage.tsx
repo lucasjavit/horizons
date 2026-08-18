@@ -166,15 +166,16 @@ function Recursos() {
           <div className="flex flex-col gap-5">
             <Interruptor
               id="busca-vagas"
-              titulo="Buscar vagas na web"
-              ligado={data.buscaVagasAtiva}
+              titulo="Ativar Firecrawl"
+              ligado={data.firecrawlAtivo}
               temDependencia={data.temChaveFirecrawl}
               salvando={salvando}
               onAlternar={() =>
-                void alternar(api.definirBuscaVagas, data.buscaVagasAtiva)
+                void alternar(api.definirBuscaVagas, data.firecrawlAtivo)
               }
-              ajudaLigada="A busca vai à web pelo Firecrawl e traz vagas novas. Cada rodada consome créditos da conta cadastrada."
-              ajudaSemChave="Cadastre o token do Firecrawl acima para poder ligar. Sem ele a busca não sairia do lugar."
+              ajudaLigada="A busca abre cada anúncio pelo Firecrawl: traz salário, skills e elegibilidade com o trecho que os comprova. Custa créditos e abre até 8 vagas por busca."
+              ajudaDesligada="Desligado, a busca continua funcionando — passa a ser feita pela IA, que encontra mais vagas e mais rápido, com menos detalhe de cada uma."
+              ajudaSemChave="Cadastre o token do Firecrawl acima para poder ligar. Sem ele a busca é feita pela IA."
             />
             <Interruptor
               id="leitura-cv"
@@ -215,6 +216,7 @@ function Interruptor({
   salvando,
   onAlternar,
   ajudaLigada,
+  ajudaDesligada,
   ajudaSemChave,
 }: {
   id: string
@@ -224,6 +226,13 @@ function Interruptor({
   salvando: boolean
   onAlternar: () => void
   ajudaLigada: string
+  /**
+   * O que acontece com o recurso DESLIGADO, quando isso não é só "nada
+   * acontece". O interruptor do Firecrawl desligado não para a busca — passa
+   * para a IA —, e sem dizer isso a pessoa desliga achando que desligou a
+   * busca inteira. Opcional: recurso cujo desligado é só ausência não precisa.
+   */
+  ajudaDesligada?: string
   ajudaSemChave: string
 }) {
   return (
@@ -243,7 +252,11 @@ function Interruptor({
           className="mt-0.5 block text-sm leading-relaxed"
           style={{ color: 'var(--text-muted)' }}
         >
-          {temDependencia ? ajudaLigada : ajudaSemChave}
+          {!temDependencia
+            ? ajudaSemChave
+            : ligado
+              ? ajudaLigada
+              : (ajudaDesligada ?? ajudaLigada)}
         </span>
       </span>
     </label>
