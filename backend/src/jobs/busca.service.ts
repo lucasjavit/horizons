@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiProvider } from '@prisma/client';
 import { Firecrawl } from 'firecrawl';
 import { PrismaService } from '../prisma/prisma.service';
+import { BuscaIaService } from './busca-ia.service';
 import { decifrar } from '../settings/crypto';
 import type { FiltrosDto, VagaDto } from './job.dto';
 
@@ -129,17 +130,36 @@ export interface EventoBusca {
 export class BuscaService {
   private readonly log = new Logger(BuscaService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ia: BuscaIaService,
+  ) {}
 
   async *buscar(filtros: FiltrosDto): AsyncGenerator<EventoBusca> {
+    const consulta = montarConsulta(filtros);
     const chave = await this.chave();
+
+    // Sem Firecrawl, a IA assume — se houver chave da Anthropic.
+    //
+    // Os dois motores existem porque tem forcas opostas. O Firecrawl abre a
+    // pagina inteira (salario, skills, elegibilidade com citacao) mas custa 5
+    // creditos e ~36s por pagina, o que trava o teto em 8. A IA busca e le numa
+    // chamada so — mais vaga, mais rapido, menos fundo em cada uma.
     if (!chave) {
-      yield { tipo: 'erro', mensagem: 'Firecrawl token not configured.' };
+      if (!(await this.ia.disponivel())) {
+        yield {
+          tipo: 'erro',
+          mensagem:
+            'Job search needs a Firecrawl or Anthropic key. Ask an admin to add one in Settings.',
+        };
+        return;
+      }
+      this.log.log('Firecrawl ausente — buscando pela IA');
+      yield* this.buscarPelaIa(filtros, consulta);
       return;
     }
 
     const fc = new Firecrawl({ apiKey: chave });
-    const consulta = montarConsulta(filtros);
 
     let urls: string[];
     try {
@@ -289,6 +309,23 @@ export class BuscaService {
       postedAt: dataIso(j.postedAt),
       foundAt: new Date().toISOString(),
     };
+  }
+
+  /**
+   * O motor de IA, adaptado ao mesmo fluxo de eventos.
+   *
+   * A IA devolve tudo de uma vez, entao nao ha streaming de verdade aqui — as
+   * vagas sao emitidas em sequencia so para a tela nao precisar saber qual
+   * motor rodou. O `inicio` vai depois da busca, com o total ja conhecido.
+   */
+  private async *buscarPelaIa(
+    filtros: FiltrosDto,
+    consulta: string,
+  ): AsyncGenerator<EventoBusca> {
+    const vagas = await this.ia.buscar(filtros, consulta);
+    yield { tipo: 'inicio', total: vagas.length };
+    for (const vaga of vagas) yield { tipo: 'vaga', vaga };
+    yield { tipo: 'fim' };
   }
 
   private async chave(): Promise<string | null> {

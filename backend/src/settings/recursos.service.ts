@@ -47,15 +47,17 @@ export class RecursosService {
     return {
       leituraCvAtiva: flagCv && temChave,
       temChaveDeIa: temChave,
-      buscaVagasAtiva: flagBusca && temFirecrawl,
+      // Qualquer um dos dois motores serve: Firecrawl abre a pagina inteira,
+      // a IA busca na web. Sem nenhum dos dois nao ha de onde tirar vaga.
+      buscaVagasAtiva: flagBusca && (temFirecrawl || temChave),
       temChaveFirecrawl: temFirecrawl,
     };
   }
 
   async definirBuscaVagas(ativa: boolean): Promise<RecursosDto> {
-    if (ativa && !(await this.temChaveFirecrawl())) {
+    if (ativa && !(await this.temChaveFirecrawl()) && !(await this.temChaveDeIa())) {
       throw new BadRequestException(
-        'Cadastre o token do Firecrawl antes de ligar a busca de vagas.',
+        'Cadastre o token do Firecrawl ou a chave da Anthropic antes de ligar a busca de vagas.',
       );
     }
     await this.gravar(BUSCA_VAGAS, ativa);
