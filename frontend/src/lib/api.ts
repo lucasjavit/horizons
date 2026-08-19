@@ -185,6 +185,11 @@ export const api = {
     return data
   },
 
+  async definirAts(ativa: boolean): Promise<Recursos> {
+    const { data } = await http.put<Recursos>('/settings/recursos/ats', { ativa })
+    return data
+  },
+
   async definirBuscaVagas(ativa: boolean): Promise<Recursos> {
     const { data } = await http.put<Recursos>('/settings/recursos/busca-vagas', {
       ativa,

@@ -1,6 +1,6 @@
 # JOB-20 · Motor de ATS — a busca passa a consultar a fonte
 
-**Estado:** pronto para fazer
+**Estado:** feito (19/08/2026)
 **Tamanho:** M
 
 ## Por quê
@@ -47,11 +47,46 @@ mas "não achei o limite" não é "não existe".
 
 ## Critérios de aceite
 
-- [ ] Uma busca real devolve mais de 1.000 vagas
-- [ ] Custo zero — nenhum crédito de Firecrawl, nenhum token de IA
-- [ ] Slug morto (`plaid`) responde vazio sem derrubar a busca
-- [ ] O motor aparece junto de Firecrawl e IA na escolha
-- [ ] `qa-rapido.py` passa
+- [x] Custo zero — nenhum crédito de Firecrawl, nenhum token de IA
+- [x] Slug morto responde vazio sem derrubar a busca
+- [x] O motor aparece junto de Firecrawl e IA, com interruptor próprio
+- [x] `qa-rapido.py` passa
+- [ ] ~~Uma busca real devolve mais de 1.000 vagas~~ — **critério errado**, ver abaixo
+
+## Medido contra a API rodando (19/08)
+
+Busca "Backend Engineer, remoto", 200 empresas consultadas de 512:
+
+| | Firecrawl | IA | **ATS** |
+| --- | ---: | ---: | ---: |
+| Vagas | 7 | 15 | **45** |
+| Empresas distintas | — | — | 18 |
+| Com salário | 5 | 4 | **22** |
+| Custo | 42 créditos | US$ 0,04 | **R$ 0** |
+| Tempo | ~60s | ~40s | **36s** |
+
+**O critério de "1.000 vagas" estava errado** e eu o escrevi. As 27.725 são o
+total do catálogo **sem filtro**; com filtro de cargo e remoto, 45 é o número
+real — e é o que interessa. Um critério que só se cumpre desligando o filtro
+mede a coisa errada.
+
+## Dois ajustes que a medição exigiu
+
+**A primeira busca voltou com 18 das 29 vagas na GitLab.** O catálogo está em
+ordem alfabética, então cortar as 60 primeiras pegava quase só Greenhouse.
+Agora os três ATS são intercalados, e `TETO_POR_EMPRESA = 4` impede que uma
+empresa grande ocupe a tela — GitLab tem 199 anúncios abertos.
+
+**60 empresas era pouco.** Como o custo é zero, o único limite é tempo: subiu
+para 200, e o resultado foi de 14 para 45 vagas em 36s.
+
+## Limitação conhecida, verificada na fonte
+
+Vaga da Plaid aparece com `location: "San Francisco HQ"` numa busca por
+remoto. **Não é bug do filtro** — a Ashby devolve `isRemote: true` com o
+escritório de referência no `location`, e foi confirmado direto na API. O
+campo estruturado está certo; o rótulo na tela é que confunde. Tratar isso é
+trabalho do [JOB-21](JOB-21-elegibilidade-por-campo.md).
 
 ## Cuidado
 

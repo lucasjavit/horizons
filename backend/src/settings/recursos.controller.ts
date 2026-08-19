@@ -48,6 +48,12 @@ export class RecursosController {
     return this.recursos.definirBuscaVagas(body.ativa);
   }
 
+  @Put('ats')
+  @AdminOnly()
+  definirAts(@Body() body: DefinirFlagDto): Promise<RecursosDto> {
+    return this.recursos.definirAts(body.ativa);
+  }
+
   @Put('ia-da-busca')
   @AdminOnly()
   definirIaDaBusca(@Body() body: DefinirIaDto): Promise<RecursosDto> {

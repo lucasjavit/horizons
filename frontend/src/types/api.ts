@@ -211,6 +211,8 @@ export interface Recursos {
   leituraCvAtiva: boolean
   /** Sem chave de IA o recurso não pode ser ligado. */
   temChaveDeIa: boolean
+  /** O motor de ATS está ligado. Não depende de chave — default é ligado. */
+  atsAtivo: boolean
   /** O Firecrawl está ligado e utilizável. Desligado = busca pela IA. */
   firecrawlAtivo: boolean
   /** Há ao menos um motor de busca utilizável. */

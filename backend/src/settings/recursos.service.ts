@@ -23,6 +23,16 @@ const FIRECRAWL_ATIVO = 'jobs.buscaVagas';
 /** Qual IA a busca prefere. Preferencia, nao exigencia — ver `iaDaBusca`. */
 const IA_DA_BUSCA = 'jobs.iaDaBusca';
 
+/**
+ * O motor de ATS, ligado por padrao.
+ *
+ * Diferente dos outros dois: nao depende de chave nenhuma, porque as APIs de
+ * Greenhouse, Lever e Ashby sao publicas. Entao o default e LIGADO — nao ha
+ * segredo a proteger nem credito a gastar, e desligado ele so priva a busca do
+ * motor mais barato que existe.
+ */
+const ATS_ATIVO = 'jobs.ats';
+
 export interface RecursosDto {
   /** A leitura de curriculo esta ligada e funcionando. */
   leituraCvAtiva: boolean;
@@ -40,6 +50,13 @@ export interface RecursosDto {
    * dizer isso ANTES de alguem clicar em Filter.
    */
   buscaPossivel: boolean;
+  /**
+   * O motor de ATS esta ligado.
+   *
+   * Custa zero e nao pede chave, entao o default e `true` — a ausencia da
+   * linha no banco significa ligado, ao contrario das outras flags.
+   */
+  atsAtivo: boolean;
   /** A IA preferida para a busca, como o admin escolheu. */
   iaPreferida: IaDaBusca;
   /** A que vai ser usada de fato — cai na outra se a preferida nao tem chave. */
@@ -74,10 +91,11 @@ export class RecursosService {
       this.temChaveFirecrawl(),
     ]);
 
-    const [pref, temAnthropic, temOpenAi] = await Promise.all([
+    const [pref, temAnthropic, temOpenAi, ats] = await Promise.all([
       this.iaPreferida(),
       this.temChaveDe(ApiProvider.ANTHROPIC),
       this.temChaveDe(ApiProvider.OPENAI),
+      this.flagLigadaPorPadrao(ATS_ATIVO),
     ]);
 
     // A chave manda: se ela sumiu depois de o recurso ter sido ligado, o
@@ -90,7 +108,10 @@ export class RecursosService {
       temChaveFirecrawl: temFirecrawl,
       // Um motor OU o outro. Firecrawl desligado nao fecha a busca — passa a
       // vez para a IA.
-      buscaPossivel: (flagFirecrawl && temFirecrawl) || temChave,
+      atsAtivo: ats,
+      // O ATS entra na conta: com ele ligado ha busca mesmo sem chave nenhuma
+      // cadastrada, que e o ponto de ele nao depender de credencial.
+      buscaPossivel: ats || (flagFirecrawl && temFirecrawl) || temChave,
       iaPreferida: pref,
       iaEfetiva: escolherIa(pref, temAnthropic, temOpenAi),
       temChaveAnthropic: temAnthropic,
@@ -107,6 +128,28 @@ export class RecursosService {
     }
     await this.gravar(FIRECRAWL_ATIVO, ativa);
     return this.obter();
+  }
+
+  async definirAts(ativa: boolean): Promise<RecursosDto> {
+    // Sem checagem de dependencia: as APIs de ATS sao publicas, nao ha chave
+    // que possa faltar.
+    await this.gravar(ATS_ATIVO, ativa);
+    return this.obter();
+  }
+
+  /**
+   * Flag cujo default e LIGADO.
+   *
+   * `flag()` trata linha ausente como `false`, que e o certo para recurso que
+   * gasta credito ou expoe dado. O ATS e o contrario: nao custa nada, entao
+   * ausencia de configuracao deve significar ligado.
+   */
+  private async flagLigadaPorPadrao(chave: string): Promise<boolean> {
+    const linha = await this.prisma.appSetting.findUnique({
+      where: { chave },
+      select: { valor: true },
+    });
+    return linha === null ? true : linha.valor === 'true';
   }
 
   private async flag(chave: string): Promise<boolean> {

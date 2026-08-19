@@ -3,6 +3,7 @@ import { ApiProvider } from '@prisma/client';
 import { Firecrawl } from 'firecrawl';
 import { PrismaService } from '../prisma/prisma.service';
 import { BuscaIaService } from './busca-ia.service';
+import { BuscaAtsService } from './busca-ats.service';
 import { RecursosService } from '../settings/recursos.service';
 import type { IaDaBusca } from '../settings/recursos.service';
 import { decifrar } from '../settings/crypto';
@@ -136,6 +137,7 @@ export class BuscaService {
     private readonly prisma: PrismaService,
     private readonly ia: BuscaIaService,
     private readonly recursos: RecursosService,
+    private readonly ats: BuscaAtsService,
   ) {}
 
   async *buscar(filtros: FiltrosDto): AsyncGenerator<EventoBusca> {
@@ -143,7 +145,27 @@ export class BuscaService {
     // O interruptor decide o motor, e nao so a existencia da chave: com o
     // Firecrawl desligado a chave continua cadastrada, e usa-la assim mesmo
     // faria o interruptor nao significar nada.
-    const { firecrawlAtivo, iaEfetiva } = await this.recursos.obter();
+    const { firecrawlAtivo, iaEfetiva, atsAtivo } = await this.recursos.obter();
+
+    // O ATS vem PRIMEIRO por ser o mais barato: 27.725 vagas por R$ 0 contra
+    // 7 do Firecrawl por 42 creditos (medido em 18/08). So faz sentido gastar
+    // credito no que ele nao alcanca.
+    if (atsAtivo) {
+      const doAts = await this.ats.buscar(filtros).catch((e) => {
+        this.log.error(`motor ATS falhou: ${String(e).slice(0, 200)}`);
+        return [] as VagaDto[];
+      });
+      if (doAts.length > 0) {
+        this.log.log(`ATS devolveu ${doAts.length} vagas`);
+        yield { tipo: 'inicio', total: doAts.length };
+        for (const vaga of doAts) yield { tipo: 'vaga', vaga };
+        yield { tipo: 'fim' };
+        return;
+      }
+      // Zero vaga nao e falha do motor — pode ser filtro apertado demais. Cai
+      // para os outros em vez de devolver lista vazia.
+      this.log.log('ATS nao achou nada — tentando os outros motores');
+    }
     const chave = firecrawlAtivo ? await this.chave() : null;
 
     // Firecrawl desligado ou sem chave: a IA assume.

@@ -189,6 +189,19 @@ function Recursos() {
               ajudaDesligada="Desligado, a busca continua funcionando — passa a ser feita pela IA, que encontra mais vagas e mais rápido, com menos detalhe de cada uma."
               ajudaSemChave="Cadastre o token do Firecrawl acima para poder ligar. Sem ele a busca é feita pela IA."
             />
+            <Interruptor
+              id="motor-ats"
+              titulo="Buscar direto nos ATS"
+              ligado={data.atsAtivo}
+              // Sem dependência: as APIs de Greenhouse, Lever e Ashby são
+              // públicas. É o único recurso aqui que não pede chave.
+              temDependencia
+              salvando={salvando}
+              onAlternar={() => void alternar(api.definirAts, data.atsAtivo)}
+              ajudaLigada="Consulta as vagas direto no sistema onde a empresa publica (Greenhouse, Lever, Ashby). É de graça, traz centenas de vagas e o salário vem do campo — mas não diz se a vaga aceita quem mora fora."
+              ajudaDesligada="Desligado, a busca usa só o Firecrawl ou a IA — que custam e trazem menos vagas."
+              ajudaSemChave=""
+            />
             <EscolhaDeIa
               data={data}
               salvando={salvando}

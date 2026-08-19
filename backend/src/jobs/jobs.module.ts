@@ -9,10 +9,11 @@ import { VagasService } from './vagas.service';
 import { BuscaController } from './busca.controller';
 import { BuscaService } from './busca.service';
 import { BuscaIaService } from './busca-ia.service';
+import { BuscaAtsService } from './busca-ats.service';
 
 @Module({
   imports: [SettingsModule],
   controllers: [JobsController, VagasController, BuscaController],
-  providers: [JobsService, CvParserService, CvExtratorService, VagasService, BuscaService, BuscaIaService],
+  providers: [JobsService, CvParserService, CvExtratorService, VagasService, BuscaService, BuscaIaService, BuscaAtsService],
 })
 export class JobsModule {}

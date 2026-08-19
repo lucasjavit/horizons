@@ -1,0 +1,4123 @@
+[
+{
+"nome": "Canonical",
+"ats": "greenhouse",
+"slug": "canonical",
+"contrataEm": []
+},
+{
+"nome": "GitLab",
+"ats": "greenhouse",
+"slug": "gitlab",
+"contrataEm": []
+},
+{
+"nome": "Deel",
+"ats": "ashby",
+"slug": "deel",
+"contrataEm": [
+"Argentina",
+"Brazil",
+"Colombia",
+"Croatia",
+"Czechia",
+"Ecuador",
+"Egypt",
+"Greece",
+"Hungary",
+"India",
+"Italy",
+"Malaysia",
+"Mexico",
+"Peru",
+"Philippines",
+"Portugal",
+"Romania",
+"Serbia",
+"Slovakia",
+"South Africa",
+"Spain",
+"Sri Lanka",
+"Türkiye",
+"Ukraine",
+"Vietnam"
+]
+},
+{
+"nome": "SFOX",
+"ats": "greenhouse",
+"slug": "sfox",
+"contrataEm": [
+"India",
+"Mexico",
+"Poland"
+]
+},
+{
+"nome": "Turing",
+"ats": "greenhouse",
+"slug": "turing",
+"contrataEm": [
+"Brazil",
+"Colombia",
+"India"
+]
+},
+{
+"nome": "Adyen",
+"ats": "greenhouse",
+"slug": "Adyen",
+"contrataEm": [
+"Brazil",
+"Czechia",
+"India",
+"Italy",
+"Mexico",
+"Poland",
+"Spain"
+]
+},
+{
+"nome": "Plaid",
+"ats": "ashby",
+"slug": "plaid",
+"contrataEm": []
+},
+{
+"nome": "Postman",
+"ats": "greenhouse",
+"slug": "postman",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "New Relic",
+"ats": "greenhouse",
+"slug": "newrelic",
+"contrataEm": [
+"Argentina",
+"India",
+"Indonesia",
+"Spain",
+"Thailand"
+]
+},
+{
+"nome": "cursor",
+"ats": "ashby",
+"slug": "cursor",
+"contrataEm": []
+},
+{
+"nome": "fal",
+"ats": "ashby",
+"slug": "fal-ai",
+"contrataEm": [
+"Türkiye"
+]
+},
+{
+"nome": "firecrawl",
+"ats": "ashby",
+"slug": "firecrawl",
+"contrataEm": [
+"India",
+"Nicaragua"
+]
+},
+{
+"nome": "glean",
+"ats": "greenhouse",
+"slug": "gleanwork",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "lovable",
+"ats": "greenhouse",
+"slug": "lovable",
+"contrataEm": []
+},
+{
+"nome": "pulumicorporation",
+"ats": "greenhouse",
+"slug": "pulumicorporation",
+"contrataEm": [
+"India",
+"Mexico",
+"Poland"
+]
+},
+{
+"nome": "sidecarhealth",
+"ats": "greenhouse",
+"slug": "sidecarhealth",
+"contrataEm": [
+"India",
+"Mexico",
+"Poland"
+]
+},
+{
+"nome": "supabase",
+"ats": "ashby",
+"slug": "supabase",
+"contrataEm": []
+},
+{
+"nome": "ycombinator",
+"ats": "ashby",
+"slug": "ycombinator",
+"contrataEm": []
+},
+{
+"nome": "Bungie",
+"ats": "greenhouse",
+"slug": "bungie",
+"contrataEm": []
+},
+{
+"nome": "HB studios",
+"ats": "greenhouse",
+"slug": "hbstudios",
+"contrataEm": []
+},
+{
+"nome": "Crytek",
+"ats": "lever",
+"slug": "crytek",
+"contrataEm": [
+"Poland",
+"Türkiye"
+]
+},
+{
+"nome": "Demiurge Studios",
+"ats": "lever",
+"slug": "demiurgestudios",
+"contrataEm": []
+},
+{
+"nome": "Fanatee",
+"ats": "lever",
+"slug": "fanatee",
+"contrataEm": [
+"Brazil",
+"India",
+"Indonesia",
+"Philippines",
+"Poland",
+"South Africa",
+"Spain"
+]
+},
+{
+"nome": "Rockstar Games",
+"ats": "greenhouse",
+"slug": "rockstargames",
+"contrataEm": [
+"India",
+"Spain"
+]
+},
+{
+"nome": "Sumo Digital",
+"ats": "lever",
+"slug": "sumo-digital",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Crystal Dynamics",
+"ats": "greenhouse",
+"slug": "crystaldynamics",
+"contrataEm": []
+},
+{
+"nome": "AppLovin",
+"ats": "greenhouse",
+"slug": "applovin",
+"contrataEm": []
+},
+{
+"nome": "Playq",
+"ats": "greenhouse",
+"slug": "playq",
+"contrataEm": [
+"Brazil"
+]
+},
+{
+"nome": "Take-Two Interactive",
+"ats": "greenhouse",
+"slug": "taketwo",
+"contrataEm": [
+"India",
+"Spain",
+"Türkiye"
+]
+},
+{
+"nome": "Twitch",
+"ats": "greenhouse",
+"slug": "twitch",
+"contrataEm": []
+},
+{
+"nome": "2K",
+"ats": "greenhouse",
+"slug": "2k",
+"contrataEm": [
+"Czechia",
+"Spain"
+]
+},
+{
+"nome": "Kabam",
+"ats": "lever",
+"slug": "kabam",
+"contrataEm": []
+},
+{
+"nome": "Pocket Worlds",
+"ats": "ashby",
+"slug": "Pocket%20Worlds",
+"contrataEm": [
+"Brazil"
+]
+},
+{
+"nome": "Jam City",
+"ats": "lever",
+"slug": "jamcity",
+"contrataEm": [
+"Argentina",
+"Uruguay"
+]
+},
+{
+"nome": "Roblox",
+"ats": "greenhouse",
+"slug": "roblox",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Discord",
+"ats": "greenhouse",
+"slug": "discord",
+"contrataEm": [
+"Brazil"
+]
+},
+{
+"nome": "Epic Games",
+"ats": "greenhouse",
+"slug": "epicgames",
+"contrataEm": [
+"Brazil"
+]
+},
+{
+"nome": "Naughty Dog",
+"ats": "greenhouse",
+"slug": "naughtydog",
+"contrataEm": []
+},
+{
+"nome": "Media molecule",
+"ats": "greenhouse",
+"slug": "mm",
+"contrataEm": []
+},
+{
+"nome": "Udemy",
+"ats": "greenhouse",
+"slug": "udemy",
+"contrataEm": [
+"Brazil",
+"India",
+"Indonesia",
+"Mexico",
+"Türkiye"
+]
+},
+{
+"nome": "Voldex",
+"ats": "ashby",
+"slug": "Voldex",
+"contrataEm": []
+},
+{
+"nome": "magnopus",
+"ats": "lever",
+"slug": "magnopus",
+"contrataEm": []
+},
+{
+"nome": "Spellbrush",
+"ats": "ashby",
+"slug": "spellbrush",
+"contrataEm": []
+},
+{
+"nome": "Hightouch",
+"ats": "greenhouse",
+"slug": "hightouch",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "The New York Times",
+"ats": "greenhouse",
+"slug": "thenewyorktimes",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Penn Interactive",
+"ats": "greenhouse",
+"slug": "penninteractive",
+"contrataEm": []
+},
+{
+"nome": "Gardens Interactive",
+"ats": "ashby",
+"slug": "Gardens",
+"contrataEm": [
+"Argentina",
+"Brazil",
+"Colombia",
+"Costa Rica",
+"Czechia",
+"Dominican Republic",
+"Egypt",
+"Estonia",
+"Greece",
+"Guatemala",
+"India",
+"Indonesia",
+"Italy",
+"Kenya",
+"Mexico",
+"Pakistan",
+"Peru",
+"Philippines",
+"Poland",
+"Portugal",
+"Romania",
+"Serbia",
+"South Africa",
+"Spain"
+]
+},
+{
+"nome": "Sony Interactive Entertainment",
+"ats": "greenhouse",
+"slug": "siei",
+"contrataEm": [
+"Mexico"
+]
+},
+{
+"nome": "OpenSea",
+"ats": "ashby",
+"slug": "opensea",
+"contrataEm": []
+},
+{
+"nome": "Patreon",
+"ats": "ashby",
+"slug": "patreon",
+"contrataEm": [
+"Mexico",
+"Portugal"
+]
+},
+{
+"nome": "Aviator",
+"ats": "ashby",
+"slug": "aviator",
+"contrataEm": []
+},
+{
+"nome": "Gravity Well",
+"ats": "greenhouse",
+"slug": "gravitywell",
+"contrataEm": []
+},
+{
+"nome": "Sony pictures animation ",
+"ats": "greenhouse",
+"slug": "sonypicturesanimation",
+"contrataEm": []
+},
+{
+"nome": "Sandbox VR",
+"ats": "lever",
+"slug": "sandboxvr",
+"contrataEm": []
+},
+{
+"nome": "Xsolla",
+"ats": "lever",
+"slug": "xsolla",
+"contrataEm": [
+"Brazil",
+"Malaysia",
+"Mexico",
+"Serbia"
+]
+},
+{
+"nome": "Kolibri Games",
+"ats": "lever",
+"slug": "kolibrigames",
+"contrataEm": []
+},
+{
+"nome": "Cloud Chamber",
+"ats": "greenhouse",
+"slug": "cloudchamberen",
+"contrataEm": []
+},
+{
+"nome": "Wargaming",
+"ats": "greenhouse",
+"slug": "wargamingwelcometothejungle",
+"contrataEm": [
+"Czechia",
+"Lithuania",
+"Poland",
+"Serbia",
+"Ukraine"
+]
+},
+{
+"nome": "Visual Concepts",
+"ats": "greenhouse",
+"slug": "visualconcepts",
+"contrataEm": [
+"Hungary"
+]
+},
+{
+"nome": "bluehole",
+"ats": "greenhouse",
+"slug": "bluehole",
+"contrataEm": []
+},
+{
+"nome": "skybox labs ",
+"ats": "lever",
+"slug": "skyboxlabs",
+"contrataEm": []
+},
+{
+"nome": "Mistplay",
+"ats": "lever",
+"slug": "mistplay",
+"contrataEm": []
+},
+{
+"nome": "31st Union",
+"ats": "greenhouse",
+"slug": "31stunion",
+"contrataEm": []
+},
+{
+"nome": "Larian Studios",
+"ats": "lever",
+"slug": "larian",
+"contrataEm": [
+"Malaysia",
+"Poland",
+"Spain"
+]
+},
+{
+"nome": "Housemarque",
+"ats": "greenhouse",
+"slug": "housemarque",
+"contrataEm": []
+},
+{
+"nome": "PlayStation Global",
+"ats": "greenhouse",
+"slug": "sonyinteractiveentertainmentglobal",
+"contrataEm": [
+"Brazil",
+"Italy",
+"Spain"
+]
+},
+{
+"nome": "Glance",
+"ats": "greenhouse",
+"slug": "glance",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "psyonix",
+"ats": "greenhouse",
+"slug": "psyonix",
+"contrataEm": []
+},
+{
+"nome": "Undead Labs\n",
+"ats": "greenhouse",
+"slug": "undeadlabsllc",
+"contrataEm": []
+},
+{
+"nome": "Azra Games",
+"ats": "greenhouse",
+"slug": "azragames",
+"contrataEm": []
+},
+{
+"nome": "Avalanche Studios Group",
+"ats": "lever",
+"slug": "avalanchestudios",
+"contrataEm": []
+},
+{
+"nome": "Groupon",
+"ats": "greenhouse",
+"slug": "groupon",
+"contrataEm": [
+"Brazil",
+"Colombia",
+"Czechia",
+"Ecuador",
+"India",
+"Peru",
+"Poland",
+"Spain"
+]
+},
+{
+"nome": "Rocket Science\n",
+"ats": "ashby",
+"slug": "rocketsciencegg",
+"contrataEm": []
+},
+{
+"nome": "bounteous",
+"ats": "lever",
+"slug": "bounteous",
+"contrataEm": [
+"India",
+"Mexico"
+]
+},
+{
+"nome": "Agoda",
+"ats": "greenhouse",
+"slug": "agoda",
+"contrataEm": [
+"Egypt",
+"India",
+"Malaysia",
+"Thailand",
+"Vietnam"
+]
+},
+{
+"nome": "Eventbrite",
+"ats": "greenhouse",
+"slug": "eventbriteinc",
+"contrataEm": [
+"Argentina",
+"India",
+"Spain"
+]
+},
+{
+"nome": "Modulate",
+"ats": "lever",
+"slug": "modulate",
+"contrataEm": []
+},
+{
+"nome": "Immutable",
+"ats": "lever",
+"slug": "immutable",
+"contrataEm": []
+},
+{
+"nome": "Skydance",
+"ats": "lever",
+"slug": "skydance",
+"contrataEm": [
+"Spain"
+]
+},
+{
+"nome": "Braintrust",
+"ats": "ashby",
+"slug": "braintrust",
+"contrataEm": []
+},
+{
+"nome": "Duolingo",
+"ats": "greenhouse",
+"slug": "duolingo",
+"contrataEm": [
+"Brazil",
+"Indonesia",
+"Mexico"
+]
+},
+{
+"nome": "Dream Games",
+"ats": "lever",
+"slug": "dreamgames",
+"contrataEm": [
+"Türkiye"
+]
+},
+{
+"nome": "easygo",
+"ats": "greenhouse",
+"slug": "easygo",
+"contrataEm": [
+"Brazil",
+"Colombia",
+"Italy",
+"Peru",
+"Serbia"
+]
+},
+{
+"nome": "NetEase Games\n",
+"ats": "greenhouse",
+"slug": "neteasegames",
+"contrataEm": [
+"Indonesia",
+"Mexico",
+"Thailand"
+]
+},
+{
+"nome": "Atomic cartoons ",
+"ats": "greenhouse",
+"slug": "atomiccartoons",
+"contrataEm": []
+},
+{
+"nome": "Hangar 13\n",
+"ats": "greenhouse",
+"slug": "hangar13",
+"contrataEm": [
+"Czechia"
+]
+},
+{
+"nome": "appzen",
+"ats": "lever",
+"slug": "appzen",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Crunchyroll",
+"ats": "greenhouse",
+"slug": "crunchyroll",
+"contrataEm": [
+"India",
+"Mexico",
+"Thailand"
+]
+},
+{
+"nome": "turtle rock studios",
+"ats": "greenhouse",
+"slug": "turtlerockstudios",
+"contrataEm": []
+},
+{
+"nome": "That's No Moon",
+"ats": "greenhouse",
+"slug": "thatsnomoonentertainment",
+"contrataEm": []
+},
+{
+"nome": "Haven Studios Inc",
+"ats": "greenhouse",
+"slug": "haven",
+"contrataEm": []
+},
+{
+"nome": "Behaviour Interactive",
+"ats": "lever",
+"slug": "bhvr",
+"contrataEm": []
+},
+{
+"nome": "Mob entertainment ",
+"ats": "greenhouse",
+"slug": "mobentertainment",
+"contrataEm": []
+},
+{
+"nome": "seedify",
+"ats": "lever",
+"slug": "seedify-fund",
+"contrataEm": [
+"India",
+"Indonesia",
+"Philippines",
+"Portugal",
+"Vietnam"
+]
+},
+{
+"nome": "Digital extremes",
+"ats": "greenhouse",
+"slug": "digitalextremes",
+"contrataEm": []
+},
+{
+"nome": "Wooga",
+"ats": "greenhouse",
+"slug": "wooga",
+"contrataEm": []
+},
+{
+"nome": "limit break",
+"ats": "lever",
+"slug": "limitbreak",
+"contrataEm": [
+"India",
+"Philippines"
+]
+},
+{
+"nome": "Mediatonic Games",
+"ats": "greenhouse",
+"slug": "mediatonic",
+"contrataEm": [
+"Brazil"
+]
+},
+{
+"nome": "Animoca Brands",
+"ats": "lever",
+"slug": "animocabrands",
+"contrataEm": [
+"Malaysia"
+]
+},
+{
+"nome": "HoYoverse",
+"ats": "greenhouse",
+"slug": "hoyoverse",
+"contrataEm": []
+},
+{
+"nome": "BOLD",
+"ats": "greenhouse",
+"slug": "bold",
+"contrataEm": [
+"India",
+"Poland"
+]
+},
+{
+"nome": "Mobilityware",
+"ats": "greenhouse",
+"slug": "mobilityware",
+"contrataEm": []
+},
+{
+"nome": "Absurd Ventures",
+"ats": "greenhouse",
+"slug": "absurdventures",
+"contrataEm": []
+},
+{
+"nome": "Blackbird Interactive",
+"ats": "lever",
+"slug": "blackbirdinteractive",
+"contrataEm": []
+},
+{
+"nome": "cat daddy",
+"ats": "greenhouse",
+"slug": "catdaddy",
+"contrataEm": []
+},
+{
+"nome": "Second Dinner",
+"ats": "ashby",
+"slug": "SecondDinner",
+"contrataEm": []
+},
+{
+"nome": "Zscaler",
+"ats": "greenhouse",
+"slug": "zscaler",
+"contrataEm": [
+"Brazil",
+"Costa Rica",
+"India"
+]
+},
+{
+"nome": "Age of Learning",
+"ats": "lever",
+"slug": "aofl",
+"contrataEm": [
+"Mexico"
+]
+},
+{
+"nome": "DPS Games Studio",
+"ats": "greenhouse",
+"slug": "dpsgames",
+"contrataEm": [
+"Czechia",
+"Lithuania",
+"Poland",
+"Serbia"
+]
+},
+{
+"nome": "DPS games ",
+"ats": "greenhouse",
+"slug": "dpsgames",
+"contrataEm": [
+"Czechia",
+"Lithuania",
+"Poland",
+"Serbia",
+"Ukraine"
+]
+},
+{
+"nome": "Firesprite",
+"ats": "greenhouse",
+"slug": "firesprite",
+"contrataEm": []
+},
+{
+"nome": "Linden lab",
+"ats": "greenhouse",
+"slug": "lindenlab",
+"contrataEm": []
+},
+{
+"nome": "supercell",
+"ats": "ashby",
+"slug": "supercell",
+"contrataEm": []
+},
+{
+"nome": "VGW",
+"ats": "greenhouse",
+"slug": "vgw",
+"contrataEm": [
+"Philippines",
+"Poland",
+"Romania"
+]
+},
+{
+"nome": "InMobi",
+"ats": "greenhouse",
+"slug": "inmobi",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Exploding Kittens, Inc.",
+"ats": "lever",
+"slug": "explodingkittens",
+"contrataEm": []
+},
+{
+"nome": "Polygon Labs",
+"ats": "ashby",
+"slug": "polygon-labs",
+"contrataEm": [
+"Brazil",
+"Mexico"
+]
+},
+{
+"nome": "Atari",
+"ats": "greenhouse",
+"slug": "atariinc",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "5minlab",
+"ats": "greenhouse",
+"slug": "5minlab",
+"contrataEm": []
+},
+{
+"nome": "Illumination",
+"ats": "lever",
+"slug": "illumination",
+"contrataEm": []
+},
+{
+"nome": "Echtra Games",
+"ats": "lever",
+"slug": "echtra",
+"contrataEm": []
+},
+{
+"nome": "Lunchbox Entertainment",
+"ats": "lever",
+"slug": "LunchboxEntertainment",
+"contrataEm": [
+"Indonesia"
+]
+},
+{
+"nome": "kaizen gaming ",
+"ats": "greenhouse",
+"slug": "kaizengaming",
+"contrataEm": [
+"Argentina",
+"Brazil",
+"Bulgaria",
+"Chile",
+"Czechia",
+"Ghana",
+"Greece",
+"Peru",
+"Portugal",
+"Romania"
+]
+},
+{
+"nome": "PlayVS",
+"ats": "lever",
+"slug": "playvs",
+"contrataEm": []
+},
+{
+"nome": "Applike",
+"ats": "lever",
+"slug": "applike",
+"contrataEm": [
+"Brazil"
+]
+},
+{
+"nome": "FanDuel",
+"ats": "greenhouse",
+"slug": "fanduel",
+"contrataEm": []
+},
+{
+"nome": "goop",
+"ats": "greenhouse",
+"slug": "goop",
+"contrataEm": []
+},
+{
+"nome": "Clutch",
+"ats": "greenhouse",
+"slug": "clutch",
+"contrataEm": []
+},
+{
+"nome": "Tripwire Interactive",
+"ats": "greenhouse",
+"slug": "tripwireinteractive",
+"contrataEm": []
+},
+{
+"nome": "Raindrop",
+"ats": "ashby",
+"slug": "raindrop",
+"contrataEm": []
+},
+{
+"nome": "Zeeco, Inc.",
+"ats": "lever",
+"slug": "zeeco",
+"contrataEm": [
+"Brazil",
+"India",
+"Italy",
+"Spain"
+]
+},
+{
+"nome": "Landor",
+"ats": "greenhouse",
+"slug": "landor",
+"contrataEm": [
+"India",
+"Italy"
+]
+},
+{
+"nome": "Netomi",
+"ats": "lever",
+"slug": "netomi",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Masterclass ",
+"ats": "greenhouse",
+"slug": "masterclass",
+"contrataEm": []
+},
+{
+"nome": "Sleeper",
+"ats": "ashby",
+"slug": "sleeper",
+"contrataEm": []
+},
+{
+"nome": "Everlane",
+"ats": "greenhouse",
+"slug": "everlane",
+"contrataEm": []
+},
+{
+"nome": "Anduril Industries",
+"ats": "greenhouse",
+"slug": "andurilindustries",
+"contrataEm": []
+},
+{
+"nome": "Envoy",
+"ats": "ashby",
+"slug": "envoy",
+"contrataEm": []
+},
+{
+"nome": "Feld Entertainment",
+"ats": "lever",
+"slug": "feldinc",
+"contrataEm": []
+},
+{
+"nome": "RAPP",
+"ats": "greenhouse",
+"slug": "rapp",
+"contrataEm": [
+"Egypt",
+"Malaysia"
+]
+},
+{
+"nome": "Zenoti",
+"ats": "greenhouse",
+"slug": "zenoti",
+"contrataEm": [
+"Costa Rica",
+"India"
+]
+},
+{
+"nome": "WongDoody",
+"ats": "greenhouse",
+"slug": "wongdoody",
+"contrataEm": [
+"India",
+"Serbia"
+]
+},
+{
+"nome": "Matte projects",
+"ats": "greenhouse",
+"slug": "matteprojects",
+"contrataEm": []
+},
+{
+"nome": "Hasbro",
+"ats": "greenhouse",
+"slug": "hasbro",
+"contrataEm": [
+"Brazil",
+"Colombia",
+"India",
+"Malaysia",
+"Mexico",
+"Poland",
+"Spain",
+"Vietnam"
+]
+},
+{
+"nome": "Mojang",
+"ats": "greenhouse",
+"slug": "mojangab",
+"contrataEm": []
+},
+{
+"nome": "Oliver Agency",
+"ats": "greenhouse",
+"slug": "oliverseapac",
+"contrataEm": [
+"India",
+"Indonesia",
+"Malaysia",
+"Philippines",
+"Thailand",
+"Vietnam"
+]
+},
+{
+"nome": "Minted",
+"ats": "lever",
+"slug": "minted",
+"contrataEm": []
+},
+{
+"nome": "zoox",
+"ats": "lever",
+"slug": "zoox",
+"contrataEm": []
+},
+{
+"nome": "Mercury",
+"ats": "greenhouse",
+"slug": "mercury",
+"contrataEm": []
+},
+{
+"nome": "Poki",
+"ats": "lever",
+"slug": "poki",
+"contrataEm": []
+},
+{
+"nome": "upwork",
+"ats": "greenhouse",
+"slug": "upwork",
+"contrataEm": [
+"Portugal"
+]
+},
+{
+"nome": "Inkittt",
+"ats": "lever",
+"slug": "inkitt",
+"contrataEm": [
+"Mexico"
+]
+},
+{
+"nome": "Character.AI",
+"ats": "ashby",
+"slug": "character",
+"contrataEm": []
+},
+{
+"nome": "ElevenLabs",
+"ats": "ashby",
+"slug": "elevenlabs",
+"contrataEm": [
+"Brazil",
+"Bulgaria",
+"India",
+"Mexico",
+"Poland",
+"Spain",
+"Ukraine"
+]
+},
+{
+"nome": "GameChanger",
+"ats": "ashby",
+"slug": "gamechanger",
+"contrataEm": []
+},
+{
+"nome": "Sorare",
+"ats": "ashby",
+"slug": "Sorare",
+"contrataEm": []
+},
+{
+"nome": "Ello",
+"ats": "ashby",
+"slug": "ello",
+"contrataEm": [
+"Kenya"
+]
+},
+{
+"nome": "Beyond Sports",
+"ats": "ashby",
+"slug": "beyondsports",
+"contrataEm": []
+},
+{
+"nome": "StartPlaying",
+"ats": "ashby",
+"slug": "startplaying",
+"contrataEm": []
+},
+{
+"nome": "Track VFX",
+"ats": "lever",
+"slug": "trackvfx",
+"contrataEm": []
+},
+{
+"nome": "Loft Orbital",
+"ats": "lever",
+"slug": "loftorbital",
+"contrataEm": []
+},
+{
+"nome": "Reality Defender",
+"ats": "ashby",
+"slug": "realitydefender",
+"contrataEm": []
+},
+{
+"nome": "Whalar",
+"ats": "greenhouse",
+"slug": "whalarinc",
+"contrataEm": [
+"Estonia"
+]
+},
+{
+"nome": "Aerovect",
+"ats": "ashby",
+"slug": "AeroVect",
+"contrataEm": []
+},
+{
+"nome": "Welltech",
+"ats": "ashby",
+"slug": "welltech",
+"contrataEm": [
+"Poland",
+"Spain",
+"Ukraine"
+]
+},
+{
+"nome": "Samsung Semiconductor",
+"ats": "greenhouse",
+"slug": "samsungsemiconductor",
+"contrataEm": []
+},
+{
+"nome": "binance",
+"ats": "lever",
+"slug": "binance",
+"contrataEm": [
+"Argentina",
+"Brazil",
+"Czechia",
+"Ghana",
+"Greece",
+"Indonesia",
+"Italy",
+"Kenya",
+"Mexico",
+"Morocco",
+"Pakistan",
+"Peru",
+"Philippines",
+"Portugal",
+"South Africa",
+"Spain",
+"Thailand",
+"Türkiye",
+"Ukraine",
+"Vietnam"
+]
+},
+{
+"nome": "Mapbox",
+"ats": "ashby",
+"slug": "mapbox",
+"contrataEm": [
+"Poland"
+]
+},
+{
+"nome": "Prophecy",
+"ats": "greenhouse",
+"slug": "prophecysimpledatalabs",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "AeroSpike",
+"ats": "greenhouse",
+"slug": "aerospike",
+"contrataEm": [
+"India",
+"Indonesia",
+"Thailand"
+]
+},
+{
+"nome": "zeta",
+"ats": "lever",
+"slug": "zeta",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "TALA",
+"ats": "lever",
+"slug": "tala",
+"contrataEm": [
+"India",
+"Kenya",
+"Mexico",
+"Philippines",
+"Vietnam"
+]
+},
+{
+"nome": "Toku",
+"ats": "lever",
+"slug": "toku",
+"contrataEm": [
+"India",
+"Philippines"
+]
+},
+{
+"nome": "Saviynt",
+"ats": "lever",
+"slug": "saviynt",
+"contrataEm": [
+"India",
+"Philippines",
+"Poland"
+]
+},
+{
+"nome": "Balbix",
+"ats": "lever",
+"slug": "balbix",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Nium",
+"ats": "lever",
+"slug": "nium",
+"contrataEm": [
+"Brazil",
+"India",
+"Lithuania",
+"Mexico"
+]
+},
+{
+"nome": "Safe security",
+"ats": "lever",
+"slug": "safe",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Aera Technology",
+"ats": "lever",
+"slug": "aeratechnology",
+"contrataEm": [
+"India",
+"Mexico",
+"Romania"
+]
+},
+{
+"nome": "GoTo Group",
+"ats": "lever",
+"slug": "GoToGroup",
+"contrataEm": [
+"India",
+"Indonesia"
+]
+},
+{
+"nome": "Sumo logic",
+"ats": "greenhouse",
+"slug": "sumologic",
+"contrataEm": [
+"Costa Rica",
+"India"
+]
+},
+{
+"nome": "Sword Health",
+"ats": "lever",
+"slug": "swordhealth",
+"contrataEm": [
+"Greece",
+"Portugal"
+]
+},
+{
+"nome": "KAYAK",
+"ats": "greenhouse",
+"slug": "kayak",
+"contrataEm": []
+},
+{
+"nome": "Nahc.io",
+"ats": "lever",
+"slug": "nahc",
+"contrataEm": [
+"Malaysia",
+"Thailand"
+]
+},
+{
+"nome": "Spaulding Ridge",
+"ats": "greenhouse",
+"slug": "spauldingridge",
+"contrataEm": [
+"India",
+"Philippines",
+"Spain"
+]
+},
+{
+"nome": "Hedra",
+"ats": "ashby",
+"slug": "hedra",
+"contrataEm": []
+},
+{
+"nome": "Stricking Dance Studios",
+"ats": "greenhouse",
+"slug": "pubgsanramon",
+"contrataEm": []
+},
+{
+"nome": "Onehouse",
+"ats": "lever",
+"slug": "Onehouse",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Moloco",
+"ats": "greenhouse",
+"slug": "moloco",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Instawork",
+"ats": "greenhouse",
+"slug": "instawork",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "GoDaddy",
+"ats": "greenhouse",
+"slug": "godaddy",
+"contrataEm": [
+"Bulgaria",
+"Colombia",
+"India",
+"Romania",
+"Serbia"
+]
+},
+{
+"nome": "Hudl",
+"ats": "greenhouse",
+"slug": "hudl",
+"contrataEm": [
+"Brazil",
+"India",
+"Italy",
+"Mexico",
+"Spain"
+]
+},
+{
+"nome": "Toast",
+"ats": "greenhouse",
+"slug": "Toast",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Highspot",
+"ats": "lever",
+"slug": "highspot",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "HackerRank",
+"ats": "greenhouse",
+"slug": "hackerrank",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Banyan Software",
+"ats": "greenhouse",
+"slug": "banyansoftware",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "MiQ",
+"ats": "greenhouse",
+"slug": "miqdigital",
+"contrataEm": [
+"Brazil",
+"Colombia",
+"India",
+"Mexico",
+"Philippines"
+]
+},
+{
+"nome": "Arkose Labs",
+"ats": "greenhouse",
+"slug": "arkoselabs",
+"contrataEm": [
+"Argentina",
+"India"
+]
+},
+{
+"nome": "Vendavo",
+"ats": "lever",
+"slug": "vendavo",
+"contrataEm": [
+"Czechia",
+"India"
+]
+},
+{
+"nome": "Ion",
+"ats": "lever",
+"slug": "ion",
+"contrataEm": [
+"Brazil",
+"Hungary",
+"India",
+"Indonesia",
+"Italy",
+"Malaysia",
+"Mexico",
+"Spain"
+]
+},
+{
+"nome": "ShyftLabs",
+"ats": "lever",
+"slug": "shyftlabs",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Zuora",
+"ats": "greenhouse",
+"slug": "zuora",
+"contrataEm": [
+"Costa Rica",
+"India"
+]
+},
+{
+"nome": "Wrike",
+"ats": "greenhouse",
+"slug": "wrike",
+"contrataEm": [
+"Costa Rica",
+"Czechia",
+"Estonia",
+"India"
+]
+},
+{
+"nome": "beghou consulting",
+"ats": "lever",
+"slug": "beghouconsulting",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "dun bradstreet",
+"ats": "lever",
+"slug": "dnb",
+"contrataEm": [
+"Croatia",
+"Czechia",
+"Hungary",
+"India",
+"Poland",
+"Serbia"
+]
+},
+{
+"nome": "AccelData",
+"ats": "lever",
+"slug": "acceldata",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "conga",
+"ats": "greenhouse",
+"slug": "conga",
+"contrataEm": [
+"Bulgaria",
+"India"
+]
+},
+{
+"nome": "Zinnia",
+"ats": "greenhouse",
+"slug": "zinnia",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Capco",
+"ats": "greenhouse",
+"slug": "capco",
+"contrataEm": [
+"Brazil",
+"India",
+"Italy",
+"Malaysia",
+"Poland"
+]
+},
+{
+"nome": "FalconX",
+"ats": "greenhouse",
+"slug": "falconx",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "affinidi",
+"ats": "greenhouse",
+"slug": "affinidi",
+"contrataEm": []
+},
+{
+"nome": "sitetracker",
+"ats": "lever",
+"slug": "sitetracker",
+"contrataEm": [
+"India",
+"Mexico"
+]
+},
+{
+"nome": "Reltio",
+"ats": "greenhouse",
+"slug": "reltio",
+"contrataEm": [
+"India",
+"Portugal"
+]
+},
+{
+"nome": "Merqube",
+"ats": "greenhouse",
+"slug": "merqube",
+"contrataEm": [
+"Chile",
+"India"
+]
+},
+{
+"nome": "CommerceIQ",
+"ats": "greenhouse",
+"slug": "commerceiq",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Archipelago",
+"ats": "greenhouse",
+"slug": "onarchipelago",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Axi",
+"ats": "greenhouse",
+"slug": "axicorpfinancialservicesptyltd",
+"contrataEm": [
+"India",
+"Malaysia",
+"Philippines",
+"Poland"
+]
+},
+{
+"nome": "Mendix",
+"ats": "lever",
+"slug": "mendix",
+"contrataEm": [
+"India",
+"Indonesia",
+"Italy",
+"Thailand"
+]
+},
+{
+"nome": "Matic Robots",
+"ats": "ashby",
+"slug": "MaticRobots",
+"contrataEm": []
+},
+{
+"nome": "Deepgram",
+"ats": "ashby",
+"slug": "Deepgram",
+"contrataEm": []
+},
+{
+"nome": "Alpha Sense",
+"ats": "greenhouse",
+"slug": "alphasense",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Remote",
+"ats": "greenhouse",
+"slug": "remotecom",
+"contrataEm": [
+"Argentina",
+"Brazil",
+"Costa Rica",
+"Egypt",
+"India",
+"Malaysia",
+"Mexico",
+"Nicaragua",
+"Peru",
+"Philippines",
+"Poland",
+"Portugal",
+"Slovakia",
+"Spain"
+]
+},
+{
+"nome": "Reddit",
+"ats": "greenhouse",
+"slug": "reddit",
+"contrataEm": [
+"India",
+"Italy",
+"Spain"
+]
+},
+{
+"nome": "appier",
+"ats": "greenhouse",
+"slug": "appier",
+"contrataEm": [
+"Indonesia",
+"Malaysia",
+"Thailand",
+"Türkiye",
+"Vietnam"
+]
+},
+{
+"nome": "Fortra",
+"ats": "greenhouse",
+"slug": "fortra",
+"contrataEm": [
+"Argentina",
+"Colombia",
+"Malaysia",
+"Spain"
+]
+},
+{
+"nome": "Mozilla",
+"ats": "greenhouse",
+"slug": "mozilla",
+"contrataEm": [
+"Poland",
+"Spain"
+]
+},
+{
+"nome": "nubank",
+"ats": "greenhouse",
+"slug": "nubank",
+"contrataEm": [
+"Argentina",
+"Brazil",
+"Colombia",
+"Mexico",
+"Uruguay"
+]
+},
+{
+"nome": "Any Desk",
+"ats": "greenhouse",
+"slug": "anydesk",
+"contrataEm": [
+"India",
+"Mexico",
+"Portugal"
+]
+},
+{
+"nome": "truecaller",
+"ats": "greenhouse",
+"slug": "truecaller",
+"contrataEm": [
+"Egypt",
+"India"
+]
+},
+{
+"nome": " Many Chat Inc.",
+"ats": "greenhouse",
+"slug": "manychat",
+"contrataEm": [
+"Brazil",
+"Honduras",
+"Spain"
+]
+},
+{
+"nome": "Go Fund Me",
+"ats": "greenhouse",
+"slug": "gofundme",
+"contrataEm": [
+"Argentina"
+]
+},
+{
+"nome": "Monzo",
+"ats": "greenhouse",
+"slug": "monzo",
+"contrataEm": [
+"Spain"
+]
+},
+{
+"nome": "Car Gurus",
+"ats": "greenhouse",
+"slug": "cargurus",
+"contrataEm": []
+},
+{
+"nome": "GOAT Group",
+"ats": "greenhouse",
+"slug": "goatgroup",
+"contrataEm": [
+"Philippines"
+]
+},
+{
+"nome": "TTC Global",
+"ats": "greenhouse",
+"slug": "ttcglobal",
+"contrataEm": [
+"Brazil"
+]
+},
+{
+"nome": "Temporal Technologies",
+"ats": "greenhouse",
+"slug": "temporaltechnologies",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "In The Pocket",
+"ats": "greenhouse",
+"slug": "inthepocket",
+"contrataEm": [
+"Romania"
+]
+},
+{
+"nome": "Assembly AI",
+"ats": "greenhouse",
+"slug": "assemblyai",
+"contrataEm": []
+},
+{
+"nome": "Britive",
+"ats": "greenhouse",
+"slug": "britive",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Sourcegraph Inc.",
+"ats": "greenhouse",
+"slug": "sourcegraph91",
+"contrataEm": []
+},
+{
+"nome": "Stacklok",
+"ats": "greenhouse",
+"slug": "stacklok",
+"contrataEm": []
+},
+{
+"nome": "My Fitness Pal",
+"ats": "greenhouse",
+"slug": "myfitnesspal",
+"contrataEm": []
+},
+{
+"nome": "Philo",
+"ats": "greenhouse",
+"slug": "philo",
+"contrataEm": []
+},
+{
+"nome": "Kinetik",
+"ats": "greenhouse",
+"slug": "kinetik",
+"contrataEm": [
+"Bangladesh"
+]
+},
+{
+"nome": "Alten Technology",
+"ats": "greenhouse",
+"slug": "altentechnologyusa",
+"contrataEm": []
+},
+{
+"nome": "Arcadia",
+"ats": "greenhouse",
+"slug": "arcadiacareers",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Auros Global",
+"ats": "greenhouse",
+"slug": "aurosglobal",
+"contrataEm": [
+"India",
+"Peru"
+]
+},
+{
+"nome": "Baton",
+"ats": "greenhouse",
+"slug": "baton",
+"contrataEm": []
+},
+{
+"nome": "Bird Grey",
+"ats": "greenhouse",
+"slug": "birdygrey",
+"contrataEm": []
+},
+{
+"nome": "Blinkhealth",
+"ats": "greenhouse",
+"slug": "blinkhealth",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Cavnue",
+"ats": "greenhouse",
+"slug": "cavnue",
+"contrataEm": []
+},
+{
+"nome": "Christ Fellowship",
+"ats": "greenhouse",
+"slug": "christfellowship",
+"contrataEm": []
+},
+{
+"nome": "Click Therapeutics",
+"ats": "greenhouse",
+"slug": "clicktherapeutics",
+"contrataEm": []
+},
+{
+"nome": "DevRev",
+"ats": "greenhouse",
+"slug": "devrev",
+"contrataEm": [
+"Argentina",
+"India",
+"Philippines",
+"Slovenia",
+"Vietnam"
+]
+},
+{
+"nome": "Diligent Corporation",
+"ats": "greenhouse",
+"slug": "diligentcorporation",
+"contrataEm": [
+"Brazil",
+"Hungary",
+"India",
+"Indonesia",
+"Mexico",
+"South Africa",
+"Spain"
+]
+},
+{
+"nome": "Ethos Life",
+"ats": "greenhouse",
+"slug": "ethoslife",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Fictiv",
+"ats": "greenhouse",
+"slug": "fictiv",
+"contrataEm": [
+"India",
+"Mexico"
+]
+},
+{
+"nome": "Globalization Partners",
+"ats": "greenhouse",
+"slug": "globalizationpartners",
+"contrataEm": [
+"Brazil",
+"Colombia",
+"India",
+"Italy",
+"Mexico",
+"Philippines",
+"Poland",
+"Portugal",
+"Romania",
+"Spain"
+]
+},
+{
+"nome": "Gloss Genius",
+"ats": "greenhouse",
+"slug": "glossgenius",
+"contrataEm": []
+},
+{
+"nome": "Jumio",
+"ats": "greenhouse",
+"slug": "jumio",
+"contrataEm": [
+"Colombia",
+"India",
+"Malaysia"
+]
+},
+{
+"nome": "legion",
+"ats": "greenhouse",
+"slug": "legion",
+"contrataEm": [
+"India",
+"Mexico",
+"Romania"
+]
+},
+{
+"nome": "GoMotive",
+"ats": "greenhouse",
+"slug": "gomotive",
+"contrataEm": [
+"India",
+"Mexico",
+"Pakistan"
+]
+},
+{
+"nome": "OKX",
+"ats": "greenhouse",
+"slug": "okx",
+"contrataEm": [
+"Argentina",
+"Brazil",
+"Hungary",
+"Malaysia",
+"Mexico",
+"Türkiye"
+]
+},
+{
+"nome": "Putnam",
+"ats": "greenhouse",
+"slug": "putnamassociatesllc",
+"contrataEm": [
+"India",
+"Poland",
+"Tunisia"
+]
+},
+{
+"nome": "Quilt",
+"ats": "greenhouse",
+"slug": "quilt",
+"contrataEm": []
+},
+{
+"nome": "Rackner",
+"ats": "greenhouse",
+"slug": "rackner",
+"contrataEm": []
+},
+{
+"nome": "SimpliSafe",
+"ats": "greenhouse",
+"slug": "simplisafe",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Single Store",
+"ats": "greenhouse",
+"slug": "singlestore",
+"contrataEm": [
+"Costa Rica",
+"India",
+"Portugal"
+]
+},
+{
+"nome": "Splice",
+"ats": "greenhouse",
+"slug": "splice",
+"contrataEm": []
+},
+{
+"nome": "Techstars",
+"ats": "greenhouse",
+"slug": "techstars57",
+"contrataEm": []
+},
+{
+"nome": "Tellius",
+"ats": "greenhouse",
+"slug": "tellius",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "The Orchard",
+"ats": "greenhouse",
+"slug": "theorchard",
+"contrataEm": [
+"Chile",
+"India",
+"Indonesia",
+"Italy",
+"Mexico",
+"Thailand"
+]
+},
+{
+"nome": "VDC",
+"ats": "greenhouse",
+"slug": "vdc",
+"contrataEm": []
+},
+{
+"nome": "Rackspace Technology",
+"ats": "lever",
+"slug": "rackspace",
+"contrataEm": [
+"Egypt",
+"India",
+"Mexico",
+"Vietnam"
+]
+},
+{
+"nome": "WebFX",
+"ats": "lever",
+"slug": "webfx",
+"contrataEm": [
+"Argentina",
+"El Salvador",
+"Guatemala",
+"Indonesia",
+"Mexico",
+"Philippines",
+"South Africa"
+]
+},
+{
+"nome": "Anavation",
+"ats": "lever",
+"slug": "anavationllc",
+"contrataEm": []
+},
+{
+"nome": "Zuru",
+"ats": "lever",
+"slug": "zuru",
+"contrataEm": [
+"India",
+"Italy",
+"Mexico",
+"Philippines",
+"Poland",
+"Spain",
+"Thailand"
+]
+},
+{
+"nome": "Redhorse Corp",
+"ats": "lever",
+"slug": "redhorsecorp",
+"contrataEm": []
+},
+{
+"nome": "Sonar Source",
+"ats": "lever",
+"slug": "sonarsource",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Mindtickle",
+"ats": "lever",
+"slug": "mindtickle",
+"contrataEm": [
+"Costa Rica",
+"India"
+]
+},
+{
+"nome": "Mashgin",
+"ats": "lever",
+"slug": "mashgin",
+"contrataEm": [
+"Brazil"
+]
+},
+{
+"nome": "Doola",
+"ats": "lever",
+"slug": "doola",
+"contrataEm": [
+"Argentina",
+"India",
+"Philippines"
+]
+},
+{
+"nome": "Normalyze",
+"ats": "lever",
+"slug": "normalyze",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "WaveApps",
+"ats": "lever",
+"slug": "waveapps",
+"contrataEm": []
+},
+{
+"nome": "Vidsy",
+"ats": "lever",
+"slug": "vidsy",
+"contrataEm": []
+},
+{
+"nome": "Daily Wire",
+"ats": "lever",
+"slug": "dailywire",
+"contrataEm": []
+},
+{
+"nome": "Accurate",
+"ats": "lever",
+"slug": "accurate",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Actian",
+"ats": "lever",
+"slug": "actian",
+"contrataEm": [
+"India",
+"Italy",
+"Spain"
+]
+},
+{
+"nome": "Bazaar Voice",
+"ats": "lever",
+"slug": "bazaarvoice",
+"contrataEm": [
+"India",
+"Lithuania"
+]
+},
+{
+"nome": "Bright Machines",
+"ats": "lever",
+"slug": "brightmachines",
+"contrataEm": [
+"Mexico"
+]
+},
+{
+"nome": "cyara",
+"ats": "lever",
+"slug": "cyara",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "entrata",
+"ats": "lever",
+"slug": "entrata",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "extreme network",
+"ats": "lever",
+"slug": "extremenetworks",
+"contrataEm": [
+"Brazil",
+"Colombia",
+"India",
+"Italy",
+"Mexico",
+"Spain"
+]
+},
+{
+"nome": "Flow",
+"ats": "lever",
+"slug": "flowlife",
+"contrataEm": []
+},
+{
+"nome": "HHA Exchange",
+"ats": "lever",
+"slug": "hhaexchange",
+"contrataEm": []
+},
+{
+"nome": "Instrumental",
+"ats": "lever",
+"slug": "Instrumentl",
+"contrataEm": []
+},
+{
+"nome": "JMA",
+"ats": "lever",
+"slug": "jmawireless",
+"contrataEm": [
+"India",
+"Italy"
+]
+},
+{
+"nome": "level ai",
+"ats": "lever",
+"slug": "levelai",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "NinjaVan",
+"ats": "lever",
+"slug": "ninjavan",
+"contrataEm": [
+"India",
+"Indonesia",
+"Malaysia",
+"Philippines",
+"Thailand",
+"Vietnam"
+]
+},
+{
+"nome": "PPfa",
+"ats": "lever",
+"slug": "ppfa",
+"contrataEm": []
+},
+{
+"nome": "Rapt studio",
+"ats": "lever",
+"slug": "RaptStudio",
+"contrataEm": []
+},
+{
+"nome": "Regent craft",
+"ats": "lever",
+"slug": "Regentcraft",
+"contrataEm": []
+},
+{
+"nome": "smarsh",
+"ats": "lever",
+"slug": "smarsh",
+"contrataEm": [
+"Costa Rica",
+"India",
+"South Africa"
+]
+},
+{
+"nome": "sofar sounds",
+"ats": "lever",
+"slug": "sofarsounds",
+"contrataEm": [
+"Croatia",
+"Greece",
+"Lithuania",
+"Philippines",
+"Poland",
+"Portugal",
+"Slovakia",
+"Slovenia",
+"South Africa",
+"Spain"
+]
+},
+{
+"nome": "Match Group",
+"ats": "lever",
+"slug": "matchgroup",
+"contrataEm": [
+"Brazil",
+"India",
+"Mexico",
+"Thailand"
+]
+},
+{
+"nome": "whoop",
+"ats": "lever",
+"slug": "whoop",
+"contrataEm": []
+},
+{
+"nome": "world relief",
+"ats": "lever",
+"slug": "wr",
+"contrataEm": []
+},
+{
+"nome": "Brillio",
+"ats": "lever",
+"slug": "brillio-2",
+"contrataEm": [
+"India",
+"Mexico",
+"Romania"
+]
+},
+{
+"nome": "Jane Street",
+"ats": "greenhouse",
+"slug": "janestreet",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Tide",
+"ats": "greenhouse",
+"slug": "tide",
+"contrataEm": [
+"Bulgaria",
+"India",
+"Lithuania",
+"Philippines",
+"Romania",
+"Serbia",
+"Ukraine"
+]
+},
+{
+"nome": "Figma",
+"ats": "greenhouse",
+"slug": "figma",
+"contrataEm": [
+"Brazil",
+"India"
+]
+},
+{
+"nome": "Vercel",
+"ats": "greenhouse",
+"slug": "vercel",
+"contrataEm": []
+},
+{
+"nome": "N26",
+"ats": "greenhouse",
+"slug": "N26",
+"contrataEm": [
+"Italy",
+"Spain"
+]
+},
+{
+"nome": "Critical mass",
+"ats": "greenhouse",
+"slug": "criticalmass",
+"contrataEm": [
+"Colombia",
+"Costa Rica"
+]
+},
+{
+"nome": "New Globe",
+"ats": "greenhouse",
+"slug": "newglobesandbox",
+"contrataEm": [
+"India",
+"Nigeria"
+]
+},
+{
+"nome": "Scale AI",
+"ats": "greenhouse",
+"slug": "scaleai",
+"contrataEm": [
+"Argentina",
+"Hungary",
+"Mexico"
+]
+},
+{
+"nome": "Workato",
+"ats": "greenhouse",
+"slug": "workato",
+"contrataEm": [
+"Bulgaria",
+"Costa Rica",
+"Greece",
+"India",
+"Italy",
+"Mexico",
+"Philippines",
+"Poland",
+"Portugal",
+"Serbia",
+"Spain"
+]
+},
+{
+"nome": "Poppulo",
+"ats": "greenhouse",
+"slug": "poppulo",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Lightcast",
+"ats": "lever",
+"slug": "economicmodeling",
+"contrataEm": [
+"India",
+"Italy"
+]
+},
+{
+"nome": "Overdare",
+"ats": "greenhouse",
+"slug": "overdare",
+"contrataEm": []
+},
+{
+"nome": "Rush street interactive ",
+"ats": "greenhouse",
+"slug": "rushstreetinteractive",
+"contrataEm": [
+"Colombia",
+"Estonia",
+"Mexico",
+"Serbia"
+]
+},
+{
+"nome": "AIFund",
+"ats": "lever",
+"slug": "AIFund",
+"contrataEm": [
+"Spain"
+]
+},
+{
+"nome": "Pachama",
+"ats": "lever",
+"slug": "pachama",
+"contrataEm": []
+},
+{
+"nome": "PUBG EMEA",
+"ats": "greenhouse",
+"slug": "pubgemea",
+"contrataEm": []
+},
+{
+"nome": "Addepar",
+"ats": "greenhouse",
+"slug": "addepar1",
+"contrataEm": [
+"Brazil",
+"India"
+]
+},
+{
+"nome": "smartbear",
+"ats": "greenhouse",
+"slug": "smartbear",
+"contrataEm": [
+"India",
+"Poland"
+]
+},
+{
+"nome": "Telnyx",
+"ats": "greenhouse",
+"slug": "telnyx54",
+"contrataEm": [
+"Brazil",
+"India",
+"Mexico",
+"Poland",
+"Vietnam"
+]
+},
+{
+"nome": "Fluxon",
+"ats": "greenhouse",
+"slug": "fluxon",
+"contrataEm": [
+"India",
+"Poland",
+"Portugal"
+]
+},
+{
+"nome": "GHX",
+"ats": "greenhouse",
+"slug": "globalhealthcareexchangeinc",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Tekion Corp",
+"ats": "greenhouse",
+"slug": "tekion",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "oportun",
+"ats": "greenhouse",
+"slug": "oportun",
+"contrataEm": [
+"India",
+"Mexico"
+]
+},
+{
+"nome": "Nice",
+"ats": "greenhouse",
+"slug": "nice",
+"contrataEm": [
+"Bolivia",
+"Brazil",
+"Colombia",
+"Czechia",
+"India",
+"Mexico",
+"Philippines",
+"South Africa"
+]
+},
+{
+"nome": "paypay",
+"ats": "greenhouse",
+"slug": "paypay",
+"contrataEm": []
+},
+{
+"nome": "Findem",
+"ats": "lever",
+"slug": "findem",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Fandom ",
+"ats": "greenhouse",
+"slug": "fandom",
+"contrataEm": [
+"Poland"
+]
+},
+{
+"nome": "Ethernovia",
+"ats": "greenhouse",
+"slug": "ethernovia",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Axon",
+"ats": "greenhouse",
+"slug": "axon",
+"contrataEm": [
+"Brazil",
+"Spain",
+"Vietnam"
+]
+},
+{
+"nome": "Lirio",
+"ats": "greenhouse",
+"slug": "Lirio",
+"contrataEm": []
+},
+{
+"nome": "Hope Lab",
+"ats": "lever",
+"slug": "hopelab",
+"contrataEm": []
+},
+{
+"nome": "Coda",
+"ats": "lever",
+"slug": "Coda",
+"contrataEm": [
+"India",
+"Indonesia",
+"Malaysia",
+"Philippines",
+"Slovakia",
+"Thailand"
+]
+},
+{
+"nome": "techholding",
+"ats": "greenhouse",
+"slug": "techholding",
+"contrataEm": [
+"Argentina",
+"India",
+"Mexico"
+]
+},
+{
+"nome": "Seamount",
+"ats": "greenhouse",
+"slug": "seamount",
+"contrataEm": []
+},
+{
+"nome": "Gather AI",
+"ats": "greenhouse",
+"slug": "gatherai",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "sound cloud",
+"ats": "greenhouse",
+"slug": "soundcloud71",
+"contrataEm": []
+},
+{
+"nome": "Safari AI",
+"ats": "greenhouse",
+"slug": "safariai",
+"contrataEm": []
+},
+{
+"nome": "InnoPhase IoT",
+"ats": "greenhouse",
+"slug": "innophaseiot",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Exploding Kittens",
+"ats": "lever",
+"slug": "explodingkittens",
+"contrataEm": []
+},
+{
+"nome": "Golf Scope",
+"ats": "lever",
+"slug": "golfscopeinc",
+"contrataEm": []
+},
+{
+"nome": "playground",
+"ats": "ashby",
+"slug": "playground",
+"contrataEm": []
+},
+{
+"nome": "The Globel Talent Co",
+"ats": "ashby",
+"slug": "the-global-talent-co",
+"contrataEm": [
+"Argentina",
+"Colombia",
+"Mexico",
+"Poland",
+"Romania",
+"South Africa"
+]
+},
+{
+"nome": "KRAFTON Montréal Studio",
+"ats": "greenhouse",
+"slug": "studiokraftonboard",
+"contrataEm": []
+},
+{
+"nome": "lifechruh",
+"ats": "lever",
+"slug": "life",
+"contrataEm": []
+},
+{
+"nome": "Rovio ",
+"ats": "lever",
+"slug": "rovio-2",
+"contrataEm": [
+"Spain",
+"Türkiye"
+]
+},
+{
+"nome": "yubo",
+"ats": "ashby",
+"slug": "yubo",
+"contrataEm": []
+},
+{
+"nome": "Wildlight",
+"ats": "lever",
+"slug": "wildlight",
+"contrataEm": []
+},
+{
+"nome": "Blink",
+"ats": "lever",
+"slug": "blinkux",
+"contrataEm": []
+},
+{
+"nome": "Firaxis",
+"ats": "greenhouse",
+"slug": "firaxis",
+"contrataEm": []
+},
+{
+"nome": "sphere entertainment",
+"ats": "greenhouse",
+"slug": "sphereentertainment",
+"contrataEm": []
+},
+{
+"nome": "Catina",
+"ats": "ashby",
+"slug": "cantina",
+"contrataEm": []
+},
+{
+"nome": "night dive studios",
+"ats": "greenhouse",
+"slug": "nightdivestudios",
+"contrataEm": []
+},
+{
+"nome": "jetbrains",
+"ats": "greenhouse",
+"slug": "jetbrains",
+"contrataEm": [
+"Czechia",
+"Poland",
+"Serbia",
+"Spain"
+]
+},
+{
+"nome": "Fliff",
+"ats": "lever",
+"slug": "Fliff",
+"contrataEm": [
+"Bulgaria",
+"Croatia",
+"Czechia",
+"Estonia",
+"Hungary",
+"Latvia",
+"Lithuania",
+"Poland",
+"Romania",
+"Serbia",
+"Slovenia",
+"Spain"
+]
+},
+{
+"nome": "Hawkeye Innovations",
+"ats": "ashby",
+"slug": "hawkeyeinnovations",
+"contrataEm": [
+"Brazil",
+"Bulgaria",
+"Greece",
+"Hungary",
+"India",
+"Italy",
+"Mexico",
+"Spain"
+]
+},
+{
+"nome": "Triple dot studios",
+"ats": "greenhouse",
+"slug": "tripledotstudios",
+"contrataEm": [
+"Indonesia",
+"Lithuania",
+"Poland",
+"Serbia",
+"Spain",
+"Ukraine"
+]
+},
+{
+"nome": "That's No Moon Entertainment",
+"ats": "greenhouse",
+"slug": "thatsnomoonentertainment",
+"contrataEm": []
+},
+{
+"nome": "hovercraft",
+"ats": "greenhouse",
+"slug": "hovercraft",
+"contrataEm": []
+},
+{
+"nome": "Fantasy",
+"ats": "lever",
+"slug": "fantasy",
+"contrataEm": []
+},
+{
+"nome": "2k vegas",
+"ats": "greenhouse",
+"slug": "2kvegas",
+"contrataEm": []
+},
+{
+"nome": "Drive mode",
+"ats": "lever",
+"slug": "drivemode",
+"contrataEm": []
+},
+{
+"nome": "Payactive",
+"ats": "lever",
+"slug": "payactiv",
+"contrataEm": []
+},
+{
+"nome": "Converse.AI",
+"ats": "lever",
+"slug": "ConverseNow",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Bright Edge",
+"ats": "lever",
+"slug": "brightedge",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "EMA",
+"ats": "ashby",
+"slug": "ema",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Scout",
+"ats": "greenhouse",
+"slug": "scoutmotors",
+"contrataEm": []
+},
+{
+"nome": "quience",
+"ats": "greenhouse",
+"slug": "quince",
+"contrataEm": [
+"India",
+"Peru",
+"Sri Lanka"
+]
+},
+{
+"nome": "Snap Mobile INC",
+"ats": "greenhouse",
+"slug": "snapmobileinc",
+"contrataEm": []
+},
+{
+"nome": "Sony Music Career",
+"ats": "greenhouse",
+"slug": "sonymusicasiacareers",
+"contrataEm": [
+"India",
+"Indonesia",
+"Malaysia",
+"Philippines",
+"Thailand",
+"Vietnam"
+]
+},
+{
+"nome": "Go guardian",
+"ats": "greenhouse",
+"slug": "goguardian",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Betson Group",
+"ats": "greenhouse",
+"slug": "betsson",
+"contrataEm": [
+"Argentina",
+"Brazil",
+"Colombia",
+"Estonia",
+"Greece",
+"Lithuania",
+"Spain"
+]
+},
+{
+"nome": "Dialpad AI",
+"ats": "greenhouse",
+"slug": "dialpad",
+"contrataEm": [
+"Argentina",
+"India",
+"Philippines"
+]
+},
+{
+"nome": "firesprit",
+"ats": "greenhouse",
+"slug": "firesprite",
+"contrataEm": []
+},
+{
+"nome": "TurboTenent",
+"ats": "greenhouse",
+"slug": "turbotenant",
+"contrataEm": []
+},
+{
+"nome": "Playstation",
+"ats": "greenhouse",
+"slug": "sonyinteractiveentertainmentglobal",
+"contrataEm": [
+"Mexico"
+]
+},
+{
+"nome": "Pokemon",
+"ats": "greenhouse",
+"slug": "pokemoncareers",
+"contrataEm": [
+"Mexico"
+]
+},
+{
+"nome": "Survay Monkey",
+"ats": "greenhouse",
+"slug": "surveymonkey",
+"contrataEm": [
+"Costa Rica",
+"India"
+]
+},
+{
+"nome": "Enterra Solutions",
+"ats": "greenhouse",
+"slug": "enterrasolutions",
+"contrataEm": []
+},
+{
+"nome": "Snorkel AI",
+"ats": "greenhouse",
+"slug": "snorkelai",
+"contrataEm": [
+"Mexico"
+]
+},
+{
+"nome": "Eqvilent",
+"ats": "greenhouse",
+"slug": "eqvilentjobs",
+"contrataEm": []
+},
+{
+"nome": "Greenworks Sunrise Global Marketing",
+"ats": "greenhouse",
+"slug": "greenworkssunriseglobalmarketing",
+"contrataEm": []
+},
+{
+"nome": "Dynamis Inc",
+"ats": "greenhouse",
+"slug": "dynamisinc",
+"contrataEm": []
+},
+{
+"nome": "GT HQ",
+"ats": "ashby",
+"slug": "gt-hq",
+"contrataEm": [
+"Poland",
+"Ukraine"
+]
+},
+{
+"nome": "Coupa",
+"ats": "lever",
+"slug": "coupa",
+"contrataEm": [
+"Brazil",
+"Colombia",
+"India",
+"Mexico",
+"Poland",
+"South Africa",
+"Spain"
+]
+},
+{
+"nome": "Penumbrainc",
+"ats": "lever",
+"slug": "penumbrainc",
+"contrataEm": [
+"India",
+"Italy",
+"Mexico",
+"Poland",
+"Portugal"
+]
+},
+{
+"nome": "Insomniac",
+"ats": "greenhouse",
+"slug": "insomniac",
+"contrataEm": []
+},
+{
+"nome": "LightForce Orthodontics",
+"ats": "greenhouse",
+"slug": "lightforceorthodontics",
+"contrataEm": [
+"Brazil",
+"Costa Rica"
+]
+},
+{
+"nome": "Windranger",
+"ats": "ashby",
+"slug": "windranger",
+"contrataEm": [
+"Indonesia"
+]
+},
+{
+"nome": "Thatgamecompany",
+"ats": "ashby",
+"slug": "Thatgamecompany",
+"contrataEm": [
+"Indonesia"
+]
+},
+{
+"nome": "Authzed",
+"ats": "ashby",
+"slug": "authzed",
+"contrataEm": []
+},
+{
+"nome": "ChartHop",
+"ats": "ashby",
+"slug": "charthop",
+"contrataEm": []
+},
+{
+"nome": "Databricks",
+"ats": "greenhouse",
+"slug": "databricks",
+"contrataEm": [
+"Brazil",
+"Costa Rica",
+"India",
+"Italy",
+"Mexico",
+"Serbia",
+"Spain",
+"Vietnam"
+]
+},
+{
+"nome": "Aledade",
+"ats": "lever",
+"slug": "aledade",
+"contrataEm": []
+},
+{
+"nome": "Amplitude",
+"ats": "greenhouse",
+"slug": "amplitude",
+"contrataEm": []
+},
+{
+"nome": "Astra",
+"ats": "ashby",
+"slug": "astra",
+"contrataEm": []
+},
+{
+"nome": "Cambium",
+"ats": "ashby",
+"slug": "cambium",
+"contrataEm": []
+},
+{
+"nome": "ChainGuard",
+"ats": "greenhouse",
+"slug": "chainguard",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Embrace",
+"ats": "greenhouse",
+"slug": "embrace",
+"contrataEm": []
+},
+{
+"nome": "AidKit",
+"ats": "ashby",
+"slug": "aidkit",
+"contrataEm": []
+},
+{
+"nome": "AirWallex",
+"ats": "ashby",
+"slug": "airwallex",
+"contrataEm": []
+},
+{
+"nome": "Aiwyn",
+"ats": "ashby",
+"slug": "aiwyn",
+"contrataEm": []
+},
+{
+"nome": "Decagon",
+"ats": "ashby",
+"slug": "decagon",
+"contrataEm": [
+"Colombia",
+"Mexico"
+]
+},
+{
+"nome": "Abridge",
+"ats": "ashby",
+"slug": "abridge",
+"contrataEm": []
+},
+{
+"nome": "Arketa",
+"ats": "ashby",
+"slug": "arketa",
+"contrataEm": []
+},
+{
+"nome": "Attio",
+"ats": "ashby",
+"slug": "attio",
+"contrataEm": [
+"Poland"
+]
+},
+{
+"nome": "CoinTracker",
+"ats": "ashby",
+"slug": "cointracker",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "CookUnity",
+"ats": "greenhouse",
+"slug": "cookunity",
+"contrataEm": [
+"Argentina",
+"Peru"
+]
+},
+{
+"nome": "Everlaw",
+"ats": "greenhouse",
+"slug": "everlaw",
+"contrataEm": []
+},
+{
+"nome": "Filmhub",
+"ats": "ashby",
+"slug": "filmhub",
+"contrataEm": []
+},
+{
+"nome": "Halcyon",
+"ats": "greenhouse",
+"slug": "halcyon",
+"contrataEm": [
+"Mexico",
+"Poland"
+]
+},
+{
+"nome": "Harvey",
+"ats": "ashby",
+"slug": "harvey",
+"contrataEm": [
+"Mexico",
+"Spain"
+]
+},
+{
+"nome": "illumio",
+"ats": "ashby",
+"slug": "illumio",
+"contrataEm": []
+},
+{
+"nome": "Inspiren",
+"ats": "greenhouse",
+"slug": "inspiren",
+"contrataEm": [
+"Brazil",
+"Indonesia",
+"Poland"
+]
+},
+{
+"nome": "Mercor",
+"ats": "ashby",
+"slug": "mercor",
+"contrataEm": []
+},
+{
+"nome": "favorited",
+"ats": "ashby",
+"slug": "favorited",
+"contrataEm": []
+},
+{
+"nome": "Fieldguide",
+"ats": "ashby",
+"slug": "fieldguide",
+"contrataEm": []
+},
+{
+"nome": "ideogram",
+"ats": "ashby",
+"slug": "ideogram",
+"contrataEm": []
+},
+{
+"nome": "Lambda",
+"ats": "ashby",
+"slug": "lambda",
+"contrataEm": [
+"Costa Rica"
+]
+},
+{
+"nome": "Monarch Money",
+"ats": "ashby",
+"slug": "monarchmoney",
+"contrataEm": []
+},
+{
+"nome": "Outschool",
+"ats": "greenhouse",
+"slug": "outschool",
+"contrataEm": []
+},
+{
+"nome": "Guild",
+"ats": "greenhouse",
+"slug": "guild",
+"contrataEm": []
+},
+{
+"nome": "Gusto",
+"ats": "greenhouse",
+"slug": "gusto",
+"contrataEm": []
+},
+{
+"nome": "Help Scout",
+"ats": "ashby",
+"slug": "helpscout",
+"contrataEm": []
+},
+{
+"nome": "HopSkipDrive",
+"ats": "greenhouse",
+"slug": "hopskipdrive",
+"contrataEm": [
+"Brazil",
+"Mexico"
+]
+},
+{
+"nome": "Instabase",
+"ats": "greenhouse",
+"slug": "instabase",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Magic School",
+"ats": "ashby",
+"slug": "magicschool",
+"contrataEm": []
+},
+{
+"nome": "Fireworks AI",
+"ats": "greenhouse",
+"slug": "fireworksai",
+"contrataEm": []
+},
+{
+"nome": "Freed",
+"ats": "ashby",
+"slug": "freed",
+"contrataEm": []
+},
+{
+"nome": "Honor",
+"ats": "greenhouse",
+"slug": "honor",
+"contrataEm": []
+},
+{
+"nome": "Lorikeet",
+"ats": "ashby",
+"slug": "lorikeet",
+"contrataEm": []
+},
+{
+"nome": "Mark43",
+"ats": "greenhouse",
+"slug": "mark43",
+"contrataEm": []
+},
+{
+"nome": "Mixpanel",
+"ats": "greenhouse",
+"slug": "mixpanel",
+"contrataEm": [
+"Brazil",
+"India",
+"Mexico"
+]
+},
+{
+"nome": "PermitFlow",
+"ats": "ashby",
+"slug": "permitflow",
+"contrataEm": []
+},
+{
+"nome": "Pinterest",
+"ats": "greenhouse",
+"slug": "pinterest",
+"contrataEm": [
+"Brazil",
+"Mexico"
+]
+},
+{
+"nome": "Plain",
+"ats": "ashby",
+"slug": "plain",
+"contrataEm": []
+},
+{
+"nome": "PostHog",
+"ats": "ashby",
+"slug": "posthog",
+"contrataEm": []
+},
+{
+"nome": "Rain",
+"ats": "ashby",
+"slug": "rain",
+"contrataEm": [
+"Mexico",
+"Nigeria"
+]
+},
+{
+"nome": "Ramp",
+"ats": "ashby",
+"slug": "ramp",
+"contrataEm": []
+},
+{
+"nome": "SandboxAQ",
+"ats": "ashby",
+"slug": "sandboxaq",
+"contrataEm": []
+},
+{
+"nome": "Regrello",
+"ats": "lever",
+"slug": "regrello",
+"contrataEm": [
+"India",
+"Mexico"
+]
+},
+{
+"nome": "Runway",
+"ats": "ashby",
+"slug": "runway",
+"contrataEm": []
+},
+{
+"nome": "Sesame",
+"ats": "ashby",
+"slug": "sesame",
+"contrataEm": []
+},
+{
+"nome": "Shield AI",
+"ats": "lever",
+"slug": "shieldai",
+"contrataEm": [
+"India",
+"Poland",
+"Romania",
+"Spain",
+"Ukraine"
+]
+},
+{
+"nome": "Semgrep",
+"ats": "ashby",
+"slug": "semgrep",
+"contrataEm": []
+},
+{
+"nome": "Snappr",
+"ats": "lever",
+"slug": "snappr",
+"contrataEm": [
+"Colombia",
+"Mexico",
+"Philippines"
+]
+},
+{
+"nome": "Sierra",
+"ats": "ashby",
+"slug": "sierra",
+"contrataEm": [
+"Spain"
+]
+},
+{
+"nome": "SIFT",
+"ats": "ashby",
+"slug": "sift",
+"contrataEm": [
+"India",
+"Poland",
+"Ukraine"
+]
+},
+{
+"nome": "Solace",
+"ats": "ashby",
+"slug": "solace",
+"contrataEm": []
+},
+{
+"nome": "SpecterOps",
+"ats": "greenhouse",
+"slug": "specterops",
+"contrataEm": []
+},
+{
+"nome": "Substack",
+"ats": "ashby",
+"slug": "substack",
+"contrataEm": [
+"Spain"
+]
+},
+{
+"nome": "SweatPals",
+"ats": "ashby",
+"slug": "sweatpals",
+"contrataEm": []
+},
+{
+"nome": "Synthesia",
+"ats": "ashby",
+"slug": "synthesia",
+"contrataEm": []
+},
+{
+"nome": "Tavus",
+"ats": "ashby",
+"slug": "tavus",
+"contrataEm": []
+},
+{
+"nome": "TensorWave",
+"ats": "ashby",
+"slug": "tensorwave",
+"contrataEm": []
+},
+{
+"nome": "Tennr",
+"ats": "ashby",
+"slug": "tennr",
+"contrataEm": []
+},
+{
+"nome": "Anthropic",
+"ats": "greenhouse",
+"slug": "anthropic",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Dataiku",
+"ats": "greenhouse",
+"slug": "dataiku",
+"contrataEm": []
+},
+{
+"nome": "Zapier",
+"ats": "ashby",
+"slug": "zapier",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "Deepmind",
+"ats": "greenhouse",
+"slug": "deepmind",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "DEPT",
+"ats": "greenhouse",
+"slug": "dept",
+"contrataEm": []
+},
+{
+"nome": "Tripledot Studios",
+"ats": "greenhouse",
+"slug": "tripledotstudios",
+"contrataEm": [
+"Indonesia",
+"Poland"
+]
+},
+{
+"nome": "Reflection AI",
+"ats": "ashby",
+"slug": "reflectionai",
+"contrataEm": []
+},
+{
+"nome": "Base Power",
+"ats": "ashby",
+"slug": "base-power",
+"contrataEm": []
+},
+{
+"nome": "Oura",
+"ats": "greenhouse",
+"slug": "oura",
+"contrataEm": []
+},
+{
+"nome": "Kailera",
+"ats": "greenhouse",
+"slug": "kailera",
+"contrataEm": []
+},
+{
+"nome": "Filevine",
+"ats": "lever",
+"slug": "filevine",
+"contrataEm": [
+"Czechia",
+"Slovakia"
+]
+},
+{
+"nome": "Periodic Labs",
+"ats": "ashby",
+"slug": "periodic-labs",
+"contrataEm": []
+},
+{
+"nome": "Moniepoint",
+"ats": "greenhouse",
+"slug": "moniepoint",
+"contrataEm": [
+"Ghana",
+"India",
+"Nigeria",
+"Pakistan",
+"Spain"
+]
+},
+{
+"nome": "Upgrade",
+"ats": "greenhouse",
+"slug": "upgrade",
+"contrataEm": [
+"Brazil"
+]
+},
+{
+"nome": "Pulley",
+"ats": "greenhouse",
+"slug": "pulley",
+"contrataEm": []
+},
+{
+"nome": "Granted",
+"ats": "ashby",
+"slug": "granted",
+"contrataEm": []
+},
+{
+"nome": "Dash0",
+"ats": "ashby",
+"slug": "dash0",
+"contrataEm": []
+},
+{
+"nome": "Linear",
+"ats": "ashby",
+"slug": "linear",
+"contrataEm": []
+},
+{
+"nome": "Planera",
+"ats": "ashby",
+"slug": "planera",
+"contrataEm": []
+},
+{
+"nome": "Reducto",
+"ats": "ashby",
+"slug": "reducto",
+"contrataEm": []
+},
+{
+"nome": "Dialogue AI",
+"ats": "ashby",
+"slug": "dialogueai",
+"contrataEm": []
+},
+{
+"nome": "Stand",
+"ats": "ashby",
+"slug": "stand",
+"contrataEm": []
+},
+{
+"nome": "Strella",
+"ats": "ashby",
+"slug": "strella",
+"contrataEm": []
+},
+{
+"nome": "Keycard Labs",
+"ats": "ashby",
+"slug": "keycard-labs",
+"contrataEm": []
+},
+{
+"nome": "Serval",
+"ats": "ashby",
+"slug": "serval",
+"contrataEm": []
+},
+{
+"nome": "Seneca",
+"ats": "ashby",
+"slug": "seneca",
+"contrataEm": []
+},
+{
+"nome": "LangChain",
+"ats": "ashby",
+"slug": "langchain",
+"contrataEm": []
+},
+{
+"nome": "Starbridge",
+"ats": "ashby",
+"slug": "starbridge",
+"contrataEm": []
+},
+{
+"nome": "ROLLER",
+"ats": "greenhouse",
+"slug": "roller",
+"contrataEm": [
+"Costa Rica"
+]
+},
+{
+"nome": "Casium",
+"ats": "ashby",
+"slug": "casium",
+"contrataEm": []
+},
+{
+"nome": "Moonshot AI",
+"ats": "ashby",
+"slug": "moonshot-ai",
+"contrataEm": []
+},
+{
+"nome": "ShopMy",
+"ats": "greenhouse",
+"slug": "shopmy",
+"contrataEm": []
+},
+{
+"nome": "Clerk",
+"ats": "ashby",
+"slug": "clerk",
+"contrataEm": []
+},
+{
+"nome": "Finch",
+"ats": "ashby",
+"slug": "finch",
+"contrataEm": []
+},
+{
+"nome": "Trove",
+"ats": "greenhouse",
+"slug": "trove",
+"contrataEm": []
+},
+{
+"nome": "Campfire",
+"ats": "ashby",
+"slug": "campfire",
+"contrataEm": []
+},
+{
+"nome": "SirenOpt",
+"ats": "greenhouse",
+"slug": "sirenopt",
+"contrataEm": []
+},
+{
+"nome": "OneImaging",
+"ats": "greenhouse",
+"slug": "oneimaging",
+"contrataEm": [
+"Mexico",
+"Philippines"
+]
+},
+{
+"nome": "LILA Sciences",
+"ats": "greenhouse",
+"slug": "lilasciences",
+"contrataEm": []
+},
+{
+"nome": "Kalshi",
+"ats": "greenhouse",
+"slug": "kalshi",
+"contrataEm": []
+},
+{
+"nome": "Yendo",
+"ats": "ashby",
+"slug": "yendo",
+"contrataEm": []
+},
+{
+"nome": "Further AI",
+"ats": "ashby",
+"slug": "furtherai",
+"contrataEm": [
+"India"
+]
+},
+{
+"nome": "FleetWorks",
+"ats": "ashby",
+"slug": "fleetworks",
+"contrataEm": []
+},
+{
+"nome": "Tycho.AI",
+"ats": "ashby",
+"slug": "tycho-ai",
+"contrataEm": []
+},
+{
+"nome": "Dexory",
+"ats": "greenhouse",
+"slug": "dexory",
+"contrataEm": []
+},
+{
+"nome": "Highdive",
+"ats": "greenhouse",
+"slug": "highdive",
+"contrataEm": []
+},
+{
+"nome": "Verge Genomics",
+"ats": "ashby",
+"slug": "verge-genomics",
+"contrataEm": []
+},
+{
+"nome": "CircuitHub",
+"ats": "ashby",
+"slug": "circuithub",
+"contrataEm": []
+},
+{
+"nome": "Idler",
+"ats": "ashby",
+"slug": "idler",
+"contrataEm": []
+},
+{
+"nome": "Mirage",
+"ats": "ashby",
+"slug": "mirage",
+"contrataEm": []
+}
+]

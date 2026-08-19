@@ -16,6 +16,9 @@ COPY prisma ./prisma
 RUN DATABASE_URL="postgresql://build:build@localhost:5432/build" npx prisma generate
 
 COPY src ./src
+# O catalogo de ATS e dado, nao codigo: nao passa pelo tsc e nao vai no dist.
+# Sem esta linha o motor sobe achando que o catalogo esta vazio.
+COPY data ./data
 RUN npm run build
 
 # ── Imagem final ──────────────────────────────────────────────────────────
@@ -36,6 +39,7 @@ COPY --from=build /app/dist ./dist
 # O schema e o config seguem junto: `prisma migrate deploy` roda na subida.
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/prisma.config.ts ./
+COPY --from=build /app/data ./data
 
 USER node
 EXPOSE 3333
