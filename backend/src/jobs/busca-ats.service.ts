@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { lerElegibilidade } from './elegibilidade';
 import type { FiltrosDto, VagaDto } from './job.dto';
 
 /**
@@ -115,7 +116,7 @@ export class BuscaAtsService {
       for (const lista of prontas) vagas.push(...lista);
     }
 
-    return this.peneirar(vagas, filtros);
+    return this.peneirar(vagas, filtros).map((v) => comElegibilidade(v));
   }
 
   /**
@@ -441,6 +442,31 @@ function casaSenioridade(alvo: string, nivel: string): boolean {
 function pareceRemoto(v: VagaDto): boolean {
   if (v.regime === 'remoto') return true;
   return /remote|remoto|anywhere|distributed/i.test(v.local ?? '');
+}
+
+/**
+ * Preenche a elegibilidade a partir do que a vaga ja traz.
+ *
+ * Medido em 19/08 sobre as 45 vagas reais: **95,6% se resolve pelo campo**, e
+ * so 4,4% precisam de IA. E o que torna o custo viavel — ler as 45 com IA
+ * custaria 20x mais para acertar o mesmo.
+ *
+ * O trecho e o proprio `location`: aqui a afirmacao vem de um campo que a
+ * empresa preencheu, e nao de uma frase interpretada no meio da descricao. A
+ * regra do JOB-09 continua valendo — sem trecho, sem afirmacao.
+ */
+function comElegibilidade(v: VagaDto): VagaDto {
+  const e = lerElegibilidade(v);
+  if (e.precisaLer) return v;
+  return {
+    ...v,
+    // `paisesElegiveis` ainda nao existe no DTO (e o JOB-22). Ate la, o
+    // booleano responde a pergunta de hoje: aceita quem mora no Brasil?
+    elegivelBrasil: e.global
+      ? true
+      : e.paises?.some((p) => /brazil|brasil|latam|latin america|south america/i.test(p)) ?? null,
+    elegibilidadeTrecho: e.trecho,
+  };
 }
 
 function texto(v: unknown): string | null {

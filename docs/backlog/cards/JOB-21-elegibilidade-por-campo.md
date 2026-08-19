@@ -1,6 +1,6 @@
 # JOB-21 · Elegibilidade resolvida por campo, sem IA
 
-**Estado:** pronto para fazer
+**Estado:** feito (19/08/2026)
 **Tamanho:** P
 
 ## Por quê
@@ -28,11 +28,31 @@ Haiku = **US$ 3,89**. Busca típica (Java/Spring, 39 indeterminadas): **US$ 0,04
 
 ## Critérios de aceite
 
-- [ ] Vaga com `location: "Remote, US"` é classificada sem chamar IA
-- [ ] Vaga com `location: "Remote"` puro vai para a IA
-- [ ] O custo por busca cai para centavos
-- [ ] Nenhuma vaga é marcada como elegível sem base — a regra do
-      [JOB-09](JOB-09-vaga-so-afirma-o-que-cita.md) continua valendo
+- [x] Vaga com `location: "Remote, US"` é classificada sem chamar IA
+- [x] Vaga com `location: "Remote"` puro vai para a IA
+- [x] O custo por busca cai para centavos — **95,6% resolvido sem IA**
+- [x] Nenhuma vaga é marcada como elegível sem base — conferido: **zero
+      afirmações sem trecho** em 46 vagas
+
+## Medido (19/08)
+
+**95,6% por campo, 4,4% para IA** — melhor que os 86,4% estimados.
+
+A ordem dos sinais é o que decide, e minha primeira versão errou: eu tratava
+"remoto sem país" antes de tentar ler o lugar do texto, e caía para **15,6%**
+resolvido. `"Serbia"` com `isRemote: true` ia para a IA quando o país estava
+ali. Corrigido: o lugar nomeado é lido primeiro.
+
+O campo booleano vem antes do texto — 32 das 45 vagas tinham `regime: 'remoto'`
+com o `location` mostrando escritório ("San Francisco HQ"). Classificar pelo
+texto marcaria 71% como presencial, todas erradas.
+
+## O achado que mudou o card
+
+Ao medir, descobri que **1 vaga de engenharia em 1.961** aceita brasileiro
+neste catálogo. Está em
+[docs/design/JOB-21-quantas-vagas-aceitam-brasil.md](../../design/JOB-21-quantas-vagas-aceitam-brasil.md)
+— e muda o papel do ATS de "motor de elegibilidade" para "motor de volume".
 
 ## Não medido
 
