@@ -249,7 +249,7 @@ export class BuscaAtsService {
 
     const vistos = new Set<string>();
     const porEmpresa = new Map<string, number>();
-    return vagas.filter((v) => {
+    const aprovadas = vagas.filter((v) => {
       if (!v.title || !v.url) return false;
       // A mesma vaga pode vir duas vezes se a empresa estiver no catalogo com
       // dois ATS. `id` e a URL, entao serve de chave.
@@ -257,9 +257,37 @@ export class BuscaAtsService {
 
       const alvo = `${v.title} ${v.local ?? ''}`.toLowerCase();
       if (cargos.length && !cargos.some((c) => casaCargo(alvo, c))) return false;
-      if (techs.length && !techs.some((t) => alvo.includes(t))) return false;
       if (senioridade && !casaSenioridade(alvo, senioridade)) return false;
-      if (f.remote === 'remoto' && !pareceRemoto(v)) return false;
+
+      // **Tecnologia NAO exclui.**
+      //
+      // Os ATS so devolvem titulo e local — a descricao viria em outro
+      // request por vaga. E "Senior Backend Engineer" nao escreve "Java" no
+      // titulo mesmo pedindo Spring Boot na descricao. Medido em 19/08:
+      // filtrar por Java derrubava de 42 vagas para 5, jogando fora as
+      // certas junto com as erradas.
+      //
+      // Entao a tecnologia so ORDENA: quem cita no titulo sobe. Vale mais
+      // mostrar 42 com as de Java em cima que 5 e esconder o resto.
+      //
+      // MAS: sem nenhum filtro de cargo, "remoto" sozinho devolve o board
+      // inteiro — 300 vagas de Account Executive e Accounting Manager. Se a
+      // pessoa nao disse o cargo, a tecnologia passa a ser o unico sinal do
+      // que ela procura, e ai ela precisa filtrar. Foi o que a busca de
+      // 19/08 mostrou ao tirar o filtro sem por nada no lugar.
+      if (cargos.length === 0 && techs.length > 0) {
+        const ehTech = techs.some((t) => alvo.includes(t)) || AREA_TECH.test(alvo);
+        if (!ehTech) return false;
+      }
+
+      // **Remoto exige saber de ONDE.**
+      //
+      // Medido em 19/08: a Binance marca `workplaceType: 'remote'` com
+      // `location: 'Hong Kong'` — remoto de la, nao de qualquer lugar. Ler so
+      // o booleano trazia vaga presencial em Budapeste para quem pediu
+      // remoto. Agora o local precisa ser compativel com trabalho a
+      // distancia de fora.
+      if (f.remote === 'remoto' && !remotoDeVerdade(v)) return false;
 
       // Uma empresa grande nao pode ocupar a tela inteira.
       const quantas = porEmpresa.get(v.company) ?? 0;
@@ -268,6 +296,14 @@ export class BuscaAtsService {
 
       vistos.add(v.id);
       return true;
+    });
+
+    // Quem cita a tecnologia pedida no titulo vai para cima.
+    if (techs.length === 0) return aprovadas;
+    return [...aprovadas].sort((a, b) => {
+      const pa = techs.some((t) => a.title.toLowerCase().includes(t)) ? 0 : 1;
+      const pb = techs.some((t) => b.title.toLowerCase().includes(t)) ? 0 : 1;
+      return pa - pb;
     });
   }
 
@@ -417,6 +453,16 @@ function casaCargo(alvo: string, cargo: string): boolean {
   return palavras.every((p) => alvo.includes(p));
 }
 
+/**
+ * Cargos de tecnologia, para quando a pessoa so escolheu a stack.
+ *
+ * Sem isto, pedir "Java + remoto" sem dizer o cargo devolve o board inteiro
+ * da empresa — vendas, financeiro, design. A lista e larga de proposito: o
+ * objetivo e separar tecnologia do resto, nao adivinhar a especialidade.
+ */
+const AREA_TECH =
+  /\b(engineer|engineering|developer|dev\b|programmer|architect|sre|devops|data scien|machine learning|ml\b|backend|back-end|frontend|front-end|full.?stack|mobile|ios|android|qa\b|tester|security|infrastructure|platform|technical lead|tech lead|cto)\b/i;
+
 /** Os sinonimos que os anuncios usam para cada nivel. */
 const SENIORIDADE: Record<string, string[]> = {
   estagio: ['intern', 'internship', 'estagio'],
@@ -434,14 +480,46 @@ function casaSenioridade(alvo: string, nivel: string): boolean {
 }
 
 /**
- * A vaga parece remota?
+ * A vaga e remota PARA QUEM ESTA FORA?
  *
- * Le do campo, nunca da descricao. `workplaceType` e `isRemote` sao dados; o
- * texto do anuncio e interpretacao, e interpretacao e o trabalho do JOB-21.
+ * Nao basta o campo dizer "remote". Medido em 19/08: a Binance marca
+ * `workplaceType: 'remote'` com `location: 'Hong Kong'`, e a Hawkeye com
+ * `'Hungary, Budapest'` — e remoto para quem ja mora la, nao para o mundo.
+ * Ler so o booleano enchia a lista de vaga presencial em resposta a "remoto".
+ *
+ * A regra: o campo diz remoto **e** o local nao amarra a uma cidade. Cidade
+ * nomeada e endereco de escritorio; pais ou regiao ainda pode ser remoto de
+ * dentro daquele pais, e o JOB-22 vai deixar a pessoa escolher.
  */
-function pareceRemoto(v: VagaDto): boolean {
-  if (v.regime === 'remoto') return true;
-  return /remote|remoto|anywhere|distributed/i.test(v.local ?? '');
+function remotoDeVerdade(v: VagaDto): boolean {
+  const local = (v.local ?? '').trim();
+  const dizRemoto = v.regime === 'remoto' || /\bremote|remoto\b/i.test(local);
+  if (!dizRemoto) return false;
+  if (!local) return true;
+  // Cidade no local = escritorio. "Hungary, Budapest" e "Hong Kong" caem
+  // aqui; "Remote, Canada" e "Remote" nao.
+  return !temCidade(local);
+}
+
+/**
+ * O local nomeia uma cidade?
+ *
+ * Heuristica deliberadamente simples: se sobra algo depois de tirar as
+ * palavras de regime e o local tem virgula com duas partes, ou casa com uma
+ * cidade conhecida, e endereco. Errar para o lado de excluir e melhor —
+ * mostrar vaga presencial para quem pediu remoto e o que incomodou.
+ */
+const CIDADES = /\b(budapest|basingstoke|hong kong|taipei|singapore|london|berlin|paris|amsterdam|dublin|madrid|barcelona|lisbon|warsaw|bucharest|belgrade|tel aviv|bangalore|mumbai|delhi|tokyo|seoul|sydney|melbourne|toronto|vancouver|new york|san francisco|seattle|austin|chicago|boston|denver|atlanta|miami|los angeles|sao paulo|são paulo|rio de janeiro|mexico city|bogota|buenos aires|santiago)\b/i;
+
+function temCidade(local: string): boolean {
+  if (CIDADES.test(local)) return true;
+  // "Hungary, Budapest" — duas partes com virgula, sem a palavra remote na
+  // segunda, e endereco.
+  const partes = local.split(/[,;]/).map((p) => p.trim()).filter(Boolean);
+  if (partes.length >= 2 && !partes.some((p) => /remote|remoto/i.test(p))) {
+    return true;
+  }
+  return false;
 }
 
 /**
