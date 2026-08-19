@@ -255,9 +255,11 @@ export class BuscaAtsService {
       // dois ATS. `id` e a URL, entao serve de chave.
       if (vistos.has(v.id)) return false;
 
-      const alvo = `${v.title} ${v.local ?? ''}`.toLowerCase();
-      if (cargos.length && !cargos.some((c) => casaCargo(alvo, c))) return false;
-      if (senioridade && !casaSenioridade(alvo, senioridade)) return false;
+      // Cargo e senioridade sao do TITULO. Incluir o local aqui fazia
+      // "Backend Engineer" casar com uma vaga em "Backend, Nebraska".
+      const titulo = v.title.toLowerCase();
+      if (cargos.length && !cargos.some((c) => casaCargo(titulo, c))) return false;
+      if (senioridade && !casaSenioridade(titulo, senioridade)) return false;
 
       // **Tecnologia NAO exclui.**
       //
@@ -276,7 +278,11 @@ export class BuscaAtsService {
       // que ela procura, e ai ela precisa filtrar. Foi o que a busca de
       // 19/08 mostrou ao tirar o filtro sem por nada no lugar.
       if (cargos.length === 0 && techs.length > 0) {
-        const ehTech = techs.some((t) => alvo.includes(t)) || AREA_TECH.test(alvo);
+        // So o TITULO, nunca o local. "Business Development Manager (East
+        // Java)" em Surabaya casava com a busca por Java — pelo nome da ilha
+        // (medido em 19/08). Tecnologia e atributo do cargo, e procurar no
+        // endereco produz coincidencia geografica, nao vaga tecnica.
+        const ehTech = techs.some((t) => titulo.includes(t)) || AREA_TECH.test(titulo);
         if (!ehTech) return false;
       }
 
@@ -493,33 +499,45 @@ function casaSenioridade(alvo: string, nivel: string): boolean {
  */
 function remotoDeVerdade(v: VagaDto): boolean {
   const local = (v.local ?? '').trim();
-  const dizRemoto = v.regime === 'remoto' || /\bremote|remoto\b/i.test(local);
+
+  // Sem NENHUM sinal de remoto, e presencial. Medido em 19/08: "Portland,
+  // Oregon, USA" com `regime: null` passava, porque a versao anterior so
+  // barrava cidade de uma lista fixa — e o mundo tem mais cidades que a
+  // lista. Agora a vaga precisa PROVAR que e remota, em vez de a lista
+  // precisar provar que ela nao e.
+  const dizRemoto = v.regime === 'remoto' || /\b(remote|remoto|anywhere|distributed)\b/i.test(local);
   if (!dizRemoto) return false;
+
   if (!local) return true;
-  // Cidade no local = escritorio. "Hungary, Budapest" e "Hong Kong" caem
-  // aqui; "Remote, Canada" e "Remote" nao.
-  return !temCidade(local);
+  return !temEndereco(local);
 }
 
 /**
- * O local nomeia uma cidade?
+ * O local aponta um endereco especifico?
  *
- * Heuristica deliberadamente simples: se sobra algo depois de tirar as
- * palavras de regime e o local tem virgula com duas partes, ou casa com uma
- * cidade conhecida, e endereco. Errar para o lado de excluir e melhor —
- * mostrar vaga presencial para quem pediu remoto e o que incomodou.
+ * Regra por FORMA, e nao por lista de cidades: nomear duas partes
+ * ("Portland, Oregon", "Hungary, Budapest") e dar endereco, mesmo que a
+ * cidade nao esteja em lista nenhuma. Uma lista fixa sempre perde para o
+ * mundo real — foi o que deixou "Portland, Oregon, USA" passar em 19/08.
+ *
+ * A excecao e quando uma das partes diz "remote": "Remote, Canada" e
+ * "Remote - EMEA" sao remoto COM restricao de pais, nao endereco.
  */
 const CIDADES = /\b(budapest|basingstoke|hong kong|taipei|singapore|london|berlin|paris|amsterdam|dublin|madrid|barcelona|lisbon|warsaw|bucharest|belgrade|tel aviv|bangalore|mumbai|delhi|tokyo|seoul|sydney|melbourne|toronto|vancouver|new york|san francisco|seattle|austin|chicago|boston|denver|atlanta|miami|los angeles|sao paulo|são paulo|rio de janeiro|mexico city|bogota|buenos aires|santiago)\b/i;
 
-function temCidade(local: string): boolean {
-  if (CIDADES.test(local)) return true;
-  // "Hungary, Budapest" — duas partes com virgula, sem a palavra remote na
-  // segunda, e endereco.
-  const partes = local.split(/[,;]/).map((p) => p.trim()).filter(Boolean);
-  if (partes.length >= 2 && !partes.some((p) => /remote|remoto/i.test(p))) {
-    return true;
+function temEndereco(local: string): boolean {
+  const partes = local
+    .split(/[,;|/]| - /)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  // Alguma parte diz "remote"? Entao a geografia e restricao, nao endereco.
+  if (partes.some((p) => /^(remote|remoto|anywhere|distributed)/i.test(p))) {
+    return false;
   }
-  return false;
+  // Duas ou mais partes geograficas = cidade + estado/pais.
+  if (partes.length >= 2) return true;
+  // Uma parte so: cidade conhecida ainda barra ("Bangalore", "Sofia").
+  return CIDADES.test(local);
 }
 
 /**
