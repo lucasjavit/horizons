@@ -35,6 +35,15 @@ export const REMOTOS = ['remoto', 'hibrido', 'presencial'] as const;
  */
 export const REGIOES = ['latam'] as const;
 
+/**
+ * De que lado do mercado procurar.
+ *
+ * Medido em 19/08: empresa da curadoria rende 1 vaga elegivel em 1.961;
+ * startup dos slugs brutos rende 144 em 1.229. Sao mercados diferentes, e
+ * quem procura de fora quer quase sempre o segundo.
+ */
+export const PORTES = ['grande', 'startup'] as const;
+
 /** Vinculos. */
 export const CONTRATOS = ['clt', 'pj', 'contractor', 'freelance'] as const;
 
@@ -93,6 +102,10 @@ export class FiltrosDto {
   @IsOptional()
   @IsIn(REGIOES)
   regiao?: string;
+
+  @IsOptional()
+  @IsIn(PORTES)
+  porte?: string;
 
   @IsOptional()
   @IsArray()

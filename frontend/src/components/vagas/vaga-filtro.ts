@@ -33,6 +33,7 @@ export type Eixo =
   | 'experiencias'
   | 'skills'
   | 'paises'
+  | 'portes'
   | 'salarios'
 
 export type Selecao = Record<Eixo, string[]>
@@ -42,6 +43,7 @@ export const SELECAO_VAZIA: Selecao = {
   experiencias: [],
   skills: [],
   paises: [],
+  portes: [],
   salarios: [],
 }
 
@@ -103,6 +105,20 @@ export const CATALOGO: Record<Eixo, Opcao[]> = {
   ].map((v) => ({ valor: v, rotulo: v })),
 
 
+  /**
+   * Startup ou empresa grande — e a escolha que mais muda o resultado.
+   *
+   * Medido em 19/08: empresa da curadoria rende **1 vaga elegível em 1.961**;
+   * startup dos slugs brutos rende **144 em 1.229**. A grande tem entidade
+   * legal em cada país e contrata por país (a Adyen tem escritório em SP e 222
+   * vagas para Amsterdam); a startup remote-first não tem entidade em lugar
+   * nenhum e contrata de onde a pessoa estiver.
+   */
+  portes: [
+    { valor: 'startup', rotulo: 'Startups (remote-first)' },
+    { valor: 'grande', rotulo: 'Large companies' },
+  ],
+
   salarios: [
     { valor: '60000', rotulo: '$60K+' },
     { valor: '80000', rotulo: '$80K+' },
@@ -144,6 +160,9 @@ export function paraFiltrosApi(s: Selecao): Record<string, unknown> {
   if (lugares.length) f.locations = lugares
   if (s.paises.includes('Worldwide')) f.remote = 'remoto'
   if (s.paises.includes('LATAM')) f.regiao = 'latam'
+
+  // Um só: os dois marcados é o mesmo que nenhum — a busca já cobre ambos.
+  if (s.portes.length === 1) f.porte = s.portes[0]
 
   // O menor dos escolhidos: pedir "acima de 100k OU acima de 150k" é pedir
   // acima de 100k.

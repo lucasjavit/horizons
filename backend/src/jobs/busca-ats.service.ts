@@ -38,7 +38,29 @@ interface Empresa {
   slug: string;
   /** Paises emergentes que a empresa alcanca. Vazio quando nao se sabe. */
   contrataEm: string[];
+  porte?: Porte;
 }
+
+/**
+ * De que lado do mercado a empresa esta.
+ *
+ * Nao e sobre numero de funcionarios — e sobre COMO a empresa contrata, e a
+ * diferenca foi medida em 19/08:
+ *
+ * | Origem                      | Vaga elegivel |
+ * | --------------------------- | ------------: |
+ * | curadoria (empresa conhecida) |  1 em 1.961 |
+ * | slugs brutos do Ashby         |  144 em 1.229 |
+ *
+ * A empresa grande tem entidade legal em cada pais e contrata POR PAIS: a
+ * Adyen tem escritorio em Sao Paulo e 222 vagas para Amsterdam. A startup
+ * remote-first nao tem entidade em lugar nenhum e contrata de onde a pessoa
+ * estiver — por isso o "Americas" da Aleph e o "LATAM" da Artsy.
+ *
+ * Os dois conjuntos sao DISJUNTOS: nenhuma das 407 startups aparece nas 512
+ * curadas. Nao ha sobreposicao a resolver.
+ */
+export type Porte = 'grande' | 'startup';
 
 /**
  * Quantas empresas consultar ao mesmo tempo.
@@ -70,6 +92,7 @@ const TIMEOUT_MS = 12_000;
 export class BuscaAtsService {
   private readonly log = new Logger(BuscaAtsService.name);
   private catalogo: Empresa[] | null = null;
+  private startups: Empresa[] | null = null;
 
   /**
    * O motor existe se o catalogo existe.
@@ -90,7 +113,7 @@ export class BuscaAtsService {
    * request.
    */
   async buscar(filtros: FiltrosDto): Promise<VagaDto[]> {
-    const todas = await this.empresas();
+    const todas = await this.empresas(filtros.porte);
     if (todas.length === 0) {
       this.log.warn('catalogo de empresas vazio — o motor ATS nao roda');
       return [];
@@ -352,20 +375,34 @@ export class BuscaAtsService {
     return (await resp.json()) as T;
   }
 
-  /** O catalogo, lido do disco uma vez e guardado. */
-  private async empresas(): Promise<Empresa[]> {
-    if (this.catalogo) return this.catalogo;
+  /**
+   * O catalogo do porte pedido, lido do disco uma vez e guardado.
+   *
+   * Sem porte escolhido, os dois entram — quem nao escolheu quer ver tudo.
+   */
+  private async empresas(porte?: string): Promise<Empresa[]> {
+    const grandes = await this.ler('empresas.json', 'catalogo');
+    const startups = await this.ler('empresas-startup.json', 'startups');
+    if (porte === 'grande') return grandes;
+    if (porte === 'startup') return startups;
+    return [...startups, ...grandes];
+  }
+
+  private async ler(arquivo: string, qual: 'catalogo' | 'startups'): Promise<Empresa[]> {
+    const guardado = qual === 'catalogo' ? this.catalogo : this.startups;
+    if (guardado) return guardado;
+    let lido: Empresa[] = [];
     try {
       // `process.cwd()` e a raiz do backend tanto em dev quanto no contêiner.
-      const caminho = join(process.cwd(), 'data', 'ats', 'empresas.json');
-      const cru = await readFile(caminho, 'utf8');
-      this.catalogo = JSON.parse(cru) as Empresa[];
-      this.log.log(`catalogo carregado: ${this.catalogo.length} empresas`);
+      const cru = await readFile(join(process.cwd(), 'data', 'ats', arquivo), 'utf8');
+      lido = JSON.parse(cru) as Empresa[];
+      this.log.log(`${arquivo}: ${lido.length} empresas`);
     } catch (e) {
-      this.log.error(`nao consegui ler o catalogo: ${String(e).slice(0, 160)}`);
-      this.catalogo = [];
+      this.log.error(`nao consegui ler ${arquivo}: ${String(e).slice(0, 140)}`);
     }
-    return this.catalogo;
+    if (qual === 'catalogo') this.catalogo = lido;
+    else this.startups = lido;
+    return lido;
   }
 }
 

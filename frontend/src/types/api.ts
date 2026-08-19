@@ -127,6 +127,9 @@ export type Remoto = 'remoto' | 'hibrido' | 'presencial'
 /** Espelha `REGIOES` do backend. */
 export type Regiao = 'latam'
 
+/** Espelha `PORTES` do backend. */
+export type Porte = 'grande' | 'startup'
+
 /** Espelha `IaDaBusca` do backend. */
 export type IaDaBusca = 'anthropic' | 'openai'
 
@@ -155,6 +158,8 @@ export interface Filtros {
    * mandar a sigla crua para a busca.
    */
   regiao?: Regiao
+  /** `startup` ou `grande` — muda o catálogo consultado, não só a ordem. */
+  porte?: Porte
   employment_types?: Contrato[]
   seniority?: Senioridade
   /** Unidade inteira da moeda, nunca centavo — o backend exige `@IsInt()`. */

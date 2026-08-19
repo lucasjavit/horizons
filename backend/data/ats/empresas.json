@@ -3,13 +3,15 @@
 "nome": "Canonical",
 "ats": "greenhouse",
 "slug": "canonical",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "GitLab",
 "ats": "greenhouse",
 "slug": "gitlab",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Deel",
@@ -41,7 +43,8 @@
 "Türkiye",
 "Ukraine",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "SFOX",
@@ -51,7 +54,8 @@
 "India",
 "Mexico",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Turing",
@@ -61,7 +65,8 @@
 "Brazil",
 "Colombia",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Adyen",
@@ -75,13 +80,15 @@
 "Mexico",
 "Poland",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Plaid",
 "ats": "ashby",
 "slug": "plaid",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Postman",
@@ -89,7 +96,8 @@
 "slug": "postman",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "New Relic",
@@ -101,13 +109,15 @@
 "Indonesia",
 "Spain",
 "Thailand"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "cursor",
 "ats": "ashby",
 "slug": "cursor",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "fal",
@@ -115,7 +125,8 @@
 "slug": "fal-ai",
 "contrataEm": [
 "Türkiye"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "firecrawl",
@@ -124,7 +135,8 @@
 "contrataEm": [
 "India",
 "Nicaragua"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "glean",
@@ -132,13 +144,15 @@
 "slug": "gleanwork",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "lovable",
 "ats": "greenhouse",
 "slug": "lovable",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "pulumicorporation",
@@ -148,7 +162,8 @@
 "India",
 "Mexico",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "sidecarhealth",
@@ -158,31 +173,36 @@
 "India",
 "Mexico",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "supabase",
 "ats": "ashby",
 "slug": "supabase",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "ycombinator",
 "ats": "ashby",
 "slug": "ycombinator",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Bungie",
 "ats": "greenhouse",
 "slug": "bungie",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "HB studios",
 "ats": "greenhouse",
 "slug": "hbstudios",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Crytek",
@@ -191,13 +211,15 @@
 "contrataEm": [
 "Poland",
 "Türkiye"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Demiurge Studios",
 "ats": "lever",
 "slug": "demiurgestudios",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Fanatee",
@@ -211,7 +233,8 @@
 "Poland",
 "South Africa",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Rockstar Games",
@@ -220,7 +243,8 @@
 "contrataEm": [
 "India",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Sumo Digital",
@@ -228,19 +252,22 @@
 "slug": "sumo-digital",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Crystal Dynamics",
 "ats": "greenhouse",
 "slug": "crystaldynamics",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "AppLovin",
 "ats": "greenhouse",
 "slug": "applovin",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Playq",
@@ -248,7 +275,8 @@
 "slug": "playq",
 "contrataEm": [
 "Brazil"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Take-Two Interactive",
@@ -258,13 +286,15 @@
 "India",
 "Spain",
 "Türkiye"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Twitch",
 "ats": "greenhouse",
 "slug": "twitch",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "2K",
@@ -273,13 +303,15 @@
 "contrataEm": [
 "Czechia",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Kabam",
 "ats": "lever",
 "slug": "kabam",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Pocket Worlds",
@@ -287,7 +319,8 @@
 "slug": "Pocket%20Worlds",
 "contrataEm": [
 "Brazil"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Jam City",
@@ -296,7 +329,8 @@
 "contrataEm": [
 "Argentina",
 "Uruguay"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Roblox",
@@ -304,7 +338,8 @@
 "slug": "roblox",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Discord",
@@ -312,7 +347,8 @@
 "slug": "discord",
 "contrataEm": [
 "Brazil"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Epic Games",
@@ -320,19 +356,22 @@
 "slug": "epicgames",
 "contrataEm": [
 "Brazil"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Naughty Dog",
 "ats": "greenhouse",
 "slug": "naughtydog",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Media molecule",
 "ats": "greenhouse",
 "slug": "mm",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Udemy",
@@ -344,25 +383,29 @@
 "Indonesia",
 "Mexico",
 "Türkiye"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Voldex",
 "ats": "ashby",
 "slug": "Voldex",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "magnopus",
 "ats": "lever",
 "slug": "magnopus",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Spellbrush",
 "ats": "ashby",
 "slug": "spellbrush",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Hightouch",
@@ -370,7 +413,8 @@
 "slug": "hightouch",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "The New York Times",
@@ -378,13 +422,15 @@
 "slug": "thenewyorktimes",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Penn Interactive",
 "ats": "greenhouse",
 "slug": "penninteractive",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Gardens Interactive",
@@ -415,7 +461,8 @@
 "Serbia",
 "South Africa",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Sony Interactive Entertainment",
@@ -423,13 +470,15 @@
 "slug": "siei",
 "contrataEm": [
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "OpenSea",
 "ats": "ashby",
 "slug": "opensea",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Patreon",
@@ -438,31 +487,36 @@
 "contrataEm": [
 "Mexico",
 "Portugal"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Aviator",
 "ats": "ashby",
 "slug": "aviator",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Gravity Well",
 "ats": "greenhouse",
 "slug": "gravitywell",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Sony pictures animation ",
 "ats": "greenhouse",
 "slug": "sonypicturesanimation",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Sandbox VR",
 "ats": "lever",
 "slug": "sandboxvr",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Xsolla",
@@ -473,19 +527,22 @@
 "Malaysia",
 "Mexico",
 "Serbia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Kolibri Games",
 "ats": "lever",
 "slug": "kolibrigames",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Cloud Chamber",
 "ats": "greenhouse",
 "slug": "cloudchamberen",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Wargaming",
@@ -497,7 +554,8 @@
 "Poland",
 "Serbia",
 "Ukraine"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Visual Concepts",
@@ -505,31 +563,36 @@
 "slug": "visualconcepts",
 "contrataEm": [
 "Hungary"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "bluehole",
 "ats": "greenhouse",
 "slug": "bluehole",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "skybox labs ",
 "ats": "lever",
 "slug": "skyboxlabs",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Mistplay",
 "ats": "lever",
 "slug": "mistplay",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "31st Union",
 "ats": "greenhouse",
 "slug": "31stunion",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Larian Studios",
@@ -539,13 +602,15 @@
 "Malaysia",
 "Poland",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Housemarque",
 "ats": "greenhouse",
 "slug": "housemarque",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "PlayStation Global",
@@ -555,7 +620,8 @@
 "Brazil",
 "Italy",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Glance",
@@ -563,31 +629,36 @@
 "slug": "glance",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "psyonix",
 "ats": "greenhouse",
 "slug": "psyonix",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Undead Labs\n",
 "ats": "greenhouse",
 "slug": "undeadlabsllc",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Azra Games",
 "ats": "greenhouse",
 "slug": "azragames",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Avalanche Studios Group",
 "ats": "lever",
 "slug": "avalanchestudios",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Groupon",
@@ -602,13 +673,15 @@
 "Peru",
 "Poland",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Rocket Science\n",
 "ats": "ashby",
 "slug": "rocketsciencegg",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "bounteous",
@@ -617,7 +690,8 @@
 "contrataEm": [
 "India",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Agoda",
@@ -629,7 +703,8 @@
 "Malaysia",
 "Thailand",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Eventbrite",
@@ -639,19 +714,22 @@
 "Argentina",
 "India",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Modulate",
 "ats": "lever",
 "slug": "modulate",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Immutable",
 "ats": "lever",
 "slug": "immutable",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Skydance",
@@ -659,13 +737,15 @@
 "slug": "skydance",
 "contrataEm": [
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Braintrust",
 "ats": "ashby",
 "slug": "braintrust",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Duolingo",
@@ -675,7 +755,8 @@
 "Brazil",
 "Indonesia",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Dream Games",
@@ -683,7 +764,8 @@
 "slug": "dreamgames",
 "contrataEm": [
 "Türkiye"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "easygo",
@@ -695,7 +777,8 @@
 "Italy",
 "Peru",
 "Serbia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "NetEase Games\n",
@@ -705,13 +788,15 @@
 "Indonesia",
 "Mexico",
 "Thailand"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Atomic cartoons ",
 "ats": "greenhouse",
 "slug": "atomiccartoons",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Hangar 13\n",
@@ -719,7 +804,8 @@
 "slug": "hangar13",
 "contrataEm": [
 "Czechia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "appzen",
@@ -727,7 +813,8 @@
 "slug": "appzen",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Crunchyroll",
@@ -737,37 +824,43 @@
 "India",
 "Mexico",
 "Thailand"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "turtle rock studios",
 "ats": "greenhouse",
 "slug": "turtlerockstudios",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "That's No Moon",
 "ats": "greenhouse",
 "slug": "thatsnomoonentertainment",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Haven Studios Inc",
 "ats": "greenhouse",
 "slug": "haven",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Behaviour Interactive",
 "ats": "lever",
 "slug": "bhvr",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Mob entertainment ",
 "ats": "greenhouse",
 "slug": "mobentertainment",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "seedify",
@@ -779,19 +872,22 @@
 "Philippines",
 "Portugal",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Digital extremes",
 "ats": "greenhouse",
 "slug": "digitalextremes",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Wooga",
 "ats": "greenhouse",
 "slug": "wooga",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "limit break",
@@ -800,7 +896,8 @@
 "contrataEm": [
 "India",
 "Philippines"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Mediatonic Games",
@@ -808,7 +905,8 @@
 "slug": "mediatonic",
 "contrataEm": [
 "Brazil"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Animoca Brands",
@@ -816,13 +914,15 @@
 "slug": "animocabrands",
 "contrataEm": [
 "Malaysia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "HoYoverse",
 "ats": "greenhouse",
 "slug": "hoyoverse",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "BOLD",
@@ -831,37 +931,43 @@
 "contrataEm": [
 "India",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Mobilityware",
 "ats": "greenhouse",
 "slug": "mobilityware",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Absurd Ventures",
 "ats": "greenhouse",
 "slug": "absurdventures",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Blackbird Interactive",
 "ats": "lever",
 "slug": "blackbirdinteractive",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "cat daddy",
 "ats": "greenhouse",
 "slug": "catdaddy",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Second Dinner",
 "ats": "ashby",
 "slug": "SecondDinner",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Zscaler",
@@ -871,7 +977,8 @@
 "Brazil",
 "Costa Rica",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Age of Learning",
@@ -879,7 +986,8 @@
 "slug": "aofl",
 "contrataEm": [
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "DPS Games Studio",
@@ -890,7 +998,8 @@
 "Lithuania",
 "Poland",
 "Serbia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "DPS games ",
@@ -902,25 +1011,29 @@
 "Poland",
 "Serbia",
 "Ukraine"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Firesprite",
 "ats": "greenhouse",
 "slug": "firesprite",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Linden lab",
 "ats": "greenhouse",
 "slug": "lindenlab",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "supercell",
 "ats": "ashby",
 "slug": "supercell",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "VGW",
@@ -930,7 +1043,8 @@
 "Philippines",
 "Poland",
 "Romania"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "InMobi",
@@ -938,13 +1052,15 @@
 "slug": "inmobi",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Exploding Kittens, Inc.",
 "ats": "lever",
 "slug": "explodingkittens",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Polygon Labs",
@@ -953,7 +1069,8 @@
 "contrataEm": [
 "Brazil",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Atari",
@@ -961,25 +1078,29 @@
 "slug": "atariinc",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "5minlab",
 "ats": "greenhouse",
 "slug": "5minlab",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Illumination",
 "ats": "lever",
 "slug": "illumination",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Echtra Games",
 "ats": "lever",
 "slug": "echtra",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Lunchbox Entertainment",
@@ -987,7 +1108,8 @@
 "slug": "LunchboxEntertainment",
 "contrataEm": [
 "Indonesia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "kaizen gaming ",
@@ -1004,13 +1126,15 @@
 "Peru",
 "Portugal",
 "Romania"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "PlayVS",
 "ats": "lever",
 "slug": "playvs",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Applike",
@@ -1018,37 +1142,43 @@
 "slug": "applike",
 "contrataEm": [
 "Brazil"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "FanDuel",
 "ats": "greenhouse",
 "slug": "fanduel",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "goop",
 "ats": "greenhouse",
 "slug": "goop",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Clutch",
 "ats": "greenhouse",
 "slug": "clutch",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Tripwire Interactive",
 "ats": "greenhouse",
 "slug": "tripwireinteractive",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Raindrop",
 "ats": "ashby",
 "slug": "raindrop",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Zeeco, Inc.",
@@ -1059,7 +1189,8 @@
 "India",
 "Italy",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Landor",
@@ -1068,7 +1199,8 @@
 "contrataEm": [
 "India",
 "Italy"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Netomi",
@@ -1076,43 +1208,50 @@
 "slug": "netomi",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Masterclass ",
 "ats": "greenhouse",
 "slug": "masterclass",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Sleeper",
 "ats": "ashby",
 "slug": "sleeper",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Everlane",
 "ats": "greenhouse",
 "slug": "everlane",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Anduril Industries",
 "ats": "greenhouse",
 "slug": "andurilindustries",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Envoy",
 "ats": "ashby",
 "slug": "envoy",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Feld Entertainment",
 "ats": "lever",
 "slug": "feldinc",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "RAPP",
@@ -1121,7 +1260,8 @@
 "contrataEm": [
 "Egypt",
 "Malaysia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Zenoti",
@@ -1130,7 +1270,8 @@
 "contrataEm": [
 "Costa Rica",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "WongDoody",
@@ -1139,13 +1280,15 @@
 "contrataEm": [
 "India",
 "Serbia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Matte projects",
 "ats": "greenhouse",
 "slug": "matteprojects",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Hasbro",
@@ -1160,13 +1303,15 @@
 "Poland",
 "Spain",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Mojang",
 "ats": "greenhouse",
 "slug": "mojangab",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Oliver Agency",
@@ -1179,31 +1324,36 @@
 "Philippines",
 "Thailand",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Minted",
 "ats": "lever",
 "slug": "minted",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "zoox",
 "ats": "lever",
 "slug": "zoox",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Mercury",
 "ats": "greenhouse",
 "slug": "mercury",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Poki",
 "ats": "lever",
 "slug": "poki",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "upwork",
@@ -1211,7 +1361,8 @@
 "slug": "upwork",
 "contrataEm": [
 "Portugal"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Inkittt",
@@ -1219,13 +1370,15 @@
 "slug": "inkitt",
 "contrataEm": [
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Character.AI",
 "ats": "ashby",
 "slug": "character",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "ElevenLabs",
@@ -1239,19 +1392,22 @@
 "Poland",
 "Spain",
 "Ukraine"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "GameChanger",
 "ats": "ashby",
 "slug": "gamechanger",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Sorare",
 "ats": "ashby",
 "slug": "Sorare",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Ello",
@@ -1259,37 +1415,43 @@
 "slug": "ello",
 "contrataEm": [
 "Kenya"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Beyond Sports",
 "ats": "ashby",
 "slug": "beyondsports",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "StartPlaying",
 "ats": "ashby",
 "slug": "startplaying",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Track VFX",
 "ats": "lever",
 "slug": "trackvfx",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Loft Orbital",
 "ats": "lever",
 "slug": "loftorbital",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Reality Defender",
 "ats": "ashby",
 "slug": "realitydefender",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Whalar",
@@ -1297,13 +1459,15 @@
 "slug": "whalarinc",
 "contrataEm": [
 "Estonia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Aerovect",
 "ats": "ashby",
 "slug": "AeroVect",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Welltech",
@@ -1313,13 +1477,15 @@
 "Poland",
 "Spain",
 "Ukraine"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Samsung Semiconductor",
 "ats": "greenhouse",
 "slug": "samsungsemiconductor",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "binance",
@@ -1346,7 +1512,8 @@
 "Türkiye",
 "Ukraine",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Mapbox",
@@ -1354,7 +1521,8 @@
 "slug": "mapbox",
 "contrataEm": [
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Prophecy",
@@ -1362,7 +1530,8 @@
 "slug": "prophecysimpledatalabs",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "AeroSpike",
@@ -1372,7 +1541,8 @@
 "India",
 "Indonesia",
 "Thailand"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "zeta",
@@ -1380,7 +1550,8 @@
 "slug": "zeta",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "TALA",
@@ -1392,7 +1563,8 @@
 "Mexico",
 "Philippines",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Toku",
@@ -1401,7 +1573,8 @@
 "contrataEm": [
 "India",
 "Philippines"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Saviynt",
@@ -1411,7 +1584,8 @@
 "India",
 "Philippines",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Balbix",
@@ -1419,7 +1593,8 @@
 "slug": "balbix",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Nium",
@@ -1430,7 +1605,8 @@
 "India",
 "Lithuania",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Safe security",
@@ -1438,7 +1614,8 @@
 "slug": "safe",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Aera Technology",
@@ -1448,7 +1625,8 @@
 "India",
 "Mexico",
 "Romania"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "GoTo Group",
@@ -1457,7 +1635,8 @@
 "contrataEm": [
 "India",
 "Indonesia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Sumo logic",
@@ -1466,7 +1645,8 @@
 "contrataEm": [
 "Costa Rica",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Sword Health",
@@ -1475,13 +1655,15 @@
 "contrataEm": [
 "Greece",
 "Portugal"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "KAYAK",
 "ats": "greenhouse",
 "slug": "kayak",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Nahc.io",
@@ -1490,7 +1672,8 @@
 "contrataEm": [
 "Malaysia",
 "Thailand"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Spaulding Ridge",
@@ -1500,19 +1683,22 @@
 "India",
 "Philippines",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Hedra",
 "ats": "ashby",
 "slug": "hedra",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Stricking Dance Studios",
 "ats": "greenhouse",
 "slug": "pubgsanramon",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Onehouse",
@@ -1520,7 +1706,8 @@
 "slug": "Onehouse",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Moloco",
@@ -1528,7 +1715,8 @@
 "slug": "moloco",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Instawork",
@@ -1536,7 +1724,8 @@
 "slug": "instawork",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "GoDaddy",
@@ -1548,7 +1737,8 @@
 "India",
 "Romania",
 "Serbia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Hudl",
@@ -1560,7 +1750,8 @@
 "Italy",
 "Mexico",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Toast",
@@ -1568,7 +1759,8 @@
 "slug": "Toast",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Highspot",
@@ -1576,7 +1768,8 @@
 "slug": "highspot",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "HackerRank",
@@ -1584,7 +1777,8 @@
 "slug": "hackerrank",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Banyan Software",
@@ -1592,7 +1786,8 @@
 "slug": "banyansoftware",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "MiQ",
@@ -1604,7 +1799,8 @@
 "India",
 "Mexico",
 "Philippines"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Arkose Labs",
@@ -1613,7 +1809,8 @@
 "contrataEm": [
 "Argentina",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Vendavo",
@@ -1622,7 +1819,8 @@
 "contrataEm": [
 "Czechia",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Ion",
@@ -1637,7 +1835,8 @@
 "Malaysia",
 "Mexico",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "ShyftLabs",
@@ -1645,7 +1844,8 @@
 "slug": "shyftlabs",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Zuora",
@@ -1654,7 +1854,8 @@
 "contrataEm": [
 "Costa Rica",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Wrike",
@@ -1665,7 +1866,8 @@
 "Czechia",
 "Estonia",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "beghou consulting",
@@ -1673,7 +1875,8 @@
 "slug": "beghouconsulting",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "dun bradstreet",
@@ -1686,7 +1889,8 @@
 "India",
 "Poland",
 "Serbia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "AccelData",
@@ -1694,7 +1898,8 @@
 "slug": "acceldata",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "conga",
@@ -1703,7 +1908,8 @@
 "contrataEm": [
 "Bulgaria",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Zinnia",
@@ -1711,7 +1917,8 @@
 "slug": "zinnia",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Capco",
@@ -1723,7 +1930,8 @@
 "Italy",
 "Malaysia",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "FalconX",
@@ -1731,13 +1939,15 @@
 "slug": "falconx",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "affinidi",
 "ats": "greenhouse",
 "slug": "affinidi",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "sitetracker",
@@ -1746,7 +1956,8 @@
 "contrataEm": [
 "India",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Reltio",
@@ -1755,7 +1966,8 @@
 "contrataEm": [
 "India",
 "Portugal"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Merqube",
@@ -1764,7 +1976,8 @@
 "contrataEm": [
 "Chile",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "CommerceIQ",
@@ -1772,7 +1985,8 @@
 "slug": "commerceiq",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Archipelago",
@@ -1780,7 +1994,8 @@
 "slug": "onarchipelago",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Axi",
@@ -1791,7 +2006,8 @@
 "Malaysia",
 "Philippines",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Mendix",
@@ -1802,19 +2018,22 @@
 "Indonesia",
 "Italy",
 "Thailand"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Matic Robots",
 "ats": "ashby",
 "slug": "MaticRobots",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Deepgram",
 "ats": "ashby",
 "slug": "Deepgram",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Alpha Sense",
@@ -1822,7 +2041,8 @@
 "slug": "alphasense",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Remote",
@@ -1843,7 +2063,8 @@
 "Portugal",
 "Slovakia",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Reddit",
@@ -1853,7 +2074,8 @@
 "India",
 "Italy",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "appier",
@@ -1865,7 +2087,8 @@
 "Thailand",
 "Türkiye",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Fortra",
@@ -1876,7 +2099,8 @@
 "Colombia",
 "Malaysia",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Mozilla",
@@ -1885,7 +2109,8 @@
 "contrataEm": [
 "Poland",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "nubank",
@@ -1897,7 +2122,8 @@
 "Colombia",
 "Mexico",
 "Uruguay"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Any Desk",
@@ -1907,7 +2133,8 @@
 "India",
 "Mexico",
 "Portugal"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "truecaller",
@@ -1916,7 +2143,8 @@
 "contrataEm": [
 "Egypt",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": " Many Chat Inc.",
@@ -1926,7 +2154,8 @@
 "Brazil",
 "Honduras",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Go Fund Me",
@@ -1934,7 +2163,8 @@
 "slug": "gofundme",
 "contrataEm": [
 "Argentina"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Monzo",
@@ -1942,13 +2172,15 @@
 "slug": "monzo",
 "contrataEm": [
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Car Gurus",
 "ats": "greenhouse",
 "slug": "cargurus",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "GOAT Group",
@@ -1956,7 +2188,8 @@
 "slug": "goatgroup",
 "contrataEm": [
 "Philippines"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "TTC Global",
@@ -1964,7 +2197,8 @@
 "slug": "ttcglobal",
 "contrataEm": [
 "Brazil"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Temporal Technologies",
@@ -1972,7 +2206,8 @@
 "slug": "temporaltechnologies",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "In The Pocket",
@@ -1980,13 +2215,15 @@
 "slug": "inthepocket",
 "contrataEm": [
 "Romania"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Assembly AI",
 "ats": "greenhouse",
 "slug": "assemblyai",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Britive",
@@ -1994,31 +2231,36 @@
 "slug": "britive",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Sourcegraph Inc.",
 "ats": "greenhouse",
 "slug": "sourcegraph91",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Stacklok",
 "ats": "greenhouse",
 "slug": "stacklok",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "My Fitness Pal",
 "ats": "greenhouse",
 "slug": "myfitnesspal",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Philo",
 "ats": "greenhouse",
 "slug": "philo",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Kinetik",
@@ -2026,13 +2268,15 @@
 "slug": "kinetik",
 "contrataEm": [
 "Bangladesh"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Alten Technology",
 "ats": "greenhouse",
 "slug": "altentechnologyusa",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Arcadia",
@@ -2040,7 +2284,8 @@
 "slug": "arcadiacareers",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Auros Global",
@@ -2049,19 +2294,22 @@
 "contrataEm": [
 "India",
 "Peru"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Baton",
 "ats": "greenhouse",
 "slug": "baton",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Bird Grey",
 "ats": "greenhouse",
 "slug": "birdygrey",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Blinkhealth",
@@ -2069,25 +2317,29 @@
 "slug": "blinkhealth",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Cavnue",
 "ats": "greenhouse",
 "slug": "cavnue",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Christ Fellowship",
 "ats": "greenhouse",
 "slug": "christfellowship",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Click Therapeutics",
 "ats": "greenhouse",
 "slug": "clicktherapeutics",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "DevRev",
@@ -2099,7 +2351,8 @@
 "Philippines",
 "Slovenia",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Diligent Corporation",
@@ -2113,7 +2366,8 @@
 "Mexico",
 "South Africa",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Ethos Life",
@@ -2121,7 +2375,8 @@
 "slug": "ethoslife",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Fictiv",
@@ -2130,7 +2385,8 @@
 "contrataEm": [
 "India",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Globalization Partners",
@@ -2147,13 +2403,15 @@
 "Portugal",
 "Romania",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Gloss Genius",
 "ats": "greenhouse",
 "slug": "glossgenius",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Jumio",
@@ -2163,7 +2421,8 @@
 "Colombia",
 "India",
 "Malaysia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "legion",
@@ -2173,7 +2432,8 @@
 "India",
 "Mexico",
 "Romania"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "GoMotive",
@@ -2183,7 +2443,8 @@
 "India",
 "Mexico",
 "Pakistan"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "OKX",
@@ -2196,7 +2457,8 @@
 "Malaysia",
 "Mexico",
 "Türkiye"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Putnam",
@@ -2206,19 +2468,22 @@
 "India",
 "Poland",
 "Tunisia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Quilt",
 "ats": "greenhouse",
 "slug": "quilt",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Rackner",
 "ats": "greenhouse",
 "slug": "rackner",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "SimpliSafe",
@@ -2226,7 +2491,8 @@
 "slug": "simplisafe",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Single Store",
@@ -2236,19 +2502,22 @@
 "Costa Rica",
 "India",
 "Portugal"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Splice",
 "ats": "greenhouse",
 "slug": "splice",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Techstars",
 "ats": "greenhouse",
 "slug": "techstars57",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Tellius",
@@ -2256,7 +2525,8 @@
 "slug": "tellius",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "The Orchard",
@@ -2269,13 +2539,15 @@
 "Italy",
 "Mexico",
 "Thailand"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "VDC",
 "ats": "greenhouse",
 "slug": "vdc",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Rackspace Technology",
@@ -2286,7 +2558,8 @@
 "India",
 "Mexico",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "WebFX",
@@ -2300,13 +2573,15 @@
 "Mexico",
 "Philippines",
 "South Africa"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Anavation",
 "ats": "lever",
 "slug": "anavationllc",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Zuru",
@@ -2320,13 +2595,15 @@
 "Poland",
 "Spain",
 "Thailand"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Redhorse Corp",
 "ats": "lever",
 "slug": "redhorsecorp",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Sonar Source",
@@ -2334,7 +2611,8 @@
 "slug": "sonarsource",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Mindtickle",
@@ -2343,7 +2621,8 @@
 "contrataEm": [
 "Costa Rica",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Mashgin",
@@ -2351,7 +2630,8 @@
 "slug": "mashgin",
 "contrataEm": [
 "Brazil"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Doola",
@@ -2361,7 +2641,8 @@
 "Argentina",
 "India",
 "Philippines"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Normalyze",
@@ -2369,25 +2650,29 @@
 "slug": "normalyze",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "WaveApps",
 "ats": "lever",
 "slug": "waveapps",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Vidsy",
 "ats": "lever",
 "slug": "vidsy",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Daily Wire",
 "ats": "lever",
 "slug": "dailywire",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Accurate",
@@ -2395,7 +2680,8 @@
 "slug": "accurate",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Actian",
@@ -2405,7 +2691,8 @@
 "India",
 "Italy",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Bazaar Voice",
@@ -2414,7 +2701,8 @@
 "contrataEm": [
 "India",
 "Lithuania"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Bright Machines",
@@ -2422,7 +2710,8 @@
 "slug": "brightmachines",
 "contrataEm": [
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "cyara",
@@ -2430,7 +2719,8 @@
 "slug": "cyara",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "entrata",
@@ -2438,7 +2728,8 @@
 "slug": "entrata",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "extreme network",
@@ -2451,25 +2742,29 @@
 "Italy",
 "Mexico",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Flow",
 "ats": "lever",
 "slug": "flowlife",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "HHA Exchange",
 "ats": "lever",
 "slug": "hhaexchange",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Instrumental",
 "ats": "lever",
 "slug": "Instrumentl",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "JMA",
@@ -2478,7 +2773,8 @@
 "contrataEm": [
 "India",
 "Italy"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "level ai",
@@ -2486,7 +2782,8 @@
 "slug": "levelai",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "NinjaVan",
@@ -2499,25 +2796,29 @@
 "Philippines",
 "Thailand",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "PPfa",
 "ats": "lever",
 "slug": "ppfa",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Rapt studio",
 "ats": "lever",
 "slug": "RaptStudio",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Regent craft",
 "ats": "lever",
 "slug": "Regentcraft",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "smarsh",
@@ -2527,7 +2828,8 @@
 "Costa Rica",
 "India",
 "South Africa"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "sofar sounds",
@@ -2544,7 +2846,8 @@
 "Slovenia",
 "South Africa",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Match Group",
@@ -2555,19 +2858,22 @@
 "India",
 "Mexico",
 "Thailand"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "whoop",
 "ats": "lever",
 "slug": "whoop",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "world relief",
 "ats": "lever",
 "slug": "wr",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Brillio",
@@ -2577,7 +2883,8 @@
 "India",
 "Mexico",
 "Romania"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Jane Street",
@@ -2585,7 +2892,8 @@
 "slug": "janestreet",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Tide",
@@ -2599,7 +2907,8 @@
 "Romania",
 "Serbia",
 "Ukraine"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Figma",
@@ -2608,13 +2917,15 @@
 "contrataEm": [
 "Brazil",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Vercel",
 "ats": "greenhouse",
 "slug": "vercel",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "N26",
@@ -2623,7 +2934,8 @@
 "contrataEm": [
 "Italy",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Critical mass",
@@ -2632,7 +2944,8 @@
 "contrataEm": [
 "Colombia",
 "Costa Rica"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "New Globe",
@@ -2641,7 +2954,8 @@
 "contrataEm": [
 "India",
 "Nigeria"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Scale AI",
@@ -2651,7 +2965,8 @@
 "Argentina",
 "Hungary",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Workato",
@@ -2669,7 +2984,8 @@
 "Portugal",
 "Serbia",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Poppulo",
@@ -2677,7 +2993,8 @@
 "slug": "poppulo",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Lightcast",
@@ -2686,13 +3003,15 @@
 "contrataEm": [
 "India",
 "Italy"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Overdare",
 "ats": "greenhouse",
 "slug": "overdare",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Rush street interactive ",
@@ -2703,7 +3022,8 @@
 "Estonia",
 "Mexico",
 "Serbia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "AIFund",
@@ -2711,19 +3031,22 @@
 "slug": "AIFund",
 "contrataEm": [
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Pachama",
 "ats": "lever",
 "slug": "pachama",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "PUBG EMEA",
 "ats": "greenhouse",
 "slug": "pubgemea",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Addepar",
@@ -2732,7 +3055,8 @@
 "contrataEm": [
 "Brazil",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "smartbear",
@@ -2741,7 +3065,8 @@
 "contrataEm": [
 "India",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Telnyx",
@@ -2753,7 +3078,8 @@
 "Mexico",
 "Poland",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Fluxon",
@@ -2763,7 +3089,8 @@
 "India",
 "Poland",
 "Portugal"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "GHX",
@@ -2771,7 +3098,8 @@
 "slug": "globalhealthcareexchangeinc",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Tekion Corp",
@@ -2779,7 +3107,8 @@
 "slug": "tekion",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "oportun",
@@ -2788,7 +3117,8 @@
 "contrataEm": [
 "India",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Nice",
@@ -2803,13 +3133,15 @@
 "Mexico",
 "Philippines",
 "South Africa"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "paypay",
 "ats": "greenhouse",
 "slug": "paypay",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Findem",
@@ -2817,7 +3149,8 @@
 "slug": "findem",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Fandom ",
@@ -2825,7 +3158,8 @@
 "slug": "fandom",
 "contrataEm": [
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Ethernovia",
@@ -2833,7 +3167,8 @@
 "slug": "ethernovia",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Axon",
@@ -2843,19 +3178,22 @@
 "Brazil",
 "Spain",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Lirio",
 "ats": "greenhouse",
 "slug": "Lirio",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Hope Lab",
 "ats": "lever",
 "slug": "hopelab",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Coda",
@@ -2868,7 +3206,8 @@
 "Philippines",
 "Slovakia",
 "Thailand"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "techholding",
@@ -2878,13 +3217,15 @@
 "Argentina",
 "India",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Seamount",
 "ats": "greenhouse",
 "slug": "seamount",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Gather AI",
@@ -2892,19 +3233,22 @@
 "slug": "gatherai",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "sound cloud",
 "ats": "greenhouse",
 "slug": "soundcloud71",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Safari AI",
 "ats": "greenhouse",
 "slug": "safariai",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "InnoPhase IoT",
@@ -2912,25 +3256,29 @@
 "slug": "innophaseiot",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Exploding Kittens",
 "ats": "lever",
 "slug": "explodingkittens",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Golf Scope",
 "ats": "lever",
 "slug": "golfscopeinc",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "playground",
 "ats": "ashby",
 "slug": "playground",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "The Globel Talent Co",
@@ -2943,19 +3291,22 @@
 "Poland",
 "Romania",
 "South Africa"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "KRAFTON Montréal Studio",
 "ats": "greenhouse",
 "slug": "studiokraftonboard",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "lifechruh",
 "ats": "lever",
 "slug": "life",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Rovio ",
@@ -2964,49 +3315,57 @@
 "contrataEm": [
 "Spain",
 "Türkiye"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "yubo",
 "ats": "ashby",
 "slug": "yubo",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Wildlight",
 "ats": "lever",
 "slug": "wildlight",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Blink",
 "ats": "lever",
 "slug": "blinkux",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Firaxis",
 "ats": "greenhouse",
 "slug": "firaxis",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "sphere entertainment",
 "ats": "greenhouse",
 "slug": "sphereentertainment",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Catina",
 "ats": "ashby",
 "slug": "cantina",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "night dive studios",
 "ats": "greenhouse",
 "slug": "nightdivestudios",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "jetbrains",
@@ -3017,7 +3376,8 @@
 "Poland",
 "Serbia",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Fliff",
@@ -3036,7 +3396,8 @@
 "Serbia",
 "Slovenia",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Hawkeye Innovations",
@@ -3051,7 +3412,8 @@
 "Italy",
 "Mexico",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Triple dot studios",
@@ -3064,43 +3426,50 @@
 "Serbia",
 "Spain",
 "Ukraine"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "That's No Moon Entertainment",
 "ats": "greenhouse",
 "slug": "thatsnomoonentertainment",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "hovercraft",
 "ats": "greenhouse",
 "slug": "hovercraft",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Fantasy",
 "ats": "lever",
 "slug": "fantasy",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "2k vegas",
 "ats": "greenhouse",
 "slug": "2kvegas",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Drive mode",
 "ats": "lever",
 "slug": "drivemode",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Payactive",
 "ats": "lever",
 "slug": "payactiv",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Converse.AI",
@@ -3108,7 +3477,8 @@
 "slug": "ConverseNow",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Bright Edge",
@@ -3116,7 +3486,8 @@
 "slug": "brightedge",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "EMA",
@@ -3124,13 +3495,15 @@
 "slug": "ema",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Scout",
 "ats": "greenhouse",
 "slug": "scoutmotors",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "quience",
@@ -3140,13 +3513,15 @@
 "India",
 "Peru",
 "Sri Lanka"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Snap Mobile INC",
 "ats": "greenhouse",
 "slug": "snapmobileinc",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Sony Music Career",
@@ -3159,7 +3534,8 @@
 "Philippines",
 "Thailand",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Go guardian",
@@ -3167,7 +3543,8 @@
 "slug": "goguardian",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Betson Group",
@@ -3181,7 +3558,8 @@
 "Greece",
 "Lithuania",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Dialpad AI",
@@ -3191,19 +3569,22 @@
 "Argentina",
 "India",
 "Philippines"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "firesprit",
 "ats": "greenhouse",
 "slug": "firesprite",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "TurboTenent",
 "ats": "greenhouse",
 "slug": "turbotenant",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Playstation",
@@ -3211,7 +3592,8 @@
 "slug": "sonyinteractiveentertainmentglobal",
 "contrataEm": [
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Pokemon",
@@ -3219,7 +3601,8 @@
 "slug": "pokemoncareers",
 "contrataEm": [
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Survay Monkey",
@@ -3228,13 +3611,15 @@
 "contrataEm": [
 "Costa Rica",
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Enterra Solutions",
 "ats": "greenhouse",
 "slug": "enterrasolutions",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Snorkel AI",
@@ -3242,25 +3627,29 @@
 "slug": "snorkelai",
 "contrataEm": [
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Eqvilent",
 "ats": "greenhouse",
 "slug": "eqvilentjobs",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Greenworks Sunrise Global Marketing",
 "ats": "greenhouse",
 "slug": "greenworkssunriseglobalmarketing",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Dynamis Inc",
 "ats": "greenhouse",
 "slug": "dynamisinc",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "GT HQ",
@@ -3269,7 +3658,8 @@
 "contrataEm": [
 "Poland",
 "Ukraine"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Coupa",
@@ -3283,7 +3673,8 @@
 "Poland",
 "South Africa",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Penumbrainc",
@@ -3295,13 +3686,15 @@
 "Mexico",
 "Poland",
 "Portugal"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Insomniac",
 "ats": "greenhouse",
 "slug": "insomniac",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "LightForce Orthodontics",
@@ -3310,7 +3703,8 @@
 "contrataEm": [
 "Brazil",
 "Costa Rica"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Windranger",
@@ -3318,7 +3712,8 @@
 "slug": "windranger",
 "contrataEm": [
 "Indonesia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Thatgamecompany",
@@ -3326,19 +3721,22 @@
 "slug": "Thatgamecompany",
 "contrataEm": [
 "Indonesia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Authzed",
 "ats": "ashby",
 "slug": "authzed",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "ChartHop",
 "ats": "ashby",
 "slug": "charthop",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Databricks",
@@ -3353,31 +3751,36 @@
 "Serbia",
 "Spain",
 "Vietnam"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Aledade",
 "ats": "lever",
 "slug": "aledade",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Amplitude",
 "ats": "greenhouse",
 "slug": "amplitude",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Astra",
 "ats": "ashby",
 "slug": "astra",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Cambium",
 "ats": "ashby",
 "slug": "cambium",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "ChainGuard",
@@ -3385,31 +3788,36 @@
 "slug": "chainguard",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Embrace",
 "ats": "greenhouse",
 "slug": "embrace",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "AidKit",
 "ats": "ashby",
 "slug": "aidkit",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "AirWallex",
 "ats": "ashby",
 "slug": "airwallex",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Aiwyn",
 "ats": "ashby",
 "slug": "aiwyn",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Decagon",
@@ -3418,19 +3826,22 @@
 "contrataEm": [
 "Colombia",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Abridge",
 "ats": "ashby",
 "slug": "abridge",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Arketa",
 "ats": "ashby",
 "slug": "arketa",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Attio",
@@ -3438,7 +3849,8 @@
 "slug": "attio",
 "contrataEm": [
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "CoinTracker",
@@ -3446,7 +3858,8 @@
 "slug": "cointracker",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "CookUnity",
@@ -3455,19 +3868,22 @@
 "contrataEm": [
 "Argentina",
 "Peru"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Everlaw",
 "ats": "greenhouse",
 "slug": "everlaw",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Filmhub",
 "ats": "ashby",
 "slug": "filmhub",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Halcyon",
@@ -3476,7 +3892,8 @@
 "contrataEm": [
 "Mexico",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Harvey",
@@ -3485,13 +3902,15 @@
 "contrataEm": [
 "Mexico",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "illumio",
 "ats": "ashby",
 "slug": "illumio",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Inspiren",
@@ -3501,31 +3920,36 @@
 "Brazil",
 "Indonesia",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Mercor",
 "ats": "ashby",
 "slug": "mercor",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "favorited",
 "ats": "ashby",
 "slug": "favorited",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Fieldguide",
 "ats": "ashby",
 "slug": "fieldguide",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "ideogram",
 "ats": "ashby",
 "slug": "ideogram",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Lambda",
@@ -3533,37 +3957,43 @@
 "slug": "lambda",
 "contrataEm": [
 "Costa Rica"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Monarch Money",
 "ats": "ashby",
 "slug": "monarchmoney",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Outschool",
 "ats": "greenhouse",
 "slug": "outschool",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Guild",
 "ats": "greenhouse",
 "slug": "guild",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Gusto",
 "ats": "greenhouse",
 "slug": "gusto",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Help Scout",
 "ats": "ashby",
 "slug": "helpscout",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "HopSkipDrive",
@@ -3572,7 +4002,8 @@
 "contrataEm": [
 "Brazil",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Instabase",
@@ -3580,43 +4011,50 @@
 "slug": "instabase",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Magic School",
 "ats": "ashby",
 "slug": "magicschool",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Fireworks AI",
 "ats": "greenhouse",
 "slug": "fireworksai",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Freed",
 "ats": "ashby",
 "slug": "freed",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Honor",
 "ats": "greenhouse",
 "slug": "honor",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Lorikeet",
 "ats": "ashby",
 "slug": "lorikeet",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Mark43",
 "ats": "greenhouse",
 "slug": "mark43",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Mixpanel",
@@ -3626,13 +4064,15 @@
 "Brazil",
 "India",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "PermitFlow",
 "ats": "ashby",
 "slug": "permitflow",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Pinterest",
@@ -3641,19 +4081,22 @@
 "contrataEm": [
 "Brazil",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Plain",
 "ats": "ashby",
 "slug": "plain",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "PostHog",
 "ats": "ashby",
 "slug": "posthog",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Rain",
@@ -3662,19 +4105,22 @@
 "contrataEm": [
 "Mexico",
 "Nigeria"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Ramp",
 "ats": "ashby",
 "slug": "ramp",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "SandboxAQ",
 "ats": "ashby",
 "slug": "sandboxaq",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Regrello",
@@ -3683,19 +4129,22 @@
 "contrataEm": [
 "India",
 "Mexico"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Runway",
 "ats": "ashby",
 "slug": "runway",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Sesame",
 "ats": "ashby",
 "slug": "sesame",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Shield AI",
@@ -3707,13 +4156,15 @@
 "Romania",
 "Spain",
 "Ukraine"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Semgrep",
 "ats": "ashby",
 "slug": "semgrep",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Snappr",
@@ -3723,7 +4174,8 @@
 "Colombia",
 "Mexico",
 "Philippines"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Sierra",
@@ -3731,7 +4183,8 @@
 "slug": "sierra",
 "contrataEm": [
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "SIFT",
@@ -3741,19 +4194,22 @@
 "India",
 "Poland",
 "Ukraine"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Solace",
 "ats": "ashby",
 "slug": "solace",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "SpecterOps",
 "ats": "greenhouse",
 "slug": "specterops",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Substack",
@@ -3761,37 +4217,43 @@
 "slug": "substack",
 "contrataEm": [
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "SweatPals",
 "ats": "ashby",
 "slug": "sweatpals",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Synthesia",
 "ats": "ashby",
 "slug": "synthesia",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Tavus",
 "ats": "ashby",
 "slug": "tavus",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "TensorWave",
 "ats": "ashby",
 "slug": "tensorwave",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Tennr",
 "ats": "ashby",
 "slug": "tennr",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Anthropic",
@@ -3799,13 +4261,15 @@
 "slug": "anthropic",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Dataiku",
 "ats": "greenhouse",
 "slug": "dataiku",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Zapier",
@@ -3813,7 +4277,8 @@
 "slug": "zapier",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Deepmind",
@@ -3821,13 +4286,15 @@
 "slug": "deepmind",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "DEPT",
 "ats": "greenhouse",
 "slug": "dept",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Tripledot Studios",
@@ -3836,31 +4303,36 @@
 "contrataEm": [
 "Indonesia",
 "Poland"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Reflection AI",
 "ats": "ashby",
 "slug": "reflectionai",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Base Power",
 "ats": "ashby",
 "slug": "base-power",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Oura",
 "ats": "greenhouse",
 "slug": "oura",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Kailera",
 "ats": "greenhouse",
 "slug": "kailera",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Filevine",
@@ -3869,13 +4341,15 @@
 "contrataEm": [
 "Czechia",
 "Slovakia"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Periodic Labs",
 "ats": "ashby",
 "slug": "periodic-labs",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Moniepoint",
@@ -3887,7 +4361,8 @@
 "Nigeria",
 "Pakistan",
 "Spain"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Upgrade",
@@ -3895,91 +4370,106 @@
 "slug": "upgrade",
 "contrataEm": [
 "Brazil"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Pulley",
 "ats": "greenhouse",
 "slug": "pulley",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Granted",
 "ats": "ashby",
 "slug": "granted",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Dash0",
 "ats": "ashby",
 "slug": "dash0",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Linear",
 "ats": "ashby",
 "slug": "linear",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Planera",
 "ats": "ashby",
 "slug": "planera",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Reducto",
 "ats": "ashby",
 "slug": "reducto",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Dialogue AI",
 "ats": "ashby",
 "slug": "dialogueai",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Stand",
 "ats": "ashby",
 "slug": "stand",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Strella",
 "ats": "ashby",
 "slug": "strella",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Keycard Labs",
 "ats": "ashby",
 "slug": "keycard-labs",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Serval",
 "ats": "ashby",
 "slug": "serval",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Seneca",
 "ats": "ashby",
 "slug": "seneca",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "LangChain",
 "ats": "ashby",
 "slug": "langchain",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Starbridge",
 "ats": "ashby",
 "slug": "starbridge",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "ROLLER",
@@ -3987,55 +4477,64 @@
 "slug": "roller",
 "contrataEm": [
 "Costa Rica"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "Casium",
 "ats": "ashby",
 "slug": "casium",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Moonshot AI",
 "ats": "ashby",
 "slug": "moonshot-ai",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "ShopMy",
 "ats": "greenhouse",
 "slug": "shopmy",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Clerk",
 "ats": "ashby",
 "slug": "clerk",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Finch",
 "ats": "ashby",
 "slug": "finch",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Trove",
 "ats": "greenhouse",
 "slug": "trove",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Campfire",
 "ats": "ashby",
 "slug": "campfire",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "SirenOpt",
 "ats": "greenhouse",
 "slug": "sirenopt",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "OneImaging",
@@ -4044,25 +4543,29 @@
 "contrataEm": [
 "Mexico",
 "Philippines"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "LILA Sciences",
 "ats": "greenhouse",
 "slug": "lilasciences",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Kalshi",
 "ats": "greenhouse",
 "slug": "kalshi",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Yendo",
 "ats": "ashby",
 "slug": "yendo",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Further AI",
@@ -4070,54 +4573,63 @@
 "slug": "furtherai",
 "contrataEm": [
 "India"
-]
+],
+"porte": "grande"
 },
 {
 "nome": "FleetWorks",
 "ats": "ashby",
 "slug": "fleetworks",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Tycho.AI",
 "ats": "ashby",
 "slug": "tycho-ai",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Dexory",
 "ats": "greenhouse",
 "slug": "dexory",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Highdive",
 "ats": "greenhouse",
 "slug": "highdive",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Verge Genomics",
 "ats": "ashby",
 "slug": "verge-genomics",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "CircuitHub",
 "ats": "ashby",
 "slug": "circuithub",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Idler",
 "ats": "ashby",
 "slug": "idler",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 },
 {
 "nome": "Mirage",
 "ats": "ashby",
 "slug": "mirage",
-"contrataEm": []
+"contrataEm": [],
+"porte": "grande"
 }
 ]
