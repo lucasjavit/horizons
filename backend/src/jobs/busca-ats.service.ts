@@ -376,12 +376,25 @@ export class BuscaAtsService {
       return true;
     });
 
-    // Quem cita a tecnologia pedida no titulo vai para cima.
-    if (techs.length === 0) return aprovadas;
+    // **Mais recente primeiro.**
+    //
+    // Vaga de ontem vale mais que vaga de tres meses, e a ordem de chegada
+    // e a das empresas no catalogo — que nao diz nada. Quem cita a tecnologia
+    // pedida no titulo desempata dentro do mesmo dia.
+    //
+    // Sem data vai para o fim: `postedAt` nulo nao e "antiga", mas tambem nao
+    // pode competir com uma vaga que provou ser de ontem.
     return [...aprovadas].sort((a, b) => {
-      const pa = techs.some((t) => a.title.toLowerCase().includes(t)) ? 0 : 1;
-      const pb = techs.some((t) => b.title.toLowerCase().includes(t)) ? 0 : 1;
-      return pa - pb;
+      const qa = a.postedAt ? Date.parse(a.postedAt) : -Infinity;
+      const qb = b.postedAt ? Date.parse(b.postedAt) : -Infinity;
+      // Mesmo dia: quem cita a tecnologia sobe.
+      const mesmoDia = Math.abs(qa - qb) < 24 * 60 * 60 * 1000;
+      if (mesmoDia && techs.length > 0) {
+        const pa = techs.some((t) => a.title.toLowerCase().includes(t)) ? 0 : 1;
+        const pb = techs.some((t) => b.title.toLowerCase().includes(t)) ? 0 : 1;
+        if (pa !== pb) return pa - pb;
+      }
+      return qb - qa;
     });
   }
 
