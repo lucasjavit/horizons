@@ -1,85 +1,95 @@
 #!/usr/bin/env python3
-"""Filtra `empresas.yaml` pelos paises/regioes que interessam ao Horizons.
+"""Filtra `empresas.yaml`: fica quem paga em moeda forte.
 
-**NAO ESTA EM USO desde 18/08/2026.** O escopo do produto mudou: o alvo deixou
-de ser "dev brasileiro" e passou a ser "dev em pais emergente" — India tem 324
-empresas no catalogo contra 118 do Brasil, e o filtro anterior as removia.
+**A tese do produto: vaga remota para ganhar em moeda forte.** O usuario mora
+num pais emergente — Brasil, India, Mexico, Polonia — e quer receber em dolar
+ou euro, nao na moeda dele. Entao o que importa nao e onde ele mora, e sim
+onde a empresa esta ancorada.
 
-O arquivo `empresas.yaml` esta com as 1.953 empresas originais, sem filtro.
-Este script fica aqui porque a lista `ALVO` documenta as regioes e pode voltar
-a servir se o produto reduzir escopo de novo. Rodar hoje ENCOLHE o catalogo
-para 866 — nao rode sem querer isso.
+Isso corrige um erro de 18/08: o filtro anterior tratava a lista de paises
+fortes como "de onde vem o candidato" e removia India, Indonesia e Filipinas
+do arquivo. Errado nos dois sentidos — India e onde o usuario MORA (324
+empresas contratam la, mais que qualquer outro emergente), e o pais forte e
+onde a empresa PAGA.
 
-Regiao nao existe no arquivo: `hiring_countries` so tem pais individual (139
-valores distintos). "Latam" e "Europe" viram a lista de paises correspondente,
-senao nao filtrariam nada.
+O criterio, entao:
 
-O criterio e UNIAO: fica a empresa que contrata em ao menos um dos alvos. Uma
-que so contrata nos EUA continua servindo — a pessoa pode se candidatar de
-qualquer forma, e e o `elegivelBrasil` da vaga que decide, nao este arquivo.
+- **fica** a empresa com ao menos um pais de moeda forte em `hiring_countries`
+- **sai** a que so contrata em emergente — e a empresa local pagando em moeda
+  fraca, que e exatamente o que o produto quer evitar
+- os paises emergentes **permanecem** na lista de cada empresa: e por eles que
+  se descobre se a vaga aceita alguem que mora ali
 
-Lembrete que vale repetir: `hiring_countries` e da EMPRESA, nao da vaga.
-Medido em 18/08: 10 empresas com "Brazil" declarado deram 771 vagas, 279 de
-engenharia, e so 4 com local BR/LATAM.
+Medido em 18/08 sobre as 1.953: 415 pagam forte E contratam em emergente (o
+alvo), 416 so pagam forte sem contratar em emergente, 85 so contratam em
+emergente (saem).
 """
-import sys, yaml
+import sys
+import yaml
 from pathlib import Path
 
-LATAM = [
+# Onde a empresa paga bem. Nao e "de onde vem o candidato".
+MOEDA_FORTE = {
+    'United States', 'Canada', 'United Kingdom', 'Germany', 'Netherlands',
+    'Australia', 'Switzerland', 'Sweden', 'Ireland', 'United Arab Emirates',
+    'Norway', 'Denmark', 'France', 'Austria', 'Belgium', 'Finland',
+    'Luxembourg', 'Singapore', 'Japan', 'New Zealand', 'Iceland', 'Israel',
+    'Hong Kong', 'South Korea', 'Qatar', 'Saudi Arabia', 'Kuwait',
+}
+
+# Onde o usuario mora. Serve para marcar a empresa como "contrata em
+# emergente" — nunca para remove-la.
+EMERGENTES = {
     'Brazil', 'Mexico', 'Argentina', 'Colombia', 'Chile', 'Peru', 'Uruguay',
     'Costa Rica', 'Panama', 'Ecuador', 'Guatemala', 'Dominican Republic',
-    'Bolivia', 'Paraguay', 'Venezuela', 'El Salvador', 'Honduras', 'Nicaragua',
-]
-EUROPA = [
-    'United Kingdom', 'Germany', 'France', 'Spain', 'Netherlands', 'Poland',
-    'Ireland', 'Sweden', 'Italy', 'Belgium', 'Romania', 'Portugal',
-    'Switzerland', 'Austria', 'Denmark', 'Norway', 'Finland', 'Czechia',
-    'Czech Republic', 'Greece', 'Hungary', 'Bulgaria', 'Croatia', 'Slovakia',
-    'Slovenia', 'Lithuania', 'Latvia', 'Estonia', 'Ukraine', 'Serbia',
-    'Luxembourg', 'Cyprus', 'Malta', 'Iceland',
-]
-
-ALVO = {'United States', 'Australia', 'Canada', 'United Arab Emirates'}
-ALVO.update(LATAM)
-ALVO.update(EUROPA)
+    'Bolivia', 'Paraguay', 'Venezuela', 'El Salvador', 'Honduras',
+    'Nicaragua', 'India', 'Indonesia', 'Philippines', 'Vietnam', 'Thailand',
+    'Malaysia', 'Poland', 'Romania', 'Ukraine', 'Turkey', 'Türkiye',
+    'Nigeria', 'Kenya', 'South Africa', 'Egypt', 'Pakistan', 'Bangladesh',
+    'Sri Lanka', 'Serbia', 'Bulgaria', 'Morocco', 'Tunisia', 'Ghana',
+    'Czechia', 'Czech Republic', 'Hungary', 'Croatia', 'Slovakia', 'Lithuania',
+    'Latvia', 'Estonia', 'Greece', 'Portugal', 'Spain', 'Italy', 'Slovenia',
+}
 
 RAIZ = Path(__file__).resolve().parent.parent / 'backend' / 'data' / 'ats'
 
 
 def main() -> int:
     origem = RAIZ / 'empresas.yaml'
-    d = yaml.safe_load(origem.read_text())
-    todas = d['companies']
+    todas = yaml.safe_load(origem.read_text())['companies']
 
-    # Duas etapas, e a segunda e o que o stakeholder pediu em 18/08: nao
-    # basta escolher QUAIS empresas ficam, a lista DENTRO de cada uma tambem
-    # e podada. Sem isso a Deel entrava por causa do Brasil e trazia China,
-    # India e Japao junto — paises que nao interessam a quem procura daqui.
     mantidas = []
+    com_emergente = 0
     for e in todas:
-        paises = e.get('hiring_countries') or []
-        dentro = sorted(ALVO.intersection(paises))
-        if not dentro:
+        paises = set(e.get('hiring_countries') or [])
+        if not MOEDA_FORTE & paises:
             continue
-        podada = dict(e)
-        podada['hiring_countries'] = dentro
-        mantidas.append(podada)
+        nova = dict(e)
+        # Marca quais emergentes essa empresa alcanca. E o que responde "ela
+        # contrata alguem que mora onde eu moro?" sem reler a lista inteira.
+        emerg = sorted(EMERGENTES & paises)
+        if emerg:
+            nova['contrata_em'] = emerg
+            com_emergente += 1
+        mantidas.append(nova)
 
-    saida = RAIZ / 'empresas.yaml'
-    saida.write_text(
-        '# Empresas com contratacao em: United States, Australia, Brazil,\n'
-        '# LATAM, Europa, Canada e United Arab Emirates.\n'
+    (RAIZ / 'empresas.yaml').write_text(
+        '# Empresas que pagam em MOEDA FORTE — a tese do produto.\n'
         '#\n'
-        '# Filtrado de look4job/companies.yaml por scripts/filtrar-empresas.py.\n'
-        '# `hiring_countries` e da EMPRESA, nao da vaga — ver LEIA-ME.md.\n'
+        '# Fica quem tem ao menos um pais de moeda forte em `hiring_countries`.\n'
+        '# Sai quem so contrata em pais emergente: e a empresa local pagando na\n'
+        '# moeda fraca, que e o que o usuario quer evitar.\n'
+        '#\n'
+        '# `contrata_em` lista os emergentes que a empresa alcanca — e por ele\n'
+        '# que se sabe se ela contrata quem mora no pais do usuario.\n'
+        '#\n'
+        '# Gerado por scripts/filtrar-empresas.py. Ver LEIA-ME.md.\n'
         + yaml.safe_dump({'companies': mantidas}, allow_unicode=True, sort_keys=False)
     )
 
-    fora = len(todas) - len(mantidas)
-    antes = sum(len(e.get('hiring_countries') or []) for e in todas)
-    depois = sum(len(e['hiring_countries']) for e in mantidas)
-    print(f'{len(todas)} empresas -> {len(mantidas)} mantidas ({fora} fora)')
-    print(f'paises listados: {antes} -> {depois}')
+    print(f'{len(todas)} -> {len(mantidas)} empresas pagam em moeda forte')
+    print(f'  destas, {com_emergente} contratam em pais emergente')
+    print(f'  removidas: {len(todas) - len(mantidas)} (so moeda fraca)')
     ats = {}
     for e in mantidas:
         ats[e.get('ats', '?')] = ats.get(e.get('ats', '?'), 0) + 1

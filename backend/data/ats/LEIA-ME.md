@@ -20,64 +20,41 @@ Os arquivos foram gerados lá por `probe_sources.py` e verificados por
 `empresas.yaml` é o dado rico: `name`, `url`, `ats`, `slug`, `priority` e
 `hiring_countries`. **118 empresas declaram contratar no Brasil.**
 
-### O filtro por país (18/08/2026)
+### O filtro: quem paga em moeda forte (18/08/2026)
 
-Das 1.953 originais ficaram **866**, pelas regiões que interessam ao produto:
-United States, Australia, Brazil, LATAM, Europa, Canada e United Arab Emirates.
-Roda por `scripts/filtrar-empresas.py`.
+**A tese do produto é vaga remota para ganhar em moeda forte.** O usuário mora
+num país emergente e quer receber em dólar ou euro — então o que decide não é
+onde ele mora, é onde a empresa está ancorada.
 
-| ATS | Empresas |
+Das 1.953 originais ficaram **839**. Roda por `scripts/filtrar-empresas.py`.
+
+| | Empresas |
 | --- | ---: |
-| greenhouse | 276 |
-| workday | 136 |
-| lever | 127 |
-| ashby | 121 |
-| workable | 90 |
-| bamboohr | 88 |
-| recruitee | 22 |
+| Pagam em moeda forte | **839** |
+| **Destas, contratam em emergente** | **439** |
+| Removidas (só moeda fraca) | 1.114 |
 
-**"Latam" e "Europe" não existem no arquivo** — `hiring_countries` só tem país
-individual (139 valores distintos). O script expande as duas em 17 e 34 países.
+Fica quem tem ao menos um país de moeda forte em `hiring_countries`. Sai quem
+só contrata em emergente — é a empresa local pagando na moeda fraca, que é
+exatamente o que o produto quer evitar. Zero empresas que só contratam no
+Brasil sobraram.
 
-O filtro tem **duas etapas**:
+O campo **`contrata_em`** foi acrescentado a cada empresa: lista os emergentes
+que ela alcança. É o que responde "ela contrata quem mora onde eu moro?".
 
-1. **Quais empresas ficam** — união: fica quem contrata em ao menos um dos
-   alvos. Empresa que só contrata nos EUA continua valendo; quem decide
-   elegibilidade é a vaga, não este arquivo.
-2. **Quais países ficam dentro de cada empresa** — a lista é podada. Sem isso a
-   Deel entrava por causa do Brasil e trazia China, Índia e Japão junto.
+| Emergente | Empresas |
+| --- | ---: |
+| Índia | 291 |
+| México | 133 |
+| Brasil | 110 |
+| Espanha | 106 |
+| Polônia | 99 |
 
-Resultado: **5.011 → 3.418** menções de país, e o arquivo passou de 139 países
-distintos para **54** — todos dentro do escopo. `India`, que tinha 323
-menções, não aparece mais.
-
-**Das 1.087 removidas, 1.012 não tinham `hiring_countries` preenchido.** Ou
-seja: a maioria saiu por falta de dado, e não por país errado. As demais eram
-Índia, Indonésia, Turquia e Japão. Se um dia faltar volume, essas 1.012 são o
-primeiro lugar a olhar — provavelmente há empresa boa entre elas, só não
-verificada.
-
-Os `slugs-*.json` são listas cruas de identificador de board — sem nome de
-empresa, sem país. Servem para descobrir boards que a curadoria não alcançou.
-
-## As APIs, verificadas em 18/08/2026
-
-Públicas, sem chave, sem custo:
-
-```
-https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true
-https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true
-https://api.lever.co/v0/postings/{slug}?mode=json
-```
-
-Medido: GitLab (greenhouse) devolveu 199 vagas numa chamada; Ramp (ashby), 137 —
-e **137 de 137 com faixa salarial estruturada**
-(`"$211.4K – $290.6K • Offers Equity"`), em vez de lida do texto. O Lever traz
-`workplaceType: "remote"` pronto.
-
-Isso é o oposto do problema que o [JOB-09](../../../docs/backlog/cards/JOB-09-vaga-so-afirma-o-que-cita.md)
-tratou: aqui o salário **vem do campo**, não de uma citação que precisa ser
-conferida.
+**Um erro corrigido:** o filtro de 18/08 tratava a lista de países fortes como
+"de onde vem o candidato" e removia Índia, Indonésia e Filipinas do arquivo.
+Errado nos dois sentidos — a Índia é onde o usuário **mora** (291 empresas
+contratam lá, mais que qualquer outro emergente), e o país forte é onde a
+empresa **paga**.
 
 ## `fontes.yaml` — a configuração de fontes
 
