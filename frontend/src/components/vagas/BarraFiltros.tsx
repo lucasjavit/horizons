@@ -5,14 +5,22 @@ import { CATALOGO, SELECAO_VAZIA, temSelecao } from './vaga-filtro'
 import type { Eixo, Selecao } from './vaga-filtro'
 
 /** O rótulo de cada eixo, na ordem da tela. */
+/**
+ * Os rótulos, na ordem da tela.
+ *
+ * Eram oito. Employment type, Benefits e Degree saíram em 19/08 porque **não
+ * filtravam nada** — o QA mediu que escolher "Degree: PhD" devolvia as mesmas
+ * 644 vagas de não escolher nada. As APIs de ATS dão título e local; benefício
+ * e formação vivem na descrição, que não vem.
+ *
+ * Um filtro que não filtra é pior que um filtro ausente: a pessoa acredita ter
+ * reduzido a lista e confia no resultado.
+ */
 const ROTULOS: ReadonlyArray<{ eixo: Eixo; rotulo: string }> = [
   { eixo: 'cargos', rotulo: 'Job title' },
   { eixo: 'experiencias', rotulo: 'Experience' },
-  { eixo: 'contratos', rotulo: 'Employment type' },
   { eixo: 'skills', rotulo: 'Skills' },
-  { eixo: 'beneficios', rotulo: 'Benefits' },
   { eixo: 'paises', rotulo: 'I want to work from' },
-  { eixo: 'formacoes', rotulo: 'Degree' },
   { eixo: 'salarios', rotulo: 'Minimum yearly salary' },
 ]
 
@@ -115,12 +123,16 @@ export function BarraFiltros({
             parece defeito. O texto sozinho já nomeia a ação. */}
         <button
           type="button"
-          disabled={buscando}
+          // NAO desabilita durante a busca. O QA mediu em 19/08: quem trocava
+          // um filtro no meio via o botao inerte, o clique engolido, e a lista
+          // antiga na tela sem nada dizendo que ela estava defasada. Clicar de
+          // novo aborta a busca em andamento e comeca outra — que e o que a
+          // pessoa quis dizer ao clicar.
           onClick={() => onAplicar(rascunho)}
           className="inline-flex min-h-9 items-center rounded-md px-4 py-1.5 text-sm font-semibold disabled:opacity-60"
           style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
         >
-          {buscando ? 'Searching…' : 'Filter'}
+          {buscando ? 'Search again' : 'Filter'}
         </button>
 
         {podeLimpar && (
@@ -141,6 +153,15 @@ export function BarraFiltros({
 
           Só aparece DEPOIS de buscar: "0 jobs found" numa tela que ninguém
           pesquisou ainda afirma um resultado que não houve. */}
+      {buscando && (
+        // A lista na tela e de OUTRA busca enquanto esta roda. Sem dizer isso,
+        // quem trocou o filtro le o resultado antigo como se fosse a resposta
+        // ao que acabou de pedir.
+        <p role="status" className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+          Searching… the list below is from your previous search.
+        </p>
+      )}
+
       {(buscando || jaBuscou) && (
         <p
           role="status"

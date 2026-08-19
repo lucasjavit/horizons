@@ -246,6 +246,8 @@ export class BuscaAtsService {
     const cargos = (f.job_titles ?? []).map((s) => s.toLowerCase());
     const techs = (f.technologies ?? []).map((s) => s.toLowerCase());
     const senioridade = f.seniority?.toLowerCase();
+    const locais = (f.locations ?? []).map((s) => s.toLowerCase());
+    const excluir = (f.exclude_keywords ?? []).map((s) => s.toLowerCase());
 
     const vistos = new Set<string>();
     const porEmpresa = new Map<string, number>();
@@ -294,6 +296,27 @@ export class BuscaAtsService {
       // remoto. Agora o local precisa ser compativel com trabalho a
       // distancia de fora.
       if (f.remote === 'remoto' && !remotoDeVerdade(v)) return false;
+
+      // **Salario minimo.** So barra quem TEM salario publicado e abaixo do
+      // pedido. Vaga sem salario continua — a maioria nao publica, e sumir
+      // com elas transformaria "acima de 100k" em "so as que dizem quanto
+      // pagam", que e outro filtro.
+      if (f.salary_min != null && v.salaryMax != null && v.salaryMax < f.salary_min) {
+        return false;
+      }
+
+      // **Local pedido.** Cruzado com o que a vaga diz aceitar. "Worldwide"
+      // nao chega aqui — vira `remote: 'remoto'` no frontend.
+      if (locais.length > 0) {
+        const onde = (v.local ?? '').toLowerCase();
+        if (!locais.some((l) => onde.includes(l))) return false;
+      }
+
+      // **Palavras a excluir.** O unico filtro que olha o titulo inteiro de
+      // proposito: quem escreve "sem PHP" quer PHP fora do titulo.
+      if (excluir.length > 0 && excluir.some((k) => titulo.includes(k))) {
+        return false;
+      }
 
       // Uma empresa grande nao pode ocupar a tela inteira.
       const quantas = porEmpresa.get(v.company) ?? 0;
@@ -453,10 +476,28 @@ function faixaSalarial(resumo: string | null): {
  * Compara palavra a palavra em vez de substring: "Backend Engineer" tem de
  * casar com "Senior Backend Engineer, Payments", e `includes` nao casaria.
  */
-function casaCargo(alvo: string, cargo: string): boolean {
-  const palavras = cargo.split(/\s+/).filter((p) => p.length > 2);
-  if (palavras.length === 0) return false;
-  return palavras.every((p) => alvo.includes(p));
+function casaCargo(titulo: string, cargo: string): boolean {
+  // A frase inteira, na ordem. Exigir so que as palavras APARECAM fazia
+  // "Tech Lead" casar com "Technical Accounting Lead" e "Executive Search
+  // Lead - Technology" — 26 de 46 resultados errados, medido em 19/08.
+  if (titulo.includes(cargo)) return true;
+
+  // Variacoes que os anuncios usam para a mesma coisa.
+  const sinonimos: Record<string, string[]> = {
+    'backend engineer': ['back-end engineer', 'backend developer', 'back end engineer'],
+    'frontend engineer': ['front-end engineer', 'frontend developer', 'front end engineer'],
+    'full stack engineer': ['fullstack engineer', 'full-stack engineer', 'full stack developer'],
+    'software engineer': ['software developer', 'sde'],
+    'tech lead': ['technical lead', 'engineering lead', 'lead engineer'],
+    'engineering manager': ['software engineering manager'],
+    'data engineer': ['data platform engineer'],
+    'devops engineer': ['devops', 'platform engineer', 'infrastructure engineer'],
+    'site reliability engineer': ['sre'],
+    'machine learning engineer': ['ml engineer', 'ai engineer'],
+    'qa engineer': ['quality assurance engineer', 'test engineer', 'sdet'],
+    'mobile engineer': ['ios engineer', 'android engineer', 'mobile developer'],
+  };
+  return (sinonimos[cargo] ?? []).some((s) => titulo.includes(s));
 }
 
 /**
@@ -479,10 +520,12 @@ const SENIORIDADE: Record<string, string[]> = {
   principal: ['principal', 'lead', 'head of'],
 };
 
-function casaSenioridade(alvo: string, nivel: string): boolean {
+function casaSenioridade(titulo: string, nivel: string): boolean {
   const termos = SENIORIDADE[nivel];
   if (!termos) return true;
-  return termos.some((t) => alvo.includes(t));
+  // Fronteira de palavra: "intern" casava "Product Engineer, Internal Tools"
+  // (medido em 19/08). `\b` resolve sem precisar listar cada falso positivo.
+  return termos.some((t) => new RegExp(`\\b${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i').test(titulo));
 }
 
 /**

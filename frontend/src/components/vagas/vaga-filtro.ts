@@ -16,14 +16,23 @@ export interface Opcao {
   rotulo: string
 }
 
+/**
+ * Os eixos que a busca realmente aplica.
+ *
+ * **Filtro que não filtra é pior que filtro ausente**, porque a pessoa acredita
+ * ter reduzido a lista. O QA mediu em 19/08: escolher "Degree: PhD" devolvia as
+ * mesmas 644 vagas de não escolher nada.
+ *
+ * `contratos`, `beneficios` e `formacoes` saíram: as APIs de ATS devolvem
+ * título e local, e nada disso está lá — benefício e formação vivem na
+ * descrição, que só viria num request por vaga. Voltam quando houver de onde
+ * ler (o motor de IA lê a descrição, mas hoje ele é o segundo motor).
+ */
 export type Eixo =
   | 'cargos'
   | 'experiencias'
-  | 'contratos'
   | 'skills'
-  | 'beneficios'
   | 'paises'
-  | 'formacoes'
   | 'salarios'
 
 export type Selecao = Record<Eixo, string[]>
@@ -31,20 +40,17 @@ export type Selecao = Record<Eixo, string[]>
 export const SELECAO_VAZIA: Selecao = {
   cargos: [],
   experiencias: [],
-  contratos: [],
   skills: [],
-  beneficios: [],
   paises: [],
-  formacoes: [],
   salarios: [],
 }
 
 /**
  * O catálogo de cada eixo — fixo, não derivado das vagas.
  *
- * Os valores de `experiencias` e `contratos` são exatamente os que o backend
- * aceita (`SENIORIDADES` e `CONTRATOS` em `job.dto.ts`): mandar outra coisa é
- * 400 do `ValidationPipe`, e o rótulo em inglês é só apresentação.
+ * Os valores de `experiencias` são exatamente os que o backend aceita
+ * (`SENIORIDADES` em `job.dto.ts`): mandar outra coisa é 400 do
+ * `ValidationPipe`, e o rótulo em inglês é só apresentação.
  */
 export const CATALOGO: Record<Eixo, Opcao[]> = {
   cargos: [
@@ -71,12 +77,6 @@ export const CATALOGO: Record<Eixo, Opcao[]> = {
     { valor: 'principal', rotulo: 'Principal' },
   ],
 
-  contratos: [
-    { valor: 'clt', rotulo: 'Full-time' },
-    { valor: 'pj', rotulo: 'Contractor (PJ)' },
-    { valor: 'contractor', rotulo: 'Contract' },
-    { valor: 'freelance', rotulo: 'Freelance' },
-  ],
 
   skills: [
     'JavaScript', 'TypeScript', 'Python', 'Java', 'Kotlin', 'Go', 'Rust',
@@ -88,16 +88,6 @@ export const CATALOGO: Record<Eixo, Opcao[]> = {
     'GraphQL', 'REST', 'gRPC', 'CI/CD',
   ].map((v) => ({ valor: v, rotulo: v })),
 
-  beneficios: [
-    'Remote work',
-    'Health insurance',
-    'Equity',
-    'Learning budget',
-    'Flexible hours',
-    'Home office stipend',
-    'Unlimited PTO',
-    'Visa sponsorship',
-  ].map((v) => ({ valor: v, rotulo: v })),
 
   // "Worldwide" e "LATAM" primeiro porque são o que interessa a quem procura
   // do Brasil: a vaga que aceita candidato de qualquer lugar, e a que abre a
@@ -112,12 +102,6 @@ export const CATALOGO: Record<Eixo, Opcao[]> = {
     'Argentina', 'Mexico', 'Australia', 'Singapore',
   ].map((v) => ({ valor: v, rotulo: v })),
 
-  formacoes: [
-    { valor: "Bachelor's degree", rotulo: "Bachelor's degree" },
-    { valor: "Master's degree", rotulo: "Master's degree" },
-    { valor: 'PhD', rotulo: 'PhD' },
-    { valor: 'No degree required', rotulo: 'No degree required' },
-  ],
 
   salarios: [
     { valor: '60000', rotulo: '$60K+' },
@@ -148,9 +132,6 @@ export function paraFiltrosApi(s: Selecao): Record<string, unknown> {
   const f: Record<string, unknown> = {}
   if (s.cargos.length) f.job_titles = s.cargos
   if (s.skills.length) f.technologies = s.skills
-  if (s.beneficios.length) f.keywords = s.beneficios
-  if (s.formacoes.length) f.keywords = [...(f.keywords as string[] ?? []), ...s.formacoes]
-  if (s.contratos.length) f.employment_types = s.contratos
   // Só um: o backend aceita uma senioridade, não uma lista.
   if (s.experiencias.length) f.seniority = s.experiencias[0]
 
