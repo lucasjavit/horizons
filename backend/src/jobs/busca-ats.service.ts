@@ -270,6 +270,11 @@ export class BuscaAtsService {
     const techs = (f.technologies ?? []).map((s) => s.toLowerCase());
     const senioridade = f.seniority?.toLowerCase();
     const locais = (f.locations ?? []).map((s) => s.toLowerCase());
+    // O corte de idade em milissegundos, calculado UMA vez.
+    const limite =
+      f.posted_within_days != null
+        ? Date.now() - f.posted_within_days * 24 * 60 * 60 * 1000
+        : null;
     const excluir = (f.exclude_keywords ?? []).map((s) => s.toLowerCase());
 
     const vistos = new Set<string>();
@@ -325,6 +330,21 @@ export class BuscaAtsService {
       // remoto. Agora o local precisa ser compativel com trabalho a
       // distancia de fora.
       if (f.remote === 'remoto' && !remotoDeVerdade(v)) return false;
+
+      // **Idade da vaga.**
+      //
+      // Medido em 19/08: das 220 vagas de uma busca, **58 tinham mais de seis
+      // meses** e havia anuncio de 2021. Board de ATS nao expira sozinho — a
+      // empresa precisa arquivar, e muita nao arquiva. Vaga velha na lista
+      // gasta o tempo de quem se candidata a processo que ja fechou.
+      //
+      // Vaga SEM data fica: `postedAt` nulo e o caso comum em alguns ATS, e
+      // sumir com ela transformaria "postada nos ultimos 20 dias" em "que
+      // dizem quando foram postadas", que e outro filtro.
+      if (limite !== null && v.postedAt) {
+        const quando = Date.parse(v.postedAt);
+        if (Number.isFinite(quando) && quando < limite) return false;
+      }
 
       // **Salario minimo.** So barra quem TEM salario publicado e abaixo do
       // pedido. Vaga sem salario continua — a maioria nao publica, e sumir

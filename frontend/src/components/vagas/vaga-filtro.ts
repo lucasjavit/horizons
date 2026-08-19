@@ -34,6 +34,7 @@ export type Eixo =
   | 'skills'
   | 'paises'
   | 'portes'
+  | 'idades'
   | 'salarios'
 
 export type Selecao = Record<Eixo, string[]>
@@ -44,6 +45,7 @@ export const SELECAO_VAZIA: Selecao = {
   skills: [],
   paises: [],
   portes: [],
+  idades: [],
   salarios: [],
 }
 
@@ -119,6 +121,20 @@ export const CATALOGO: Record<Eixo, Opcao[]> = {
     { valor: 'grande', rotulo: 'Large companies' },
   ],
 
+  /**
+   * Quando a vaga foi publicada.
+   *
+   * Medido em 19/08: de 220 vagas, **58 tinham mais de seis meses** e havia
+   * anúncio de 2021. Board de ATS não expira sozinho — a empresa precisa
+   * arquivar, e muita não arquiva.
+   */
+  idades: [
+    { valor: '7', rotulo: 'Last 7 days' },
+    { valor: '20', rotulo: 'Last 20 days' },
+    { valor: '30', rotulo: 'Last 30 days' },
+    { valor: '90', rotulo: 'Last 3 months' },
+  ],
+
   salarios: [
     { valor: '60000', rotulo: '$60K+' },
     { valor: '80000', rotulo: '$80K+' },
@@ -163,6 +179,13 @@ export function paraFiltrosApi(s: Selecao): Record<string, unknown> {
 
   // Um só: os dois marcados é o mesmo que nenhum — a busca já cobre ambos.
   if (s.portes.length === 1) f.porte = s.portes[0]
+
+  // O MAIOR dos escolhidos: marcar "7 dias" e "30 dias" é pedir os 30 — quem
+  // quer as duas janelas quer a maior, e a menor já está contida nela.
+  if (s.idades.length) {
+    const maior = Math.max(...s.idades.map(Number).filter(Number.isFinite))
+    if (Number.isFinite(maior)) f.posted_within_days = maior
+  }
 
   // O menor dos escolhidos: pedir "acima de 100k OU acima de 150k" é pedir
   // acima de 100k.
