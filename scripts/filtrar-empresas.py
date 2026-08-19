@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 """Filtra `empresas.yaml` pelos paises/regioes que interessam ao Horizons.
 
+**NAO ESTA EM USO desde 18/08/2026.** O escopo do produto mudou: o alvo deixou
+de ser "dev brasileiro" e passou a ser "dev em pais emergente" — India tem 324
+empresas no catalogo contra 118 do Brasil, e o filtro anterior as removia.
+
+O arquivo `empresas.yaml` esta com as 1.953 empresas originais, sem filtro.
+Este script fica aqui porque a lista `ALVO` documenta as regioes e pode voltar
+a servir se o produto reduzir escopo de novo. Rodar hoje ENCOLHE o catalogo
+para 866 — nao rode sem querer isso.
+
 Regiao nao existe no arquivo: `hiring_countries` so tem pais individual (139
 valores distintos). "Latam" e "Europe" viram a lista de paises correspondente,
 senao nao filtrariam nada.

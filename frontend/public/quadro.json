@@ -421,6 +421,30 @@
       "total": 0
     },
     {
+      "id": "JOB-18",
+      "titulo": "Três níveis de busca, e o que sustenta o nível pago",
+      "estado": "esperando decisão — **arquitetura medida em 18/08/2026**, ver [docs/design/JOB-18-arquitetura-dos-niveis.md](../../design/JOB-18-arquitetura-dos-niveis.md)",
+      "coluna": "backlog",
+      "tamanho": "G",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "[JOB-17](JOB-17-catalogo-de-ats.md) — o coletor de ATS é o que é o nível 2.",
+      "feitos": 0,
+      "total": 20
+    },
+    {
+      "id": "JOB-19",
+      "titulo": "O produto tem dois lados",
+      "estado": "decidido, não implementado (18/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "G",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",
