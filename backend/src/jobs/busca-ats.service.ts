@@ -279,11 +279,17 @@ export class BuscaAtsService {
       // pessoa nao disse o cargo, a tecnologia passa a ser o unico sinal do
       // que ela procura, e ai ela precisa filtrar. Foi o que a busca de
       // 19/08 mostrou ao tirar o filtro sem por nada no lugar.
-      if (cargos.length === 0 && techs.length > 0) {
-        // So o TITULO, nunca o local. "Business Development Manager (East
-        // Java)" em Surabaya casava com a busca por Java — pelo nome da ilha
-        // (medido em 19/08). Tecnologia e atributo do cargo, e procurar no
-        // endereco produz coincidencia geografica, nao vaga tecnica.
+      // **Isto aqui e um buscador de vaga de TECNOLOGIA.**
+      //
+      // Sem cargo escolhido, a peneira anterior deixava passar o board
+      // inteiro: 163 de 299 vagas eram "Account Executive", "Accounting
+      // Manager", "Head of Support" (medido em 19/08). O filtro de area vale
+      // SEMPRE que a pessoa nao nomeou o cargo — nao so quando ela escolheu
+      // uma tecnologia.
+      //
+      // Quando ela nomeia o cargo, `casaCargo` ja e mais restritivo que isto
+      // e a checagem seria redundante.
+      if (cargos.length === 0) {
         const ehTech = techs.some((t) => titulo.includes(t)) || AREA_TECH.test(titulo);
         if (!ehTech) return false;
       }
@@ -540,6 +546,19 @@ function casaSenioridade(titulo: string, nivel: string): boolean {
  * nomeada e endereco de escritorio; pais ou regiao ainda pode ser remoto de
  * dentro daquele pais, e o JOB-22 vai deixar a pessoa escolher.
  */
+/**
+ * Paises e cidades que, sozinhos no campo, sao ANCORA e nao alcance.
+ *
+ * "Serbia" com `isRemote: true` quer dizer "remoto de dentro da Servia" — a
+ * Xsolla contrata assim. E verdade para quem mora la, e inutil para quem nao
+ * mora: medido em 19/08, 56 das 299 vagas eram deste tipo.
+ *
+ * Um nome de lugar sozinho, sem "remote" junto, e restricao. As excecoes que
+ * significam alcance amplo — "Worldwide", "Global", "Anywhere", "LATAM" —
+ * ficam de fora desta regra por `SEM_FRONTEIRA` em `elegibilidade.ts`.
+ */
+const AMPLO = /\b(worldwide|global|anywhere|latam|latin america|south america|emea|apac|americas|europe|international)\b/i;
+
 function remotoDeVerdade(v: VagaDto): boolean {
   const local = (v.local ?? '').trim();
 
@@ -552,7 +571,16 @@ function remotoDeVerdade(v: VagaDto): boolean {
   if (!dizRemoto) return false;
 
   if (!local) return true;
-  return !temEndereco(local);
+  if (temEndereco(local)) return false;
+
+  // Um lugar nomeado sozinho e ancora: "Serbia", "Bengaluru", "Montreal".
+  // Deixa passar so o que descreve uma REGIAO ampla ou nao nomeia lugar.
+  const semRuido = local
+    .replace(/\b(remote|remoto|remote-first|hybrid)\b/gi, '')
+    .replace(/[(),-]/g, ' ')
+    .trim();
+  if (!semRuido) return true;
+  return AMPLO.test(local);
 }
 
 /**
