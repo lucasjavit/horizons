@@ -501,9 +501,10 @@ function vagaVazia(): VagaDto {
     salaryMax: null,
     currency: null,
     salaryTrecho: null,
-    // A API nao diz se aceita quem mora no Brasil. `null` e a resposta
-    // honesta, e a tela ja escreve "not stated" — ver JOB-21.
-    elegivelBrasil: null,
+    // A API nao diz de onde aceita candidato. `null` e a resposta honesta, e
+    // a tela ja escreve "not stated" — ver JOB-21.
+    paisesElegiveis: null,
+    elegivelGlobal: false,
     elegibilidadeTrecho: null,
     postedAt: null,
     foundAt: new Date().toISOString(),
@@ -697,11 +698,8 @@ function comElegibilidade(v: VagaDto): VagaDto {
   if (e.precisaLer) return v;
   return {
     ...v,
-    // `paisesElegiveis` ainda nao existe no DTO (e o JOB-22). Ate la, o
-    // booleano responde a pergunta de hoje: aceita quem mora no Brasil?
-    elegivelBrasil: e.global
-      ? true
-      : e.paises?.some((p) => /brazil|brasil|latam|latin america|south america/i.test(p)) ?? null,
+    paisesElegiveis: e.paises,
+    elegivelGlobal: e.global,
     elegibilidadeTrecho: e.trecho,
   };
 }

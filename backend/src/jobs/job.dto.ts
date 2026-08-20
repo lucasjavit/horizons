@@ -259,7 +259,22 @@ export interface VagaDto {
   currency: string | null;
   /** O texto do anuncio de onde o salario saiu. */
   salaryTrecho: string | null;
-  elegivelBrasil: boolean | null;
+  /**
+   * De onde a vaga aceita candidato, como o anuncio escreveu.
+   *
+   * Substituiu `elegivelBrasil: boolean` em 20/08. O booleano perguntava
+   * "aceita quem mora no Brasil?" quando o alvo do produto passou a ser pais
+   * emergente — a India tem 291 empresas no catalogo contra 110 do Brasil
+   * (JOB-19). E ele apagava a distincao que mais importa: "worldwide" e
+   * "contrata na LATAM" viravam o mesmo `true`.
+   *
+   * `null` continua sendo resposta legitima e diferente de lista vazia:
+   * **"nao disse" nao e "nao aceita"**. Lista vazia seria lida como "nao
+   * aceita ninguem", que e uma afirmacao que nenhum anuncio faz.
+   */
+  paisesElegiveis: string[] | null;
+  /** A vaga aceita de qualquer lugar, sem restricao geografica. */
+  elegivelGlobal: boolean;
   elegibilidadeTrecho: string | null;
   postedAt: string | null;
   foundAt: string;

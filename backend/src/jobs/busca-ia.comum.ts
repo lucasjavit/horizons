@@ -26,8 +26,8 @@ REGRAS QUE NAO SE NEGOCIAM:
    de salario ficam null. Nao converta valor por hora em anual.
 
 4. **Elegibilidade so com citacao.** Se a pagina nao fala de contratar no
-   Brasil, elegivelBrasil e null — nao false. Dizer a alguem que uma empresa
-   nao o contrataria, sem base, e o pior erro possivel aqui.
+   pais nenhum, paisesElegiveis e null — nunca lista vazia. Dizer a alguem
+   que uma empresa nao o contrataria, sem base, e o pior erro possivel aqui.
 
 5. **Pagina de listagem nao e vaga.** "140 results", "903 positions" e um
    indice, nao um anuncio: marque ehVaga: false.
@@ -65,15 +65,23 @@ export const SCHEMA_BUSCA = {
               'O TEXTO EXATO do anuncio que mostra o salario. Sem ele, ' +
               'salaryMin e salaryMax ficam null.',
           },
-          elegivelBrasil: {
-            type: ['boolean', 'null'],
+          paisesElegiveis: {
+            type: ['array', 'null'],
+            items: { type: 'string' },
             description:
-              'Contrata quem mora no Brasil? null se a pagina nao disser. ' +
-              '"Nao disse" NAO e "nao aceita".',
+              'De ONDE a vaga aceita candidato, como o anuncio escreveu ' +
+              '("Brazil", "LATAM", "United States"). null se a pagina nao ' +
+              'disser — "nao disse" NAO e "nao aceita". Nunca lista vazia.',
+          },
+          elegivelGlobal: {
+            type: 'boolean',
+            description:
+              'true so quando o anuncio diz que aceita de QUALQUER lugar ' +
+              '("worldwide", "anywhere", "fully remote, global").',
           },
           elegibilidadeTrecho: {
             type: ['string', 'null'],
-            description: 'O TEXTO EXATO que sustenta elegivelBrasil.',
+            description: 'O TEXTO EXATO que sustenta paisesElegiveis.',
           },
           ehVaga: {
             type: 'boolean',
@@ -98,7 +106,8 @@ export const SCHEMA_BUSCA = {
           'salaryMax',
           'currency',
           'salaryTrecho',
-          'elegivelBrasil',
+          'paisesElegiveis',
+          'elegivelGlobal',
           'elegibilidadeTrecho',
           'ehVaga',
         ],
@@ -125,8 +134,8 @@ REGRAS QUE NAO SE NEGOCIAM:
    de salario ficam null. Nao converta valor por hora em anual.
 
 4. **Elegibilidade so com citacao.** Se a pagina nao fala de contratar no
-   Brasil, elegivelBrasil e null — nao false. Dizer a alguem que uma empresa
-   nao o contrataria, sem base, e o pior erro possivel aqui.
+   pais nenhum, paisesElegiveis e null — nunca lista vazia. Dizer a alguem
+   que uma empresa nao o contrataria, sem base, e o pior erro possivel aqui.
 
 5. **Pagina de listagem nao e vaga.** "140 results", "903 positions" e um
    indice, nao um anuncio: marque ehVaga: false.
@@ -195,7 +204,11 @@ export function normalizar(v: Record<string, unknown>): VagaDto | null {
     currency: comSal ? (texto(v.currency)?.toUpperCase().slice(0, 3) ?? null) : null,
     salaryTrecho: trechoSal,
     // Afirmacao de elegibilidade exige citacao. "Nao disse" nao e "nao aceita".
-    elegivelBrasil: trechoEleg && typeof v.elegivelBrasil === 'boolean' ? v.elegivelBrasil : null,
+    paisesElegiveis:
+      trechoEleg && Array.isArray(v.paisesElegiveis) && v.paisesElegiveis.length > 0
+        ? v.paisesElegiveis.filter((p): p is string => typeof p === 'string')
+        : null,
+    elegivelGlobal: trechoEleg ? v.elegivelGlobal === true : false,
     elegibilidadeTrecho: trechoEleg,
     postedAt: null,
     foundAt: new Date().toISOString(),

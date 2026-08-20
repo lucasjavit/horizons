@@ -139,7 +139,10 @@ function toDto(v: {
     salaryMax?: number;
     currency?: string;
     salaryTrecho?: string;
+    /** Formato anterior a 20/08. Lido para nao precisar migrar o Json. */
     elegivelBrasil?: boolean;
+    paisesElegiveis?: string[];
+    elegivelGlobal?: boolean;
     elegibilidadeTrecho?: string;
   };
   return {
@@ -163,7 +166,11 @@ function toDto(v: {
     salaryMax: s.salaryMax ?? null,
     currency: s.currency ?? null,
     salaryTrecho: s.salaryTrecho ?? null,
-    elegivelBrasil: s.elegivelBrasil ?? null,
+    // Vaga gravada antes de 20/08 tem `elegivelBrasil` no snapshot, e nao
+    // `paisesElegiveis`. Converter na leitura evita migracao de Json.
+    paisesElegiveis:
+      s.paisesElegiveis ?? (s.elegivelBrasil === true ? ['Brazil'] : null),
+    elegivelGlobal: s.elegivelGlobal ?? false,
     elegibilidadeTrecho: s.elegibilidadeTrecho ?? null,
     // Data cruza a API como string ISO, nunca Date.
     postedAt: v.postedAt?.toISOString() ?? null,

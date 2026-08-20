@@ -285,7 +285,15 @@ export interface Vaga {
   salaryMax: number | null
   currency: string | null
   salaryTrecho: string | null
-  elegivelBrasil: boolean | null
+  /**
+   * De onde a vaga aceita candidato. `null` = o anúncio não disse.
+   *
+   * Nunca lista vazia: vazio seria lido como "não aceita ninguém", que é uma
+   * afirmação que nenhum anúncio faz.
+   */
+  paisesElegiveis: string[] | null
+  /** Aceita de qualquer lugar, sem restrição. */
+  elegivelGlobal: boolean
   elegibilidadeTrecho: string | null
   postedAt: string | null
   foundAt: string

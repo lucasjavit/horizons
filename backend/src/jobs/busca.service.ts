@@ -449,7 +449,8 @@ const NAO_E_CITACAO =
  * sem fonte. Decidi-los no mesmo lugar impede que um mude sem o outro.
  */
 function elegibilidade(j: Record<string, unknown>): {
-  elegivelBrasil: boolean | null;
+  paisesElegiveis: string[] | null;
+  elegivelGlobal: boolean;
   elegibilidadeTrecho: string | null;
 } {
   const trecho = texto(j.elegibilidadeTrecho);
@@ -457,9 +458,18 @@ function elegibilidade(j: Record<string, unknown>): {
   const afirmado = typeof j.elegivelBrasil === 'boolean' ? j.elegivelBrasil : null;
   // Sem citacao nao ha afirmacao — nem a positiva. Dizer "aceita brasileiro"
   // sem base faria alguem se candidatar a toa, que e o espelho do erro.
-  return citacao === null
-    ? { elegivelBrasil: null, elegibilidadeTrecho: null }
-    : { elegivelBrasil: afirmado, elegibilidadeTrecho: citacao };
+  if (citacao === null) {
+    return { paisesElegiveis: null, elegivelGlobal: false, elegibilidadeTrecho: null };
+  }
+  // O prompt do Firecrawl ainda devolve um booleano ("aceita quem mora no
+  // Brasil?"). Ate ele ser reescrito, a resposta positiva vira a lista com o
+  // pais que a pergunta assumia — e a negativa nao afirma nada, porque
+  // "nao aceita brasileiro" nao diz de onde ACEITA.
+  return {
+    paisesElegiveis: afirmado === true ? ['Brazil'] : null,
+    elegivelGlobal: false,
+    elegibilidadeTrecho: citacao,
+  };
 }
 
 function montarConsulta(f: FiltrosDto): string {

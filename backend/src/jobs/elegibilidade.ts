@@ -131,14 +131,31 @@ export function aceitaQuemMoraEm(e: Elegibilidade, pais: string): boolean | null
  */
 function lugarNomeado(local: string): string | null {
   if (!local) return null;
-  const limpo = local
-    .replace(/\(.*?\)/g, '')
-    .replace(/\b(hq|office|headquarters|hybrid|onsite|on-site|remote|remoto)\b/gi, '')
+  const limpo = limparLugar(
+    local.replace(/\b(hq|office|headquarters|hybrid|onsite|on-site|remote|remoto)\b/gi, ''),
+  );
+  // Duas letras nao dizem nada; "US" e "UK" viriam pelo caminho do pais.
+  return limpo && limpo.length >= 3 ? limpo : null;
+}
+
+/**
+ * Tira a cauda que os ATS penduram no nome do lugar.
+ *
+ * **A ordem importa**, e errar nela deixa lixo: "LATAM [Remote]" com a
+ * palavra removida antes dos colchetes vira `LATAM []` (medido em 20/08).
+ * Por isso os delimitadores e o que esta dentro deles saem PRIMEIRO, e a
+ * pontuacao solta no fim por ultimo.
+ */
+function limparLugar(bruto: string): string | null {
+  const limpo = bruto
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/\[.*?\]/g, ' ')
+    .replace(/[[\]{}()]/g, ' ')
     .replace(/[,;|/]+/g, ' ')
     .replace(/\s+/g, ' ')
+    .replace(/^[\s,;|/-]+|[\s,;|/-]+$/g, '')
     .trim();
-  // Duas letras nao dizem nada; "US" e "UK" viriam pelo caminho do pais.
-  return limpo.length >= 3 ? limpo : null;
+  return limpo.length > 0 ? limpo : null;
 }
 
 function extrairPaises(local: string): string[] {
@@ -147,9 +164,7 @@ function extrairPaises(local: string): string[] {
   for (const m of local.matchAll(REMOTO_COM_PAIS)) {
     const bruto = (m[1] ?? m[2] ?? '').trim();
     if (!bruto) continue;
-    // Corta o que vem depois de virgula extra: "Canada; Remote, US" ja foi
-    // separado, mas "Canada (EST)" ainda tem cauda.
-    const limpo = bruto.replace(/\(.*?\)/g, '').trim();
+    const limpo = limparLugar(bruto);
     if (!limpo || limpo.length < 3) continue;
     if (NAO_E_PAIS.has(limpo.toLowerCase())) continue;
     if (!achados.some((a) => a.toLowerCase() === limpo.toLowerCase())) {

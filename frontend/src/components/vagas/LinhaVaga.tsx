@@ -113,6 +113,32 @@ export function LinhaVaga({ vaga }: { vaga: Vaga }) {
                 {vaga.local ?? vaga.paisIso?.toUpperCase()}
               </Chip>
             )}
+
+            {/* **De onde a vaga aceita candidato** — a pergunta que este
+                produto existe para responder, e que os boards escondem no
+                meio da descrição.
+
+                Só aparece quando há resposta. `paisesElegiveis: null` é o
+                caso comum e honesto: o anúncio não disse, e escrever
+                "não aceita" seria inventar (JOB-09). */}
+            {vaga.elegivelGlobal && (
+              <Chip
+                trecho={vaga.elegibilidadeTrecho}
+                rotuloTrecho="Where this eligibility came from"
+              >
+                🌍 Hires anywhere
+              </Chip>
+            )}
+            {!vaga.elegivelGlobal && vaga.paisesElegiveis?.length ? (
+              <Chip
+                trecho={vaga.elegibilidadeTrecho}
+                rotuloTrecho="Where this eligibility came from"
+              >
+                Hires from {vaga.paisesElegiveis.slice(0, 3).join(', ')}
+                {vaga.paisesElegiveis.length > 3 &&
+                  ` +${vaga.paisesElegiveis.length - 3}`}
+              </Chip>
+            ) : null}
           </ul>
         </div>
       </div>
