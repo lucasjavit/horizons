@@ -61,6 +61,14 @@ model JobProfile {
   /// todos. E o que impede N perfis virarem N buscas a cada 50 minutos.
   grupo     String
   ativo     Boolean  @default(true)
+  /// Quando este perfil foi buscado pela ultima vez.
+  ///
+  /// A fila da busca agendada gira por aqui, e nao por `updatedAt`: aquele so
+  /// muda quando a PESSOA edita o perfil, entao com mais grupos que o teto da
+  /// rodada os ultimos nunca seriam atendidos (medido pelo QA em 21/08 — 5 de
+  /// 15 grupos ficavam de fora para sempre). Nulo = nunca buscado, e vai na
+  /// frente.
+  buscadoEm DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

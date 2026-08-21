@@ -189,24 +189,7 @@ function Recursos() {
               ajudaDesligada="Desligado, a busca continua funcionando — passa a ser feita pela IA, que encontra mais vagas e mais rápido, com menos detalhe de cada uma."
               ajudaSemChave="Cadastre o token do Firecrawl acima para poder ligar. Sem ele a busca é feita pela IA."
             />
-            <Interruptor
-              id="busca-agendada"
-              titulo="Buscar vagas automaticamente"
-              ligado={data.buscaAgendadaAtiva}
-              // Precisa de algum motor: sem nenhum, a rodada gasta tempo para
-              // não achar nada.
-              temDependencia={
-                data.atsAtivo || data.firecrawlAtivo || data.temChaveDeIa
-              }
-              salvando={salvando}
-              onAlternar={() =>
-                void alternar(api.definirBuscaAgendada, data.buscaAgendadaAtiva)
-              }
-              ajudaLigada="A cada 50 minutos a busca roda sozinha para cada perfil salvo, e as vagas novas ficam esperando na aba Jobs. Vagas com mais de 15 dias são apagadas."
-              ajudaDesligada="Desligada, a busca só acontece quando alguém clica em Filter. Nada roda em segundo plano."
-              ajudaSemChave="Ligue o Firecrawl, o ATS ou cadastre uma chave de IA antes: sem motor, a busca automática não teria onde procurar."
-            />
-            <Interruptor
+                        <Interruptor
               id="busca-agendada"
               titulo="Buscar vagas automaticamente"
               ligado={data.buscaAgendadaAtiva}

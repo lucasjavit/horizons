@@ -214,3 +214,50 @@ de quando o desenho previa chamada síncrona.
 Ele dizia "Firecrawl busca → IA lê cada anúncio". Hoje o motor padrão é o
 **ATS** ([JOB-20](JOB-20-motor-de-ats.md)), que custa R$ 0 — e o job usa o
 `BuscaService`, que escolhe o motor sozinho conforme os interruptores.
+
+
+## O QA achou 5 bugs (21/08) — quatro corrigidos
+
+**1. GRAVE — perfil com `filtros: {}` gravou 484 vagas de uma vez**, e faria de
+novo a cada 50 min. Filtro vazio é entrada legítima (a pessoa pode salvar o
+perfil antes de escolher), então o teto tem de estar no código, não na
+esperança de que ninguém faça isso. `VAGAS_POR_GRUPO = 50`, com aviso no log:
+corte silencioso faz a lista parecer completa. Conferido: 485 achadas, 50
+gravadas.
+
+**2. GRAVE — 5 de 15 grupos nunca eram atendidos.** A fila ordenava por
+`updatedAt`, que só muda quando a **pessoa** edita o perfil. Quem salvou e não
+mexeu mais nunca receberia vaga, e o log dizia "buscando 10" sem dizer quem
+ficou fora. Campo novo `buscadoEm` (migration `20260821190000`), ordenado
+`asc nulls first`: a fila gira sozinha. Conferido com 13 grupos — rodada 1
+pegou g1–g10 e avisou "3 ficam para a próxima"; rodada 2 pegou g11, g12, g13.
+
+Marcado no `finally`: um grupo que quebra sempre não pode travar a fila.
+
+**3. MÉDIO — o interruptor aparecia duas vezes na tela**, com textos e
+dependências diferentes, mesmo `id` no DOM. Erro meu de edição. Corrigido.
+
+**4. BAIXO — a limpeza de vencidas não rodava com a flag desligada.**
+Desligar a busca é dizer "não procure mais", não "deixe o lixo acumular" — e
+quem desliga costuma ser quem quer parar de gastar. A limpeza saiu de dentro
+do `if`.
+
+**5. Registrado, não corrigido — a rodada de 10 grupos levou 7,2 min** (~43s
+por grupo). Cabe nos 50 min com folga, mas a margem é menor do que meu
+comentário sugeria. Com o Firecrawl ligado (mais lento) vale remedir.
+
+### O que o QA confirmou que NÃO quebrou
+
+Interruptor persiste; `{"ativa":"sim"}` dá 400; agrupamento correto (6 perfis
+com caixa, acento e ordem diferentes viraram 4 grupos); dedup por
+`(grupo, url)`; expiração (vencida apaga, viva sobrevive, nova com +15 dias);
+`this.rodando` recusa a segunda rodada; **isolamento de falha** — um grupo com
+`technologies` não-array explodiu e os outros 4 seguiram; filtros hostis
+(`<script>`, emoji, árabe) não quebraram nada.
+
+### Uma ressalva do QA que vale registrar
+
+Com o ATS sem resultado, a busca **cai sozinha na IA paga**. Aconteceu em 3
+grupos do teste dele, e só não gastou porque a chave OpenAI está sem crédito.
+Numa rodada automática isso é gasto sem supervisão — merece um teto ou um
+interruptor próprio, e está fora deste card.
