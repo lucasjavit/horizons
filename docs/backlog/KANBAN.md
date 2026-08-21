@@ -52,7 +52,6 @@ quando poderia entregar 27.725 de graça.
 
 | Card | Título | Tam. | Por que agora |
 | --- | --- | --- | --- |
-| [JOB-23](cards/JOB-23-filtro-moeda-forte.md) | Filtro "paga em moeda forte" | P | a tese do produto; 839 empresas já filtradas |
 | [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha | M | sem isso não há e-mail |
 | [JOB-24](cards/JOB-24-email-semanal.md) | **O e-mail semanal** | M | é o produto — e o que o ChatGPT não faz |
 | [JOB-25](cards/JOB-25-consegui-a-vaga.md) | Botão "consegui a vaga 🎉" | P | barato, e dá a métrica que mais importa |
@@ -75,6 +74,7 @@ _(vazio)_
 | --- | --- | --- |
 | [JOB-10](cards/JOB-10-consultas-dirigidas.md) | **A busca mira os ATS** — 8 URLs viram 8 vagas, contra 8 → 6 | 17/08/2026 |
 | [JOB-09](cards/JOB-09-vaga-so-afirma-o-que-cita.md) | **A vaga só afirma o que cita** — fim do "não contrata brasileiro" sem fonte | 17/08/2026 |
+| [JOB-31](cards/JOB-31-origem-da-empresa.md) | **Company origin** — empresa do seu país contratando para fora | 21/08/2026 |
 | [JOB-22](cards/JOB-22-paises-elegiveis.md) | **`paisesElegiveis[]`** — "worldwide" e "LATAM" deixam de ser o mesmo `true` | 20/08/2026 |
 | [JOB-30](cards/JOB-30-porte-da-empresa.md) | **Startup ou empresa grande** — filtro Company type; 7× mais vagas elegíveis | 19/08/2026 |
 | [JOB-21](cards/JOB-21-elegibilidade-por-campo.md) | **Elegibilidade por campo** — 95,6% sem IA, zero falso positivo | 19/08/2026 |
