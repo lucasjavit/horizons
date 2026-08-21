@@ -5,6 +5,7 @@ import {
   IsBoolean,
   IsIn,
   IsInt,
+  IsObject,
   IsOptional,
   IsString,
   MaxLength,
@@ -218,6 +219,104 @@ export class SalvarPerfilDto {
   @IsOptional()
   @IsBoolean()
   ativo?: boolean;
+}
+
+/**
+ * O que a tela manda ao clicar na estrela.
+ *
+ * E a vaga inteira, e nao so a URL: o retrato tem de ser gravado no momento em
+ * que ela salva, porque o anuncio sai do ar em semanas e e justamente o que
+ * ela vai querer reler. Buscar de novo depois nao funcionaria.
+ *
+ * O `ValidationPipe` global usa `forbidNonWhitelisted`, entao todo campo que a
+ * tela envia precisa estar aqui — inclusive os que so voltam para ela.
+ */
+export class SalvarVagaDto {
+  @IsString()
+  @MaxLength(300)
+  title!: string;
+
+  @IsString()
+  @MaxLength(200)
+  company!: string;
+
+  @IsString()
+  @MaxLength(1000)
+  url!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  local?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  fonte?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  regime?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(50)
+  @IsString({ each: true })
+  @MaxLength(60, { each: true })
+  skills?: string[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  area?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  anosExp?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @IsString({ each: true })
+  @MaxLength(80, { each: true })
+  benefits?: string[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  degree?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  logoUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(4)
+  paisIso?: string;
+
+  /**
+   * Salario, elegibilidade e os trechos de origem.
+   *
+   * Vem como objeto solto porque e o retrato — o que torna a afirmacao
+   * conferivel depois que a pagina sumir (JOB-09).
+   */
+  @IsOptional()
+  @IsObject()
+  snapshot?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  postedAt?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  foundAt?: string;
 }
 
 /** Resposta com o perfil. */

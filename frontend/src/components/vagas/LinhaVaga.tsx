@@ -20,7 +20,16 @@ import {
  * "a combinar": um rótulo de ausente ocupa o mesmo espaço do dado presente e
  * ensina o olho a parar no lugar errado. A linha simplesmente encolhe.
  */
-export function LinhaVaga({ vaga }: { vaga: Vaga }) {
+export function LinhaVaga({
+  vaga,
+  salva,
+  onAlternarSalva,
+}: {
+  vaga: Vaga
+  /** `undefined` quando a lista de salvas ainda não carregou. */
+  salva?: boolean
+  onAlternarSalva?: (vaga: Vaga, salvar: boolean) => void
+}) {
   const idade = formatarIdadeRelativa(vaga.postedAt)
   const experiencia = formatarExperiencia(vaga.anosExp)
   const salario = formatarFaixaSalarial(vaga)
@@ -36,6 +45,23 @@ export function LinhaVaga({ vaga }: { vaga: Vaga }) {
 
       <div className="flex gap-3">
         <Logo vaga={vaga} />
+
+        {onAlternarSalva && (
+          // A estrela fica ANTES do conteúdo na ordem do DOM, mas depois do
+          // logo na visual: quem navega por teclado alcança a ação sem
+          // atravessar a faixa de chips.
+          <button
+            type="button"
+            onClick={() => onAlternarSalva(vaga, !salva)}
+            aria-pressed={salva ?? false}
+            aria-label={salva ? `Remove ${vaga.title} from saved` : `Save ${vaga.title}`}
+            title={salva ? 'Saved — click to remove' : 'Save this job'}
+            className="order-last h-9 w-9 shrink-0 self-start rounded-md text-lg leading-none"
+            style={{ color: salva ? 'var(--accent-ink)' : 'var(--text-muted)' }}
+          >
+            <span aria-hidden>{salva ? '★' : '☆'}</span>
+          </button>
+        )}
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">

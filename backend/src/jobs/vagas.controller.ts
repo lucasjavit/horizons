@@ -1,7 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query } from '@nestjs/common';
 import { CurrentUser, type AuthUser } from '../auth/current-user';
 import { VagasService } from './vagas.service';
-import type { VagaDto } from './job.dto';
+import { SalvasService } from './salvas.service';
+import { SalvarVagaDto, type VagaDto } from './job.dto';
 
 /**
  * As vagas encontradas. Rota propria, e nao sob `/jobs/profile`, porque o
@@ -9,10 +10,42 @@ import type { VagaDto } from './job.dto';
  */
 @Controller('jobs')
 export class VagasController {
-  constructor(private readonly vagas: VagasService) {}
+  constructor(
+    private readonly vagas: VagasService,
+    private readonly salvas: SalvasService,
+  ) {}
 
   @Get()
   listar(@CurrentUser() user: AuthUser): Promise<VagaDto[]> {
     return this.vagas.listar(user.id);
+  }
+
+  // Rota especifica ANTES da generica com `:param` — senao a generica engole.
+  @Get('saved')
+  listarSalvas(@CurrentUser() user: AuthUser): Promise<VagaDto[]> {
+    return this.salvas.listar(user.id);
+  }
+
+  @Post('saved')
+  salvar(
+    @CurrentUser() user: AuthUser,
+    @Body() body: SalvarVagaDto,
+  ): Promise<VagaDto> {
+    return this.salvas.salvar(user.id, body);
+  }
+
+  /**
+   * Remove pela URL na query, e nao pelo id no caminho.
+   *
+   * A tela conhece a vaga pela URL — e o `id` que ela usa na lista de
+   * resultados. Exigir o id do registro obrigaria a busca-lo antes, e a
+   * estrela precisa desfazer num clique.
+   */
+  @Delete('saved')
+  async remover(
+    @CurrentUser() user: AuthUser,
+    @Query('url') url: string,
+  ): Promise<void> {
+    await this.salvas.remover(user.id, url);
   }
 }

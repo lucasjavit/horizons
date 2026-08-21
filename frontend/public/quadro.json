@@ -279,13 +279,13 @@
     {
       "id": "JOB-05",
       "titulo": "Salvar vaga",
-      "estado": "backlog",
-      "coluna": "backlog",
+      "estado": "feito (21/08/2026)",
+      "coluna": "feito",
       "tamanho": "P",
       "porque": "",
       "decisao": "",
       "bloqueio": "JOB-04 (a tela)",
-      "feitos": 0,
+      "feitos": 5,
       "total": 5
     },
     {

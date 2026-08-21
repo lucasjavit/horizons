@@ -30,7 +30,6 @@ destrava o resto.
 | [JOB-17](cards/JOB-17-catalogo-de-ats.md) | Catálogo de 1.953 empresas do look4job + API de ATS grátis | M | medido (18/08) — 199 vagas numa chamada, mas só 4 de 771 eram BR/LATAM |
 | [JOB-12](cards/JOB-12-url-de-vaga-nao-se-valida-por-status.md) | URL de vaga não se valida por status HTTP | P | medido (18/08) — id inventado dá 200, vaga real dá 403 |
 | [JOB-11](cards/JOB-11-listagem-dentro-do-ats.md) | Página de listagem dentro do ATS ainda passa | P | medido (17/08) — 2 de 7 vagas vieram do quadro da empresa, não de um anúncio |
-| [JOB-05](cards/JOB-05-salvar-vaga.md) | Salvar vaga (sai da regra dos 15 dias) | P | depende do JOB-04 |
 | [APP-01](cards/APP-01-cabecalho-vaza-no-celular.md) | O cabeçalho do App vaza a largura da tela no celular | P | achado ao verificar o JOB-04; atinge o site inteiro, medido em 390px |
 
 ## Pronto para fazer
@@ -62,6 +61,7 @@ _(vazio)_
 | --- | --- | --- |
 | [JOB-10](cards/JOB-10-consultas-dirigidas.md) | **A busca mira os ATS** — 8 URLs viram 8 vagas, contra 8 → 6 | 17/08/2026 |
 | [JOB-09](cards/JOB-09-vaga-so-afirma-o-que-cita.md) | **A vaga só afirma o que cita** — fim do "não contrata brasileiro" sem fonte | 17/08/2026 |
+| [JOB-05](cards/JOB-05-salvar-vaga.md) | **Salvar vaga** — estrela + painel "Saved jobs"; sai da regra dos 15 dias | 21/08/2026 |
 | [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | **A busca roda sozinha** — a cada 50 min, desligada por padrão | 21/08/2026 |
 | [JOB-31](cards/JOB-31-origem-da-empresa.md) | **Company origin** — empresa do seu país contratando para fora | 21/08/2026 |
 | [JOB-22](cards/JOB-22-paises-elegiveis.md) | **`paisesElegiveis[]`** — "worldwide" e "LATAM" deixam de ser o mesmo `true` | 20/08/2026 |

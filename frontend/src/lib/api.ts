@@ -239,6 +239,52 @@ export const api = {
     return data
   },
 
+  /** As vagas que a pessoa guardou. Ficam para sempre. */
+  async listarSalvas(signal?: AbortSignal): Promise<Vaga[]> {
+    const { data } = await http.get<Vaga[]>('/jobs/saved', { signal })
+    return data
+  },
+
+  /**
+   * Salva a vaga inteira, não só a URL.
+   *
+   * O anúncio sai do ar em semanas, e é justamente o que ela vai querer reler
+   * antes da entrevista — buscar de novo depois não funcionaria.
+   */
+  async salvarVaga(vaga: Vaga): Promise<Vaga> {
+    const { data } = await http.post<Vaga>('/jobs/saved', {
+      title: vaga.title,
+      company: vaga.company,
+      url: vaga.url,
+      local: vaga.local ?? undefined,
+      fonte: vaga.fonte ?? undefined,
+      regime: vaga.regime ?? undefined,
+      skills: vaga.skills,
+      area: vaga.area ?? undefined,
+      anosExp: vaga.anosExp ?? undefined,
+      benefits: vaga.benefits,
+      degree: vaga.degree ?? undefined,
+      logoUrl: vaga.logoUrl ?? undefined,
+      paisIso: vaga.paisIso ?? undefined,
+      snapshot: {
+        salaryMin: vaga.salaryMin,
+        salaryMax: vaga.salaryMax,
+        currency: vaga.currency,
+        salaryTrecho: vaga.salaryTrecho,
+        paisesElegiveis: vaga.paisesElegiveis,
+        elegivelGlobal: vaga.elegivelGlobal,
+        elegibilidadeTrecho: vaga.elegibilidadeTrecho,
+      },
+      postedAt: vaga.postedAt ?? undefined,
+      foundAt: vaga.foundAt,
+    })
+    return data
+  },
+
+  async removerSalva(url: string): Promise<void> {
+    await http.delete('/jobs/saved', { params: { url } })
+  },
+
   async setNote(lessonId: string, note: string): Promise<ProgressResult> {
     const { data } = await http.put<ProgressResult>(
       `/progress/${lessonId}/note`,

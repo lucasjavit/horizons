@@ -1,6 +1,6 @@
 # JOB-05 · Salvar vaga
 
-**Estado:** backlog
+**Estado:** feito (21/08/2026)
 **Tamanho:** P
 **Decisão do stakeholder:** "não vou querer as vagas no banco de dados, a não
 ser que o usuário decida guardar a vaga para ele."
@@ -27,11 +27,50 @@ recolhível, com contagem visível. É o mesmo gesto e pela mesma razão: dizer
 
 ## Critério de aceite
 
-- [ ] A estrela salva e desfaz, sem confirmação (é reversível e barato)
-- [ ] Vaga salva continua legível depois dos 15 dias
-- [ ] Salvar a mesma vaga duas vezes não duplica (`@@unique([userId, url])`)
-- [ ] O painel mostra a contagem
-- [ ] `aria-live` anuncia "vaga salva", sem toast que some
+- [x] A estrela salva e desfaz, sem confirmação
+- [x] Vaga salva continua legível depois dos 15 dias — tabela separada, sem `expiresAt`
+- [x] Salvar duas vezes não duplica — conferido: 2 POSTs, 1 registro
+- [x] O painel mostra a contagem
+- [x] `aria-live` anuncia "vaga salva", sem toast que some
+
+## Verificado (21/08)
+
+**Backend**, por `curl`:
+
+```
+POST   /jobs/saved          → grava com snapshot (salário, elegibilidade)
+POST   a mesma de novo      → 201, e continua 1 registro
+GET    /jobs/saved          → devolve com os campos do retrato
+DELETE /jobs/saved?url=…    → 200, restam 0
+DELETE de uma que não existe → 404
+```
+
+**Tela**, com Playwright:
+
+```
+25 estrelas na lista
+aria-pressed  false → true
+aria-label    "Save…" → "Remove…"
+aria-live     "Programmeur Backend DevOps senior saved."
+painel        aparece só depois de salvar, com a contagem
+zero erro de console
+```
+
+## Duas decisões que fogem do card
+
+**O painel ficou no topo, não à esquerda.** A tela de vagas já tem oito
+filtros na lateral; uma terceira coluna espremeria a lista, que é o conteúdo.
+Recolhido por padrão, com a contagem visível — o mesmo gesto do histórico da
+invoice, e pela mesma razão.
+
+**`upsert` em vez de erro no duplicado.** Clicar na estrela de uma vaga já
+salva é engano comum (a tela pode estar desatualizada), e responder 409
+transformaria um gesto inofensivo em erro na cara da pessoa. O retrato é
+atualizado: se ela salvou de novo, a versão que está vendo é a que vale.
+
+**A estrela some sem sessão.** `salvas === null` significa "não sei", e a
+estrela não aparece — melhor ausente que mostrando um estado que pode estar
+errado, ou falhando no clique.
 
 ## Depende de
 

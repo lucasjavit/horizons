@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { WARN_INK } from '../blocks/BlockRenderer'
 import { BarraFiltros } from './BarraFiltros'
 import { LinhaVaga } from './LinhaVaga'
+import { api, ehSemSessao } from '../../lib/api'
 import { buscarVagas } from '../../lib/busca-vagas'
 import { paraFiltrosApi } from './vaga-filtro'
 import type { Selecao } from './vaga-filtro'
@@ -38,6 +39,10 @@ export function ListaVagas() {
   const [erro, setErro] = useState<string | null>(null)
   const [total, setTotal] = useState<number | null>(null)
   const [pagina, setPagina] = useState(1)
+  /** URLs já salvas. `null` enquanto não se sabe — a estrela não chuta. */
+  const [salvas, setSalvas] = useState<Set<string> | null>(null)
+  const [avisoSalva, setAvisoSalva] = useState('')
+  const [mostrandoSalvas, setMostrandoSalvas] = useState(false)
   const abortar = useRef<AbortController | null>(null)
 
   const buscar = useCallback(async (selecao: Selecao) => {
@@ -77,6 +82,49 @@ export function ListaVagas() {
   // continua rodando e gastando crédito depois de a tela sumir.
   useEffect(() => () => abortar.current?.abort(), [])
 
+  // Quais já estão salvas. Sem sessão a lista simplesmente não existe, e a
+  // estrela some — em vez de aparecer e falhar no clique.
+  useEffect(() => {
+    const ctrl = new AbortController()
+    api
+      .listarSalvas(ctrl.signal)
+      .then((lista) => setSalvas(new Set(lista.map((v) => v.url))))
+      .catch((e) => {
+        if (!ctrl.signal.aborted && !ehSemSessao(e)) setSalvas(new Set())
+      })
+    return () => ctrl.abort()
+  }, [])
+
+  /**
+   * Salva ou remove, com atualização otimista.
+   *
+   * A estrela muda na hora e volta atrás se a chamada falhar. É o padrão que
+   * a aula concluída já usa: um clique reversível e barato não deve esperar
+   * a rede para dar retorno.
+   */
+  const alternarSalva = useCallback(async (vaga: Vaga, salvar: boolean) => {
+    setSalvas((atual) => {
+      const proximo = new Set(atual ?? [])
+      if (salvar) proximo.add(vaga.url)
+      else proximo.delete(vaga.url)
+      return proximo
+    })
+    setAvisoSalva(salvar ? `${vaga.title} saved.` : `${vaga.title} removed from saved.`)
+    try {
+      if (salvar) await api.salvarVaga(vaga)
+      else await api.removerSalva(vaga.url)
+    } catch {
+      // Rollback: a estrela não pode dizer "salvo" quando não salvou.
+      setSalvas((atual) => {
+        const proximo = new Set(atual ?? [])
+        if (salvar) proximo.delete(vaga.url)
+        else proximo.add(vaga.url)
+        return proximo
+      })
+      setAvisoSalva(`Could not ${salvar ? 'save' : 'remove'} ${vaga.title}.`)
+    }
+  }, [])
+
   const paginas = Math.max(1, Math.ceil(vagas.length / POR_PAGINA))
   // A página nunca passa do fim: se a lista encolheu enquanto a busca
   // streamava, `pagina` poderia apontar para o vazio.
@@ -88,6 +136,18 @@ export function ListaVagas() {
 
   return (
     <div className="flex flex-col gap-4">
+      {salvas && salvas.size > 0 && (
+        // As salvas ficam no TOPO, e não num painel lateral como o card
+        // previa: a tela de vagas já tem oito filtros à esquerda, e uma
+        // terceira coluna espremeria a lista — que é o conteúdo.
+        <PainelSalvas
+          quantas={salvas.size}
+          onAbrir={() => setMostrandoSalvas((v) => !v)}
+          aberto={mostrandoSalvas}
+          onAlternarSalva={alternarSalva}
+        />
+      )}
+
       <BarraFiltros
         onAplicar={(s) => void buscar(s)}
         buscando={estado === 'buscando'}
@@ -100,6 +160,13 @@ export function ListaVagas() {
           {erro}
         </p>
       )}
+
+      {/* `aria-live` em vez de toast: quem usa leitor de tela ouve a
+          confirmação, e quem não usa não precisa caçar uma mensagem que some
+          antes de ser lida. */}
+      <p aria-live="polite" className="sr-only">
+        {avisoSalva}
+      </p>
 
       {estado === 'buscando' && (
         // `role="status"` e não `alert`: é progresso, não urgência — o leitor
@@ -115,7 +182,14 @@ export function ListaVagas() {
         <>
           <ul className="flex flex-col border-t" style={{ borderColor: 'var(--border)' }}>
             {visiveis.map((vaga) => (
-              <LinhaVaga key={vaga.id} vaga={vaga} />
+              <LinhaVaga
+                key={vaga.id}
+                vaga={vaga}
+                salva={salvas?.has(vaga.url)}
+                // Sem a lista carregada não há estrela: melhor ausente que
+                // mostrando um estado que pode estar errado.
+                onAlternarSalva={salvas ? alternarSalva : undefined}
+              />
             ))}
           </ul>
 
@@ -141,6 +215,95 @@ export function ListaVagas() {
         </p>
       )}
     </div>
+  )
+}
+
+/**
+ * "Minhas vagas" — o que a pessoa guardou.
+ *
+ * Recolhido por padrão e com a contagem visível: é o mesmo gesto do histórico
+ * da invoice, e pela mesma razão — dizer "o que você guardou está aqui" sem
+ * exigir um clique às cegas nem roubar espaço da lista.
+ */
+function PainelSalvas({
+  quantas,
+  aberto,
+  onAbrir,
+  onAlternarSalva,
+}: {
+  quantas: number
+  aberto: boolean
+  onAbrir: () => void
+  onAlternarSalva: (vaga: Vaga, salvar: boolean) => void
+}) {
+  const [lista, setLista] = useState<Vaga[] | null>(null)
+
+  // Só busca quando abre: a contagem já vem do estado da lista principal, e
+  // carregar o conteúdo de um painel fechado é rede à toa.
+  useEffect(() => {
+    if (!aberto || lista) return
+    const ctrl = new AbortController()
+    api
+      .listarSalvas(ctrl.signal)
+      .then(setLista)
+      .catch(() => {
+        if (!ctrl.signal.aborted) setLista([])
+      })
+    return () => ctrl.abort()
+  }, [aberto, lista])
+
+  return (
+    <section
+      className="rounded-lg border"
+      style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
+    >
+      <button
+        type="button"
+        onClick={onAbrir}
+        aria-expanded={aberto}
+        className="flex min-h-11 w-full items-center justify-between gap-2 px-4 py-2.5 text-sm font-medium"
+        style={{ color: 'var(--text)' }}
+      >
+        <span>
+          Saved jobs{' '}
+          <span
+            className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold leading-5"
+            style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
+          >
+            {quantas}
+          </span>
+        </span>
+        <span aria-hidden style={{ color: 'var(--text-muted)' }}>
+          {aberto ? '▴' : '▾'}
+        </span>
+      </button>
+
+      {aberto && (
+        <div className="border-t px-4" style={{ borderColor: 'var(--border)' }}>
+          {lista === null ? (
+            <p className="py-4 text-sm" style={{ color: 'var(--text-muted)' }}>
+              Loading…
+            </p>
+          ) : (
+            <ul className="flex flex-col">
+              {lista.map((vaga) => (
+                <LinhaVaga
+                  key={vaga.id}
+                  vaga={vaga}
+                  salva
+                  onAlternarSalva={(v, s) => {
+                    onAlternarSalva(v, s)
+                    // Some da lista na hora: continuar exibindo uma vaga que a
+                    // pessoa acabou de remover parece que o clique não pegou.
+                    setLista((atual) => (atual ?? []).filter((x) => x.url !== v.url))
+                  }}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
   )
 }
 

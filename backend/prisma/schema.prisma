@@ -35,6 +35,7 @@ model User {
   progress    Progress[]
   tokens      ApiToken[]
   jobProfile  JobProfile?
+  savedJobs   SavedJob[]
 
   @@index([provider, providerId])
   @@map("users")
@@ -150,6 +151,49 @@ model FoundJob {
 }
 
 /// Token de API de um provedor de IA, cifrado em repouso.
+/// Vaga que a pessoa guardou. **Sai da regra dos 15 dias e fica para sempre.**
+///
+/// Decisao do stakeholder: "nao vou querer as vagas no banco de dados, a nao
+/// ser que o usuario decida guardar a vaga para ele". Por isso este modelo e
+/// separado de `FoundJob` — um e cache que expira, o outro e o que a pessoa
+/// escolheu manter.
+///
+/// **Guarda um RETRATO, nao uma referencia.** So a URL faria a lista virar
+/// colecao de 404: a vaga sai do ar em semanas, e e justamente o que ela vai
+/// querer reler depois. Com o snapshot, a pagina cair nao apaga a informacao,
+/// e a afirmacao da IA continua auditavel contra o texto que a gerou.
+model SavedJob {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  company   String
+  url       String
+  local     String?
+  fonte     String?
+  regime    String?
+  skills    String[]
+  area      String?
+  anosExp   Int?
+  benefits  String[]
+  degree    String?
+  logoUrl   String?
+  paisIso   String?
+  /// Salario, elegibilidade e os trechos de origem — o que torna a afirmacao
+  /// conferivel depois que o anuncio sumir.
+  snapshot  Json?
+  postedAt  DateTime?
+  /// Quando a vaga foi encontrada, nao quando foi salva: e o que a tela mostra
+  /// como idade do anuncio.
+  foundAt   DateTime
+  savedAt   DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Salvar duas vezes nao duplica.
+  @@unique([userId, url])
+  @@index([userId, savedAt])
+  @@map("saved_jobs")
+}
+
 model ApiToken {
   id        String      @id @default(uuid())
   userId    String
