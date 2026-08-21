@@ -4631,5 +4631,117 @@
 "slug": "mirage",
 "contrataEm": [],
 "porte": "grande"
+},
+{
+"nome": "CI&T",
+"ats": "lever",
+"slug": "ciandt",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "Zup Innovation",
+"ats": "greenhouse",
+"slug": "zupinnovation",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "Objective",
+"ats": "lever",
+"slug": "objective",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "QuintoAndar",
+"ats": "greenhouse",
+"slug": "quintoandar",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "Wildlife Studios",
+"ats": "greenhouse",
+"slug": "wildlifestudios",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "Gympass",
+"ats": "greenhouse",
+"slug": "gympass",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "VTEX",
+"ats": "greenhouse",
+"slug": "vtex",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "Stone",
+"ats": "greenhouse",
+"slug": "stone",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "Neon",
+"ats": "lever",
+"slug": "neon",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "Neon",
+"ats": "ashby",
+"slug": "neon",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "RD Station",
+"ats": "greenhouse",
+"slug": "rdstation",
+"contrataEm": [],
+"porte": "grande",
+"sede": "BR"
+},
+{
+"nome": "Bitso",
+"ats": "greenhouse",
+"slug": "bitso",
+"contrataEm": [],
+"porte": "grande",
+"sede": "MX"
+},
+{
+"nome": "Clara",
+"ats": "greenhouse",
+"slug": "clara",
+"contrataEm": [],
+"porte": "grande",
+"sede": "MX"
+},
+{
+"nome": "Belvo",
+"ats": "ashby",
+"slug": "belvo",
+"contrataEm": [],
+"porte": "grande",
+"sede": "MX"
 }
 ]

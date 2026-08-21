@@ -39,6 +39,14 @@ interface Empresa {
   /** Paises emergentes que a empresa alcanca. Vazio quando nao se sabe. */
   contrataEm: string[];
   porte?: Porte;
+  /**
+   * Pais-sede, quando conhecido.
+   *
+   * Mais confiavel que casar o nome da vaga contra `empresas-sede.yaml`: aqui
+   * a associacao e com o SLUG, que e unico. O casamento por nome continua
+   * como rede para empresa que nao esta no catalogo.
+   */
+  sede?: string;
 }
 
 /**
@@ -131,6 +139,9 @@ export class BuscaAtsService {
     this.log.log(`consultando ${alvo.length} empresas de ${todas.length}`);
 
     const vagas: VagaDto[] = [];
+    // A sede vem da EMPRESA que respondeu, e nao do texto da vaga: o slug e
+    // unico, o nome nao. Guardado por id da vaga enquanto elas chegam.
+    const sedePorVaga = new Map<string, string>();
     for (let i = 0; i < alvo.length; i += CONCORRENCIA) {
       const lote = alvo.slice(i, i + CONCORRENCIA);
       const prontas = await Promise.all(
@@ -144,13 +155,21 @@ export class BuscaAtsService {
           }),
         ),
       );
-      for (const lista of prontas) vagas.push(...lista);
+      for (let k = 0; k < prontas.length; k++) {
+        const daEmpresa = lote[k];
+        for (const vaga of prontas[k]) {
+          if (daEmpresa.sede) sedePorVaga.set(vaga.id, daEmpresa.sede);
+          vagas.push(vaga);
+        }
+      }
     }
 
     // As sedes so sao lidas quando o filtro existe — carregar a lista para
     // toda busca seria I/O a toa.
     const sedes = filtros.sede_no_pais ? await this.lerSedes() : null;
-    return this.peneirar(vagas, filtros, sedes).map((v) => comElegibilidade(v));
+    return this.peneirar(vagas, filtros, sedes, sedePorVaga).map((v) =>
+      comElegibilidade(v),
+    );
   }
 
   /**
@@ -160,6 +179,17 @@ export class BuscaAtsService {
    * isso as 60 primeiras seriam alfabeticas, o que nao quer dizer nada.
    */
   private escolher(todas: Empresa[], filtros: FiltrosDto): Empresa[] {
+    // **Filtro de sede escolhe as empresas, e nao so peneira as vagas.**
+    //
+    // Sem isto, pedir "empresa brasileira" consultava as 200 primeiras do
+    // arquivo e descartava quase tudo depois — a CI&T entrou no catalogo na
+    // posicao 512 e nunca era alcancada (medido em 21/08). Consultar quem
+    // nao pode passar no filtro e trabalho jogado fora.
+    if (filtros.sede_no_pais) {
+      const daquele = todas.filter((e) => e.sede === filtros.sede_no_pais);
+      if (daquele.length > 0) return daquele.slice(0, TETO_EMPRESAS);
+    }
+
     const querLatam = filtros.regiao === 'latam';
     const ordenadas = querLatam
       ? [...todas].sort((a, b) => b.contrataEm.length - a.contrataEm.length)
@@ -276,7 +306,12 @@ export class BuscaAtsService {
    * Os ATS devolvem o board inteiro — nao ha como pedir "so backend" na URL.
    * Filtrar aqui e barato: o request ja foi pago.
    */
-  private peneirar(vagas: VagaDto[], f: FiltrosDto, sedes: Sede[] | null): VagaDto[] {
+  private peneirar(
+    vagas: VagaDto[],
+    f: FiltrosDto,
+    sedes: Sede[] | null,
+    sedePorFonte: Map<string, string>,
+  ): VagaDto[] {
     const cargos = (f.job_titles ?? []).map((s) => s.toLowerCase());
     const techs = (f.technologies ?? []).map((s) => s.toLowerCase());
     const senioridade = f.seniority?.toLowerCase();
@@ -382,7 +417,10 @@ export class BuscaAtsService {
       // (21/08) foi deixar isso com quem le, em vez de prometer o que o dado
       // nao sustenta.
       if (sedes && f.sede_no_pais) {
-        const daqui = sedeDe(v.company, sedes) === f.sede_no_pais;
+        // O slug decide primeiro; o nome e a rede para quem veio de outro
+        // motor ou nao esta no catalogo.
+        const porSlug = sedePorFonte.get(v.id) ?? null;
+        const daqui = (porSlug ?? sedeDe(v.company, sedes)) === f.sede_no_pais;
         if (!daqui) return false;
         const paraCasa = TERMOS_DE_PAIS[f.sede_no_pais];
         // Vaga para o proprio pais da empresa nao serve: a Stefanini
