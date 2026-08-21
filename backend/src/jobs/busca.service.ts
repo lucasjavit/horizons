@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiProvider } from '@prisma/client';
 import { Firecrawl } from 'firecrawl';
 import { PrismaService } from '../prisma/prisma.service';
-import { BuscaIaService } from './busca-ia.service';
+import { BuscaIaService, FalhaDaIa } from './busca-ia.service';
 import { BuscaAtsService } from './busca-ats.service';
 import { RecursosService } from '../settings/recursos.service';
 import type { IaDaBusca } from '../settings/recursos.service';
@@ -356,7 +356,26 @@ export class BuscaService {
     consulta: string,
     qual: IaDaBusca,
   ): AsyncGenerator<EventoBusca> {
-    const vagas = await this.ia.buscar(filtros, consulta, qual);
+    let vagas: VagaDto[];
+    try {
+      vagas = await this.ia.buscar(filtros, consulta, qual);
+    } catch (e) {
+      // **"Nao consegui procurar" nao e "nao achei".**
+      //
+      // Em 21/08 a chave da OpenAI ficou sem credito, e a busca devolveu
+      // `total: 0` — indistinguivel de mercado vazio. Quem le conclui que nao
+      // existe vaga de Java na LATAM, e a conclusao e falsa.
+      if (e instanceof FalhaDaIa) {
+        yield {
+          tipo: 'erro',
+          mensagem: semCredito(e.detalhe)
+            ? `The ${e.provedor} key has no credits left. Add credits, or switch the AI in Settings.`
+            : `Search via ${e.provedor} failed. Try again in a moment.`,
+        };
+        return;
+      }
+      throw e;
+    }
     yield { tipo: 'inicio', total: vagas.length };
     for (const vaga of vagas) yield { tipo: 'vaga', vaga };
     yield { tipo: 'fim' };
@@ -521,6 +540,18 @@ function dominio(url: string): string | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * O erro do provedor e falta de credito?
+ *
+ * Vale a distincao porque a acao e outra: 429 por credito nao passa esperando,
+ * e mandar "tente de novo em instantes" faria a pessoa tentar para sempre.
+ */
+function semCredito(detalhe: string): boolean {
+  return /no credits|insufficient[_ ]quota|billing|exceeded your current quota/i.test(
+    detalhe,
+  );
 }
 
 function texto(v: unknown): string | null {

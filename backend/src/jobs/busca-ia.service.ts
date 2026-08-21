@@ -14,6 +14,21 @@ import type { FiltrosDto, VagaDto } from './job.dto';
 import type { IaDaBusca } from '../settings/recursos.service';
 
 /**
+ * Falha do provedor, distinta de "nao achei nada".
+ *
+ * Sem isto o `catch` devolvia `[]`, e a tela dizia "0 vagas" quando o que
+ * houve foi 429 por falta de credito (aconteceu em 21/08 com a chave da
+ * OpenAI). A pessoa conclui que nao existe vaga de Java na LATAM — o que e
+ * falso, e e a conclusao mais cara que este produto pode induzir.
+ */
+export class FalhaDaIa extends Error {
+  constructor(readonly provedor: string, readonly detalhe: string) {
+    super(`busca com ${provedor} falhou: ${detalhe}`);
+    this.name = 'FalhaDaIa';
+  }
+}
+
+/**
  * A busca de vagas pela IA, sem Firecrawl — com Claude ou com ChatGPT.
  *
  * **A IA nao sabe vaga de cabeca — ela precisa procurar.** Medido em
@@ -99,8 +114,9 @@ export class BuscaIaService {
       if (!bloco || bloco.type !== 'text') return [];
       return this.ler(bloco.text);
     } catch (e) {
-      this.log.error(`busca com Anthropic falhou: ${String(e).slice(0, 300)}`);
-      return [];
+      const detalhe = String(e).slice(0, 300);
+      this.log.error(`busca com Anthropic falhou: ${detalhe}`);
+      throw new FalhaDaIa('Claude', detalhe);
     }
   }
 
@@ -135,8 +151,9 @@ export class BuscaIaService {
       });
       return this.ler(resposta.output_text ?? '');
     } catch (e) {
-      this.log.error(`busca com OpenAI falhou: ${String(e).slice(0, 300)}`);
-      return [];
+      const detalhe = String(e).slice(0, 300);
+      this.log.error(`busca com OpenAI falhou: ${detalhe}`);
+      throw new FalhaDaIa('ChatGPT', detalhe);
     }
   }
 
