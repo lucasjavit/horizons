@@ -58,10 +58,14 @@ zero erro de console
 
 ## Duas decisões que fogem do card
 
-**O painel ficou no topo, não à esquerda.** A tela de vagas já tem oito
-filtros na lateral; uma terceira coluna espremeria a lista, que é o conteúdo.
-Recolhido por padrão, com a contagem visível — o mesmo gesto do histórico da
-invoice, e pela mesma razão.
+**As salvas ganharam ABA PRÓPRIA** (`/salvas`), a pedido do stakeholder em
+21/08 — e é melhor que o painel que eu tinha feito primeiro. São momentos de
+uso diferentes: buscar é explorar, reler o que se guardou é preparar a
+candidatura, e a segunda coisa merece a tela inteira sem oito filtros
+disputando espaço.
+
+Na tela de busca ficou só um link — *"3 saved jobs"* — que aparece quando há
+alguma. Diz que existem sem ocupar o lugar da lista.
 
 **`upsert` em vez de erro no duplicado.** Clicar na estrela de uma vaga já
 salva é engano comum (a tela pode estar desatualizada), e responder 409

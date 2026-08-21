@@ -25,6 +25,7 @@ import { LessonPage } from './pages/LessonPage'
 import { TrackPage } from './pages/TrackPage'
 import { TracksPage } from './pages/TracksPage'
 import { VagasPage } from './pages/VagasPage'
+import { SalvasPage } from './pages/SalvasPage'
 
 /**
  * Abas dos produtos sob a marca Horizons.
@@ -136,6 +137,7 @@ function Abas() {
   const abas = [
     { to: '/', label: 'Trilhas', ativa: pathname === '/' || pathname.startsWith('/t/') },
     { to: '/vagas', label: 'Jobs', ativa: pathname === '/vagas' },
+    { to: '/salvas', label: 'Saved', ativa: pathname === '/salvas' },
     { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
   ]
 
@@ -294,6 +296,7 @@ export default function App() {
           <Route path="/t/:trackSlug" element={<TrackPage />} />
           <Route path="/t/:trackSlug/:lessonSlug" element={<LessonPage />} />
           <Route path="/vagas" element={<VagasPage />} />
+          <Route path="/salvas" element={<SalvasPage />} />
           <Route path="/invoice" element={<InvoicePage />} />
           <Route path="/config" element={<SettingsPage />} />
           {/* QUADRO (temporario) — remover esta rota junto com a pagina.
