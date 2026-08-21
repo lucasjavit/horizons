@@ -276,6 +276,7 @@ export class BuscaAtsService {
         ? Date.now() - f.posted_within_days * 24 * 60 * 60 * 1000
         : null;
     const excluir = (f.exclude_keywords ?? []).map((s) => s.toLowerCase());
+    const regiao = f.regiao ? TERMOS_DE_REGIAO[f.regiao] : null;
 
     const vistos = new Set<string>();
     const porEmpresa = new Map<string, number>();
@@ -291,16 +292,17 @@ export class BuscaAtsService {
       if (cargos.length && !cargos.some((c) => casaCargo(titulo, c))) return false;
       if (senioridade && !casaSenioridade(titulo, senioridade)) return false;
 
-      // **Tecnologia NAO exclui.**
+      // **Tecnologia filtra pelo titulo.**
       //
-      // Os ATS so devolvem titulo e local — a descricao viria em outro
-      // request por vaga. E "Senior Backend Engineer" nao escreve "Java" no
-      // titulo mesmo pedindo Spring Boot na descricao. Medido em 19/08:
-      // filtrar por Java derrubava de 42 vagas para 5, jogando fora as
-      // certas junto com as erradas.
+      // Foi ordenacao ate 21/08, e estava errado: pedir Java devolvia 166
+      // vagas sem Java em 167, com o Java em cima. "Ordenar" nao e o que a
+      // pessoa pede ao marcar uma skill — ela pede para NAO ver o resto.
       //
-      // Entao a tecnologia so ORDENA: quem cita no titulo sobe. Vale mais
-      // mostrar 42 com as de Java em cima que 5 e esconder o resto.
+      // O preco esta medido e e real: os ATS so devolvem titulo e local, e
+      // "Senior Backend Engineer" nao escreve Java no titulo mesmo exigindo
+      // Spring Boot na descricao. Filtrar derruba de 42 para 5. Menos vagas
+      // certas vale mais que muitas erradas — e ler a descricao para resgatar
+      // as outras 37 e trabalho do motor de IA.
       //
       // MAS: sem nenhum filtro de cargo, "remoto" sozinho devolve o board
       // inteiro — 300 vagas de Account Executive e Accounting Manager. Se a
@@ -317,9 +319,11 @@ export class BuscaAtsService {
       //
       // Quando ela nomeia o cargo, `casaCargo` ja e mais restritivo que isto
       // e a checagem seria redundante.
-      if (cargos.length === 0) {
-        const ehTech = techs.some((t) => titulo.includes(t)) || AREA_TECH.test(titulo);
-        if (!ehTech) return false;
+      if (techs.length > 0 && !techs.some((tc) => titulo.includes(tc))) return false;
+      // Sem cargo E sem tecnologia, o filtro de area impede o board inteiro
+      // de entrar — "Account Executive" nao e vaga de tecnologia.
+      if (cargos.length === 0 && techs.length === 0 && !AREA_TECH.test(titulo)) {
+        return false;
       }
 
       // **Remoto exige saber de ONDE.**
@@ -352,6 +356,19 @@ export class BuscaAtsService {
       // pagam", que e outro filtro.
       if (f.salary_min != null && v.salaryMax != null && v.salaryMax < f.salary_min) {
         return false;
+      }
+
+      // **Regiao pedida.**
+      //
+      // No motor do Firecrawl a regiao entrava na CONSULTA, e aqui nao ha
+      // consulta — as APIs de ATS devolvem o board inteiro. Sem esta peneira,
+      // pedir LATAM devolvia 163 vagas nao-LATAM em 167 (medido em 21/08).
+      //
+      // Vaga que aceita de QUALQUER lugar entra em qualquer regiao: quem
+      // contrata worldwide contrata na LATAM tambem.
+      if (regiao) {
+        const onde = `${v.local ?? ''} ${(v.paisesElegiveis ?? []).join(' ')}`;
+        if (!v.elegivelGlobal && !regiao.test(onde)) return false;
       }
 
       // **Local pedido.** Cruzado com o que a vaga diz aceitar. "Worldwide"
@@ -387,13 +404,6 @@ export class BuscaAtsService {
     return [...aprovadas].sort((a, b) => {
       const qa = a.postedAt ? Date.parse(a.postedAt) : -Infinity;
       const qb = b.postedAt ? Date.parse(b.postedAt) : -Infinity;
-      // Mesmo dia: quem cita a tecnologia sobe.
-      const mesmoDia = Math.abs(qa - qb) < 24 * 60 * 60 * 1000;
-      if (mesmoDia && techs.length > 0) {
-        const pa = techs.some((t) => a.title.toLowerCase().includes(t)) ? 0 : 1;
-        const pb = techs.some((t) => b.title.toLowerCase().includes(t)) ? 0 : 1;
-        if (pa !== pb) return pa - pb;
-      }
       return qb - qa;
     });
   }
@@ -629,6 +639,18 @@ function casaSenioridade(titulo: string, nivel: string): boolean {
  * ficam de fora desta regra por `SEM_FRONTEIRA` em `elegibilidade.ts`.
  */
 const AMPLO = /\b(worldwide|global|anywhere|latam|latin america|south america|emea|apac|americas|europe|international)\b/i;
+
+/**
+ * O que conta como cada regiao no campo de local.
+ *
+ * Os anuncios escrevem a mesma coisa de varios jeitos — "LATAM", "Latin
+ * America", "Americas timezones", ou o nome do pais. Uma regiao so casa se
+ * algum desses aparecer.
+ */
+const TERMOS_DE_REGIAO: Record<string, RegExp> = {
+  latam:
+    /\b(latam|latin america|latin & south america|south america|americas|brazil|brasil|mexico|argentina|colombia|chile|peru|uruguay|costa rica)\b/i,
+};
 
 function remotoDeVerdade(v: VagaDto): boolean {
   const local = (v.local ?? '').trim();

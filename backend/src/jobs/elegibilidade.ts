@@ -25,8 +25,11 @@ import type { VagaDto } from './job.dto';
 /** O que se conseguiu concluir sobre quem pode se candidatar. */
 export interface Elegibilidade {
   /**
-   * Paises aceitos, em nome como o anuncio escreveu. `null` quando nao se
-   * sabe — nunca lista vazia, que a tela leria como "nao aceita ninguem".
+   * De onde a vaga aceita candidato, como o anuncio escreveu. Pode ser pais
+   * ("Brazil"), regiao ("LATAM") ou **cidade** ("Bangalore") — o anuncio nao
+   * distingue, e forcar um pais a partir da cidade seria inventar. `null`
+   * quando nao se sabe; nunca lista vazia, que a tela leria como "nao aceita
+   * ninguem".
    */
   paises: string[] | null;
   /** A vaga aceita candidato de qualquer lugar? */
