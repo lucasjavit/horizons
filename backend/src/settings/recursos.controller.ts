@@ -54,6 +54,12 @@ export class RecursosController {
     return this.recursos.definirAts(body.ativa);
   }
 
+  @Put('busca-agendada')
+  @AdminOnly()
+  definirBuscaAgendada(@Body() body: DefinirFlagDto): Promise<RecursosDto> {
+    return this.recursos.definirBuscaAgendada(body.ativa);
+  }
+
   @Put('ia-da-busca')
   @AdminOnly()
   definirIaDaBusca(@Body() body: DefinirIaDto): Promise<RecursosDto> {

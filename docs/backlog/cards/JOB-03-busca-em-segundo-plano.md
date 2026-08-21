@@ -1,6 +1,6 @@
 # JOB-03 · A busca roda sozinha a cada 50 minutos
 
-**Estado:** backlog
+**Estado:** feito (21/08/2026)
 **Tamanho:** M
 **Decisão do stakeholder (13/08/2026):** a busca roda a cada 50 min; as vagas
 ficam **15 dias** no sistema.
@@ -156,3 +156,61 @@ outro nome.
 "United States", "USA" e "Estados Unidos" para `us`. Vale validar contra uma
 lista fechada de ISO — código fora da lista vira `null`, não vira bandeira
 errada.
+
+
+---
+
+## Feito em 21/08/2026
+
+Roda a cada 50 min, **desligada por padrão**. O interruptor é
+*"Buscar vagas automaticamente"* em Configurações.
+
+### Verificado de ponta a ponta
+
+Perfil de teste criado no banco, rodada disparada à mão (sem esperar 50 min):
+
+```
+1 perfis em 1 grupos; buscando 1
+ATS devolveu 1 vagas
+grupo teste|backend|remoto: 1 vagas, 1 novas
+```
+
+- **Gravou com `expiresAt` em 15 dias** — conferido no banco: 05/09
+- **Dedup funciona**: segunda rodada gravou **0 novas**, sem duplicar
+- O perfil e a vaga de teste foram removidos depois
+
+### Decisões
+
+**Default desligado**, ao contrário do motor de ATS. Ele não gasta nada e
+liga sozinho; esta gasta **sem ninguém pedir**, e o que gasta sozinho só liga
+por decisão explícita — ligar sem querer produz conta no fim do mês que
+ninguém sabe de onde veio.
+
+**Depende de haver motor.** Sem ATS, Firecrawl ou chave de IA, o interruptor
+fica bloqueado: a rodada gastaria tempo para não achar nada.
+
+**Uma rodada por vez** (`this.rodando`). Uma busca lenta não pode acumular
+com a próxima.
+
+**Teto de 10 grupos por rodada.** Cada grupo leva ~1 minuto; sem teto, 50
+grupos levariam quase a hora inteira e a rodada seguinte começaria em cima
+da anterior.
+
+**Limpa antes de buscar.** Se a rodada falhar no meio, ao menos o lixo saiu.
+
+**`skipDuplicates` em vez de upsert.** A mesma vaga na rodada seguinte não
+sobrescreve a anterior: o `foundAt` original é o que diz "isto é novo desde
+sua última visita" ([JOB-26](JOB-26-historico-do-usuario.md)), e regravar
+apagaria essa informação.
+
+### Um aviso do card que não se aplica mais
+
+O KANBAN listava `timeout: 10_000` em `api.ts` como bloqueador. **Conferido:
+não afeta.** A busca é SSE por `fetch`, e o axios não a alcança — o aviso era
+de quando o desenho previa chamada síncrona.
+
+### O que o card previa e mudou
+
+Ele dizia "Firecrawl busca → IA lê cada anúncio". Hoje o motor padrão é o
+**ATS** ([JOB-20](JOB-20-motor-de-ats.md)), que custa R$ 0 — e o job usa o
+`BuscaService`, que escolhe o motor sozinho conforme os interruptores.

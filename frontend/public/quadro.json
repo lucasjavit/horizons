@@ -255,8 +255,8 @@
     {
       "id": "JOB-03",
       "titulo": "A busca roda sozinha a cada 50 minutos",
-      "estado": "backlog",
-      "coluna": "backlog",
+      "estado": "feito (21/08/2026)",
+      "coluna": "feito",
       "tamanho": "M",
       "porque": "É o motor da feature, e é o que resolve o problema que quase a matou.",
       "decisao": "",

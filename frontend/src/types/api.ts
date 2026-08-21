@@ -220,6 +220,8 @@ export interface Recursos {
   temChaveDeIa: boolean
   /** O motor de ATS está ligado. Não depende de chave — default é ligado. */
   atsAtivo: boolean
+  /** A busca roda sozinha a cada 50 min. Default `false` — gasta sem pedir. */
+  buscaAgendadaAtiva: boolean
   /** O Firecrawl está ligado e utilizável. Desligado = busca pela IA. */
   firecrawlAtivo: boolean
   /** Há ao menos um motor de busca utilizável. */

@@ -21,7 +21,8 @@ import type {
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3333/api',
   // 10s cobre as chamadas comuns. A busca de vagas nao passa por aqui: ela e
-  // SSE, e o EventSource nao tem timeout do axios.
+  // SSE por `fetch`, e o timeout do axios nao a alcanca — foi conferido em
+  // 21/08 antes de mexer, porque o card do JOB-03 supunha o contrario.
   timeout: 10_000,
 })
 
@@ -182,6 +183,14 @@ export const api = {
     const { data } = await http.put<Recursos>('/settings/recursos/ia-da-busca', {
       ia,
     })
+    return data
+  },
+
+  async definirBuscaAgendada(ativa: boolean): Promise<Recursos> {
+    const { data } = await http.put<Recursos>(
+      '/settings/recursos/busca-agendada',
+      { ativa },
+    )
     return data
   },
 

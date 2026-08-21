@@ -33,6 +33,15 @@ const IA_DA_BUSCA = 'jobs.iaDaBusca';
  */
 const ATS_ATIVO = 'jobs.ats';
 
+/**
+ * A busca que roda sozinha a cada 50 min.
+ *
+ * Default DESLIGADO, ao contrario do ATS: ela gasta sem ninguem pedir, e o
+ * que gasta sozinho so liga por decisao explicita. Ligar sem querer produz
+ * conta no fim do mes que ninguem sabe de onde veio.
+ */
+const BUSCA_AGENDADA = 'jobs.buscaAgendada';
+
 export interface RecursosDto {
   /** A leitura de curriculo esta ligada e funcionando. */
   leituraCvAtiva: boolean;
@@ -57,6 +66,8 @@ export interface RecursosDto {
    * linha no banco significa ligado, ao contrario das outras flags.
    */
   atsAtivo: boolean;
+  /** A busca automatica esta ligada. Default `false` — ela gasta sozinha. */
+  buscaAgendadaAtiva: boolean;
   /** A IA preferida para a busca, como o admin escolheu. */
   iaPreferida: IaDaBusca;
   /** A que vai ser usada de fato — cai na outra se a preferida nao tem chave. */
@@ -91,11 +102,12 @@ export class RecursosService {
       this.temChaveFirecrawl(),
     ]);
 
-    const [pref, temAnthropic, temOpenAi, ats] = await Promise.all([
+    const [pref, temAnthropic, temOpenAi, ats, agendada] = await Promise.all([
       this.iaPreferida(),
       this.temChaveDe(ApiProvider.ANTHROPIC),
       this.temChaveDe(ApiProvider.OPENAI),
       this.flagLigadaPorPadrao(ATS_ATIVO),
+      this.flag(BUSCA_AGENDADA),
     ]);
 
     // A chave manda: se ela sumiu depois de o recurso ter sido ligado, o
@@ -109,6 +121,9 @@ export class RecursosService {
       // Um motor OU o outro. Firecrawl desligado nao fecha a busca — passa a
       // vez para a IA.
       atsAtivo: ats,
+      // So faz sentido ligada se houver motor: sem nenhum, a rodada gasta
+      // tempo para nao achar nada.
+      buscaAgendadaAtiva: agendada && (ats || (flagFirecrawl && temFirecrawl) || temChave),
       // O ATS entra na conta: com ele ligado ha busca mesmo sem chave nenhuma
       // cadastrada, que e o ponto de ele nao depender de credencial.
       buscaPossivel: ats || (flagFirecrawl && temFirecrawl) || temChave,
@@ -127,6 +142,11 @@ export class RecursosService {
       );
     }
     await this.gravar(FIRECRAWL_ATIVO, ativa);
+    return this.obter();
+  }
+
+  async definirBuscaAgendada(ativa: boolean): Promise<RecursosDto> {
+    await this.gravar(BUSCA_AGENDADA, ativa);
     return this.obter();
   }
 

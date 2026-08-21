@@ -190,6 +190,38 @@ function Recursos() {
               ajudaSemChave="Cadastre o token do Firecrawl acima para poder ligar. Sem ele a busca é feita pela IA."
             />
             <Interruptor
+              id="busca-agendada"
+              titulo="Buscar vagas automaticamente"
+              ligado={data.buscaAgendadaAtiva}
+              // Precisa de algum motor: sem nenhum, a rodada gasta tempo para
+              // não achar nada.
+              temDependencia={
+                data.atsAtivo || data.firecrawlAtivo || data.temChaveDeIa
+              }
+              salvando={salvando}
+              onAlternar={() =>
+                void alternar(api.definirBuscaAgendada, data.buscaAgendadaAtiva)
+              }
+              ajudaLigada="A cada 50 minutos a busca roda sozinha para cada perfil salvo, e as vagas novas ficam esperando na aba Jobs. Vagas com mais de 15 dias são apagadas."
+              ajudaDesligada="Desligada, a busca só acontece quando alguém clica em Filter. Nada roda em segundo plano."
+              ajudaSemChave="Ligue o Firecrawl, o ATS ou cadastre uma chave de IA antes: sem motor, a busca automática não teria onde procurar."
+            />
+            <Interruptor
+              id="busca-agendada"
+              titulo="Buscar vagas automaticamente"
+              ligado={data.buscaAgendadaAtiva}
+              // Depende de haver algum motor: sem nenhum, a rodada gastaria
+              // tempo para não achar nada.
+              temDependencia={data.buscaPossivel}
+              salvando={salvando}
+              onAlternar={() =>
+                void alternar(api.definirBuscaAgendada, data.buscaAgendadaAtiva)
+              }
+              ajudaLigada="A cada 50 minutos o sistema busca vagas novas para quem tem perfil salvo, sem ninguém precisar clicar. As vagas ficam 15 dias e depois somem."
+              ajudaDesligada="Desligado, a busca só acontece quando alguém clica em Filter. É o que evita gasto sem pedido — por isso este interruptor nasce desligado."
+              ajudaSemChave="Precisa de um motor de busca ligado — o ATS, o Firecrawl ou uma chave de IA."
+            />
+            <Interruptor
               id="motor-ats"
               titulo="Buscar direto nos ATS"
               ligado={data.atsAtivo}

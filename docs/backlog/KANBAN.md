@@ -25,7 +25,6 @@ destrava o resto.
 | [JOB-02](cards/JOB-02-perfil-de-busca.md) | Perfil de busca e agrupamento | M | **quase** — perfil, filtros, agrupamento e tela prontos; falta ligar a leitura de CV (precisa de chave de IA) |
 | [JOB-07](cards/JOB-07-busca-ao-vivo.md) | **A busca ao vivo** — Filter dispara Firecrawl, vagas entram uma a uma | 15/08/2026 |
 | [JOB-06](cards/JOB-06-token-do-firecrawl.md) | Token do Firecrawl em Configurações | P | **feito** (15/08) — cadastro e interruptor; não busca nada ainda |
-| [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha a cada 50 minutos | M | ver **Antes de começar** abaixo: dois ajustes pendentes |
 | [JOB-04](cards/JOB-04-tela-de-vagas.md) | A tela das vagas encontradas | M | **em andamento** (15/08) — refeita no formato RemoteYeah: 8 dropdowns + linhas densas, formulario de perfil removido da pagina; falta fuso/overlap e "o que falta no perfil" |
 | [JOB-19](cards/JOB-19-produto-dois-lados.md) | **O produto tem dois lados** — alvo vira país emergente; empresa vira cliente | G | decidido (18/08) — 501 empresas contratam em emergentes, contra 118 só do Brasil |
 | [JOB-17](cards/JOB-17-catalogo-de-ats.md) | Catálogo de 1.953 empresas do look4job + API de ATS grátis | M | medido (18/08) — 199 vagas numa chamada, mas só 4 de 771 eram BR/LATAM |
@@ -74,6 +73,7 @@ _(vazio)_
 | --- | --- | --- |
 | [JOB-10](cards/JOB-10-consultas-dirigidas.md) | **A busca mira os ATS** — 8 URLs viram 8 vagas, contra 8 → 6 | 17/08/2026 |
 | [JOB-09](cards/JOB-09-vaga-so-afirma-o-que-cita.md) | **A vaga só afirma o que cita** — fim do "não contrata brasileiro" sem fonte | 17/08/2026 |
+| [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | **A busca roda sozinha** — a cada 50 min, desligada por padrão | 21/08/2026 |
 | [JOB-31](cards/JOB-31-origem-da-empresa.md) | **Company origin** — empresa do seu país contratando para fora | 21/08/2026 |
 | [JOB-22](cards/JOB-22-paises-elegiveis.md) | **`paisesElegiveis[]`** — "worldwide" e "LATAM" deixam de ser o mesmo `true` | 20/08/2026 |
 | [JOB-30](cards/JOB-30-porte-da-empresa.md) | **Startup ou empresa grande** — filtro Company type; 7× mais vagas elegíveis | 19/08/2026 |
