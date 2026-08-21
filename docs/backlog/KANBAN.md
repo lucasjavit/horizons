@@ -33,16 +33,6 @@ destrava o resto.
 | [JOB-05](cards/JOB-05-salvar-vaga.md) | Salvar vaga (sai da regra dos 15 dias) | P | depende do JOB-04 |
 | [APP-01](cards/APP-01-cabecalho-vaza-no-celular.md) | O cabeçalho do App vaza a largura da tela no celular | P | achado ao verificar o JOB-04; atinge o site inteiro, medido em 390px |
 
-### Antes de começar o JOB-03
-
-Dois detalhes que hoje matam a busca em silêncio, levantados pelo QA e ainda
-**não corrigidos**:
-
-- `frontend/src/lib/api.ts:14` tem `timeout: 10_000`. Uma busca medida leva
-  ~58s no melhor caso, então qualquer chamada síncrona morre antes de responder.
-- `frontend/nginx.conf` não tem `proxy_buffering off` — resposta em streaming
-  fica presa no buffer do nginx até terminar.
-
 ## Pronto para fazer
 
 **A ordem é de dependência, não de preferência.** O motor de ATS vem primeiro
@@ -51,7 +41,6 @@ quando poderia entregar 27.725 de graça.
 
 | Card | Título | Tam. | Por que agora |
 | --- | --- | --- | --- |
-| [JOB-03](cards/JOB-03-busca-em-segundo-plano.md) | A busca roda sozinha | M | sem isso não há e-mail |
 | [JOB-24](cards/JOB-24-email-semanal.md) | **O e-mail semanal** | M | é o produto — e o que o ChatGPT não faz |
 | [JOB-25](cards/JOB-25-consegui-a-vaga.md) | Botão "consegui a vaga 🎉" | P | barato, e dá a métrica que mais importa |
 | [JOB-26](cards/JOB-26-historico-do-usuario.md) | Histórico — não remostrar o que já viu | P | sem ele o e-mail repete e vira ruído |
