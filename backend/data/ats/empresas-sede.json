@@ -1,0 +1,382 @@
+[
+{
+"nome": "Stefanini",
+"sede": "BR",
+"variantes": [
+"stefanini",
+"stefanini latam",
+"stefanini group"
+]
+},
+{
+"nome": "CI&T",
+"sede": "BR",
+"variantes": [
+"ci&t",
+"ci and t",
+"cit",
+"ciandt"
+]
+},
+{
+"nome": "Encora",
+"sede": "BR",
+"variantes": [
+"encora",
+"encora inc",
+"coforge"
+]
+},
+{
+"nome": "Zup Innovation",
+"sede": "BR",
+"variantes": [
+"zup",
+"zup innovation"
+]
+},
+{
+"nome": "Ilegra",
+"sede": "BR",
+"variantes": [
+"ilegra"
+]
+},
+{
+"nome": "Sensedia",
+"sede": "BR",
+"variantes": [
+"sensedia"
+]
+},
+{
+"nome": "Compass UOL",
+"sede": "BR",
+"variantes": [
+"compass uol",
+"compass.uol",
+"compassuol"
+]
+},
+{
+"nome": "DBServer",
+"sede": "BR",
+"variantes": [
+"dbserver",
+"db server"
+]
+},
+{
+"nome": "Meta (Brasil)",
+"sede": "BR",
+"variantes": [
+"meta it",
+"meta tecnologia"
+]
+},
+{
+"nome": "Objective",
+"sede": "BR",
+"variantes": [
+"objective solutions"
+]
+},
+{
+"nome": "Venturus",
+"sede": "BR",
+"variantes": [
+"venturus"
+]
+},
+{
+"nome": "Sidi",
+"sede": "BR",
+"variantes": [
+"sidi",
+"instituto sidi"
+]
+},
+{
+"nome": "Nubank",
+"sede": "BR",
+"variantes": [
+"nubank",
+"nu",
+"nu holdings"
+]
+},
+{
+"nome": "QuintoAndar",
+"sede": "BR",
+"variantes": [
+"quintoandar",
+"quinto andar",
+"grupo quintoandar"
+]
+},
+{
+"nome": "iFood",
+"sede": "BR",
+"variantes": [
+"ifood"
+]
+},
+{
+"nome": "Wildlife Studios",
+"sede": "BR",
+"variantes": [
+"wildlife studios",
+"wildlife"
+]
+},
+{
+"nome": "Loft",
+"sede": "BR",
+"variantes": [
+"loft"
+]
+},
+{
+"nome": "Gympass",
+"sede": "BR",
+"variantes": [
+"gympass",
+"wellhub"
+]
+},
+{
+"nome": "Hotmart",
+"sede": "BR",
+"variantes": [
+"hotmart"
+]
+},
+{
+"nome": "VTEX",
+"sede": "BR",
+"variantes": [
+"vtex"
+]
+},
+{
+"nome": "Movile",
+"sede": "BR",
+"variantes": [
+"movile"
+]
+},
+{
+"nome": "PagSeguro",
+"sede": "BR",
+"variantes": [
+"pagseguro",
+"pagbank"
+]
+},
+{
+"nome": "Stone",
+"sede": "BR",
+"variantes": [
+"stone co",
+"stone pagamentos"
+]
+},
+{
+"nome": "Creditas",
+"sede": "BR",
+"variantes": [
+"creditas"
+]
+},
+{
+"nome": "Neon",
+"sede": "BR",
+"variantes": [
+"neon pagamentos",
+"banco neon"
+]
+},
+{
+"nome": "Olist",
+"sede": "BR",
+"variantes": [
+"olist"
+]
+},
+{
+"nome": "RD Station",
+"sede": "BR",
+"variantes": [
+"rd station",
+"resultados digitais"
+]
+},
+{
+"nome": "Take Blip",
+"sede": "BR",
+"variantes": [
+"blip",
+"take blip"
+]
+},
+{
+"nome": "Conta Azul",
+"sede": "BR",
+"variantes": [
+"conta azul",
+"contaazul"
+]
+},
+{
+"nome": "Totvs",
+"sede": "BR",
+"variantes": [
+"totvs"
+]
+},
+{
+"nome": "Sankhya",
+"sede": "BR",
+"variantes": [
+"sankhya"
+]
+},
+{
+"nome": "Fanatee",
+"sede": "BR",
+"variantes": [
+"fanatee"
+]
+},
+{
+"nome": "Globant",
+"sede": "AR",
+"variantes": [
+"globant"
+]
+},
+{
+"nome": "Mercado Libre",
+"sede": "AR",
+"variantes": [
+"mercado libre",
+"mercado livre",
+"meli"
+]
+},
+{
+"nome": "Ualá",
+"sede": "AR",
+"variantes": [
+"uala",
+"ualá"
+]
+},
+{
+"nome": "Rappi",
+"sede": "CO",
+"variantes": [
+"rappi"
+]
+},
+{
+"nome": "Kavak",
+"sede": "MX",
+"variantes": [
+"kavak"
+]
+},
+{
+"nome": "Bitso",
+"sede": "MX",
+"variantes": [
+"bitso"
+]
+},
+{
+"nome": "Clara",
+"sede": "MX",
+"variantes": [
+"clara"
+]
+},
+{
+"nome": "Belvo",
+"sede": "MX",
+"variantes": [
+"belvo"
+]
+},
+{
+"nome": "Infosys",
+"sede": "IN",
+"variantes": [
+"infosys"
+]
+},
+{
+"nome": "TCS",
+"sede": "IN",
+"variantes": [
+"tata consultancy",
+"tcs"
+]
+},
+{
+"nome": "Wipro",
+"sede": "IN",
+"variantes": [
+"wipro"
+]
+},
+{
+"nome": "Tech Mahindra",
+"sede": "IN",
+"variantes": [
+"tech mahindra"
+]
+},
+{
+"nome": "HCLTech",
+"sede": "IN",
+"variantes": [
+"hcltech",
+"hcl technologies"
+]
+},
+{
+"nome": "Zoho",
+"sede": "IN",
+"variantes": [
+"zoho"
+]
+},
+{
+"nome": "Freshworks",
+"sede": "IN",
+"variantes": [
+"freshworks"
+]
+},
+{
+"nome": "Turing",
+"sede": "IN",
+"variantes": [
+"turing"
+]
+},
+{
+"nome": "ShyftLabs",
+"sede": "IN",
+"variantes": [
+"shyftlabs"
+]
+},
+{
+"nome": "Brillio",
+"sede": "IN",
+"variantes": [
+"brillio"
+]
+}
+]

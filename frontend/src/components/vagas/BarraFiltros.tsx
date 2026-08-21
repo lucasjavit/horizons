@@ -22,6 +22,7 @@ const ROTULOS: ReadonlyArray<{ eixo: Eixo; rotulo: string }> = [
   { eixo: 'skills', rotulo: 'Skills' },
   { eixo: 'paises', rotulo: 'I want to work from' },
   { eixo: 'portes', rotulo: 'Company type' },
+  { eixo: 'origens', rotulo: 'Company origin' },
   { eixo: 'idades', rotulo: 'Posted within' },
   { eixo: 'salarios', rotulo: 'Minimum yearly salary' },
 ]

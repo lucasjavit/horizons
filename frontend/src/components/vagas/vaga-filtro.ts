@@ -34,6 +34,7 @@ export type Eixo =
   | 'skills'
   | 'paises'
   | 'portes'
+  | 'origens'
   | 'idades'
   | 'salarios'
 
@@ -45,6 +46,7 @@ export const SELECAO_VAZIA: Selecao = {
   skills: [],
   paises: [],
   portes: [],
+  origens: [],
   idades: [],
   salarios: [],
 }
@@ -128,6 +130,22 @@ export const CATALOGO: Record<Eixo, Opcao[]> = {
    * anúncio de 2021. Board de ATS não expira sozinho — a empresa precisa
    * arquivar, e muita não arquiva.
    */
+  /**
+   * Empresa do seu país contratando para fora.
+   *
+   * "Uma Stefanini que está oferecendo vagas para USA" — a empresa é daqui, o
+   * cliente é de lá. **Promete cliente estrangeiro, não moeda forte:**
+   * outsourcing brasileiro frequentemente contrata CLT ou PJ em real para
+   * alocar em cliente americano, e só a descrição separa os dois casos.
+   */
+  origens: [
+    { valor: 'BR', rotulo: 'Brazilian company, foreign client' },
+    { valor: 'AR', rotulo: 'Argentine company, foreign client' },
+    { valor: 'MX', rotulo: 'Mexican company, foreign client' },
+    { valor: 'CO', rotulo: 'Colombian company, foreign client' },
+    { valor: 'IN', rotulo: 'Indian company, foreign client' },
+  ],
+
   idades: [
     { valor: '7', rotulo: 'Last 7 days' },
     { valor: '20', rotulo: 'Last 20 days' },
@@ -179,6 +197,9 @@ export function paraFiltrosApi(s: Selecao): Record<string, unknown> {
 
   // Um só: os dois marcados é o mesmo que nenhum — a busca já cobre ambos.
   if (s.portes.length === 1) f.porte = s.portes[0]
+
+  // Um só: o backend cruza com uma sede por vez.
+  if (s.origens.length === 1) f.sede_no_pais = s.origens[0]
 
   // O MAIOR dos escolhidos: marcar "7 dias" e "30 dias" é pedir os 30 — quem
   // quer as duas janelas quer a maior, e a menor já está contida nela.

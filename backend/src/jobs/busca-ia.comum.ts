@@ -146,6 +146,15 @@ muitas duvidosas.`;
 
 
 /** O pedido em prosa, a partir dos mesmos filtros que a tela ja manda. */
+/** O nome do pais por extenso, para o prompt nao receber sigla crua. */
+const NOME_DO_PAIS: Record<string, string> = {
+  BR: 'Brasil',
+  AR: 'Argentina',
+  MX: 'Mexico',
+  CO: 'Colombia',
+  IN: 'India',
+};
+
 export function descreverPedido(f: FiltrosDto, consulta: string): string {
   const linhas = [`Procure vagas para esta consulta: ${consulta}`, ''];
   if (f.job_titles?.length) linhas.push(`Cargos: ${f.job_titles.join(', ')}`);
@@ -158,6 +167,17 @@ export function descreverPedido(f: FiltrosDto, consulta: string): string {
     );
   }
   if (f.locations?.length) linhas.push(`Locais: ${f.locations.join(', ')}`);
+  if (f.sede_no_pais) {
+    // Um filtro que so vale num motor mente quando o outro assume: o ATS nao
+    // achou nada com sede BR, a busca caiu para a IA, e voltaram Ever, CLEAR
+    // e Rentana — nenhuma brasileira (medido em 21/08).
+    linhas.push(
+      `IMPORTANTE: so vagas de empresa com SEDE em ${NOME_DO_PAIS[f.sede_no_pais] ?? f.sede_no_pais}, ` +
+        'oferecendo trabalho para cliente ou escritorio de OUTRO pais. ' +
+        'Ex.: Stefanini (brasileira) contratando para os EUA. ' +
+        'NAO inclua empresa estrangeira, nem vaga para o proprio pais da empresa.',
+    );
+  }
   if (f.remote === 'remoto') linhas.push('Somente remoto.');
   if (f.salary_min) linhas.push(`Salario minimo anual: ${f.salary_min}.`);
   return linhas.join('\n');

@@ -62,6 +62,13 @@ interface Empresa {
  */
 export type Porte = 'grande' | 'startup';
 
+/** Onde a empresa tem sede. Lista manual — ver `empresas-sede.yaml`. */
+interface Sede {
+  nome: string;
+  sede: string;
+  variantes: string[];
+}
+
 /**
  * Quantas empresas consultar ao mesmo tempo.
  *
@@ -93,6 +100,7 @@ export class BuscaAtsService {
   private readonly log = new Logger(BuscaAtsService.name);
   private catalogo: Empresa[] | null = null;
   private startups: Empresa[] | null = null;
+  private sedes: Sede[] | null = null;
 
   /**
    * O motor existe se o catalogo existe.
@@ -139,7 +147,10 @@ export class BuscaAtsService {
       for (const lista of prontas) vagas.push(...lista);
     }
 
-    return this.peneirar(vagas, filtros).map((v) => comElegibilidade(v));
+    // As sedes so sao lidas quando o filtro existe — carregar a lista para
+    // toda busca seria I/O a toa.
+    const sedes = filtros.sede_no_pais ? await this.lerSedes() : null;
+    return this.peneirar(vagas, filtros, sedes).map((v) => comElegibilidade(v));
   }
 
   /**
@@ -265,7 +276,7 @@ export class BuscaAtsService {
    * Os ATS devolvem o board inteiro — nao ha como pedir "so backend" na URL.
    * Filtrar aqui e barato: o request ja foi pago.
    */
-  private peneirar(vagas: VagaDto[], f: FiltrosDto): VagaDto[] {
+  private peneirar(vagas: VagaDto[], f: FiltrosDto, sedes: Sede[] | null): VagaDto[] {
     const cargos = (f.job_titles ?? []).map((s) => s.toLowerCase());
     const techs = (f.technologies ?? []).map((s) => s.toLowerCase());
     const senioridade = f.seniority?.toLowerCase();
@@ -358,6 +369,30 @@ export class BuscaAtsService {
         return false;
       }
 
+      // **Empresa do meu pais contratando para FORA.**
+      //
+      // Pedido em 21/08: "uma Stefanini que esta oferecendo vagas para USA".
+      // Duas condicoes: a empresa e do pais pedido, E a vaga nao e para o
+      // proprio pais dela.
+      //
+      // **O que este filtro promete e cliente estrangeiro, nao moeda forte.**
+      // Outsourcing brasileiro frequentemente contrata CLT ou PJ no Brasil,
+      // em real, para alocar em cliente americano — o trabalho vai para fora,
+      // o pagamento nao. So a descricao da vaga separa os dois, e a decisao
+      // (21/08) foi deixar isso com quem le, em vez de prometer o que o dado
+      // nao sustenta.
+      if (sedes && f.sede_no_pais) {
+        const daqui = sedeDe(v.company, sedes) === f.sede_no_pais;
+        if (!daqui) return false;
+        const paraCasa = TERMOS_DE_PAIS[f.sede_no_pais];
+        // Vaga para o proprio pais da empresa nao serve: a Stefanini
+        // contratando em Sao Paulo e emprego local.
+        if (paraCasa && !v.elegivelGlobal) {
+          const onde = `${v.local ?? ''} ${(v.paisesElegiveis ?? []).join(' ')}`;
+          if (paraCasa.test(onde)) return false;
+        }
+      }
+
       // **Regiao pedida.**
       //
       // No motor do Firecrawl a regiao entrava na CONSULTA, e aqui nao ha
@@ -429,6 +464,24 @@ export class BuscaAtsService {
     if (porte === 'grande') return grandes;
     if (porte === 'startup') return startups;
     return [...startups, ...grandes];
+  }
+
+  /** As sedes conhecidas, lidas do disco uma vez. */
+  private async lerSedes(): Promise<Sede[]> {
+    if (this.sedes) return this.sedes;
+    let lido: Sede[] = [];
+    try {
+      const cru = await readFile(
+        join(process.cwd(), 'data', 'ats', 'empresas-sede.json'),
+        'utf8',
+      );
+      lido = JSON.parse(cru) as Sede[];
+      this.log.log(`empresas-sede.json: ${lido.length} empresas`);
+    } catch (e) {
+      this.log.error(`nao consegui ler as sedes: ${String(e).slice(0, 140)}`);
+    }
+    this.sedes = lido;
+    return lido;
   }
 
   private async ler(arquivo: string, qual: 'catalogo' | 'startups'): Promise<Empresa[]> {
@@ -647,6 +700,74 @@ const AMPLO = /\b(worldwide|global|anywhere|latam|latin america|south america|em
  * America", "Americas timezones", ou o nome do pais. Uma regiao so casa se
  * algum desses aparecer.
  */
+/**
+ * Como cada pais aparece escrito num campo de local.
+ *
+ * Usado para descartar a vaga que a empresa abre PARA CASA: a Stefanini
+ * contratando em Sao Paulo e emprego local, e nao o que este filtro procura.
+ */
+const TERMOS_DE_PAIS: Record<string, RegExp> = {
+  // `\bsp\b` pega "Hybrid, SP" — a Fanatee escreve assim, e a sigla sozinha
+  // e o unico sinal de que a vaga e para Sao Paulo (medido em 21/08).
+  BR: /\b(brazil|brasil|sao paulo|são paulo|sp|rj|mg|rs|pr|sc|rio de janeiro|belo horizonte|curitiba|porto alegre|recife|campinas|florianopolis|florianópolis|remoto)\b/i,
+  AR: /\b(argentina|buenos aires|cordoba|córdoba)\b/i,
+  MX: /\b(mexico|méxico|guadalajara|monterrey)\b/i,
+  CO: /\b(colombia|bogota|bogotá|medellin|medellín)\b/i,
+  IN: /\b(india|bangalore|bengaluru|mumbai|delhi|hyderabad|pune|chennai|noida|gurgaon|mohali)\b/i,
+};
+
+/**
+ * De que pais e a empresa desta vaga, se estiver na lista.
+ *
+ * Casa por substring sem acento: os ATS escrevem "CI&T", "ci and t" e
+ * "ciandt" para a mesma empresa.
+ */
+function sedeDe(company: string, sedes: Sede[]): string | null {
+  const alvo = company
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+  for (const s of sedes) {
+    if (s.variantes.some((v) => casaNome(alvo, v))) return s.sede;
+  }
+  return null;
+}
+
+/**
+ * O nome da empresa casa com a variante?
+ *
+ * **Nao e substring.** A primeira versao comparava nos dois sentidos
+ * (`alvo.includes(v) || v.includes(alvo)`), e o segundo lado fazia
+ * `"zup innovation".includes("ion")` casar — a Ion, irlandesa, virou
+ * brasileira. E `"loft orbital"` casou com `loft` pela frente, marcando uma
+ * empresa de San Francisco como daqui (medido em 21/08).
+ *
+ * A regra: o nome tem de COMECAR com a variante, e o que vier depois precisa
+ * ser fim de palavra. "CI&T Brasil" casa com "ci&t"; "Loft Orbital" nao casa
+ * com "loft", porque "orbital" e outra palavra que muda a empresa.
+ */
+function casaNome(alvo: string, variante: string): boolean {
+  if (alvo === variante) return true;
+  if (!alvo.startsWith(variante)) return false;
+  // O caractere seguinte decide: "ci&t brasil" segue com espaco (mesma
+  // empresa, sufixo geografico); "loft orbital" tambem — por isso so aceita
+  // sufixo que seja pais ou forma societaria.
+  const resto = alvo.slice(variante.length).trim();
+  if (resto.length === 0) return true;
+  return SUFIXO_NEUTRO.test(resto);
+}
+
+/**
+ * Sufixos que nao mudam a identidade da empresa.
+ *
+ * "CI&T Brasil" e a CI&T; "Loft Orbital" nao e a Loft. A lista e curta de
+ * proposito — no lugar de adivinhar, prefere-se nao casar.
+ */
+const SUFIXO_NEUTRO =
+  /^(brasil|brazil|latam|inc\.?|ltda\.?|s\.?a\.?|llc|corp\.?|group|tecnologia|technologies|it|careers|jobs|global|do brasil)$/i;
+
 const TERMOS_DE_REGIAO: Record<string, RegExp> = {
   latam:
     /\b(latam|latin america|latin & south america|south america|americas|brazil|brasil|mexico|argentina|colombia|chile|peru|uruguay|costa rica)\b/i,

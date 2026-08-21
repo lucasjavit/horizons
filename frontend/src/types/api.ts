@@ -160,6 +160,8 @@ export interface Filtros {
   regiao?: Regiao
   /** `startup` ou `grande` — muda o catálogo consultado, não só a ordem. */
   porte?: Porte
+  /** Empresa deste país contratando para fora. Espelha `SEDES`. */
+  sede_no_pais?: string
   employment_types?: Contrato[]
   seniority?: Senioridade
   /** Unidade inteira da moeda, nunca centavo — o backend exige `@IsInt()`. */

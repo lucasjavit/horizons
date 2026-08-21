@@ -44,6 +44,14 @@ export const REGIOES = ['latam'] as const;
  */
 export const PORTES = ['grande', 'startup'] as const;
 
+/**
+ * Paises cuja sede o catalogo conhece (`empresas-sede.yaml`).
+ *
+ * Serve ao filtro "empresa do meu pais contratando para fora" — a Stefanini
+ * brasileira abrindo vaga para os EUA.
+ */
+export const SEDES = ['BR', 'AR', 'MX', 'CO', 'IN'] as const;
+
 /** Vinculos. */
 export const CONTRATOS = ['clt', 'pj', 'contractor', 'freelance'] as const;
 
@@ -106,6 +114,16 @@ export class FiltrosDto {
   @IsOptional()
   @IsIn(PORTES)
   porte?: string;
+
+  /**
+   * So vagas de empresa DESTE pais, e que sejam para trabalhar em outro.
+   *
+   * Promete cliente estrangeiro, nao moeda forte: outsourcing daqui contrata
+   * em real para alocar la fora, e so a descricao separa os dois casos.
+   */
+  @IsOptional()
+  @IsIn(SEDES)
+  sede_no_pais?: string;
 
   @IsOptional()
   @IsArray()
