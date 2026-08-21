@@ -101,6 +101,37 @@ consultável. **É aqui que o Firecrawl continua fazendo sentido** — e só aqu
 `enabled: false`, com o risco anotado no próprio arquivo: endpoint não
 documentado, rate limit por IP. O Horizons já decidiu evitar LinkedIn e Indeed.
 
+## `empresas-sede.yaml` — de onde a empresa É
+
+Responde uma pergunta que nenhum outro dado responde: **"esta é uma empresa
+do meu país oferecendo vaga para fora?"**. A Stefanini é brasileira e abre
+vaga para os EUA; o `contrataEm` não distingue isso de uma americana
+contratando no Brasil.
+
+50 empresas, 80 variantes de nome, marcadas à mão:
+
+| Sede | Empresas |
+| --- | ---: |
+| Brasil | 32 |
+| Índia | 10 |
+| México | 4 |
+| Argentina | 3 |
+| Colômbia | 1 |
+
+`variantes` casa por substring, sem acento e sem caixa, contra o `company` da
+vaga — os ATS escrevem o mesmo nome de vários jeitos ("CI&T", "ci and t",
+"ciandt"). Testado contra uma busca real: CI&T e Encora casaram; Lazer,
+Oscilar e Archy corretamente não.
+
+**A lista é parcial de propósito.** Cobrir as 919 do catálogo exigiria uma
+passada de IA; estas são as que aparecem no mercado brasileiro de tecnologia.
+Empresa ausente daqui não é excluída de nada — só não responde a esse filtro.
+
+**Uma ressalva de produto, não de dado:** empresa de outsourcing brasileira
+frequentemente contrata CLT ou PJ **no Brasil, em real**, para alocar em
+cliente americano. O trabalho é para fora; o pagamento não. Só a descrição da
+vaga responde isso, e o filtro sozinho não garante moeda forte.
+
 ## Duas armadilhas medidas
 
 **`hiring_countries` é da EMPRESA, não da vaga.** Em 10 empresas com "Brazil"
