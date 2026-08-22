@@ -1,5 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import { AxiosError } from 'axios'
 import { EmptyState, ErrorState, LoadingState } from '../components/States'
+import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { LinhaVaga } from '../components/vagas/LinhaVaga'
 import { api } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
@@ -27,21 +29,35 @@ export function SalvasPage() {
   /** Removidas nesta sessão, para a lista responder sem esperar a rede. */
   const [removidas, setRemovidas] = useState<Set<string>>(new Set())
   const [aviso, setAviso] = useState('')
+  /** Erro visível. `aria-live` sozinho só existe para leitor de tela. */
+  const [erroRemocao, setErroRemocao] = useState('')
+  /** Para onde o foco vai quando a linha some — senão cai no `<body>`. */
+  const tituloRef = useRef<HTMLHeadingElement>(null)
 
   const remover = useCallback(async (vaga: Vaga) => {
     setRemovidas((s) => new Set(s).add(vaga.url))
     setAviso(`${vaga.title} removed from saved.`)
+    setErroRemocao('')
     try {
       await api.removerSalva(vaga.url)
-    } catch {
-      // Rollback: a vaga volta se a remoção falhou. Sumir da tela e continuar
-      // no banco é o pior dos dois mundos — ela pensa que removeu.
+    } catch (e) {
+      // **404 não é falha: é a vaga já não estar lá.**
+      //
+      // Medido pelo QA em 21/08: com a mesma lista aberta em duas abas,
+      // remover na segunda devolvia 404 e a vaga REAPARECIA — o rollback
+      // desfazia uma remoção que o servidor já tinha feito. O estado final
+      // desejado (sumir) é o mesmo nos dois casos.
+      if (e instanceof AxiosError && e.response?.status === 404) return
+
+      // Qualquer outra falha volta atrás: sumir da tela e continuar no banco
+      // é o pior dos dois mundos.
       setRemovidas((s) => {
         const p = new Set(s)
         p.delete(vaga.url)
         return p
       })
       setAviso(`Could not remove ${vaga.title}.`)
+      setErroRemocao(`Could not remove "${vaga.title}". Check your connection and try again.`)
     }
   }, [])
 
@@ -49,7 +65,12 @@ export function SalvasPage() {
 
   return (
     <main id="conteudo" tabIndex={-1} className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>
+      <h1
+        ref={tituloRef}
+        tabIndex={-1}
+        className="text-2xl font-semibold"
+        style={{ color: 'var(--text)' }}
+      >
         Saved jobs
       </h1>
       <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -59,6 +80,18 @@ export function SalvasPage() {
       <p aria-live="polite" className="sr-only">
         {aviso}
       </p>
+
+      {erroRemocao && (
+        // Erro tem de ser VISÍVEL, não só anunciado: a convenção da casa é
+        // "borda + aria-invalid + texto, nunca só cor" — e nunca só sr-only.
+        <p
+          role="alert"
+          className="mt-4 rounded-md border px-3 py-2 text-sm"
+          style={{ borderColor: WARN_INK, color: WARN_INK }}
+        >
+          {erroRemocao}
+        </p>
+      )}
 
       {loading && <LoadingState label="Loading saved jobs…" />}
       {error && <ErrorState message={error} onRetry={reload} />}
@@ -81,7 +114,13 @@ export function SalvasPage() {
                 key={vaga.id}
                 vaga={vaga}
                 salva
-                onAlternarSalva={(v) => void remover(v)}
+                onAlternarSalva={(v) => {
+                  void remover(v)
+                  // O foco não pode cair no `<body>`: a linha some, e quem
+                  // navega por Tab recomeçaria do topo da página. Vai para o
+                  // título, que é o marco estável da tela.
+                  requestAnimationFrame(() => tituloRef.current?.focus())
+                }}
               />
             ))}
           </ul>

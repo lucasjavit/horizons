@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AxiosError } from 'axios'
 import { Link } from 'react-router-dom'
 import { WARN_INK } from '../blocks/BlockRenderer'
 import { BarraFiltros } from './BarraFiltros'
@@ -43,6 +44,7 @@ export function ListaVagas() {
   /** URLs já salvas. `null` enquanto não se sabe — a estrela não chuta. */
   const [salvas, setSalvas] = useState<Set<string> | null>(null)
   const [avisoSalva, setAvisoSalva] = useState('')
+  const [erroSalva, setErroSalva] = useState('')
   const abortar = useRef<AbortController | null>(null)
 
   const buscar = useCallback(async (selecao: Selecao) => {
@@ -110,10 +112,15 @@ export function ListaVagas() {
       return proximo
     })
     setAvisoSalva(salvar ? `${vaga.title} saved.` : `${vaga.title} removed from saved.`)
+    setErroSalva('')
     try {
       if (salvar) await api.salvarVaga(vaga)
       else await api.removerSalva(vaga.url)
-    } catch {
+    } catch (e) {
+      // 404 ao remover é a vaga já não estar salva — o estado da tela já é o
+      // desejado, e desfazer faria a estrela reacender sozinha.
+      if (!salvar && e instanceof AxiosError && e.response?.status === 404) return
+
       // Rollback: a estrela não pode dizer "salvo" quando não salvou.
       setSalvas((atual) => {
         const proximo = new Set(atual ?? [])
@@ -122,6 +129,9 @@ export function ListaVagas() {
         return proximo
       })
       setAvisoSalva(`Could not ${salvar ? 'save' : 'remove'} ${vaga.title}.`)
+      setErroSalva(
+        `Could not ${salvar ? 'save' : 'remove'} "${vaga.title}". Check your connection and try again.`,
+      )
     }
   }, [])
 
@@ -155,6 +165,12 @@ export function ListaVagas() {
       <p aria-live="polite" className="sr-only">
         {avisoSalva}
       </p>
+
+      {erroSalva && (
+        <p role="alert" className="text-sm" style={{ color: WARN_INK }}>
+          {erroSalva}
+        </p>
+      )}
 
       {salvas && salvas.size > 0 && (
         // Um caminho para a aba, e não a lista aqui: buscar e reler o que se

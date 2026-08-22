@@ -5,6 +5,8 @@ import {
   IsBoolean,
   IsIn,
   IsInt,
+  IsISO8601,
+  IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
@@ -233,14 +235,18 @@ export class SalvarPerfilDto {
  */
 export class SalvarVagaDto {
   @IsString()
+  @IsNotEmpty()
   @MaxLength(300)
   title!: string;
 
   @IsString()
+  @IsNotEmpty()
   @MaxLength(200)
   company!: string;
 
+  /** Chave da vaga. Vazia chegaria ao `deleteMany` e apagaria a lista toda. */
   @IsString()
+  @IsNotEmpty()
   @MaxLength(1000)
   url!: string;
 
@@ -308,15 +314,34 @@ export class SalvarVagaDto {
   @IsObject()
   snapshot?: Record<string, unknown>;
 
+  /**
+   * Datas em ISO 8601, e nao string livre.
+   *
+   * Medido pelo QA em 21/08: `"banana"` virava `Invalid Date` e estourava 500
+   * no Prisma, e `"01/08/2026"` era lido como 8 de JANEIRO (mes/dia dos EUA) e
+   * gravava calado — corrupcao silenciosa, que e pior que o erro.
+   */
   @IsOptional()
-  @IsString()
-  @MaxLength(40)
+  @IsISO8601()
   postedAt?: string;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(40)
+  @IsISO8601()
   foundAt?: string;
+}
+
+/**
+ * A query do `DELETE /jobs/saved`.
+ *
+ * DTO e nao `@Query('url')` solto porque o `ValidationPipe` so valida o que
+ * tem classe: sem isto, `url` ausente chegava como `undefined` ao Prisma e
+ * apagava a lista inteira (medido em 21/08).
+ */
+export class RemoverSalvaDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  url!: string;
 }
 
 /** Resposta com o perfil. */

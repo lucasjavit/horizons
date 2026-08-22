@@ -80,3 +80,57 @@ errado, ou falhando no clique.
 
 - JOB-04 (a tela)
 - PLT-02 (vaga salva precisa de dono)
+
+
+## O QA achou 5 bugs (21/08) — todos corrigidos
+
+**1. GRAVE — `DELETE /jobs/saved` sem `url` apagava a lista inteira**, com
+status 200. `@Query('url')` vinha `undefined`, e o Prisma **descarta a
+condição `undefined`** em vez de não casar com nada: virou
+`deleteMany({ userId })`. Perda permanente, porque vaga salva não tem
+`expiresAt` — é o arquivo da pessoa.
+
+É a mesma armadilha que o CLAUDE.md já registra para `where: { userId: null }`.
+Corrigido em dois lugares: `RemoverSalvaDto` com `@IsNotEmpty`, e uma checagem
+no serviço — quem o chama pode não ser o controller.
+
+**2. MÉDIO — 404 fazia a vaga removida VOLTAR.** Com a lista aberta em duas
+abas, remover na segunda devolvia 404 e o rollback desfazia uma remoção que o
+servidor já tinha feito. Agora 404 não é falha: é a vaga já não estar lá, e o
+estado da tela já é o desejado.
+
+**3. MÉDIO — falha de rede era invisível.** "Could not remove X" só existia na
+região `sr-only` de 1×1px. Contraria a convenção da casa — *erro sinalizado
+por borda + texto, nunca só cor*, e nunca só para leitor de tela.
+
+**4. MÉDIO — datas davam 500 em vez de 400.** `foundAt: "banana"` virava
+`Invalid Date` e estourava no Prisma. Pior: `"01/08/2026"` era lido como **8
+de janeiro** (mês/dia dos EUA) e gravava calado — corrupção silenciosa, que é
+pior que o erro. `@IsISO8601` nos dois campos.
+
+**5. A11Y — o foco caía no `<body>`** ao remover pelo teclado. Vai para o
+título, que é o marco estável da tela.
+
+### Conferido depois
+
+```
+DELETE sem url        400 (era 200 + apagava tudo) · as 3 intactas
+foundAt "banana"      400 (era 500)
+"01/08/2026"          400 (era 201, gravava em janeiro)
+title/url vazios      400 (era 201)
+404 em duas abas      a vaga NÃO volta
+falha de rede         rollback + erro visível na tela
+```
+
+### O que o QA confirmou que não quebrou
+
+5 cliques em rajada (estado final sempre bate com o banco); rollback do POST;
+vaga já salva reencontrada aparece com `aria-pressed=true`; 40 salvas com GET
+em 7ms e ordem correta; limites do DTO; `<script>`, emoji e RTL gravam como
+texto sem XSS; alvo de toque 36×36 e foco visível.
+
+### Uma pergunta aberta que ele deixou
+
+**A aba Saved não pagina** — 40 salvas viram 4.514px de rolagem, enquanto a
+busca pagina de 25 em 25. Foi escolha (a decisão foi "tela inteira, sem
+filtros") ou falta? Vira card se alguém acumular muitas.

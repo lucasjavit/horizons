@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Post, Query } from '@nestjs/common';
 import { CurrentUser, type AuthUser } from '../auth/current-user';
 import { VagasService } from './vagas.service';
 import { SalvasService } from './salvas.service';
-import { SalvarVagaDto, type VagaDto } from './job.dto';
+import { RemoverSalvaDto, SalvarVagaDto, type VagaDto } from './job.dto';
 
 /**
  * As vagas encontradas. Rota propria, e nao sob `/jobs/profile`, porque o
@@ -44,8 +44,8 @@ export class VagasController {
   @Delete('saved')
   async remover(
     @CurrentUser() user: AuthUser,
-    @Query('url') url: string,
+    @Query() query: RemoverSalvaDto,
   ): Promise<void> {
-    await this.salvas.remover(user.id, url);
+    await this.salvas.remover(user.id, query.url);
   }
 }

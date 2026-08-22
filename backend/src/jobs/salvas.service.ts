@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import type { SalvarVagaDto, VagaDto } from './job.dto';
@@ -111,6 +115,20 @@ export class SalvasService {
    * e a estrela precisa desfazer num clique.
    */
   async remover(userId: string, url: string): Promise<void> {
+    // **`undefined` no `where` do Prisma nao filtra nada — apaga tudo.**
+    //
+    // Medido pelo QA em 21/08: `DELETE /jobs/saved` sem o parametro devolvia
+    // 200 e zerava a lista inteira. O Prisma DESCARTA a condicao `undefined`
+    // em vez de nao casar com nada, e o resultado foi `deleteMany({ userId })`
+    // — perda permanente, porque vaga salva nao tem `expiresAt` e e o arquivo
+    // da pessoa.
+    //
+    // E o mesmo tipo de armadilha que o CLAUDE.md ja registra para
+    // `where: { userId: null }`. Vale a checagem aqui alem do DTO: quem chama
+    // este servico pode nao ser o controller.
+    if (typeof url !== 'string' || url.trim().length === 0) {
+      throw new BadRequestException('Informe a url da vaga a remover');
+    }
     const { count } = await this.prisma.savedJob.deleteMany({
       where: { userId, url },
     });
