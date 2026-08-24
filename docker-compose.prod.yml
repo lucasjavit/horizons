@@ -80,6 +80,16 @@ services:
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       # AUTH_DISABLED de proposito ausente: em producao o login e obrigatorio,
       # e o codigo so desliga quando a variavel vale exatamente 'true'.
+      #
+      # SMTP_HOST NAO usa `${VAR:?}` como os segredos acima: vazio e um estado
+      # valido e desejado — sem ele o e-mail semanal e registrado no log em vez
+      # de enviado, que e exatamente como o JOB-24 nasceu. Recusar o boot por
+      # falta dele impediria de subir uma aplicacao que funciona.
+      SMTP_HOST: ${SMTP_HOST:-}
+      # Base publica dos links de um clique do e-mail. Aqui SEM default de
+      # localhost: em producao um link para localhost e um link quebrado no
+      # e-mail de outra pessoa, entao o certo e cair no dominio publico.
+      APP_URL: ${APP_URL:-${CORS_ORIGIN}}
     expose:
       - '3333'
     depends_on:

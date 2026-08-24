@@ -60,6 +60,12 @@ export class RecursosController {
     return this.recursos.definirBuscaAgendada(body.ativa);
   }
 
+  @Put('email-semanal')
+  @AdminOnly()
+  definirEmailSemanal(@Body() body: DefinirFlagDto): Promise<RecursosDto> {
+    return this.recursos.definirEmailSemanal(body.ativa);
+  }
+
   @Put('ia-da-busca')
   @AdminOnly()
   definirIaDaBusca(@Body() body: DefinirIaDto): Promise<RecursosDto> {

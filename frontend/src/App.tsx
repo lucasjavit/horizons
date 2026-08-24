@@ -15,6 +15,7 @@ import { QuadroPage } from './pages/QuadroPage'
 // 'true' liga, para um valor esquecido como '0' ou 'false' nao abrir.
 const MOSTRA_QUADRO = import.meta.env.VITE_QUADRO === 'true'
 import { SettingsPage } from './pages/SettingsPage'
+import { EmailAcaoPage } from './pages/EmailAcaoPage'
 import { BotaoGoogle } from './components/BotaoGoogle'
 import { LoadingState } from './components/States'
 import { aoPerderSessao, perdeuSessao, tokenStore } from './lib/auth'
@@ -299,6 +300,13 @@ export default function App() {
           <Route path="/salvas" element={<SalvasPage />} />
           <Route path="/invoice" element={<InvoicePage />} />
           <Route path="/config" element={<SettingsPage />} />
+          {/* Os links do e-mail caem aqui, e funcionam SEM login (JOB-24 e
+              JOB-25): a credencial e o token na query, nao a sessao. */}
+          <Route path="/email/sair" element={<EmailAcaoPage acao="sair" />} />
+          <Route
+            path="/email/contratado"
+            element={<EmailAcaoPage acao="contratado" />}
+          />
           {/* QUADRO (temporario) — remover esta rota junto com a pagina.
               Sem a flag a rota nem e registrada, entao /quadro cai no 404:
               esconder so a aba deixaria a URL funcionando para quem soubesse

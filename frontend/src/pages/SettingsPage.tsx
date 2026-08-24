@@ -109,6 +109,7 @@ export function SettingsPage() {
       )}
 
       <Recursos />
+      <MetricasDoEmail />
     </main>
   )
 }
@@ -205,6 +206,30 @@ function Recursos() {
               ajudaSemChave="Precisa de um motor de busca ligado — o ATS, o Firecrawl ou uma chave de IA."
             />
             <Interruptor
+              id="email-semanal"
+              titulo="Enviar o e-mail semanal de vagas"
+              // O que a tela mostra e a ESCOLHA do admin, e nao `emailAtivo`.
+              // Sem SMTP `emailAtivo` e sempre false, e um interruptor que nao
+              // reflete o clique parece quebrado — a ausencia de entrega e
+              // dita no texto de ajuda, que e onde ela cabe.
+              ligado={data.emailLigado}
+              // Deixa ligar sem SMTP de proposito: assim a rodada monta o
+              // e-mail de verdade e o escreve no log, que e como se confere a
+              // feature enquanto nao ha provedor.
+              temDependencia
+              salvando={salvando}
+              onAlternar={() =>
+                void alternar(api.definirEmailSemanal, data.emailLigado)
+              }
+              ajudaLigada={
+                data.temProvedorDeEmail
+                  ? 'Cada pessoa com perfil salvo recebe, uma vez por semana, as vagas novas do grupo dela. Semana sem vaga nova não gera e-mail.'
+                  : 'Ligado, mas SEM SERVIDOR DE E-MAIL: a mensagem é montada e escrita no log da API, não enviada. Configure SMTP_HOST para passar a entregar.'
+              }
+              ajudaDesligada="Desligado, ninguém recebe e-mail de vagas. A busca continua rodando e as vagas continuam aparecendo na tela."
+              ajudaSemChave=""
+            />
+            <Interruptor
               id="motor-ats"
               titulo="Buscar direto nos ATS"
               ligado={data.atsAtivo}
@@ -244,6 +269,116 @@ function Recursos() {
         </div>
       )}
     </section>
+  )
+}
+
+/**
+ * A metrica que o JOB-25 existe para produzir.
+ *
+ * **"Quantas pessoas o Horizons empregou" e o numero que vende o produto para
+ * o proximo usuario** — por isso ele vem primeiro e grande, e o resto e
+ * contexto ao lado.
+ */
+function MetricasDoEmail() {
+  const { data, loading, error, reload } = useAsync(
+    (signal) => api.metricasEmail(signal),
+    [],
+  )
+  const [rodando, setRodando] = useState(false)
+  const [resultado, setResultado] = useState<string | null>(null)
+  const [erroRodada, setErroRodada] = useState<string | null>(null)
+
+  const rodar = async () => {
+    setErroRodada(null)
+    setResultado(null)
+    setRodando(true)
+    try {
+      const r = await api.rodarEmail()
+      setResultado(
+        `${r.considerados} considerados · ${r.enviados} enviados · ` +
+          `${r.pulados} pulados · ${r.falhas} falhas` +
+          (r.provedorEntrega ? '' : ` (provedor "${r.provedor}" nao entrega — so registrou no log)`),
+      )
+      reload()
+    } catch (e) {
+      setErroRodada(errorMessage(e))
+    } finally {
+      setRodando(false)
+    }
+  }
+
+  return (
+    <section
+      aria-labelledby="metricas-email-titulo"
+      className="mt-10 rounded-lg border p-5"
+      style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
+    >
+      <h2 id="metricas-email-titulo" className="text-lg font-semibold">
+        E-mail de vagas
+      </h2>
+
+      {loading && <LoadingState label="Carregando…" />}
+      {error && <ErrorState message={error} onRetry={reload} />}
+
+      {data && (
+        <>
+          <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
+            Pessoas contratadas
+          </p>
+          <p
+            className="text-4xl font-semibold"
+            style={{ color: 'var(--accent-ink)' }}
+          >
+            {data.contratados}
+          </p>
+          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
+            <Numero rotulo="Assinantes" valor={data.assinantes} />
+            <Numero rotulo="Recebendo" valor={data.ativos} />
+            <Numero rotulo="Uma por mês" valor={data.emCadenciaMensal} />
+            <Numero rotulo="Já receberam" valor={data.jaReceberamAlgum} />
+          </dl>
+
+          {!data.provedorEntrega && (
+            <p className="mt-4 text-sm" style={{ color: WARN_INK }}>
+              Sem servidor de e-mail configurado (provedor “{data.provedor}”):
+              as mensagens são montadas e escritas no log da API, não enviadas.
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => void rodar()}
+            disabled={rodando}
+            className="mt-5 rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+            style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
+          >
+            {rodando ? 'Rodando…' : 'Rodar agora'}
+          </button>
+
+          {resultado && (
+            <p className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+              {resultado}
+            </p>
+          )}
+          {erroRodada && (
+            <p role="alert" className="mt-3 text-sm" style={{ color: WARN_INK }}>
+              {erroRodada}
+            </p>
+          )}
+        </>
+      )}
+    </section>
+  )
+}
+
+function Numero({ rotulo, valor }: { rotulo: string; valor: number }) {
+  return (
+    <div>
+      <dt style={{ color: 'var(--text-muted)' }}>{rotulo}</dt>
+      <dd className="text-xl font-semibold" style={{ color: 'var(--text)' }}>
+        {valor}
+      </dd>
+    </div>
   )
 }
 

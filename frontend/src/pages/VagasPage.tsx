@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { BotaoGoogle } from '../components/BotaoGoogle'
 import { ListaVagas } from '../components/vagas/ListaVagas'
+import { AssinaturaEmail } from '../components/vagas/AssinaturaEmail'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { useSessao } from '../lib/sessao'
 import type { AuthUser } from '../types/api'
@@ -36,7 +37,14 @@ export function VagasPage() {
       {/* A rota exige sessão porque as vagas são de alguém: o backend não tem
           @Public() nem @SessaoOpcional() aqui. Mostrar a lista para quem não
           entrou daria 401 e um erro no lugar de uma explicação. */}
-      {sessao ? <ListaVagas /> : <ConviteParaEntrar />}
+      {sessao ? (
+        <>
+          <ListaVagas />
+          <AssinaturaEmail />
+        </>
+      ) : (
+        <ConviteParaEntrar />
+      )}
     </main>
   )
 }

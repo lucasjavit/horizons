@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProgressModule } from './progress/progress.module';
 import { JobsModule } from './jobs/jobs.module';
+import { EmailModule } from './email/email.module';
 import { SettingsModule } from './settings/settings.module';
 import { TracksModule } from './tracks/tracks.module';
 
@@ -21,6 +22,7 @@ import { TracksModule } from './tracks/tracks.module';
     ProgressModule,
     SettingsModule,
     JobsModule,
+    EmailModule,
   ],
 })
 export class AppModule {}

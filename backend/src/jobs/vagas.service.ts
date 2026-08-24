@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { FiltrosDto } from './job.dto';
 import type { VagaDto } from './job.dto';
 
-const CAMPOS = {
+export const CAMPOS = {
   id: true,
   title: true,
   company: true,
@@ -75,7 +75,7 @@ export class VagasService {
  * E o tipo de defeito que nao aparece em teste: a lista carrega, os cartoes sao
  * reais, e so quem conferir salario por salario percebe.
  */
-function passaNoFiltro(
+export function passaNoFiltro(
   vaga: { title: string; company: string; skills: string[]; postedAt: Date | null; snapshot: unknown },
   filtros: FiltrosDto,
 ): boolean {
@@ -115,7 +115,7 @@ function salarioAnual(snapshot: unknown): number | null {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : null;
 }
 
-function toDto(v: {
+export function toDto(v: {
   id: string;
   title: string;
   company: string;

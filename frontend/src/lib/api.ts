@@ -2,7 +2,9 @@ import axios, { AxiosError } from 'axios'
 import { perdeuSessao, tokenStore } from './auth'
 import type {
   ApiProvider,
+  Assinatura,
   AuthConfig,
+  Cadencia,
   AuthUser,
   ApiTokenInfo,
   JobProfile,
@@ -11,7 +13,9 @@ import type {
   CvLido,
   IaDaBusca,
   ProgressResult,
+  MetricasEmail,
   Recursos,
+  ResultadoRodada,
   SalvarPerfil,
   TrackDetail,
   TrackSummary,
@@ -204,6 +208,90 @@ export const api = {
       ativa,
     })
     return data
+  },
+
+  async definirEmailSemanal(ativa: boolean): Promise<Recursos> {
+    const { data } = await http.put<Recursos>(
+      '/settings/recursos/email-semanal',
+      { ativa },
+    )
+    return data
+  },
+
+  // ---- E-mail de vagas (JOB-24 / JOB-25) ----
+
+  async minhaAssinatura(signal?: AbortSignal): Promise<Assinatura> {
+    const { data } = await http.get<Assinatura>('/email/assinatura', { signal })
+    return data
+  },
+
+  async definirEmailAtivo(ativo: boolean): Promise<Assinatura> {
+    const { data } = await http.put<Assinatura>('/email/assinatura/ativo', {
+      ativo,
+    })
+    return data
+  },
+
+  async definirCadencia(cadencia: Cadencia): Promise<Assinatura> {
+    const { data } = await http.put<Assinatura>('/email/assinatura/cadencia', {
+      cadencia,
+    })
+    return data
+  },
+
+  /**
+   * Descadastrar pelo token do e-mail, **sem sessão**.
+   *
+   * Não passa pelo interceptor de 401 porque não depende de token de sessão:
+   * quem chega aqui veio de um link no e-mail e pode nunca ter entrado no site.
+   */
+  async sairDoEmail(t: string): Promise<Assinatura> {
+    const { data } = await http.post<Assinatura>('/email/sair', null, {
+      params: { t },
+    })
+    return data
+  },
+
+  async marcarContratado(t: string): Promise<Assinatura> {
+    const { data } = await http.post<Assinatura>('/email/contratado', null, {
+      params: { t },
+    })
+    return data
+  },
+
+  async voltarAProcurar(t: string): Promise<Assinatura> {
+    const { data } = await http.post<Assinatura>(
+      '/email/voltar-a-procurar',
+      null,
+      { params: { t } },
+    )
+    return data
+  },
+
+  async metricasEmail(signal?: AbortSignal): Promise<MetricasEmail> {
+    const { data } = await http.get<MetricasEmail>('/email/metricas', { signal })
+    return data
+  },
+
+  async rodarEmail(): Promise<ResultadoRodada> {
+    const { data } = await http.post<ResultadoRodada>('/email/rodar')
+    return data
+  },
+
+  /**
+   * A prévia do que sairia agora, ou `null` quando não há vaga nova.
+   *
+   * `null` é resposta legítima e significa **"esta semana não geraria
+   * e-mail"** — o critério do JOB-24. Vale aqui a mesma normalização do
+   * `getJobProfile`: o Nest devolve corpo vazio, que o axios entrega como `''`.
+   */
+  async previaEmail(
+    signal?: AbortSignal,
+  ): Promise<{ assunto: string; html: string; texto: string } | null> {
+    const { data } = await http.get<
+      { assunto: string; html: string; texto: string } | ''
+    >('/email/previa', { signal })
+    return data === '' || data === null ? null : data
   },
 
   /**

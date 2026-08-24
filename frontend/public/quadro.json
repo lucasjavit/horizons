@@ -495,8 +495,8 @@
     {
       "id": "JOB-24",
       "titulo": "O e-mail semanal — \"encontramos vagas para você\"",
-      "estado": "pronto para fazer",
-      "coluna": "pronto",
+      "estado": "feito (24/08/2026)",
+      "coluna": "feito",
       "tamanho": "M",
       "porque": "É o produto, na frase do stakeholder:",
       "decisao": "",
@@ -507,8 +507,8 @@
     {
       "id": "JOB-25",
       "titulo": "O botão \"consegui a vaga 🎉\"",
-      "estado": "pronto para fazer",
-      "coluna": "pronto",
+      "estado": "feito (24/08/2026)",
+      "coluna": "feito",
       "tamanho": "P",
       "porque": "",
       "decisao": "",

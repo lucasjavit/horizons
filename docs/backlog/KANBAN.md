@@ -40,8 +40,6 @@ quando poderia entregar 27.725 de graça.
 
 | Card | Título | Tam. | Por que agora |
 | --- | --- | --- | --- |
-| [JOB-24](cards/JOB-24-email-semanal.md) | **O e-mail semanal** | M | é o produto — e o que o ChatGPT não faz |
-| [JOB-25](cards/JOB-25-consegui-a-vaga.md) | Botão "consegui a vaga 🎉" | P | barato, e dá a métrica que mais importa |
 | [JOB-26](cards/JOB-26-historico-do-usuario.md) | Histórico — não remostrar o que já viu | P | sem ele o e-mail repete e vira ruído |
 | [JOB-05](cards/JOB-05-salvar-vaga.md) | Salvar vaga | P | independente de tudo acima |
 
@@ -59,6 +57,8 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [JOB-24](cards/JOB-24-email-semanal.md) | **O e-mail semanal** — só vagas novas, com trecho; não manda e-mail vazio. Provedor desligado: registra no log até haver SMTP | 24/08/2026 |
+| [JOB-25](cards/JOB-25-consegui-a-vaga.md) | **Botão "consegui a vaga 🎉"** — uma vaga por mês em vez de semanal, sem login; métrica de contratados para o admin | 24/08/2026 |
 | [JOB-10](cards/JOB-10-consultas-dirigidas.md) | **A busca mira os ATS** — 8 URLs viram 8 vagas, contra 8 → 6 | 17/08/2026 |
 | [JOB-09](cards/JOB-09-vaga-so-afirma-o-que-cita.md) | **A vaga só afirma o que cita** — fim do "não contrata brasileiro" sem fonte | 17/08/2026 |
 | [JOB-05](cards/JOB-05-salvar-vaga.md) | **Salvar vaga** — estrela + painel "Saved jobs"; sai da regra dos 15 dias | 21/08/2026 |

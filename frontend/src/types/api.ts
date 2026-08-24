@@ -222,6 +222,17 @@ export interface Recursos {
   atsAtivo: boolean
   /** A busca roda sozinha a cada 50 min. Default `false` — gasta sem pedir. */
   buscaAgendadaAtiva: boolean
+  /**
+   * O e-mail semanal está ligado E tem por onde sair.
+   *
+   * Sem SMTP isto é `false` mesmo com o interruptor ligado — a dependência
+   * manda sobre a flag, igual ao Firecrawl.
+   */
+  emailAtivo: boolean
+  /** O interruptor como o admin o deixou, independente de haver provedor. */
+  emailLigado: boolean
+  /** Há provedor de e-mail que entrega de verdade? Hoje não: falta SMTP. */
+  temProvedorDeEmail: boolean
   /** O Firecrawl está ligado e utilizável. Desligado = busca pela IA. */
   firecrawlAtivo: boolean
   /** Há ao menos um motor de busca utilizável. */
@@ -301,4 +312,44 @@ export interface Vaga {
   elegibilidadeTrecho: string | null
   postedAt: string | null
   foundAt: string
+}
+
+/** Com que frequência o e-mail de vagas chega. */
+export type Cadencia = 'semanal' | 'mensal'
+
+/**
+ * A assinatura do e-mail de vagas (JOB-24/JOB-25).
+ *
+ * **Sem o token de propósito.** Ele é a credencial dos links de um clique do
+ * e-mail; na tela a pessoa já tem sessão e nunca precisa dele.
+ */
+export interface Assinatura {
+  id: string
+  cadencia: string
+  ativo: boolean
+  ultimoEnvioEm: string | null
+  /** Quando clicou em "consegui a vaga". Nulo = nunca clicou. */
+  contratadoEm: string | null
+}
+
+/** O que uma rodada de envio fez. */
+export interface ResultadoRodada {
+  considerados: number
+  enviados: number
+  pulados: number
+  falhas: number
+  provedor: string
+  provedorEntrega: boolean
+}
+
+/** A métrica de contratados, para o admin (JOB-25). */
+export interface MetricasEmail {
+  assinantes: number
+  ativos: number
+  /** Quantas pessoas o Horizons empregou. */
+  contratados: number
+  emCadenciaMensal: number
+  jaReceberamAlgum: number
+  provedor: string
+  provedorEntrega: boolean
 }

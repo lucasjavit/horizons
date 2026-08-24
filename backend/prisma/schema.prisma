@@ -36,6 +36,7 @@ model User {
   tokens      ApiToken[]
   jobProfile  JobProfile?
   savedJobs   SavedJob[]
+  emailSub    EmailSubscription?
 
   @@index([provider, providerId])
   @@map("users")
@@ -150,7 +151,6 @@ model FoundJob {
   @@map("found_jobs")
 }
 
-/// Token de API de um provedor de IA, cifrado em repouso.
 /// Vaga que a pessoa guardou. **Sai da regra dos 15 dias e fica para sempre.**
 ///
 /// Decisao do stakeholder: "nao vou querer as vagas no banco de dados, a nao
@@ -194,6 +194,52 @@ model SavedJob {
   @@map("saved_jobs")
 }
 
+/// A assinatura do e-mail de vagas. Uma por usuario.
+///
+/// Guarda tres coisas que precisam sobreviver entre um envio e o proximo:
+/// **quando foi o ultimo** (para "so vagas novas desde entao"), **em que
+/// cadencia** (JOB-25: quem foi contratado passa a receber uma vez por mes) e
+/// o **token do link**, que e o que faz descadastrar e "consegui a vaga"
+/// funcionarem sem login.
+model EmailSubscription {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  /// "semanal" ou "mensal". String e nao enum: o tsconfig do front proibe
+  /// enum de TS, e o padrao da casa para poucos valores e uniao de string.
+  ///
+  /// `mensal` NAO e degradacao: e a cadencia de quem foi contratado e passou a
+  /// querer acompanhar o mercado sem procurar (JOB-25).
+  cadencia      String   @default("semanal")
+  /// Recebe e-mail? Descadastrar poe `false` e nao apaga a linha — apagar
+  /// perderia `ultimoEnvioEm` e o token, e quem volta atras receberia de uma
+  /// vez todas as vagas dos ultimos 15 dias.
+  ativo         Boolean  @default(true)
+  /// Segredo do link de um clique. Aleatorio de 32 bytes em hex.
+  ///
+  /// Unico e indexado porque e por ele que a rota publica encontra a pessoa —
+  /// sem sessao, sem e-mail na URL. E-mail na URL vazaria no Referer e deixaria
+  /// qualquer um descadastrar qualquer um so adivinhando o endereco.
+  token         String   @unique
+  /// Quando o ultimo e-mail SAIU de fato.
+  ///
+  /// So avanca quando houve envio com vaga dentro: semana sem vaga nova nao
+  /// mexe aqui, senao as vagas daquela semana nunca entrariam no proximo.
+  ultimoEnvioEm DateTime?
+  /// Quando a pessoa clicou em "consegui a vaga". Nulo = nunca clicou.
+  ///
+  /// Coluna propria, e nao deduzida de `cadencia == "mensal"`: e a metrica que
+  /// o produto existe para produzir (quantas pessoas ele empregou), e ela nao
+  /// pode sumir se a pessoa voltar a procurar depois.
+  contratadoEm  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ativo, cadencia])
+  @@map("email_subscriptions")
+}
+
+/// Token de API de um provedor de IA, cifrado em repouso.
 model ApiToken {
   id        String      @id @default(uuid())
   userId    String

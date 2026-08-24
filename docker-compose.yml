@@ -74,6 +74,12 @@ services:
       # localmente escreve AUTH_DISABLED=true no `.env`, que nao vai para o
       # git — assim a escolha e explicita e fica na maquina de quem a fez.
       AUTH_DISABLED: ${AUTH_DISABLED:-false}
+      # Servidor de e-mail do envio semanal (JOB-24). VAZIO e estado valido: o
+      # provedor entao REGISTRA NO LOG em vez de enviar, e a tela mostra isso.
+      SMTP_HOST: ${SMTP_HOST:-}
+      # Base publica, para os links de um clique do e-mail (descadastrar e
+      # "consegui a vaga"). Sem ela os links apontam para localhost:5173.
+      APP_URL: ${APP_URL:-http://localhost:5173}
     ports:
       - '3333:3333'
     depends_on:

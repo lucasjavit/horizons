@@ -1,6 +1,6 @@
 # JOB-25 · O botão "consegui a vaga 🎉"
 
-**Estado:** pronto para fazer
+**Estado:** feito (24/08/2026)
 **Tamanho:** P
 
 ## O problema
@@ -44,12 +44,54 @@ empregou.** É o que vende o produto para o próximo usuário.
 
 ## Critérios de aceite
 
-- [ ] O botão está em todo e-mail, e funciona sem login
-- [ ] Quem clica muda de cadência, e a tela diz isso claramente
-- [ ] Dá para desfazer — voltar a procurar é um clique
-- [ ] A métrica de contratados é visível para o admin
+- [x] O botão está em todo e-mail, e funciona sem login
+- [x] Quem clica muda de cadência, e a tela diz isso claramente
+- [x] Dá para desfazer — voltar a procurar é um clique
+- [x] A métrica de contratados é visível para o admin
 
 ## Decidido
 
 **Não baixar o preço de início.** Quem vai cancelar cancela, e desconto na saída
 raramente segura. Primeiro descobrir se o plano de invoice se sustenta sozinho.
+
+
+## Como ficou (24/08/2026)
+
+Mesmo mecanismo de token do JOB-24: `POST /api/email/contratado?t=…`, sem login.
+O botão está no rodapé de todo e-mail **e** no rodapé da aba Jobs — quem percebe
+que foi contratado costuma estar olhando vagas, não relendo e-mail antigo.
+
+**Não é downgrade, e o código diz isso.** Quem clica continua com `ativo = true`
+e passa a `cadencia = 'mensal'`; a tela fala do que a pessoa **passa a receber**
+("one hand-picked job a month, so you can keep an eye on the market without
+looking for it"), nunca do que perdeu.
+
+`contratadoEm` é **coluna própria**, e não deduzida de `cadencia == 'mensal'`:
+
+- é a métrica que o produto existe para produzir — quantas pessoas ele empregou;
+- **o desfazer não a apaga.** Voltar a procurar devolve a cadência semanal e
+  mantém `contratadoEm`: a pessoa voltou ao mercado, não deixou de ter sido
+  contratada um dia. Sem essa separação, a métrica sumiria justamente de quem
+  usou o produto até o fim.
+
+### O que foi medido
+
+| Verificação | Resultado |
+| --- | --- |
+| Marcar contratado sem login (`AUTH_DISABLED=false`) | 201, `cadencia: mensal`, `contratadoEm` preenchido, `ativo` continua `true` |
+| Métrica do admin | `contratados: 1`, `emCadenciaMensal: 1` |
+| Desfazer em um clique | volta a `semanal`, **`contratadoEm` preservado** |
+| Clicar duas vezes | `contratadoEm` mantém a **primeira** data |
+| `GET /api/email/metricas` sem sessão | 401 (é `@AdminOnly()`) |
+
+### Ressalvas
+
+- A **fase 2** (entrar no catálogo do lado B como profissional empregado) não foi
+  feita — o card já a marcava como fase 2.
+- A **invoice não sobe ao topo** para quem foi contratado. O card pede isso, e
+  ficou de fora: mexer na ordem das abas afeta todo mundo e merece decisão de
+  produto própria. A cadência e a métrica, que são o núcleo, estão prontas.
+- A página `/email/contratado` **não foi aberta num navegador**: o Chromium deste
+  ambiente não faz requisição de rede nenhuma (nem para `127.0.0.1`), então a
+  verificação da tela foi por compilação de tipos, presença das strings no bundle
+  de produção e teste das rotas por `curl`.

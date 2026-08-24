@@ -42,6 +42,16 @@ const ATS_ATIVO = 'jobs.ats';
  */
 const BUSCA_AGENDADA = 'jobs.buscaAgendada';
 
+/**
+ * O e-mail semanal de vagas (JOB-24).
+ *
+ * Default DESLIGADO, pelo mesmo motivo da busca agendada: ele age sozinho, e
+ * o que age sozinho so liga por decisao explicita. Aqui o estrago de ligar sem
+ * querer e pior que uma conta inesperada — e mandar e-mail nao solicitado, que
+ * queima o dominio e nao tem desfazer.
+ */
+const EMAIL_SEMANAL = 'jobs.emailSemanal';
+
 export interface RecursosDto {
   /** A leitura de curriculo esta ligada e funcionando. */
   leituraCvAtiva: boolean;
@@ -68,6 +78,19 @@ export interface RecursosDto {
   atsAtivo: boolean;
   /** A busca automatica esta ligada. Default `false` — ela gasta sozinha. */
   buscaAgendadaAtiva: boolean;
+  /**
+   * O e-mail semanal esta ligado E tem por onde sair.
+   *
+   * Mesma regra do Firecrawl: **a dependencia manda sobre a flag**. Sem
+   * provedor que entregue, isto e `false` mesmo com o interruptor ligado — a
+   * rodada montaria o e-mail e o jogaria no log, e mostrar "ligado" faria a
+   * tela prometer entrega que nao acontece.
+   */
+  emailAtivo: boolean;
+  /** O interruptor, como o admin o deixou — independente de haver provedor. */
+  emailLigado: boolean;
+  /** Ha provedor de e-mail que entrega de verdade? Hoje: nao, falta SMTP. */
+  temProvedorDeEmail: boolean;
   /** A IA preferida para a busca, como o admin escolheu. */
   iaPreferida: IaDaBusca;
   /** A que vai ser usada de fato — cai na outra se a preferida nao tem chave. */
@@ -102,13 +125,16 @@ export class RecursosService {
       this.temChaveFirecrawl(),
     ]);
 
-    const [pref, temAnthropic, temOpenAi, ats, agendada] = await Promise.all([
+    const [pref, temAnthropic, temOpenAi, ats, agendada, email] = await Promise.all([
       this.iaPreferida(),
       this.temChaveDe(ApiProvider.ANTHROPIC),
       this.temChaveDe(ApiProvider.OPENAI),
       this.flagLigadaPorPadrao(ATS_ATIVO),
       this.flag(BUSCA_AGENDADA),
+      this.flag(EMAIL_SEMANAL),
     ]);
+
+    const temProvedorDeEmail = temSmtp();
 
     // A chave manda: se ela sumiu depois de o recurso ter sido ligado, o
     // recurso esta desligado de fato, e a tela precisa dizer isso — nao
@@ -127,6 +153,11 @@ export class RecursosService {
       // O ATS entra na conta: com ele ligado ha busca mesmo sem chave nenhuma
       // cadastrada, que e o ponto de ele nao depender de credencial.
       buscaPossivel: ats || (flagFirecrawl && temFirecrawl) || temChave,
+      // A dependencia manda sobre a flag: sem SMTP nao ha entrega, e dizer
+      // "ligado" seria prometer o que nao acontece.
+      emailAtivo: email && temProvedorDeEmail,
+      emailLigado: email,
+      temProvedorDeEmail,
       iaPreferida: pref,
       iaEfetiva: escolherIa(pref, temAnthropic, temOpenAi),
       temChaveAnthropic: temAnthropic,
@@ -147,6 +178,22 @@ export class RecursosService {
 
   async definirBuscaAgendada(ativa: boolean): Promise<RecursosDto> {
     await this.gravar(BUSCA_AGENDADA, ativa);
+    return this.obter();
+  }
+
+  /**
+   * Liga o e-mail semanal.
+   *
+   * **Deixa ligar sem SMTP, de proposito** — ao contrario do Firecrawl. Aqui a
+   * flag ligada sem provedor tem um uso real: a rodada monta o e-mail de
+   * verdade e o escreve no log, que e como se confere a feature enquanto o
+   * SMTP nao existe. Bloquear deixaria o card sem nenhuma forma de verificacao.
+   *
+   * O que NAO pode e a tela dizer que esta entregando: por isso `emailAtivo`
+   * continua `false` sem provedor, e `emailLigado` mostra a escolha do admin.
+   */
+  async definirEmailSemanal(ativa: boolean): Promise<RecursosDto> {
+    await this.gravar(EMAIL_SEMANAL, ativa);
     return this.obter();
   }
 
@@ -270,4 +317,20 @@ function escolherIa(
   }
   if (temOpenAi) return 'openai';
   return temAnthropic ? 'anthropic' : null;
+}
+
+/**
+ * Ha SMTP configurado?
+ *
+ * Uma funcao e nao um servico injetado para evitar dependencia circular:
+ * `EmailModule` importa `SettingsModule` para ler as flags, entao
+ * `RecursosService` nao pode depender do provedor de e-mail. O que ele precisa
+ * saber e so isto — se existe credencial —, e isso esta no ambiente.
+ *
+ * O stakeholder nao tem SMTP e nao vai configurar agora (24/08), entao isto e
+ * `false` hoje e o e-mail fica no log. Preencher `SMTP_HOST` e o unico gesto
+ * que muda esta resposta.
+ */
+function temSmtp(): boolean {
+  return Boolean(process.env.SMTP_HOST && process.env.SMTP_HOST.trim());
 }
