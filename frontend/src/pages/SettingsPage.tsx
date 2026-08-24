@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
+import { Recolhivel } from '../components/Recolhivel'
 import { ErrorState, LoadingState } from '../components/States'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { api, errorMessage } from '../lib/api'
@@ -349,12 +350,16 @@ function MetricasDoEmail() {
             <Numero rotulo="Telegram recebendo" valor={data.telegramAtivos} />
           </dl>
 
-          {!data.telegramLigado && (
-            <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
-              Canal do Telegram desligado (sem <code>TELEGRAM_BOT_TOKEN</code>):
-              a opção não aparece na aba Jobs e nada é enviado por lá.
-            </p>
-          )}
+          {/* **Sempre visível, recolhido.**
+              Esconder quando "está ligado" pressupõe que ligado é o mesmo que
+              funcionando — e não é: o token daqui está presente e devolve 401.
+              Como referência, ele também serve para trocar o bot, refazer o
+              túnel ou entender por que o envio falha. O título muda conforme o
+              estado; o conteúdo fica. */}
+          <TutorialTelegram
+            ligado={data.telegramLigado}
+            vinculados={data.telegramVinculados}
+          />
 
           {!data.provedorEntrega && (
             <p className="mt-4 text-sm" style={{ color: WARN_INK }}>
@@ -526,6 +531,142 @@ function EscolhaDeIa({
         </p>
       )}
     </fieldset>
+  )
+}
+
+/**
+ * Como ligar o Telegram, passo a passo.
+ *
+ * Dizer "desligado, falta o `TELEGRAM_BOT_TOKEN`" nomeia o obstáculo sem
+ * remover nenhum: quem lê ainda precisa descobrir onde se cria um bot, o que é
+ * um webhook e por que a URL tem de ser pública. São quatro passos de dois
+ * minutos, e escrevê-los aqui é a diferença entre um aviso e uma instrução.
+ *
+ * Recolhido por padrão porque a maioria das visitas a esta tela não é para
+ * configurar o Telegram — mas o título já diz que a resposta está aqui.
+ */
+function TutorialTelegram({
+  ligado,
+  vinculados,
+}: {
+  ligado: boolean
+  vinculados: number
+}) {
+  const [aberto, setAberto] = useState(false)
+  const id = useId()
+
+  const passo = 'mt-3 text-sm leading-relaxed'
+  const codigo =
+    'rounded px-1.5 py-0.5 font-mono text-xs'
+
+  return (
+    <div
+      className="mt-4 rounded-lg border"
+      style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+    >
+      <button
+        type="button"
+        onClick={() => setAberto((a) => !a)}
+        aria-expanded={aberto}
+        aria-controls={id}
+        className="flex min-h-11 w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-sm font-medium"
+        style={{ color: 'var(--text)' }}
+      >
+        <span>
+          {!ligado
+            ? 'Telegram desligado — como ligar'
+            : vinculados === 0
+              ? 'Telegram configurado — ninguém conectado ainda'
+              : 'Telegram — como configurar ou trocar o bot'}
+        </span>
+        <span aria-hidden style={{ color: 'var(--text-muted)' }}>
+          {aberto ? '▴' : '▾'}
+        </span>
+      </button>
+
+      <Recolhivel aberto={aberto} id={id}>
+        <div className="border-t px-4 pb-4" style={{ borderColor: 'var(--border)' }}>
+          <p className={passo} style={{ color: 'var(--text-muted)' }}>
+            {!ligado
+              ? 'Enquanto está desligado, a opção não aparece na aba Jobs e nada é enviado por lá. São quatro passos, e nenhum custa dinheiro.'
+              : 'Token presente não é token que funciona: se o log da API mostrar 401 ao enviar, ele é inválido — refaça o passo 1. Os passos também servem para trocar o bot ou refazer o túnel.'}
+          </p>
+
+          <ol className="mt-3 flex flex-col gap-3">
+            <li className="text-sm leading-relaxed">
+              <strong>1. Crie o bot.</strong> No Telegram, fale com{' '}
+              <a
+                href="https://t.me/BotFather"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2"
+                style={{ color: 'var(--brand)' }}
+              >
+                @BotFather
+              </a>{' '}
+              e envie <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>/newbot</code>.
+              Ele pede um nome e um username terminado em <em>bot</em>, e
+              devolve um token parecido com{' '}
+              <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>
+                8123456789:AAH…
+              </code>
+            </li>
+
+            <li className="text-sm leading-relaxed">
+              <strong>2. Guarde o token no servidor.</strong> Em{' '}
+              <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>.env</code>:
+              <pre
+                className="mt-2 overflow-x-auto rounded-md p-3 text-xs"
+                style={{ background: 'var(--surface-sunken)', color: 'var(--text)' }}
+              >{`TELEGRAM_BOT_TOKEN=8123456789:AAH…
+TELEGRAM_BOT_USERNAME=seu_bot
+TELEGRAM_WEBHOOK_SECRET=uma-frase-longa-e-aleatoria`}</pre>
+              <span style={{ color: 'var(--text-muted)' }}>
+                O segredo é o que faz o webhook recusar quem não é o Telegram —
+                sem ele, qualquer um poderia forjar mensagens.
+              </span>
+            </li>
+
+            <li className="text-sm leading-relaxed">
+              <strong>3. Dê ao Telegram um endereço público.</strong> Ele só
+              entrega em HTTPS, e não alcança <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>localhost</code>.
+              Em produção é a URL do site; em desenvolvimento, um túnel:
+              <pre
+                className="mt-2 overflow-x-auto rounded-md p-3 text-xs"
+                style={{ background: 'var(--surface-sunken)', color: 'var(--text)' }}
+              >{`# num terminal separado
+npx localtunnel --port 3333
+
+TELEGRAM_WEBHOOK_URL=https://o-que-ele-devolveu/api/telegram/webhook`}</pre>
+              <span style={{ color: 'var(--text-muted)' }}>
+                A API registra o webhook sozinha ao subir, e avisa no log se o
+                Telegram recusar.
+              </span>
+            </li>
+
+            <li className="text-sm leading-relaxed">
+              <strong>4. Reinicie e conecte.</strong>{' '}
+              <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>
+                docker compose up -d --build api
+              </code>
+              , volte à aba Jobs e clique em <em>Connect Telegram</em>. O bot
+              não consegue iniciar conversa — é você que precisa mandar o{' '}
+              <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>/start</code>,
+              e o botão faz isso pelo link.
+            </li>
+          </ol>
+
+          <p className="mt-4 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            <strong style={{ color: 'var(--text)' }}>Por que Telegram e não
+            e-mail:</strong>{' '}
+            os planos gratuitos de envio (Resend, Brevo) exigem domínio próprio
+            com DKIM, SPF e DMARC — comprar domínio, configurar DNS e esperar
+            propagação antes da primeira mensagem sair. O Telegram entrega com o
+            token acima, sem domínio e sem custo.
+          </p>
+        </div>
+      </Recolhivel>
+    </div>
   )
 }
 
