@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { BotaoGoogle } from '../components/BotaoGoogle'
 import { ListaVagas } from '../components/vagas/ListaVagas'
 import { AssinaturaEmail } from '../components/vagas/AssinaturaEmail'
+import { AssinaturaTelegram } from '../components/vagas/AssinaturaTelegram'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { useSessao } from '../lib/sessao'
 import type { AuthUser } from '../types/api'
@@ -41,6 +42,9 @@ export function VagasPage() {
         <>
           <ListaVagas />
           <AssinaturaEmail />
+          {/* Depois do e-mail, e não antes: o Telegram é o canal adicional
+              (decisão de produto do JOB-32), e a ordem na tela diz isso. */}
+          <AssinaturaTelegram />
         </>
       ) : (
         <ConviteParaEntrar />

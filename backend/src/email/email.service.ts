@@ -5,6 +5,9 @@ import { CAMPOS, passaNoFiltro, toDto } from '../jobs/vagas.service';
 import type { FiltrosDto, VagaDto } from '../jobs/job.dto';
 import { EmailProvider } from './email.provider';
 import { montarCorpo } from './email-corpo';
+import { montarTexto } from './telegram-corpo';
+import { TelegramProvider } from './telegram.provider';
+import { TelegramService } from './telegram.service';
 import type {
   AssinaturaDto,
   MetricasEmailDto,
@@ -50,6 +53,8 @@ export class EmailService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly provider: EmailProvider,
+    private readonly telegramProvider: TelegramProvider,
+    private readonly telegram: TelegramService,
   ) {}
 
   /** A base publica do site, para os links de um clique. */
@@ -230,6 +235,8 @@ export class EmailService {
       this.prisma.emailSubscription.count({ where: { cadencia: 'mensal' } }),
       this.prisma.emailSubscription.count({ where: { ultimoEnvioEm: { not: null } } }),
     ]);
+    const tg = await this.telegram.contarVinculos();
+
     return {
       assinantes,
       ativos,
@@ -238,6 +245,9 @@ export class EmailService {
       jaReceberamAlgum: jaEnviados,
       provedor: this.provider.nome,
       provedorEntrega: this.provider.entrega,
+      telegramVinculados: tg.vinculados,
+      telegramAtivos: tg.ativos,
+      telegramLigado: this.telegramProvider.entrega,
     };
   }
 
@@ -288,27 +298,52 @@ export class EmailService {
   }
 
   /**
-   * Uma rodada de envio.
+   * Uma rodada de envio, **para os dois canais**.
    *
    * Devolve o que aconteceu em vez de so logar: e o que a tela do admin mostra
-   * ao clicar em "enviar agora", e o que torna a feature conferivel sem SMTP.
+   * ao clicar em "enviar agora", e o que torna a feature conferivel sem SMTP e
+   * sem token de bot.
+   *
+   * **A selecao de vagas acontece UMA vez por pessoa e serve os dois canais**
+   * (decisao de arquitetura do JOB-32). E o que garante o criterio "a lista de
+   * vagas e a mesma nos dois": ela e literalmente a mesma variavel, e nao duas
+   * consultas que precisariam concordar. O que e por canal e so o carimbo de
+   * ultimo envio e a renderizacao.
    */
   async rodar(): Promise<ResultadoRodadaDto> {
     const agora = new Date();
-    const candidatos = await this.prisma.emailSubscription.findMany({
-      where: { ativo: true },
+
+    // **Varre PESSOAS, e nao assinaturas de e-mail.** Antes do JOB-32 a
+    // consulta partia de `emailSubscription`, o que bastava quando so havia um
+    // canal. Agora quem vinculou o Telegram sem nunca ligar o e-mail nao tem
+    // linha la — e ficaria fora da rodada para sempre, com o canal ligado na
+    // tela e nada chegando.
+    const candidatos = await this.prisma.user.findMany({
+      where: {
+        active: true,
+        // Ao menos um canal ligado. Sem isto a rodada consideraria a base
+        // inteira e gastaria uma consulta de vagas por pessoa para nada.
+        OR: [{ emailSub: { ativo: true } }, { telegram: { ativo: true } }],
+      },
       select: {
         id: true,
-        userId: true,
-        token: true,
-        cadencia: true,
-        ultimoEnvioEm: true,
-        user: { select: { name: true, email: true, active: true } },
+        name: true,
+        email: true,
+        emailSub: {
+          select: {
+            id: true,
+            token: true,
+            cadencia: true,
+            ativo: true,
+            ultimoEnvioEm: true,
+          },
+        },
+        telegram: { select: { id: true, chatId: true, ativo: true, ultimoEnvioEm: true } },
       },
-      // A fila gira pelo que esperou mais — nulo primeiro, igual a busca
-      // agendada. Sem isto, com mais gente que o teto os ultimos nunca
-      // receberiam.
-      orderBy: [{ ultimoEnvioEm: { sort: 'asc', nulls: 'first' } }],
+      // A fila gira pelo que esperou mais, igual a busca agendada. Ordena pelo
+      // carimbo do e-mail, que e o canal que existe desde o JOB-24; quem so
+      // tem Telegram entra com nulo, ou seja, na frente.
+      orderBy: [{ emailSub: { ultimoEnvioEm: { sort: 'asc', nulls: 'first' } } }],
       take: PESSOAS_POR_RODADA,
     });
 
@@ -319,73 +354,121 @@ export class EmailService {
       falhas: 0,
       provedor: this.provider.nome,
       provedorEntrega: this.provider.entrega,
+      enviadosTelegram: 0,
+      provedorTelegramEntrega: this.telegramProvider.entrega,
     };
 
     for (const c of candidatos) {
-      // Conta desativada nao recebe: o guard ja derruba a sessao dela, e
-      // continuar mandando e-mail seria o sistema falando com quem ele mesmo
-      // desligou.
-      if (!c.user.active) {
-        resultado.pulados++;
-        continue;
-      }
-      if (!venceu(c.cadencia, c.ultimoEnvioEm, agora)) {
+      const sub = c.emailSub;
+      const tg = c.telegram;
+
+      // A cadencia e da PESSOA, e nao do canal (JOB-25: "quem foi contratado
+      // recebe uma vez por mes"). Mora em `emailSubscription`; quem so tem
+      // Telegram nao tem essa linha e usa o default.
+      const cadencia = sub?.cadencia ?? 'semanal';
+
+      const emailVence = Boolean(sub?.ativo) && venceu(cadencia, sub?.ultimoEnvioEm ?? null, agora);
+      const telegramVence =
+        Boolean(tg?.ativo) && venceu(cadencia, tg?.ultimoEnvioEm ?? null, agora);
+
+      // Nenhum canal vencido: nem consulta vaga.
+      if (!emailVence && !telegramVence) {
         resultado.pulados++;
         continue;
       }
 
       try {
-        const vagas = await this.vagasNovas(c.userId);
-        // **Nao envia e-mail vazio** (criterio do JOB-24), e nao mexe em
-        // `ultimoEnvioEm`: as vagas desta semana continuam novas na proxima.
+        const vagas = await this.vagasNovas(c.id);
+        // **Nao existe mensagem vazia**, em canal nenhum (criterio do JOB-24 e
+        // do JOB-32), e nenhum carimbo avanca: as vagas desta semana continuam
+        // novas na proxima.
         if (vagas.length === 0) {
           resultado.pulados++;
           continue;
         }
 
-        const corpo = montarCorpo({
-          nome: primeiroNome(c.user.name),
+        // A MESMA selecao alimenta as duas renderizacoes.
+        const dados = {
+          nome: primeiroNome(c.name),
           vagas,
           totalNovas: vagas.length,
           urlBase: this.urlBase(),
-          token: c.token,
-          cadencia: c.cadencia,
-        });
+          // Os links de um clique precisam do token da assinatura. Quem so tem
+          // Telegram ainda nao tem um; `garantir` cria a linha DESLIGADA, sem
+          // inscrever ninguem em e-mail nenhum.
+          token: sub?.token ?? (await this.garantir(c.id)).token,
+          cadencia,
+        };
 
-        const envio = await this.provider.enviar({
-          para: c.user.email,
-          assunto: corpo.assunto,
-          html: corpo.html,
-          texto: corpo.texto,
-        });
+        let algumEnviado = false;
 
-        if (envio.enviado) {
-          await this.prisma.emailSubscription.update({
-            where: { id: c.id },
-            data: { ultimoEnvioEm: agora },
-            select: { id: true },
+        if (emailVence && sub) {
+          const corpo = montarCorpo(dados);
+          const envio = await this.provider.enviar({
+            para: c.email,
+            assunto: corpo.assunto,
+            html: corpo.html,
+            texto: corpo.texto,
           });
-          resultado.enviados++;
-        } else {
-          // **`ultimoEnvioEm` NAO avanca quando nao saiu.** E o que faz o
-          // provedor de log ser honesto: no dia em que o SMTP entrar, a pessoa
-          // recebe as vagas que se acumularam, e nao um e-mail comecando do
-          // zero como se as semanas anteriores tivessem sido entregues.
-          resultado.pulados++;
-          this.log.log(
-            `${c.user.email}: ${vagas.length} vagas prontas, nao enviadas (${envio.motivo ?? 'provedor nao entrega'})`,
-          );
+
+          if (envio.enviado) {
+            await this.prisma.emailSubscription.update({
+              where: { id: sub.id },
+              data: { ultimoEnvioEm: agora },
+              select: { id: true },
+            });
+            resultado.enviados++;
+            algumEnviado = true;
+          } else {
+            // **`ultimoEnvioEm` NAO avanca quando nao saiu.** E o que faz o
+            // provedor de log ser honesto: no dia em que o SMTP entrar, a
+            // pessoa recebe as vagas que se acumularam, e nao um e-mail
+            // comecando do zero como se as semanas anteriores tivessem sido
+            // entregues.
+            this.log.log(
+              `${c.email}: ${vagas.length} vagas prontas, e-mail nao enviado (${envio.motivo ?? 'provedor nao entrega'})`,
+            );
+          }
         }
+
+        if (telegramVence && tg) {
+          const texto = montarTexto(dados).texto;
+          const envio = await this.telegramProvider.enviar(tg.chatId, texto);
+
+          if (envio.enviado) {
+            // Carimbo POR CANAL: o Telegram ter entregue nao pode fazer o
+            // e-mail achar que entregou, nem o contrario.
+            await this.prisma.telegramLink.update({
+              where: { id: tg.id },
+              data: { ultimoEnvioEm: agora },
+              select: { id: true },
+            });
+            resultado.enviadosTelegram++;
+            algumEnviado = true;
+          } else {
+            this.log.log(
+              `${c.email}: ${vagas.length} vagas prontas, Telegram nao enviado (${envio.motivo ?? 'canal desligado'})`,
+            );
+            // Bot bloqueado e descadastro de fato: desliga o canal em vez de
+            // insistir toda semana (caso de borda do card).
+            if (envio.destinoInvalido) {
+              await this.telegram.desativarPorBloqueio(c.id, envio.motivo ?? 'destino invalido');
+            }
+          }
+        }
+
+        if (!algumEnviado) resultado.pulados++;
       } catch (e) {
         // Uma pessoa que falha nao derruba a rodada dos outros.
         resultado.falhas++;
-        this.log.error(`envio para ${c.user.email} falhou: ${String(e).slice(0, 200)}`);
+        this.log.error(`envio para ${c.email} falhou: ${String(e).slice(0, 200)}`);
       }
     }
 
     this.log.log(
-      `rodada de e-mail: ${resultado.considerados} considerados, ` +
-        `${resultado.enviados} enviados, ${resultado.pulados} pulados, ${resultado.falhas} falhas`,
+      `rodada de vagas: ${resultado.considerados} considerados, ` +
+        `${resultado.enviados} e-mails, ${resultado.enviadosTelegram} telegram, ` +
+        `${resultado.pulados} pulados, ${resultado.falhas} falhas`,
     );
     return resultado;
   }

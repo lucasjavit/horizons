@@ -80,6 +80,21 @@ services:
       # Base publica, para os links de um clique do e-mail (descadastrar e
       # "consegui a vaga"). Sem ela os links apontam para localhost:5173.
       APP_URL: ${APP_URL:-http://localhost:5173}
+      # Telegram (JOB-32). VAZIO e estado valido: sem o token o canal fica
+      # INERTE — a opcao nao aparece na aba Jobs, a rota do webhook nao fica
+      # de pe, e a API avisa uma vez no boot.
+      #
+      # **Um bot por ambiente**: o Telegram entrega cada update a UMA url, e
+      # com um bot so o desenvolvimento roubaria as mensagens da producao.
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      # O <bot> do deep link t.me/<bot>?start=<token>, sem o @.
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      # O Telegram nao alcanca localhost:3333, entao aqui isto e a URL de um
+      # tunel (ngrok, cloudflared). Vazia, o webhook nao e registrado e a API
+      # diz por que.
+      TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-}
+      # Opcional: vazio, e derivado do proprio token do bot.
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
     ports:
       - '3333:3333'
     depends_on:

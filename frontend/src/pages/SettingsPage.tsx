@@ -295,9 +295,11 @@ function MetricasDoEmail() {
     try {
       const r = await api.rodarEmail()
       setResultado(
-        `${r.considerados} considerados · ${r.enviados} enviados · ` +
+        `${r.considerados} considerados · ${r.enviados} e-mails · ` +
+          `${r.enviadosTelegram} telegram · ` +
           `${r.pulados} pulados · ${r.falhas} falhas` +
-          (r.provedorEntrega ? '' : ` (provedor "${r.provedor}" nao entrega — so registrou no log)`),
+          (r.provedorEntrega ? '' : ` (provedor "${r.provedor}" nao entrega — so registrou no log)`) +
+          (r.provedorTelegramEntrega ? '' : ' (Telegram desligado — so registrou no log)'),
       )
       reload()
     } catch (e) {
@@ -314,7 +316,7 @@ function MetricasDoEmail() {
       style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
     >
       <h2 id="metricas-email-titulo" className="text-lg font-semibold">
-        E-mail de vagas
+        Notificações de vagas
       </h2>
 
       {loading && <LoadingState label="Carregando…" />}
@@ -337,6 +339,22 @@ function MetricasDoEmail() {
             <Numero rotulo="Uma por mês" valor={data.emCadenciaMensal} />
             <Numero rotulo="Já receberam" valor={data.jaReceberamAlgum} />
           </dl>
+
+          {/* **A taxa de vinculação do Telegram** — o número que o JOB-32
+              existe para produzir, e o que decide se vale investir mais no
+              canal. Fica ao lado dos assinantes de propósito: é a comparação
+              entre os dois canais que responde a pergunta. */}
+          <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
+            <Numero rotulo="Telegram vinculados" valor={data.telegramVinculados} />
+            <Numero rotulo="Telegram recebendo" valor={data.telegramAtivos} />
+          </dl>
+
+          {!data.telegramLigado && (
+            <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
+              Canal do Telegram desligado (sem <code>TELEGRAM_BOT_TOKEN</code>):
+              a opção não aparece na aba Jobs e nada é enviado por lá.
+            </p>
+          )}
 
           {!data.provedorEntrega && (
             <p className="mt-4 text-sm" style={{ color: WARN_INK }}>

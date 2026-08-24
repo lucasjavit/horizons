@@ -1,4 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { NotificacaoProvider, type ResultadoEnvio } from './notificacao.provider';
+
+export type { ResultadoEnvio };
 
 /**
  * Uma mensagem pronta para sair.
@@ -14,16 +17,6 @@ export interface Mensagem {
   texto: string;
 }
 
-/** O que o envio respondeu. */
-export interface ResultadoEnvio {
-  /** Saiu de fato para um servidor de e-mail? */
-  enviado: boolean;
-  /** Qual provedor atendeu — vai para o log e para a tela do admin. */
-  provedor: string;
-  /** Por que nao saiu, quando `enviado` e falso. */
-  motivo?: string;
-}
-
 /**
  * Por onde o e-mail sai.
  *
@@ -37,11 +30,11 @@ export interface ResultadoEnvio {
  * pode ser verificado agora e quase todo, e o que sobra para o dia do SMTP e
  * trocar a implementacao desta interface.
  */
-export abstract class EmailProvider {
-  /** Nome curto, para log e para a tela do admin. */
-  abstract readonly nome: string;
-  /** Este provedor entrega de verdade? */
-  abstract readonly entrega: boolean;
+/**
+ * O canal e-mail. O destino viaja dentro da `Mensagem` (`para`), porque para
+ * este canal endereco e parte do envelope.
+ */
+export abstract class EmailProvider extends NotificacaoProvider {
   abstract enviar(msg: Mensagem): Promise<ResultadoEnvio>;
 }
 

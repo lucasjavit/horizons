@@ -340,6 +340,10 @@ export interface ResultadoRodada {
   falhas: number
   provedor: string
   provedorEntrega: boolean
+  /** Quantas mensagens saíram pelo Telegram (JOB-32). */
+  enviadosTelegram: number
+  /** O canal do Telegram entrega? `false` sem TELEGRAM_BOT_TOKEN. */
+  provedorTelegramEntrega: boolean
 }
 
 /** A métrica de contratados, para o admin (JOB-25). */
@@ -352,4 +356,37 @@ export interface MetricasEmail {
   jaReceberamAlgum: number
   provedor: string
   provedorEntrega: boolean
+  /** A taxa de vinculação do Telegram — o número que o JOB-32 produz. */
+  telegramVinculados: number
+  /** Dos vinculados, quantos ainda recebem (o resto bloqueou o bot). */
+  telegramAtivos: number
+  telegramLigado: boolean
+}
+
+/**
+ * O estado do canal Telegram para esta conta (JOB-32).
+ *
+ * **Sem token.** O deep link vem montado de `vincularTelegram`; não existe
+ * campo de token em resposta nenhuma — é credencial, mesma regra do JOB-24.
+ */
+export interface TelegramStatus {
+  /**
+   * O canal está configurado no servidor (token do bot + username)?
+   *
+   * `false` faz a opção **não aparecer** na tela — em vez de aparecer e
+   * falhar no clique.
+   */
+  disponivel: boolean
+  vinculado: boolean
+  /** @username de quem vinculou, para dizer qual conta está ligada. */
+  username: string | null
+  /** Recebendo mensagens? `false` com `vinculado` true = bot bloqueado. */
+  ativo: boolean
+}
+
+/** O deep link `t.me/<bot>?start=<token>` que a tela abre. */
+export interface TelegramVinculo {
+  url: string
+  /** Quando o convite deixa de valer, para a tela poder oferecer outro. */
+  expiraEm: string
 }

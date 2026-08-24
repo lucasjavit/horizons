@@ -90,6 +90,22 @@ services:
       # localhost: em producao um link para localhost e um link quebrado no
       # e-mail de outra pessoa, entao o certo e cair no dominio publico.
       APP_URL: ${APP_URL:-${CORS_ORIGIN}}
+      # Telegram (JOB-32). Como SMTP_HOST, e ao contrario dos segredos acima,
+      # NAO usa `${VAR:?}`: vazio e um estado valido e desejado — sem o token o
+      # canal fica inerte, a opcao nao aparece na tela e o webhook nao fica de
+      # pe. Recusar o boot por falta dele impediria de subir uma aplicacao que
+      # funciona.
+      #
+      # **Um bot por ambiente**: o Telegram entrega cada update a UMA url, e
+      # com um bot so a producao e o desenvolvimento roubariam as mensagens um
+      # do outro — mensagem de teste chegaria a gente real.
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      # Vazia, deriva de APP_URL (que aqui e o dominio publico do Coolify, ja
+      # com HTTPS — que o Telegram exige).
+      TELEGRAM_WEBHOOK_URL: ${TELEGRAM_WEBHOOK_URL:-}
+      # Opcional: vazio, e derivado do proprio token do bot.
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
     expose:
       - '3333'
     depends_on:

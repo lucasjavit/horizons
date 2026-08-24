@@ -17,6 +17,8 @@ import type {
   Recursos,
   ResultadoRodada,
   SalvarPerfil,
+  TelegramStatus,
+  TelegramVinculo,
   TrackDetail,
   TrackSummary,
   Vaga,
@@ -265,6 +267,31 @@ export const api = {
       null,
       { params: { t } },
     )
+    return data
+  },
+
+  // ---- Telegram (JOB-32) ----
+
+  async telegramStatus(signal?: AbortSignal): Promise<TelegramStatus> {
+    const { data } = await http.get<TelegramStatus>('/telegram/status', {
+      signal,
+    })
+    return data
+  },
+
+  /**
+   * Cria o convite e devolve o deep link.
+   *
+   * O token de uso único viaja dentro da URL porque o Telegram exige que a
+   * pessoa o carregue — mas não há campo `token` na resposta.
+   */
+  async vincularTelegram(): Promise<TelegramVinculo> {
+    const { data } = await http.post<TelegramVinculo>('/telegram/vincular')
+    return data
+  },
+
+  async desvincularTelegram(): Promise<TelegramStatus> {
+    const { data } = await http.delete<TelegramStatus>('/telegram/vincular')
     return data
   },
 

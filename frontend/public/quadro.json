@@ -589,6 +589,18 @@
       "total": 0
     },
     {
+      "id": "JOB-32",
+      "titulo": "Telegram como segundo canal de notificação",
+      "estado": "feito (24/08/2026) — falta token real de bot",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "O e-mail do [JOB-24](JOB-24-email-semanal.md) está inteiro e conferido, e não entrega nada. O provedor padrão registra no log porque não há SMTP — e o caminho para haver SMTP não é preencher uma variável.",
+      "decisao": "",
+      "bloqueio": "[JOB-24](JOB-24-email-semanal.md) — feito. É de onde vêm a seleção de vagas, a",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",

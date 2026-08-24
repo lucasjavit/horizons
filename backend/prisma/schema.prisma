@@ -37,6 +37,8 @@ model User {
   jobProfile  JobProfile?
   savedJobs   SavedJob[]
   emailSub    EmailSubscription?
+  telegram    TelegramLink?
+  telegramConvites TelegramConvite[]
 
   @@index([provider, providerId])
   @@map("users")
@@ -237,6 +239,86 @@ model EmailSubscription {
 
   @@index([ativo, cadencia])
   @@map("email_subscriptions")
+}
+
+/// A vinculacao com o Telegram (JOB-32). Uma por usuario.
+///
+/// **Modelo proprio, e nao colunas em `EmailSubscription`.** Sao dois canais
+/// independentes: o criterio do card pede que dar errado num nao avance o
+/// carimbo do outro, e que se possa ter um ligado e o outro desligado. Com as
+/// colunas juntas, `ultimoEnvioEm` seria compartilhado — uma falha no Telegram
+/// faria a pessoa perder o e-mail daquela semana, ou o contrario.
+///
+/// A cadencia NAO se repete aqui: ela e da pessoa, nao do canal (JOB-25 diz
+/// "quem foi contratado recebe uma vez por mes", e nao "por e-mail uma vez por
+/// mes"). Continua morando em `EmailSubscription` e vale para os dois.
+model TelegramLink {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  /// O endereco de entrega, dado pelo proprio Telegram no `/start`.
+  ///
+  /// **Coluna comum, nao cifrada** (decidido em 24/08). E identificador de
+  /// destino, igual ao e-mail que fica em claro na mesma feature; cifrar um e
+  /// nao o outro seria incoerente, e cifrado ele nao se consulta — e por ele
+  /// que se acha o vinculo. Diferente dos tokens do PLT-01, que sao
+  /// credencial: sem o token do bot, um `chat_id` nao envia nada a ninguem.
+  ///
+  /// `BigInt` porque o `chat_id` do Telegram excede 32 bits e a documentacao
+  /// avisa que pode passar de 2^53 — em `Int` ele estouraria em silencio.
+  ///
+  /// Unico: **o mesmo `chat_id` nao vincula a duas contas** (decidido em
+  /// 24/08). Um chat recebendo vagas de dois perfis e confusao sem dono, e
+  /// quem recebesse nao teria como saber de qual conta veio o que.
+  chatId        BigInt   @unique
+  /// @username de quem vinculou, so para a tela dizer qual conta esta ligada.
+  /// Opcional porque conta de Telegram sem username existe.
+  username      String?
+  /// Recebe vagas pelo Telegram? Desvincular apaga a linha inteira (o
+  /// criterio do card pede que o `chat_id` suma), mas bloquear o bot so
+  /// desliga aqui — o vinculo continua para a pessoa poder religar.
+  ativo         Boolean  @default(true)
+  /// Quando a ultima mensagem SAIU de fato, por este canal.
+  ///
+  /// Mesma regra do e-mail: so avanca quando entregou. Provedor que nao
+  /// entrega nao mexe aqui, senao no dia do token real a pessoa comecaria do
+  /// zero como se as semanas anteriores tivessem chegado.
+  ultimoEnvioEm DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ativo])
+  @@map("telegram_links")
+}
+
+/// Um convite de vinculacao pendente — o `<token>` de `t.me/<bot>?start=<token>`.
+///
+/// Existe porque **o bot nao pode iniciar conversa**: o `chat_id` so passa a
+/// existir depois do START, e e o token que liga aquele START a esta conta.
+///
+/// Tabela separada de `TelegramLink` porque o ciclo de vida e outro: o convite
+/// nasce, expira em 30 minutos e morre usado; o vinculo dura. Guardar o token
+/// pendente dentro do vinculo criaria uma linha de vinculo para quem so clicou
+/// no botao e nunca apertou START.
+model TelegramConvite {
+  id        String   @id @default(uuid())
+  userId    String
+  /// O token do deep link. Ate 64 caracteres de `A-Z a-z 0-9 _ -` — limite do
+  /// parametro `start` do Telegram. Unico: e por ele que o `/start` acha a
+  /// conta.
+  token     String   @unique
+  /// Quando deixa de valer. Convite aberto e nao usado nao pode ficar
+  /// "aguardando" para sempre, senao o botao nunca volta a oferecer vincular.
+  expiraEm  DateTime
+  /// Quando foi trocado por um vinculo. **Nao se apaga a linha ao usar**: e o
+  /// que faz um token ja usado nao vincular uma segunda conta, em vez de
+  /// simplesmente nao ser encontrado.
+  usadoEm   DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiraEm])
+  @@map("telegram_convites")
 }
 
 /// Token de API de um provedor de IA, cifrado em repouso.

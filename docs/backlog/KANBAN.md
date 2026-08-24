@@ -19,6 +19,7 @@ destrava o resto.
 
 | Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
+| [JOB-32](cards/JOB-32-telegram-como-canal.md) | **Telegram como segundo canal** — entrega sem domínio próprio, ao lado do e-mail | M | (24/08) o e-mail está pronto e não entrega: Resend e Brevo exigem domínio verificado. O bot **não** inicia conversa — exige `/start`, e cada passo perde gente. **As três decisões em aberto saíram** (24/08): webhook, um bot por ambiente, `chat_id` em claro |
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
 | [PLT-04](cards/PLT-04-crud-de-prompts.md) | Config vira área de admin, com CRUD dos prompts de busca | M | agora tem `@AdminOnly()` de verdade por trás |
 | [JOB-08](cards/JOB-08-prompt-de-busca.md) | O prompt do stakeholder vira o motor da busca | G | o descarte de vaga aberta caiu com o JOB-10; sobram os **sete níveis de elegibilidade** e o **dedup** |
@@ -57,6 +58,7 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [JOB-32](cards/JOB-32-telegram-como-canal.md) | **Telegram como canal** — entrega sem domínio nem DNS; falta token real de bot | 24/08/2026 |
 | [JOB-24](cards/JOB-24-email-semanal.md) | **O e-mail semanal** — só vagas novas, com trecho; não manda e-mail vazio. Provedor desligado: registra no log até haver SMTP | 24/08/2026 |
 | [JOB-25](cards/JOB-25-consegui-a-vaga.md) | **Botão "consegui a vaga 🎉"** — uma vaga por mês em vez de semanal, sem login; métrica de contratados para o admin | 24/08/2026 |
 | [JOB-10](cards/JOB-10-consultas-dirigidas.md) | **A busca mira os ATS** — 8 URLs viram 8 vagas, contra 8 → 6 | 17/08/2026 |
@@ -164,6 +166,24 @@ Para não serem rediscutidas sem motivo novo:
   convence alguém a criar conta, então pedir a conta antes de mostrar a aula
   inverte a ordem. O login guarda progresso e anotação —
   [PLT-07](cards/PLT-07-leitura-anonima.md).
+- **O Telegram é canal adicional, não substituto do e-mail** (24/08/2026). O
+  e-mail trava num custo de infraestrutura (domínio verificado, DKIM/SPF/DMARC,
+  que Resend e Brevo exigem nos planos gratuitos); o Telegram troca isso por
+  custo de conversão — ter o app, sair do site e apertar START, e o bot **não
+  pode** iniciar a conversa. Nenhum dos dois vence sozinho, então os dois
+  existem — [JOB-32](cards/JOB-32-telegram-como-canal.md).
+- **O bot do Telegram recebe por webhook, e é um bot por ambiente**
+  (24/08/2026). O webhook custa uma rota `@Public()` nova num guard *fail
+  closed* e exige HTTPS público — em desenvolvimento, um túnel. Custo aceito: o
+  `getUpdates` evitaria isso ao preço de um processo puxando o tempo todo. Dois
+  tokens desde já porque o Telegram entrega cada update a **uma** URL: com um
+  bot só, desenvolvimento e produção roubariam as mensagens um do outro e
+  mensagem de teste chegaria a gente real.
+- **`chat_id` do Telegram fica em coluna comum, não cifrado** (24/08/2026). É
+  identificador de destino, igual ao e-mail que já fica em claro na mesma
+  feature — cifrar um e não o outro seria incoerente, e impediria consultar o
+  vínculo. Diferente dos tokens do PLT-01, que são credencial: `chat_id` não
+  abre nada sem o token do bot.
 - **O deploy é no Coolify, a partir do `docker-compose.prod.yml`** (14/08/2026).
   O de desenvolvimento continua no repositório e **não serve** para o servidor:
   publica portas e fixa senha. Guia em [docs/DEPLOY.md](../DEPLOY.md).
