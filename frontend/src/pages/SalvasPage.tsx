@@ -1,8 +1,9 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { AxiosError } from 'axios'
 import { EmptyState, ErrorState, LoadingState } from '../components/States'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { LinhaVaga } from '../components/vagas/LinhaVaga'
+import { POR_PAGINA, Paginacao } from '../components/vagas/Paginacao'
 import { api } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
@@ -33,6 +34,7 @@ export function SalvasPage() {
   const [erroRemocao, setErroRemocao] = useState('')
   /** Para onde o foco vai quando a linha some — senão cai no `<body>`. */
   const tituloRef = useRef<HTMLHeadingElement>(null)
+  const [pagina, setPagina] = useState(1)
 
   const remover = useCallback(async (vaga: Vaga) => {
     setRemovidas((s) => new Set(s).add(vaga.url))
@@ -61,7 +63,16 @@ export function SalvasPage() {
     }
   }, [])
 
-  const visiveis = (data ?? []).filter((v) => !removidas.has(v.url))
+  const todas = useMemo(
+    () => (data ?? []).filter((v) => !removidas.has(v.url)),
+    [data, removidas],
+  )
+
+  const paginas = Math.max(1, Math.ceil(todas.length / POR_PAGINA))
+  // Remover a última vaga de uma página não pode deixar a tela vazia: a
+  // página se ajusta para a última que ainda existe.
+  const atual = Math.min(pagina, paginas)
+  const visiveis = todas.slice((atual - 1) * POR_PAGINA, atual * POR_PAGINA)
 
   return (
     <main id="conteudo" tabIndex={-1} className="mx-auto max-w-4xl px-4 py-8">
@@ -96,14 +107,14 @@ export function SalvasPage() {
       {loading && <LoadingState label="Loading saved jobs…" />}
       {error && <ErrorState message={error} onRetry={reload} />}
 
-      {data && visiveis.length === 0 && !loading && (
+      {data && todas.length === 0 && !loading && (
         <EmptyState message="Nothing saved yet. Star a job on the Jobs tab and it shows up here." />
       )}
 
-      {visiveis.length > 0 && (
+      {todas.length > 0 && (
         <>
           <p className="mt-6 text-sm" style={{ color: 'var(--text-muted)' }}>
-            {visiveis.length} {visiveis.length === 1 ? 'job' : 'jobs'}
+            {todas.length} {todas.length === 1 ? 'job' : 'jobs'}
           </p>
           <ul
             className="mt-2 flex flex-col border-t"
@@ -124,6 +135,18 @@ export function SalvasPage() {
               />
             ))}
           </ul>
+
+          {paginas > 1 && (
+            <Paginacao
+              atual={atual}
+              paginas={paginas}
+              total={todas.length}
+              onIr={(p) => {
+                setPagina(p)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+            />
+          )}
         </>
       )}
     </main>

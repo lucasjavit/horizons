@@ -129,8 +129,18 @@ vaga já salva reencontrada aparece com `aria-pressed=true`; 40 salvas com GET
 em 7ms e ordem correta; limites do DTO; `<script>`, emoji e RTL gravam como
 texto sem XSS; alvo de toque 36×36 e foco visível.
 
-### Uma pergunta aberta que ele deixou
+### A pergunta que ele deixou, respondida
 
-**A aba Saved não pagina** — 40 salvas viram 4.514px de rolagem, enquanto a
-busca pagina de 25 em 25. Foi escolha (a decisão foi "tela inteira, sem
-filtros") ou falta? Vira card se alguém acumular muitas.
+**A aba Saved não paginava** — 40 salvas viravam 4.514px de rolagem contínua,
+enquanto a busca paginava de 25 em 25. Era falta, não escolha. Resolvido em
+21/08.
+
+A paginação virou **componente próprio** (`components/vagas/Paginacao.tsx`),
+usado pelas duas telas, com o `POR_PAGINA` exportado dali: duas constantes
+iguais em arquivos diferentes divergem na primeira vez que alguém mexe numa
+só.
+
+Conferido com 30 salvas: 25 na página 1, 5 na página 2, `aria-current` no
+número certo, e remover na página 2 não quebra a navegação. O caso limite
+também se resolve — esvaziar a última página volta para a anterior, e a
+régua some quando sobra uma página só.
