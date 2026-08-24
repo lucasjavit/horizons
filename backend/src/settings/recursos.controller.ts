@@ -66,6 +66,12 @@ export class RecursosController {
     return this.recursos.definirEmailSemanal(body.ativa);
   }
 
+  @Put('historico')
+  @AdminOnly()
+  definirHistorico(@Body() body: DefinirFlagDto): Promise<RecursosDto> {
+    return this.recursos.definirHistorico(body.ativa);
+  }
+
   @Put('ia-da-busca')
   @AdminOnly()
   definirIaDaBusca(@Body() body: DefinirIaDto): Promise<RecursosDto> {

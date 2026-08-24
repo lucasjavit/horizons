@@ -41,8 +41,7 @@ quando poderia entregar 27.725 de graça.
 
 | Card | Título | Tam. | Por que agora |
 | --- | --- | --- | --- |
-| [JOB-26](cards/JOB-26-historico-do-usuario.md) | Histórico — não remostrar o que já viu | P | sem ele o e-mail repete e vira ruído |
-| [JOB-05](cards/JOB-05-salvar-vaga.md) | Salvar vaga | P | independente de tudo acima |
+| _(vazio)_ | | | |
 
 ## Esperando decisão
 
@@ -58,6 +57,7 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [JOB-26](cards/JOB-26-historico-do-usuario.md) | **Histórico** — selo "New", descartar com Undo/Restore, filtro All/New/Dismissed | 24/08/2026 |
 | [JOB-32](cards/JOB-32-telegram-como-canal.md) | **Telegram como canal** — entrega sem domínio nem DNS; falta token real de bot | 24/08/2026 |
 | [JOB-24](cards/JOB-24-email-semanal.md) | **O e-mail semanal** — só vagas novas, com trecho; não manda e-mail vazio. Provedor desligado: registra no log até haver SMTP | 24/08/2026 |
 | [JOB-25](cards/JOB-25-consegui-a-vaga.md) | **Botão "consegui a vaga 🎉"** — uma vaga por mês em vez de semanal, sem login; métrica de contratados para o admin | 24/08/2026 |

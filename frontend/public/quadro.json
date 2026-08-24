@@ -519,8 +519,8 @@
     {
       "id": "JOB-26",
       "titulo": "Histórico — não remostrar o que a pessoa já viu",
-      "estado": "pronto para fazer",
-      "coluna": "pronto",
+      "estado": "feito (24/08/2026)",
+      "coluna": "feito",
       "tamanho": "P",
       "porque": "É a segunda coisa que o ChatGPT não faz. Ele começa do zero toda vez: não sabe o que a pessoa já viu, já descartou, já se candidatou.",
       "decisao": "",

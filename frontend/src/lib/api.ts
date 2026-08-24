@@ -14,6 +14,7 @@ import type {
   IaDaBusca,
   ProgressResult,
   MetricasEmail,
+  Historico,
   Recursos,
   ResultadoRodada,
   SalvarPerfil,
@@ -212,6 +213,13 @@ export const api = {
     return data
   },
 
+  async definirHistorico(ativa: boolean): Promise<Recursos> {
+    const { data } = await http.put<Recursos>('/settings/recursos/historico', {
+      ativa,
+    })
+    return data
+  },
+
   async definirEmailSemanal(ativa: boolean): Promise<Recursos> {
     const { data } = await http.put<Recursos>(
       '/settings/recursos/email-semanal',
@@ -398,6 +406,39 @@ export const api = {
 
   async removerSalva(url: string): Promise<void> {
     await http.delete('/jobs/saved', { params: { url } })
+  },
+
+  async listarHistorico(signal?: AbortSignal): Promise<Historico> {
+    const { data } = await http.get<Historico>('/jobs/history', { signal })
+    return data
+  },
+
+  /**
+   * Marca a vaga como vista ou descartada.
+   *
+   * Manda título e empresa junto: a busca é ao vivo e não grava a vaga no
+   * banco, então sem eles a lista de descartadas seria só URL crua e a pessoa
+   * não teria como reconhecer o que desfazer.
+   */
+  async marcarVaga(
+    vaga: { url: string; title: string; company: string },
+    estado: 'visto' | 'descartado',
+  ): Promise<Historico> {
+    const { data } = await http.post<Historico>('/jobs/history', {
+      url: vaga.url,
+      estado,
+      title: vaga.title,
+      company: vaga.company,
+    })
+    return data
+  },
+
+  /** Desfaz o descarte: sem linha no histórico, a vaga volta a ser nova. */
+  async desmarcarVaga(url: string): Promise<Historico> {
+    const { data } = await http.delete<Historico>('/jobs/history', {
+      params: { url },
+    })
+    return data
   },
 
   async setNote(lessonId: string, note: string): Promise<ProgressResult> {

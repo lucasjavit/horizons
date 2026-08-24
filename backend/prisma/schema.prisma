@@ -39,6 +39,7 @@ model User {
   emailSub    EmailSubscription?
   telegram    TelegramLink?
   telegramConvites TelegramConvite[]
+  jobHistory  JobHistory[]
 
   @@index([provider, providerId])
   @@map("users")
@@ -194,6 +195,50 @@ model SavedJob {
   @@unique([userId, url])
   @@index([userId, savedAt])
   @@map("saved_jobs")
+}
+
+/// O que a pessoa ja viu ou descartou (JOB-26). Uma linha por (usuario, vaga).
+///
+/// **Uma tabela com `estado`, e nao duas tabelas.** Visto e descartado sao
+/// estados do MESMO par (pessoa, vaga), e nao fatos independentes: descartar
+/// uma vaga implica te-la visto, e um par nao pode estar nos dois. Com duas
+/// tabelas seria preciso escrever nas duas e mante-las coerentes na mao — e a
+/// primeira falha de meia-transacao deixaria uma vaga descartada aparecendo
+/// como nova.
+///
+/// **Guarda a URL, e nao um retrato.** Ao contrario de `SavedJob`, aqui nao ha
+/// nada a reler: a linha so responde "esta vaga ja passou por mim?". Copiar o
+/// anuncio inteiro para dizer isso encheria o banco com o que a pessoa
+/// justamente NAO quer ver.
+///
+/// **Nao ha `FoundJob` referenciado.** A vaga expira em 15 dias e a busca ao
+/// vivo nem grava; a URL e o unico identificador que sobrevive aos dois, e e o
+/// mesmo que `SavedJob` ja usa como chave por usuario.
+model JobHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  url       String
+  /// "visto" ou "descartado". String e nao enum: o tsconfig do front proibe
+  /// enum de TS, e o padrao da casa para poucos valores e uniao de string.
+  estado    String
+  /// Titulo e empresa no momento em que entrou no historico.
+  ///
+  /// **So para a tela de descartadas ter o que mostrar.** Sem isto, "ver o que
+  /// eu descartei" seria uma lista de URLs cruas — ilegivel, e a pessoa nao
+  /// teria como reconhecer a vaga para desfazer. Sao dois campos curtos, nao
+  /// o snapshot inteiro.
+  title     String
+  company   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// A mesma vaga nao entra duas vezes: marcar de novo faz `upsert`.
+  @@unique([userId, url])
+  /// A consulta quente e "todas as marcas desta pessoa", para a tela cruzar
+  /// com o resultado da busca de uma vez so.
+  @@index([userId, estado])
+  @@map("job_history")
 }
 
 /// A assinatura do e-mail de vagas. Uma por usuario.

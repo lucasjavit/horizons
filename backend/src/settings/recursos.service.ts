@@ -52,6 +52,21 @@ const BUSCA_AGENDADA = 'jobs.buscaAgendada';
  */
 const EMAIL_SEMANAL = 'jobs.emailSemanal';
 
+/**
+ * O historico de vagas vistas e descartadas (JOB-26).
+ *
+ * Default LIGADO, como o ATS e ao contrario do e-mail: nao gasta credito, nao
+ * manda nada para ninguem e nao depende de chave nenhuma — so grava a URL do
+ * que a propria pessoa marcou. O que ele faz e ESCONDER vaga que ela pediu
+ * para esconder, e nascer desligado deixaria o botao "Dismiss" sem efeito ate
+ * alguem lembrar de ligar um interruptor.
+ *
+ * Desligado, o historico continua no banco e para de ser aplicado: nada e
+ * apagado, e religar devolve as marcas. Apagar seria uma decisao que um
+ * interruptor nao tem o direito de tomar.
+ */
+const HISTORICO = 'jobs.historico';
+
 export interface RecursosDto {
   /** A leitura de curriculo esta ligada e funcionando. */
   leituraCvAtiva: boolean;
@@ -91,6 +106,13 @@ export interface RecursosDto {
   emailLigado: boolean;
   /** Ha provedor de e-mail que entrega de verdade? Hoje: nao, falta SMTP. */
   temProvedorDeEmail: boolean;
+  /**
+   * O historico esta ligado.
+   *
+   * Sem dependencia: nao ha chave que possa faltar, entao o valor da flag e a
+   * resposta inteira. Ausencia de linha significa LIGADO.
+   */
+  historicoAtivo: boolean;
   /** A IA preferida para a busca, como o admin escolheu. */
   iaPreferida: IaDaBusca;
   /** A que vai ser usada de fato — cai na outra se a preferida nao tem chave. */
@@ -125,14 +147,16 @@ export class RecursosService {
       this.temChaveFirecrawl(),
     ]);
 
-    const [pref, temAnthropic, temOpenAi, ats, agendada, email] = await Promise.all([
-      this.iaPreferida(),
-      this.temChaveDe(ApiProvider.ANTHROPIC),
-      this.temChaveDe(ApiProvider.OPENAI),
-      this.flagLigadaPorPadrao(ATS_ATIVO),
-      this.flag(BUSCA_AGENDADA),
-      this.flag(EMAIL_SEMANAL),
-    ]);
+    const [pref, temAnthropic, temOpenAi, ats, agendada, email, historico] =
+      await Promise.all([
+        this.iaPreferida(),
+        this.temChaveDe(ApiProvider.ANTHROPIC),
+        this.temChaveDe(ApiProvider.OPENAI),
+        this.flagLigadaPorPadrao(ATS_ATIVO),
+        this.flag(BUSCA_AGENDADA),
+        this.flag(EMAIL_SEMANAL),
+        this.flagLigadaPorPadrao(HISTORICO),
+      ]);
 
     const temProvedorDeEmail = temSmtp();
 
@@ -158,6 +182,7 @@ export class RecursosService {
       emailAtivo: email && temProvedorDeEmail,
       emailLigado: email,
       temProvedorDeEmail,
+      historicoAtivo: historico,
       iaPreferida: pref,
       iaEfetiva: escolherIa(pref, temAnthropic, temOpenAi),
       temChaveAnthropic: temAnthropic,
@@ -194,6 +219,13 @@ export class RecursosService {
    */
   async definirEmailSemanal(ativa: boolean): Promise<RecursosDto> {
     await this.gravar(EMAIL_SEMANAL, ativa);
+    return this.obter();
+  }
+
+  async definirHistorico(ativa: boolean): Promise<RecursosDto> {
+    // Sem checagem de dependencia: o historico so grava a URL do que a pessoa
+    // marcou, e nao chama servico nenhum de fora.
+    await this.gravar(HISTORICO, ativa);
     return this.obter();
   }
 

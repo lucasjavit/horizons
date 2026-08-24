@@ -231,6 +231,21 @@ function Recursos() {
               ajudaSemChave=""
             />
             <Interruptor
+              id="historico"
+              titulo="Guardar o histórico de vagas"
+              ligado={data.historicoAtivo}
+              // Sem dependência: o histórico só grava a URL do que a própria
+              // pessoa marcou. Não chama serviço nenhum de fora.
+              temDependencia
+              salvando={salvando}
+              onAlternar={() =>
+                void alternar(api.definirHistorico, data.historicoAtivo)
+              }
+              ajudaLigada="Cada pessoa vê o selo “New” nas vagas que ainda não abriu, e pode descartar as que não interessam — que somem da lista dela. O histórico é privado: ninguém vê o dos outros."
+              ajudaDesligada="Desligado, a busca mostra todas as vagas sempre, sem selo e sem o botão de descartar. O que já foi marcado continua guardado e volta se o recurso for religado."
+              ajudaSemChave=""
+            />
+            <Interruptor
               id="motor-ats"
               titulo="Buscar direto nos ATS"
               ligado={data.atsAtivo}

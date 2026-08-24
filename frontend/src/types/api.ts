@@ -233,6 +233,8 @@ export interface Recursos {
   emailLigado: boolean
   /** Há provedor de e-mail que entrega de verdade? Hoje não: falta SMTP. */
   temProvedorDeEmail: boolean
+  /** O histórico de vagas vistas/descartadas está ligado. Default `true`. */
+  historicoAtivo: boolean
   /** O Firecrawl está ligado e utilizável. Desligado = busca pela IA. */
   firecrawlAtivo: boolean
   /** Há ao menos um motor de busca utilizável. */
@@ -389,4 +391,24 @@ export interface TelegramVinculo {
   url: string
   /** Quando o convite deixa de valer, para a tela poder oferecer outro. */
   expiraEm: string
+}
+
+/** Uma vaga descartada, com o mínimo para a pessoa reconhecê-la. */
+export interface VagaMarcada {
+  url: string
+  title: string
+  company: string
+  marcadaEm: string
+}
+
+/**
+ * O histórico da pessoa (JOB-26).
+ *
+ * As vistas são só URLs — a tela já tem os dados da vaga na lista de busca. As
+ * descartadas trazem título e empresa porque somem da lista, e precisam ser
+ * mostradas em outro lugar para poderem voltar.
+ */
+export interface Historico {
+  vistas: string[]
+  descartadas: VagaMarcada[]
 }

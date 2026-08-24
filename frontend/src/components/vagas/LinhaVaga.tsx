@@ -24,11 +24,24 @@ export function LinhaVaga({
   vaga,
   salva,
   onAlternarSalva,
+  nova,
+  onAbrir,
+  onDescartar,
 }: {
   vaga: Vaga
   /** `undefined` quando a lista de salvas ainda não carregou. */
   salva?: boolean
   onAlternarSalva?: (vaga: Vaga, salvar: boolean) => void
+  /**
+   * A pessoa nunca abriu esta vaga. `undefined` = histórico desligado ou ainda
+   * carregando, e aí não há selo — melhor ausente que chutando "new" em algo
+   * que ela já leu.
+   */
+  nova?: boolean
+  /** Abrir o anúncio é o que marca como vista. Ver `ListaVagas`. */
+  onAbrir?: (vaga: Vaga) => void
+  /** `undefined` esconde o botão: histórico desligado não oferece Dismiss. */
+  onDescartar?: (vaga: Vaga) => void
 }) {
   const idade = formatarIdadeRelativa(vaga.postedAt)
   const experiencia = formatarExperiencia(vaga.anosExp)
@@ -37,8 +50,21 @@ export function LinhaVaga({
 
   return (
     <li className="border-b py-4" style={{ borderColor: 'var(--border)' }}>
-      {idade && (
-        <p className="mb-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+      {(idade || nova) && (
+        <p className="mb-1.5 flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+          {nova && (
+            /* O selo é TEXTO, e não um ponto colorido: "novo" sinalizado só
+               por cor não chega a quem não distingue a cor, e a convenção da
+               casa é nunca deixar a cor sozinha carregando informação.
+               `--accent-ink` porque o dourado puro reprova em AA sobre fundo
+               claro (~2,2:1). */
+            <span
+              className="rounded-md border px-1.5 py-0.5 font-semibold uppercase tracking-wide"
+              style={{ borderColor: 'var(--accent-ink)', color: 'var(--accent-ink)' }}
+            >
+              New
+            </span>
+          )}
           {idade}
         </p>
       )}
@@ -63,6 +89,22 @@ export function LinhaVaga({
           </button>
         )}
 
+        {onDescartar && (
+          // Ao lado da estrela, e com o mesmo tamanho de alvo (36px > os 24px
+          // mínimos). São as duas ações da linha, e ficam juntas: guardar e
+          // descartar são a mesma decisão em direções opostas.
+          <button
+            type="button"
+            onClick={() => onDescartar(vaga)}
+            aria-label={`Dismiss ${vaga.title}`}
+            title="Dismiss — hide this job from your list"
+            className="order-last h-9 w-9 shrink-0 self-start rounded-md text-lg leading-none"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <span aria-hidden>×</span>
+          </button>
+        )}
+
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             {/* O link cobre só o título, não a linha inteira: a faixa de chips
@@ -73,6 +115,10 @@ export function LinhaVaga({
                 href={vaga.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                // **Abrir é o que marca como vista** (JOB-26). Não há
+                // `preventDefault`: o anúncio abre em aba nova como sempre, e
+                // a marcação é um efeito colateral que não atrapalha o clique.
+                onClick={() => onAbrir?.(vaga)}
                 className="hover:underline"
                 style={{ color: 'var(--text)' }}
               >

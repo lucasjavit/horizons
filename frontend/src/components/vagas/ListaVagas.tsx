@@ -9,9 +9,18 @@ import { api, ehSemSessao } from '../../lib/api'
 import { buscarVagas } from '../../lib/busca-vagas'
 import { paraFiltrosApi } from './vaga-filtro'
 import type { Selecao } from './vaga-filtro'
-import type { Vaga } from '../../types/api'
+import type { Historico, Vaga } from '../../types/api'
 
 type Estado = 'ocioso' | 'buscando' | 'pronto'
+
+/**
+ * O que a lista mostra em relação ao histórico (JOB-26).
+ *
+ * Três estados e não um checkbox "só novas": com dois, "descartadas" não teria
+ * onde aparecer, e o descarte viraria irreversível na prática — a pessoa não
+ * teria como achar o que escondeu para desfazer.
+ */
+type Recorte = 'todas' | 'novas' | 'descartadas'
 
 
 /**
@@ -39,6 +48,18 @@ export function ListaVagas() {
   const [avisoSalva, setAvisoSalva] = useState('')
   const [erroSalva, setErroSalva] = useState('')
   const abortar = useRef<AbortController | null>(null)
+  /** O histórico. `null` = desligado ou ainda carregando — sem selo, sem ×. */
+  const [historico, setHistorico] = useState<Historico | null>(null)
+  const [recorte, setRecorte] = useState<Recorte>('todas')
+  /**
+   * A última vaga descartada, para o desfazer imediato.
+   *
+   * **Um clique errado não pode esconder uma vaga para sempre.** O × fica
+   * colado no ☆, e trocar um pelo outro é o erro óbvio desta tela. O undo
+   * aparece na hora; quem só perceber depois acha a vaga no recorte
+   * "Dismissed", que é o desfazer tardio.
+   */
+  const [ultimoDescarte, setUltimoDescarte] = useState<Vaga | null>(null)
 
   const buscar = useCallback(async (selecao: Selecao) => {
     // Uma busca por vez: sem isto, dois cliques em Filter escreveriam na mesma
@@ -91,6 +112,79 @@ export function ListaVagas() {
   }, [])
 
   /**
+   * O histórico — mas só se o recurso estiver ligado.
+   *
+   * **O interruptor é consultado ANTES de buscar o histórico**, e não depois:
+   * com o recurso desligado a tela não deve nem pedir a lista. É o que faz
+   * `historico` continuar `null`, e `null` é exatamente o estado que esconde o
+   * selo e o × — a tela volta a ser a de antes do JOB-26 sem nenhum outro
+   * `if`.
+   *
+   * Falha silenciosa de propósito: uma lista de vagas não deve mostrar erro
+   * porque o histórico não carregou.
+   */
+  useEffect(() => {
+    const ctrl = new AbortController()
+    api
+      .recursos(ctrl.signal)
+      .then((r) => (r.historicoAtivo ? api.listarHistorico(ctrl.signal) : null))
+      .then((h) => {
+        if (h) setHistorico(h)
+      })
+      .catch(() => {})
+    return () => ctrl.abort()
+  }, [])
+
+  /**
+   * Descarta a vaga. **Sem otimismo, ao contrário da estrela.**
+   *
+   * A estrela é reversível no mesmo clique e o pior caso é uma estrela errada
+   * por um segundo. Aqui a vaga SOME da lista — sumir e reaparecer depois que
+   * a rede falha é pior que esperar 200ms para ela sumir de verdade. E o
+   * servidor devolve o histórico inteiro, que é a fonte da verdade.
+   */
+  const descartar = useCallback(async (vaga: Vaga) => {
+    setErroSalva('')
+    try {
+      setHistorico(await api.marcarVaga(vaga, 'descartado'))
+      setUltimoDescarte(vaga)
+      setAvisoSalva(`${vaga.title} dismissed.`)
+    } catch {
+      setErroSalva(`Could not dismiss "${vaga.title}". Check your connection and try again.`)
+    }
+  }, [])
+
+  /** Desfaz: sem linha no histórico, a vaga volta a ser nova. */
+  const restaurar = useCallback(async (url: string, titulo: string) => {
+    setErroSalva('')
+    try {
+      setHistorico(await api.desmarcarVaga(url))
+      setUltimoDescarte((u) => (u?.url === url ? null : u))
+      setAvisoSalva(`${titulo} restored.`)
+    } catch {
+      setErroSalva(`Could not restore "${titulo}". Check your connection and try again.`)
+    }
+  }, [])
+
+  /**
+   * Abrir o anúncio é o que marca a vaga como vista.
+   *
+   * **Não é automático por aparecer na tela**: a pessoa rola por 25 vagas e lê
+   * 3, e marcar as 25 esconderia 22 que ela nunca leu. Abrir é o único gesto
+   * desta tela que prova atenção — e já acontece de qualquer jeito, então não
+   * custa um clique a mais.
+   *
+   * Falha em silêncio: o anúncio já abriu em outra aba, e um erro sobre o selo
+   * "New" seria ruído sobre uma ação que deu certo.
+   */
+  const marcarVista = useCallback((vaga: Vaga) => {
+    api
+      .marcarVaga(vaga, 'visto')
+      .then(setHistorico)
+      .catch(() => {})
+  }, [])
+
+  /**
    * Salva ou remove, com atualização otimista.
    *
    * A estrela muda na hora e volta atrás se a chamada falhar. É o padrão que
@@ -128,13 +222,41 @@ export function ListaVagas() {
     }
   }, [])
 
-  const paginas = Math.max(1, Math.ceil(vagas.length / POR_PAGINA))
+  const vistas = useMemo(
+    () => new Set(historico?.vistas ?? []),
+    [historico],
+  )
+  const descartadas = useMemo(
+    () => new Set(historico?.descartadas.map((d) => d.url) ?? []),
+    [historico],
+  )
+
+  /**
+   * A lista depois do histórico.
+   *
+   * **Descartada some de "All" também**, e não só de "New": "some da lista e
+   * não volta" é o critério do card, e uma vaga descartada que continua na
+   * aba principal não foi descartada — foi anotada.
+   */
+  const filtradas = useMemo(() => {
+    if (recorte === 'descartadas') return vagas.filter((v) => descartadas.has(v.url))
+    const semDescarte = vagas.filter((v) => !descartadas.has(v.url))
+    if (recorte === 'novas') return semDescarte.filter((v) => !vistas.has(v.url))
+    return semDescarte
+  }, [vagas, recorte, vistas, descartadas])
+
+  const paginas = Math.max(1, Math.ceil(filtradas.length / POR_PAGINA))
   // A página nunca passa do fim: se a lista encolheu enquanto a busca
-  // streamava, `pagina` poderia apontar para o vazio.
+  // streamava — ou porque um descarte a encurtou —, `pagina` poderia apontar
+  // para o vazio.
   const atual = Math.min(pagina, paginas)
   const visiveis = useMemo(
-    () => vagas.slice((atual - 1) * POR_PAGINA, atual * POR_PAGINA),
-    [vagas, atual],
+    () => filtradas.slice((atual - 1) * POR_PAGINA, atual * POR_PAGINA),
+    [filtradas, atual],
+  )
+  const novasNaBusca = useMemo(
+    () => vagas.filter((v) => !descartadas.has(v.url) && !vistas.has(v.url)).length,
+    [vagas, vistas, descartadas],
   )
 
   return (
@@ -190,10 +312,138 @@ export function ListaVagas() {
         </p>
       )}
 
+      {ultimoDescarte && (
+        // O desfazer imediato. Fica FORA do `historico &&` de baixo porque
+        // precisa sobreviver ao recorte mudar — quem descarta em "All" e a
+        // lista encurta ainda tem o undo à mão.
+        <p
+          className="flex flex-wrap items-center gap-2 rounded-md border px-3 py-2 text-sm"
+          style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
+        >
+          <span style={{ color: 'var(--text-muted)' }}>
+            Dismissed “{ultimoDescarte.title}”.
+          </span>
+          <button
+            type="button"
+            onClick={() => void restaurar(ultimoDescarte.url, ultimoDescarte.title)}
+            className="min-h-6 underline underline-offset-2"
+            style={{ color: 'var(--brand)' }}
+          >
+            Undo
+          </button>
+          <button
+            type="button"
+            onClick={() => setUltimoDescarte(null)}
+            aria-label="Dismiss this message"
+            className="ml-auto min-h-6 px-1"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <span aria-hidden>×</span>
+          </button>
+        </p>
+      )}
+
+      {historico && vagas.length > 0 && (
+        // `radiogroup` e não três botões soltos: são opções mutuamente
+        // exclusivas sobre a MESMA lista, e o leitor de tela precisa anunciar
+        // "1 de 3", não três botões sem relação.
+        <div role="radiogroup" aria-label="Filter by history" className="flex flex-wrap gap-2">
+          {(
+            [
+              ['todas', `All (${vagas.length - descartadas.size >= 0 ? vagas.filter((v) => !descartadas.has(v.url)).length : 0})`],
+              ['novas', `New (${novasNaBusca})`],
+              ['descartadas', `Dismissed (${vagas.filter((v) => descartadas.has(v.url)).length})`],
+            ] as const
+          ).map(([valor, rotulo]) => {
+            const ativo = recorte === valor
+            return (
+              <button
+                key={valor}
+                type="button"
+                role="radio"
+                aria-checked={ativo}
+                // **Roving tabindex + setas.** `role="radiogroup"` promete que
+                // as setas andam entre as opções e que só uma é tabbable; sem
+                // isso o Tab visita as três e o leitor de tela anuncia um
+                // grupo que não se comporta como grupo (QA, 24/08).
+                tabIndex={ativo ? 0 : -1}
+                onKeyDown={(e) => {
+                  const ordem = ['todas', 'novas', 'descartadas'] as const
+                  const i = ordem.indexOf(valor)
+                  const passo =
+                    e.key === 'ArrowRight' || e.key === 'ArrowDown'
+                      ? 1
+                      : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+                        ? -1
+                        : 0
+                  if (passo === 0) return
+                  e.preventDefault()
+                  const proximo = ordem[(i + passo + ordem.length) % ordem.length]
+                  setRecorte(proximo)
+                  setPagina(1)
+                  // O foco acompanha a seleção — é o que faz a seta parecer
+                  // navegação, e não um atalho invisível.
+                  const alvo = e.currentTarget.parentElement?.querySelector<HTMLButtonElement>(
+                    `[data-recorte="${proximo}"]`,
+                  )
+                  alvo?.focus()
+                }}
+                data-recorte={valor}
+                onClick={() => {
+                  setRecorte(valor)
+                  // Trocar de recorte volta para a primeira página: ficar na 3
+                  // de uma lista que encolheu mostraria vazio e pareceria
+                  // "sem resultado".
+                  setPagina(1)
+                }}
+                className="min-h-6 rounded-md border px-3 py-1 text-sm"
+                style={
+                  ativo
+                    ? { borderColor: 'var(--brand)', color: 'var(--brand)', fontWeight: 600 }
+                    : { borderColor: 'var(--border)', color: 'var(--text-muted)' }
+                }
+              >
+                {rotulo}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
       {vagas.length > 0 && (
         <>
+          {recorte === 'descartadas' && filtradas.length > 0 && (
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+              These are hidden from your list. Restore any of them to bring it back.
+            </p>
+          )}
+
           <ul className="flex flex-col border-t" style={{ borderColor: 'var(--border)' }}>
             {visiveis.map((vaga) => (
+              // No recorte "Dismissed" a linha ganha o caminho de volta. É o
+              // desfazer TARDIO — quem só percebeu o clique errado depois de o
+              // aviso de undo sumir encontra a vaga aqui.
+              recorte === 'descartadas' ? (
+                <li key={vaga.id} className="flex flex-col">
+                  {/* A estrela vem junto: sem ela, uma vaga salva E descartada
+                      ficava presa na aba Saved — só dava para dessalvar
+                      restaurando antes (QA, 24/08). Salvar e descartar são
+                      eixos independentes, e a linha precisa oferecer os dois. */}
+                  <LinhaVaga
+                    vaga={vaga}
+                    salva={salvas?.has(vaga.url)}
+                    onAlternarSalva={salvas ? alternarSalva : undefined}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void restaurar(vaga.url, vaga.title)}
+                    className="mb-4 min-h-6 self-start underline underline-offset-2"
+                    style={{ color: 'var(--brand)' }}
+                  >
+                    Restore “{vaga.title}”
+                  </button>
+                </li>
+              ) : (
               <LinhaVaga
                 key={vaga.id}
                 vaga={vaga}
@@ -201,7 +451,15 @@ export function ListaVagas() {
                 // Sem a lista carregada não há estrela: melhor ausente que
                 // mostrando um estado que pode estar errado.
                 onAlternarSalva={salvas ? alternarSalva : undefined}
+                // Sem histórico não há selo nem ×: a tela volta a ser a de
+                // antes do JOB-26, em vez de oferecer um botão que não grava.
+                nova={historico ? !vistas.has(vaga.url) : undefined}
+                onAbrir={historico ? marcarVista : undefined}
+                // O × só existe aqui: no recorte "Dismissed" a linha é
+                // renderizada pelo outro braço, com o botão Restore no lugar.
+                onDescartar={historico ? (v) => void descartar(v) : undefined}
               />
+              )
             ))}
           </ul>
 
@@ -209,7 +467,10 @@ export function ListaVagas() {
             <Paginacao
               atual={atual}
               paginas={paginas}
-              total={vagas.length}
+              // O total do rodapé é o do FILTRO, não o da busca: com 30 vagas
+              // e 3 descartadas, os selos diziam "All (27)" e o rodapé "30
+              // jobs" (QA, 24/08). Dois números para a mesma lista.
+              total={filtradas.length}
               onIr={(p) => {
                 setPagina(p)
                 // Trocar de página sem subir deixa a pessoa no meio da lista
@@ -219,6 +480,18 @@ export function ListaVagas() {
             />
           )}
         </>
+      )}
+
+      {/* Vazio POR CAUSA DO RECORTE, e não da busca. Sem esta distinção,
+          "New (0)" mostraria a mensagem de "nenhuma vaga encontrada" logo
+          abaixo de uma busca que achou 40 — e a pessoa concluiria que a busca
+          falhou. */}
+      {vagas.length > 0 && filtradas.length === 0 && (
+        <p className="py-10 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+          {recorte === 'novas'
+            ? 'No new jobs here — you have already opened all of these. Switch to All to see them again.'
+            : 'Nothing dismissed yet.'}
+        </p>
       )}
 
       {estado === 'pronto' && vagas.length === 0 && !erro && (

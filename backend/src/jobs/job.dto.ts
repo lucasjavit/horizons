@@ -421,3 +421,60 @@ export interface VagaDto {
   postedAt: string | null;
   foundAt: string;
 }
+
+/**
+ * Marcar uma vaga como vista ou descartada (JOB-26).
+ *
+ * Carrega titulo e empresa junto com a URL porque a vaga pode nem existir no
+ * banco: a busca e ao vivo e streama para a tela sem gravar `FoundJob`. Sem
+ * estes dois campos, a lista de descartadas seria uma lista de URLs cruas, e
+ * a pessoa nao teria como reconhecer o que desfazer.
+ */
+export class MarcarVagaDto {
+  /** Chave da vaga. Vazia chegaria ao `deleteMany` e apagaria o historico. */
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  url!: string;
+
+  @IsIn(['visto', 'descartado'])
+  estado!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(300)
+  title!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  company!: string;
+}
+
+/** Tirar a vaga do historico — o desfazer do descarte. */
+export class DesmarcarVagaDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
+  url!: string;
+}
+
+/** Uma vaga descartada, com o minimo para a pessoa reconhece-la. */
+export interface VagaMarcadaDto {
+  url: string;
+  title: string;
+  company: string;
+  marcadaEm: string;
+}
+
+/**
+ * O historico inteiro da pessoa, numa resposta so.
+ *
+ * As vistas sao so URLs (a tela ja tem os dados da vaga na lista de busca); as
+ * descartadas trazem titulo e empresa, porque elas somem da lista e precisam
+ * ser mostradas em outro lugar para poderem voltar.
+ */
+export interface HistoricoDto {
+  vistas: string[];
+  descartadas: VagaMarcadaDto[];
+}
