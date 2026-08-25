@@ -156,7 +156,7 @@ async function carregarJsPdf(): Promise<typeof import('jspdf').jsPDF> {
   await carregando
 
   const jsPDF = (window as unknown as JanelaComJsPdf).jspdf?.jsPDF
-  if (!jsPDF) throw new Error('jsPDF nao ficou disponivel apos o carregamento')
+  if (!jsPDF) throw new Error('jsPDF did not become available after loading')
   return jsPDF
 }
 

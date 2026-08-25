@@ -3,7 +3,7 @@ interface ErrorStateProps {
   onRetry?: () => void
 }
 
-export function LoadingState({ label = 'Carregando…' }: { label?: string }) {
+export function LoadingState({ label = 'Loading…' }: { label?: string }) {
   return (
     <div
       className="flex items-center gap-3 py-16 justify-center text-sm"
@@ -29,7 +29,7 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
       }}
       role="alert"
     >
-      <p className="font-medium">Algo deu errado</p>
+      <p className="font-medium">Something went wrong</p>
       <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
         {message}
       </p>
@@ -40,7 +40,7 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
           className="mt-4 rounded-md px-4 py-2 text-sm font-medium"
           style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
         >
-          Tentar de novo
+          Try again
         </button>
       )}
     </div>

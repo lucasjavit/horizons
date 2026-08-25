@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { WARN_INK } from '../blocks/BlockRenderer'
+import { Hint } from '../Hint'
 import { api, errorMessage } from '../../lib/api'
 import type { CvLido } from '../../types/api'
 
@@ -14,6 +15,25 @@ interface CaixaUploadCVProps {
   ativa: boolean | undefined
   /** O perfil lido, para a tela preencher os filtros — editáveis. */
   onLeu: (lido: CvLido) => void
+  /**
+   * "Replace file" foi clicado: a origem do currículo anterior deixa de valer.
+   *
+   * Sem isto a contagem soma os dois currículos e a frase nomeia só o último
+   * (QA, 25/08). Quem troca de arquivo acredita ter substituído o perfil, e
+   * substituiu nada.
+   */
+  onSubstituir?: () => void
+  /**
+   * Quantos filtros o currículo marcou, para a linha de sucesso dizer um
+   * número em vez de "pronto".
+   *
+   * Vem de fora porque quem sabe é o pai: esta caixa entrega o `CvLido` e o
+   * `ListaVagas` decide o que dele vira seleção (`aplicarCv` mescla com o que
+   * a pessoa já tinha marcado). Contar aqui, a partir do `CvLido`, daria um
+   * número diferente do que os dropdowns mostram — e um número errado é pior
+   * que nenhum, porque a pessoa o usa para decidir se confere.
+   */
+  filtrosMarcados: number
 }
 
 type Estado = 'ocioso' | 'enviando' | 'lido'
@@ -27,22 +47,34 @@ type Estado = 'ocioso' | 'enviando' | 'lido'
  * oferecer. O servidor confere o mesmo interruptor: esconder a caixa esconde
  * o botão, não o endpoint.
  *
- * O aviso de privacidade fica **acima do botão de escolher arquivo**, não em
- * rodapé nem em modal depois da escolha. É critério de aceite do JOB-02, e um
- * aviso que chega depois da escolha chega tarde: a decisão já foi tomada.
+ * **O aviso de que o arquivo vai para o provedor de IA é permanente na tela**,
+ * acima do botão, sem depender de hover nem de clique. É critério de aceite do
+ * JOB-02: um aviso que só aparece no tooltip chega tarde, porque a pessoa pode
+ * escolher o arquivo sem nunca abrir o tooltip. O que foi para dentro do `?`
+ * é o *detalhe* — o que é guardado, os formatos, o limite —, nunca o fato.
+ *
+ * O aviso perdeu o peso de erro em 25/08 (redesenho, direção C). Antes era uma
+ * caixa com `border-l-4` e `--surface-sunken`, que pesava mais que o próprio
+ * botão de ação, apesar de ser conteúdo informativo e não falha. O contraste
+ * já estava aprovado (pior caso 4,91:1) — o problema era peso, não cor.
  *
  * Duas regras do desenho que valem mais que o código bonito:
  *
  * - **recusa nunca preenche campo** — um CV lido errado que produz busca ruim,
  *   sem a pessoa ver o porquê, é o pior desfecho possível;
  * - **erro de upload nunca apaga o que foi digitado** — daí o `onLeu` só ser
- *   chamado no caminho de sucesso.
+ *   chamado no caminho de sucesso, e daí o erro dizer isso por escrito
+ *   ("Nothing was changed in your filters"). A garantia existia no código e
+ *   não aparecia na tela.
  *
- * O texto é em inglês como o resto da aba Jobs. O componente foi recuperado do
- * commit 7fb2d72^, onde tinha sido apagado junto com o formulário de perfil; o
- * bloco de privacidade voltou palavra por palavra, porque já era o definitivo.
+ * O texto é em inglês como o resto da aba Jobs.
  */
-export function CaixaUploadCV({ ativa, onLeu }: CaixaUploadCVProps) {
+export function CaixaUploadCV({
+  ativa,
+  onLeu,
+  filtrosMarcados,
+  onSubstituir,
+}: CaixaUploadCVProps) {
   const [estado, setEstado] = useState<Estado>('ocioso')
   const [erro, setErro] = useState<string | null>(null)
   const [nome, setNome] = useState<string | null>(null)
@@ -65,9 +97,9 @@ export function CaixaUploadCV({ ativa, onLeu }: CaixaUploadCVProps) {
       // leitura que falhou. O que a pessoa ja tinha marcado continua onde
       // estava — este componente nunca escreve nos filtros por conta propria.
       //
-      // `errorMessage` devolve a mensagem DO SERVIDOR, que ja vem pronta e em
-      // portugues: "este arquivo nao parece um curriculo" diz o que fazer, e
-      // um "erro ao enviar" generico nao.
+      // `errorMessage` devolve a mensagem DO SERVIDOR, que ja vem pronta e diz
+      // o que fazer ("este arquivo nao parece um curriculo"), coisa que um
+      // "erro ao enviar" generico nao diz.
       setEstado('ocioso')
       setErro(errorMessage(e))
       // Limpa o input para o mesmo arquivo poder ser escolhido de novo: sem
@@ -76,95 +108,231 @@ export function CaixaUploadCV({ ativa, onLeu }: CaixaUploadCVProps) {
     }
   }
 
-  return (
-    <section
-      aria-labelledby="cv-titulo"
-      className="rounded-xl border p-5"
-      style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
-    >
-      <h2 id="cv-titulo" className="flex items-center gap-2 text-base font-semibold">
-        <span aria-hidden>⬆</span>
-        Start from your résumé (optional)
-      </h2>
+  /**
+   * O `<input type="file">` de verdade, escondido.
+   *
+   * Escondido, e nao substituido: o `<label htmlFor>` continua apontando para
+   * ele, entao o leitor de tela continua anunciando um campo de arquivo com
+   * nome, e o `aria-describedby` continua ligando aviso e formatos ao campo.
+   * O que sai e so a *aparencia* nativa, que trazia dois defeitos: o rotulo
+   * "Escolher arquivo" vinha no idioma do SO (portugues numa aba inglesa) e o
+   * alvo de toque media 20px, abaixo dos 24px que o projeto exige.
+   *
+   * **`tabIndex={-1}` nao e detalhe.** Sem ele o Tab para duas vezes para um
+   * controle so — uma no input invisivel, que nao mostra foco nenhum, e outra
+   * no botao. Medido em 25/08: a ordem saia INPUT vazio -> "Upload résumé",
+   * e a primeira parada parecia um foco perdido no nada. Quem opera e o
+   * botao; o input fica so como campo real por tras dele.
+   */
+  const inputEscondido = (
+    <input
+      ref={inputRef}
+      id="cv-arquivo"
+      type="file"
+      accept=".pdf,.docx"
+      tabIndex={-1}
+      disabled={estado === 'enviando'}
+      onChange={(e) => void enviar(e.target.files?.[0])}
+      aria-describedby="cv-privacidade cv-detalhe"
+      aria-invalid={erro ? true : undefined}
+      className="sr-only"
+    />
+  )
 
-      <p className="mt-1.5 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        We read it and tick the filters below for you. Everything stays
-        editable — check what we got right before you search.
-      </p>
-
-      {/* O aviso é um <p> com borda esquerda, e NÃO role="alert": alert
-          interrompe o leitor de tela, e isto é contexto, não urgência. O id
-          é apontado pelo input com aria-describedby — quem chega pelo teclado
-          ouve o aviso ao focar o botão, que é o "antes do upload" de quem não
-          enxerga a tela. */}
-      <div
-        id="cv-privacidade"
-        className="mt-4 rounded-lg border border-l-4 p-3.5 text-sm"
+  /**
+   * O estado de sucesso: uma linha, e o aviso sai.
+   *
+   * A faixa inteira colapsa depois da leitura porque o passo ja foi usado —
+   * continuar ocupando o topo com o convite faria o atalho parecer permanente.
+   * O aviso de privacidade sai junto: a decisao ja foi tomada, e repetir o
+   * aviso depois do envio nao protege ninguem.
+   *
+   * **"Replace file" volta ao estado ocioso, com o aviso de volta**, em vez de
+   * abrir o seletor direto. Custa um clique a mais a quem troca de arquivo, e
+   * paga: o segundo upload tambem e um upload, e a promessa do JOB-02 e que o
+   * aviso venha ANTES de escolher o arquivo — nao apenas antes do primeiro.
+   */
+  if (estado === 'lido') {
+    // Leu o arquivo e nao marcou nada: o pedido funcionou, o resultado nao
+    // serviu. Sao coisas diferentes e a tela nao pode dizer a mesma.
+    const nada = filtrosMarcados === 0
+    return (
+      <section
+        aria-labelledby="cv-titulo"
+        className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border p-3.5"
         style={{
-          borderColor: 'var(--border)',
-          borderLeftColor: WARN_INK,
-          background: 'var(--surface-sunken)',
+          borderColor: nada ? 'var(--border)' : 'var(--brand)',
+          background: 'var(--surface-raised)',
         }}
       >
-        <p className="font-medium">
-          <span aria-hidden>⚠ </span>Your file is sent to the AI provider to be
-          read.
-        </p>
-        <p className="mt-1 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          We only keep what it understood: stack, seniority and years of
-          experience. The file and the résumé text are not stored anywhere.
-        </p>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <label htmlFor="cv-arquivo" className="text-sm font-medium">
-          Résumé file
-        </label>
-        <input
-          ref={inputRef}
-          id="cv-arquivo"
-          type="file"
-          accept=".pdf,.docx"
-          disabled={estado === 'enviando'}
-          onChange={(e) => void enviar(e.target.files?.[0])}
-          aria-describedby="cv-privacidade cv-formatos"
-          aria-invalid={erro ? true : undefined}
-          className="max-w-full text-sm disabled:cursor-not-allowed disabled:opacity-60"
-          style={{ color: 'var(--text)' }}
-        />
-      </div>
-
-      <p id="cv-formatos" className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-        PDF or DOCX, up to 5 MB. A résumé scanned as an image cannot be read.
-      </p>
-
-      {/* Um status só, com role="status": o leitor de tela anuncia sem
-          interromper, e a pessoa vidente vê o mesmo texto. A chamada de IA
-          leva segundos — sem esta linha a tela fica parada e parece travada. */}
-      {estado === 'enviando' && (
-        <p role="status" className="mt-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Reading {nome}…
-        </p>
-      )}
-
-      {estado === 'lido' && (
-        <p role="status" className="mt-3 text-sm font-medium">
-          Done. The filters marked{' '}
+        <h2 id="cv-titulo" className="sr-only">
+          Résumé read
+        </h2>
+        {inputEscondido}
+        {/* **Zero filtro nao e sucesso.** Medido pelo QA em 25/08: um CV cujo
+            stack nao casa com o catalogo (so COBOL, por exemplo) — ou um em
+            que a pessoa desmarcou tudo — mostrava "✓ we ticked 0 filters ...
+            Uncheck anything we got wrong": tique verde e instrucao para
+            desmarcar o que nao existe, e a busca saindo com filtro vazio sem
+            ninguem perceber. */}
+        <span aria-hidden style={{ color: nada ? 'var(--text-muted)' : 'var(--brand)' }}>
+          {nada ? '·' : '✓'}
+        </span>
+        {/* role="status" e nao "alert": anuncia sem interromper. */}
+        <p role="status" className="min-w-[12rem] flex-1 text-sm leading-relaxed">
+          {nada ? (
+            <>
+              Read <strong className="font-semibold">{nome}</strong> — but nothing
+              in it matched our filters. Pick them by hand below.
+            </>
+          ) : (
+            <>
+          Read <strong className="font-semibold">{nome}</strong> — we ticked{' '}
+          <strong className="font-semibold">
+            {filtrosMarcados} {filtrosMarcados === 1 ? 'filter' : 'filters'}
+          </strong>{' '}
+          marked{' '}
           <span
             className="rounded-full border px-1.5 text-xs font-semibold"
             style={{ color: 'var(--accent-ink)', borderColor: 'var(--accent-ink)' }}
           >
             CV
-          </span>{' '}
-          came from your résumé — uncheck anything we got wrong.
+          </span>
+          . Uncheck anything we got wrong.
+            </>
+          )}
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            // Volta para ocioso, com o aviso. Nao abre o seletor: ver o
+            // comentario do bloco acima.
+            //
+            // **E esquece o curriculo anterior.** Medido pelo QA em 25/08:
+            // subir um segundo CV de outra pessoa dizia "we ticked 8 filters"
+            // nomeando so o arquivo novo — os 4 valores do primeiro
+            // continuavam marcados e iam para a busca. "Replace file" promete
+            // substituir; acumular em silencio faz o botao mentir sobre o que
+            // faz, e a busca sai com o stack de dois curriculos misturados.
+            onSubstituir?.()
+            setEstado('ocioso')
+            setNome(null)
+            if (inputRef.current) inputRef.current.value = ''
+          }}
+          className="min-h-6 shrink-0 rounded text-sm underline underline-offset-2"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          Replace file
+        </button>
+      </section>
+    )
+  }
+
+  return (
+    <section
+      aria-labelledby="cv-titulo"
+      className="flex flex-col gap-2.5 rounded-xl border p-3.5"
+      style={{
+        // Borda de erro na propria faixa: erro sinalizado por borda + texto +
+        // aria-invalid, nunca so por cor.
+        borderColor: erro ? WARN_INK : 'var(--border)',
+        background: 'var(--surface-raised)',
+      }}
+    >
+      <h2 id="cv-titulo" className="sr-only">
+        Start from your résumé
+      </h2>
+
+      {/* A faixa de uma linha. No celular vira coluna e o botao ocupa a
+          largura toda — e a diferenca entre caber e nao caber na dobra. */}
+      <div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center sm:gap-3">
+        <label htmlFor="cv-arquivo" className="sr-only">
+          Résumé file
+        </label>
+        {inputEscondido}
+        <button
+          type="button"
+          disabled={estado === 'enviando'}
+          // Dispara o input escondido. O clique no botao visivel e o clique no
+          // campo — o `<label htmlFor>` sozinho nao bastaria, porque o proprio
+          // label visivel foi para sr-only.
+          onClick={() => inputRef.current?.click()}
+          // O botao repete o aria-describedby do input porque agora e ELE que
+          // recebe o foco (o input saiu da ordem de Tab). Sem isto o aviso de
+          // privacidade nao seria anunciado a quem chega pelo teclado — que e
+          // exatamente o "antes do upload" do JOB-02 para quem nao ve a tela.
+          aria-describedby="cv-privacidade cv-detalhe"
+          aria-invalid={erro ? true : undefined}
+          className="min-h-9 w-full shrink-0 rounded-lg border px-3.5 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+        >
+          <span aria-hidden>⬆ </span>
+          Upload résumé
+        </button>
+
+        {estado === 'enviando' ? (
+          // Um status so, com role="status": o leitor de tela anuncia sem
+          // interromper, e a pessoa vidente ve o mesmo texto. A chamada de IA
+          // leva segundos — sem esta linha a tela fica parada e parece travada.
+          <p role="status" className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Reading {nome}…
+          </p>
+        ) : (
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            <strong className="font-semibold" style={{ color: 'var(--text)' }}>
+              Start from your résumé
+            </strong>{' '}
+            — optional. We read it and tick the filters below for you, all
+            editable.
+          </p>
+        )}
+      </div>
+
+      {/* **O fato fica na tela; o detalhe vai para o `?`.**
+
+          Esta linha nao pode virar tooltip: e criterio de aceite do JOB-02 que
+          a pessoa saiba que o arquivo vai para o provedor de IA ANTES de
+          escolher o arquivo, sem depender de hover nem de clique. O que o `?`
+          carrega e o resto — o que e guardado, formatos e limite.
+
+          Nao tem role="alert": alert interrompe o leitor de tela, e isto e
+          contexto, nao urgencia. O id e apontado pelo input com
+          aria-describedby, entao quem chega pelo teclado ouve o aviso ao focar
+          o campo — que e o "antes do upload" de quem nao enxerga a tela. */}
+      {estado !== 'enviando' && (
+        <p
+          className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.8125rem] leading-relaxed"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          <span id="cv-privacidade">
+            <span aria-hidden style={{ color: WARN_INK }}>
+              ⚠{' '}
+            </span>
+            Your file is sent to the AI provider to be read.
+          </span>
+          <Hint title="Your résumé and your data" label="What happens to my résumé file?">
+            {
+              'We only keep stack, seniority and years — the file and its text are never stored. PDF or DOCX, up to 5 MB. A résumé scanned as an image cannot be read.'
+            }
+          </Hint>
+          {/* O mesmo texto do tooltip, para o leitor de tela, ligado ao input
+              por aria-describedby. O tooltip so existe enquanto aberto, entao
+              sem esta copia o detalhe nao alcancaria quem nao o abre. */}
+          <span id="cv-detalhe" className="sr-only">
+            We only keep stack, seniority and years — the file and its text are
+            never stored. PDF or DOCX, up to 5 MB. A résumé scanned as an image
+            cannot be read.
+          </span>
         </p>
       )}
 
       {erro && (
-        // Borda + texto, não só cor: o input ganha aria-invalid acima, e a
-        // mensagem do servidor aparece por escrito aqui.
-        <p role="alert" className="mt-3 text-sm" style={{ color: WARN_INK }}>
-          {erro}
+        // Borda (na section) + texto + aria-invalid (no input), nunca so cor.
+        // "Nothing was changed in your filters" e a garantia que o codigo ja
+        // dava e a tela nao dizia: o catch nao chama onLeu.
+        <p role="alert" className="text-sm leading-relaxed" style={{ color: WARN_INK }}>
+          <span aria-hidden>⚠ </span>
+          {erro} Nothing was changed in your filters.
         </p>
       )}
     </section>

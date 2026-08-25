@@ -19,6 +19,7 @@ destrava o resto.
 
 | Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
+| [APP-02](cards/APP-02-erro-do-backend-em-portugues.md) | **Erro do backend em português na interface inglesa** | P | medido (25/08) — "Formato nao suportado. Envie o curriculo em PDF ou DOCX." dentro da caixa de CV, e "Link invalido ou expirado" no `/email/sair`. Exige decidir onde mora a tradução |
 | [JOB-32](cards/JOB-32-telegram-como-canal.md) | **Telegram como segundo canal** — entrega sem domínio próprio, ao lado do e-mail | M | (24/08) o e-mail está pronto e não entrega: Resend e Brevo exigem domínio verificado. O bot **não** inicia conversa — exige `/start`, e cada passo perde gente. **As três decisões em aberto saíram** (24/08): webhook, um bot por ambiente, `chat_id` em claro |
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
 | [PLT-04](cards/PLT-04-crud-de-prompts.md) | Config vira área de admin, com CRUD dos prompts de busca | M | agora tem `@AdminOnly()` de verdade por trás |
@@ -141,8 +142,12 @@ Para não serem rediscutidas sem motivo novo:
   e medir.
 - **A invoice é anônima por padrão.** Exigir cadastro para gerar um PDF perde
   a corrida contra um formulário que gera na hora.
-- **A invoice é em inglês, as trilhas em português.** A invoice é porta de
-  entrada global; as trilhas são para o dev brasileiro.
+- **A interface é toda em inglês; só o conteúdo das trilhas é português**
+  (25/08/2026). Era "invoice em inglês, trilhas em português", o que deixava
+  Configurações, a navegação e a home sem regra — e elas nasceram em
+  português. O alvo não é o dev brasileiro, é o dev de país emergente que quer
+  ganhar em moeda forte; a interface tem de falar com ele. As aulas seguem em
+  português porque foram escritas assim.
 - **O PDF é gerado no navegador.** Custo zero de servidor, funciona anônimo.
 - **O login é com Google, não com senha** (13/08/2026). O arguição não tem
   senha para portar, e o Google já entrega e-mail verificado — que a busca de

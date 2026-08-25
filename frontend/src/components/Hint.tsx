@@ -14,10 +14,24 @@ interface HintProps {
    * Nesse caso a explicacao vira texto na tela, nao tooltip.
    */
   align?: 'left' | 'right'
+  /**
+   * O texto do botao para o leitor de tela.
+   *
+   * O padrao, `What is {title}?`, cabe quando o titulo e um substantivo
+   * ("What is Currency?"). Quando o titulo e uma frase, a pergunta sai
+   * torta — dai o escape. Nao ha default vazio de proposito: icone sozinho
+   * sem nome nao existe para quem nao enxerga.
+   */
+  label?: string
 }
 
 /**
  * Explicacao que aparece ao passar o mouse ou focar.
+ *
+ * Morava em `components/invoice/`, e subiu para ca em 25/08 quando a caixa de
+ * curriculo da aba Jobs passou a usa-lo: nada nele e do invoice, e um segundo
+ * tooltip copiado seria a mesma acessibilidade escrita duas vezes — e
+ * corrigida uma so.
  *
  * Copiado do padrao do look4job (`.pill .tip` no index.html) e adaptado aos
  * tokens do Horizons. O que foi mantido de la: o atraso antes de aparecer,
@@ -30,7 +44,7 @@ interface HintProps {
  * a foco, com `aria-describedby` ligando o texto ao botao — assim o leitor de
  * tela le a explicacao, e nao so o icone.
  */
-export function Hint({ title, children, align = 'right' }: HintProps) {
+export function Hint({ title, children, align = 'right', label }: HintProps) {
   const id = useId()
   const [visivel, setVisivel] = useState(false)
 
@@ -38,15 +52,22 @@ export function Hint({ title, children, align = 'right' }: HintProps) {
     <span className="relative inline-flex align-middle">
       <button
         type="button"
-        aria-label={`What is ${title}?`}
+        aria-label={label ?? `What is ${title}?`}
         aria-describedby={visivel ? id : undefined}
         aria-expanded={visivel}
         onMouseEnter={() => setVisivel(true)}
         onMouseLeave={() => setVisivel(false)}
         onFocus={() => setVisivel(true)}
         onBlur={() => setVisivel(false)}
-        // Toque: no celular nao ha hover, entao o clique alterna.
-        onClick={() => setVisivel((v) => !v)}
+        // **O clique nao alterna: ele garante aberto.**
+        //
+        // Medido pelo QA em 25/08: no celular o primeiro toque nao abria nada.
+        // O gesto dispara `focus` (que abre) e `click` (que alternava para
+        // fechado) — o painel abria e fechava dentro do mesmo toque, e so o
+        // segundo funcionava. Como o toque so existe para ABRIR, e fechar tem
+        // o Escape, o toque fora e o `blur`, alternar nao paga o preco de
+        // parecer quebrado no gesto principal do celular.
+        onClick={() => setVisivel(true)}
         onKeyDown={(e) => {
           if (e.key === 'Escape' && visivel) {
             e.stopPropagation()

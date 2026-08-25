@@ -34,7 +34,7 @@ interface Quadro {
 }
 
 export function QuadroPage() {
-  useDocumentTitle('Quadro')
+  useDocumentTitle('Board')
 
   const [dados, setDados] = useState<Quadro | null>(null)
   const [erro, setErro] = useState<string | null>(null)
@@ -52,7 +52,7 @@ export function QuadroPage() {
       .catch((e: unknown) => {
         if (e instanceof Error && e.name === 'AbortError') return
         setErro(
-          'Nao foi possivel ler o quadro. Rode: python3 scripts/kanban-html.py',
+          'Could not read the board. Run: python3 scripts/kanban-html.py',
         )
       })
     return () => ctrl.abort()
@@ -67,7 +67,7 @@ export function QuadroPage() {
   if (!dados)
     return (
       <main id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-10">
-        <LoadingState label="Carregando o quadro…" />
+        <LoadingState label="Loading the board…" />
       </main>
     )
 
@@ -80,9 +80,9 @@ export function QuadroPage() {
       className="mx-auto max-w-7xl px-4 py-10 sm:px-6"
     >
       <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Quadro</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Board</h1>
         <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-          {dados.cards.length} cards · {feitos} feitos · gerado de{' '}
+          {dados.cards.length} cards · {feitos} done · generated from{' '}
           <code className="font-mono">docs/backlog/cards/</code>
         </p>
       </header>
@@ -100,7 +100,7 @@ export function QuadroPage() {
             className="text-[0.7rem] font-bold uppercase tracking-widest"
             style={{ color: 'var(--text-muted)' }}
           >
-            Sprint atual
+            Current sprint
           </p>
           <h2 className="mt-1 text-base font-semibold tracking-tight">
             {dados.sprint.titulo}
@@ -137,7 +137,7 @@ export function QuadroPage() {
               </h2>
 
               {lista.length === 0 ? (
-                <EmptyState message="Nada aqui." />
+                <EmptyState message="Nothing here." />
               ) : (
                 <ul className="flex flex-col gap-2.5">
                   {lista.map((c) => (
@@ -180,7 +180,7 @@ function Cartao({ card }: { card: Card }) {
         <span
           className="rounded border px-1 font-mono text-[0.62rem] font-bold"
           style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-          title="Tamanho"
+          title="Size"
         >
           {card.tamanho}
         </span>
@@ -193,7 +193,7 @@ function Cartao({ card }: { card: Card }) {
             className="ml-1.5 rounded border px-1 align-middle text-[0.6rem] font-bold uppercase tracking-wide"
             style={{ borderColor: 'var(--accent-ink)', color: 'var(--accent-ink)' }}
           >
-            parcial
+            partial
           </span>
         )}
       </h3>
@@ -210,7 +210,7 @@ function Cartao({ card }: { card: Card }) {
           className="mt-2 border-t pt-2 text-xs"
           style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
         >
-          <strong style={{ color: 'var(--text)' }}>Decisão:</strong>{' '}
+          <strong style={{ color: 'var(--text)' }}>Decision:</strong>{' '}
           {card.decisao}
         </p>
       )}
@@ -219,7 +219,7 @@ function Cartao({ card }: { card: Card }) {
           className="mt-2 border-t pt-2 text-xs"
           style={{ borderColor: 'var(--border)', color: 'var(--accent-ink)' }}
         >
-          Depende de: {card.bloqueio}
+          Depends on: {card.bloqueio}
         </p>
       )}
 
@@ -227,7 +227,7 @@ function Cartao({ card }: { card: Card }) {
         <div
           className="mt-2.5 flex items-center gap-2"
           role="img"
-          aria-label={`${card.feitos} de ${card.total} criterios atendidos`}
+          aria-label={`${card.feitos} of ${card.total} acceptance criteria met`}
         >
           <div
             className="h-1 flex-1 overflow-hidden rounded-full border"

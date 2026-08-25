@@ -45,7 +45,7 @@ const PROVEDORES: Provedor[] = [
   },
   {
     id: 'FIRECRAWL',
-    nome: 'Firecrawl (busca de vagas)',
+    nome: 'Firecrawl (job search)',
     url: 'https://www.firecrawl.dev/app/api-keys',
     ondeIr: 'firecrawl.dev → app → API keys',
     prefixo: 'fc-',
@@ -53,7 +53,7 @@ const PROVEDORES: Provedor[] = [
 ]
 
 export function SettingsPage() {
-  useDocumentTitle('Configurações')
+  useDocumentTitle('Settings')
 
   const { data, loading, error, reload, setData } = useAsync(
     (signal) => api.listTokens(signal),
@@ -68,10 +68,10 @@ export function SettingsPage() {
     >
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Configurações
+          Settings
         </h1>
         <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
-          Chaves e tokens dos serviços que a aplicação usa.
+          Keys and tokens for the services this application uses.
         </p>
       </header>
 
@@ -83,16 +83,16 @@ export function SettingsPage() {
           background: 'var(--surface-sunken)',
         }}
       >
-        <p className="font-medium">Sobre as chaves guardadas aqui</p>
+        <p className="font-medium">About the keys stored here</p>
         <p className="mt-1 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          Ficam no servidor, cifradas, e o valor nunca volta para a tela — só
-          os quatro últimos caracteres. Esta área é restrita a administradores.
-          Ainda assim, use chaves com escopo limitado e revogue-as no provedor
-          se tiver qualquer dúvida.
+          They stay on the server, encrypted, and the value never comes back
+          to the screen — only the last four characters. This area is restricted
+          to administrators. Even so, use keys with limited scope and revoke them
+          at the provider if you have any doubt.
         </p>
       </div>
 
-      {loading && <LoadingState label="Carregando as chaves…" />}
+      {loading && <LoadingState label="Loading keys…" />}
       {error && <ErrorState message={error} onRetry={reload} />}
 
       {data && (
@@ -164,13 +164,13 @@ function Recursos() {
       style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
     >
       <h2 id="recursos-titulo" className="text-lg font-semibold">
-        Recursos
+        Features
       </h2>
       <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-        O que a aplicação pode fazer com as chaves acima.
+        What the application can do with the keys above.
       </p>
 
-      {loading && <LoadingState label="Carregando…" />}
+      {loading && <LoadingState label="Loading…" />}
       {error && <ErrorState message={error} onRetry={reload} />}
 
       {data && (
@@ -180,20 +180,20 @@ function Recursos() {
           <div className="flex flex-col gap-5">
             <Interruptor
               id="busca-vagas"
-              titulo="Ativar Firecrawl"
+              titulo="Enable Firecrawl"
               ligado={data.firecrawlAtivo}
               temDependencia={data.temChaveFirecrawl}
               salvando={salvando}
               onAlternar={() =>
                 void alternar(api.definirBuscaVagas, data.firecrawlAtivo)
               }
-              ajudaLigada="A busca abre cada anúncio pelo Firecrawl: traz salário, skills e elegibilidade com o trecho que os comprova. Custa créditos e abre até 8 vagas por busca."
-              ajudaDesligada="Desligado, a busca continua funcionando — passa a ser feita pela IA, que encontra mais vagas e mais rápido, com menos detalhe de cada uma."
-              ajudaSemChave="Cadastre o token do Firecrawl acima para poder ligar. Sem ele a busca é feita pela IA."
+              ajudaLigada="The search opens each posting through Firecrawl: it brings salary, skills and eligibility along with the excerpt that proves them. It costs credits and opens up to 8 jobs per search."
+              ajudaDesligada="Turned off, the search keeps working — it is done by the AI instead, which finds more jobs and faster, with less detail on each one."
+              ajudaSemChave="Add the Firecrawl token above to be able to turn this on. Without it the search is done by the AI."
             />
                         <Interruptor
               id="busca-agendada"
-              titulo="Buscar vagas automaticamente"
+              titulo="Search for jobs automatically"
               ligado={data.buscaAgendadaAtiva}
               // Depende de haver algum motor: sem nenhum, a rodada gastaria
               // tempo para não achar nada.
@@ -202,13 +202,13 @@ function Recursos() {
               onAlternar={() =>
                 void alternar(api.definirBuscaAgendada, data.buscaAgendadaAtiva)
               }
-              ajudaLigada="A cada 50 minutos o sistema busca vagas novas para quem tem perfil salvo, sem ninguém precisar clicar. As vagas ficam 15 dias e depois somem."
-              ajudaDesligada="Desligado, a busca só acontece quando alguém clica em Filter. É o que evita gasto sem pedido — por isso este interruptor nasce desligado."
-              ajudaSemChave="Precisa de um motor de busca ligado — o ATS, o Firecrawl ou uma chave de IA."
+              ajudaLigada="Every 50 minutes the system searches for new jobs for everyone with a saved profile, without anyone having to click. Jobs stay for 15 days and then disappear."
+              ajudaDesligada="Turned off, the search only happens when someone clicks Filter. That is what prevents spending without a request — which is why this switch starts off."
+              ajudaSemChave="Requires a search engine turned on — the ATS, Firecrawl or an AI key."
             />
             <Interruptor
               id="email-semanal"
-              titulo="Enviar o e-mail semanal de vagas"
+              titulo="Send the weekly jobs email"
               // O que a tela mostra e a ESCOLHA do admin, e nao `emailAtivo`.
               // Sem SMTP `emailAtivo` e sempre false, e um interruptor que nao
               // reflete o clique parece quebrado — a ausencia de entrega e
@@ -224,15 +224,15 @@ function Recursos() {
               }
               ajudaLigada={
                 data.temProvedorDeEmail
-                  ? 'Cada pessoa com perfil salvo recebe, uma vez por semana, as vagas novas do grupo dela. Semana sem vaga nova não gera e-mail.'
-                  : 'Ligado, mas SEM SERVIDOR DE E-MAIL: a mensagem é montada e escrita no log da API, não enviada. Configure SMTP_HOST para passar a entregar.'
+                  ? 'Everyone with a saved profile receives, once a week, the new jobs for their group. A week with no new jobs generates no email.'
+                  : 'On, but with NO EMAIL SERVER: the message is assembled and written to the API log, not sent. Set SMTP_HOST to start delivering.'
               }
-              ajudaDesligada="Desligado, ninguém recebe e-mail de vagas. A busca continua rodando e as vagas continuam aparecendo na tela."
+              ajudaDesligada="Turned off, nobody receives job emails. The search keeps running and jobs keep showing up on screen."
               ajudaSemChave=""
             />
             <Interruptor
               id="historico"
-              titulo="Guardar o histórico de vagas"
+              titulo="Keep the job history"
               ligado={data.historicoAtivo}
               // Sem dependência: o histórico só grava a URL do que a própria
               // pessoa marcou. Não chama serviço nenhum de fora.
@@ -241,21 +241,21 @@ function Recursos() {
               onAlternar={() =>
                 void alternar(api.definirHistorico, data.historicoAtivo)
               }
-              ajudaLigada="Cada pessoa vê o selo “New” nas vagas que ainda não abriu, e pode descartar as que não interessam — que somem da lista dela. O histórico é privado: ninguém vê o dos outros."
-              ajudaDesligada="Desligado, a busca mostra todas as vagas sempre, sem selo e sem o botão de descartar. O que já foi marcado continua guardado e volta se o recurso for religado."
+              ajudaLigada="Everyone sees the “New” badge on jobs they have not opened yet, and can dismiss the ones that do not interest them — which disappear from their list. The history is private: nobody sees anyone else’s."
+              ajudaDesligada="Turned off, the search always shows every job, with no badge and no dismiss button. What was already marked stays stored and comes back if the feature is turned on again."
               ajudaSemChave=""
             />
             <Interruptor
               id="motor-ats"
-              titulo="Buscar direto nos ATS"
+              titulo="Search ATS directly"
               ligado={data.atsAtivo}
               // Sem dependência: as APIs de Greenhouse, Lever e Ashby são
               // públicas. É o único recurso aqui que não pede chave.
               temDependencia
               salvando={salvando}
               onAlternar={() => void alternar(api.definirAts, data.atsAtivo)}
-              ajudaLigada="Consulta as vagas direto no sistema onde a empresa publica (Greenhouse, Lever, Ashby). É de graça, traz centenas de vagas e o salário vem do campo — mas não diz se a vaga aceita quem mora fora."
-              ajudaDesligada="Desligado, a busca usa só o Firecrawl ou a IA — que custam e trazem menos vagas."
+              ajudaLigada="Queries jobs straight from the system where the company posts them (Greenhouse, Lever, Ashby). It is free, brings hundreds of jobs and the salary comes from the field — but it does not say whether the job accepts people living abroad."
+              ajudaDesligada="Turned off, the search uses only Firecrawl or the AI — which cost money and bring fewer jobs."
               ajudaSemChave=""
             />
             <EscolhaDeIa
@@ -265,15 +265,15 @@ function Recursos() {
             />
             <Interruptor
               id="leitura-cv"
-              titulo="Ler currículo em PDF ou DOCX"
+              titulo="Read resumes in PDF or DOCX"
               ligado={data.leituraCvAtiva}
               temDependencia={data.temChaveDeIa}
               salvando={salvando}
               onAlternar={() =>
                 void alternar(api.definirLeituraCv, data.leituraCvAtiva)
               }
-              ajudaLigada="A pessoa pode subir o currículo e os filtros vêm preenchidos. O arquivo é enviado ao provedor de IA para ser lido e não fica guardado — só stack, senioridade e anos."
-              ajudaSemChave="Cadastre uma chave da Anthropic acima para poder ligar. Sem ela o upload não funcionaria, e um interruptor ligado prometeria algo que falha na hora do uso."
+              ajudaLigada="People can upload their resume and the filters come prefilled. The file is sent to the AI provider to be read and is not stored — only stack, seniority and years."
+              ajudaSemChave="Add an Anthropic key above to be able to turn this on. Without it the upload would not work, and a switch left on would promise something that fails at the moment of use."
             />
           </div>
 
@@ -311,11 +311,11 @@ function MetricasDoEmail() {
     try {
       const r = await api.rodarEmail()
       setResultado(
-        `${r.considerados} considerados · ${r.enviados} e-mails · ` +
+        `${r.considerados} considered · ${r.enviados} emails · ` +
           `${r.enviadosTelegram} telegram · ` +
-          `${r.pulados} pulados · ${r.falhas} falhas` +
-          (r.provedorEntrega ? '' : ` (provedor "${r.provedor}" nao entrega — so registrou no log)`) +
-          (r.provedorTelegramEntrega ? '' : ' (Telegram desligado — so registrou no log)'),
+          `${r.pulados} skipped · ${r.falhas} failures` +
+          (r.provedorEntrega ? '' : ` (provider "${r.provedor}" does not deliver — only logged)`) +
+          (r.provedorTelegramEntrega ? '' : ' (Telegram off — only logged)'),
       )
       reload()
     } catch (e) {
@@ -332,16 +332,16 @@ function MetricasDoEmail() {
       style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
     >
       <h2 id="metricas-email-titulo" className="text-lg font-semibold">
-        Notificações de vagas
+        Job notifications
       </h2>
 
-      {loading && <LoadingState label="Carregando…" />}
+      {loading && <LoadingState label="Loading…" />}
       {error && <ErrorState message={error} onRetry={reload} />}
 
       {data && (
         <>
           <p className="mt-4 text-sm" style={{ color: 'var(--text-muted)' }}>
-            Pessoas contratadas
+            People hired
           </p>
           <p
             className="text-4xl font-semibold"
@@ -350,10 +350,10 @@ function MetricasDoEmail() {
             {data.contratados}
           </p>
           <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
-            <Numero rotulo="Assinantes" valor={data.assinantes} />
-            <Numero rotulo="Recebendo" valor={data.ativos} />
-            <Numero rotulo="Uma por mês" valor={data.emCadenciaMensal} />
-            <Numero rotulo="Já receberam" valor={data.jaReceberamAlgum} />
+            <Numero rotulo="Subscribers" valor={data.assinantes} />
+            <Numero rotulo="Receiving" valor={data.ativos} />
+            <Numero rotulo="Once a month" valor={data.emCadenciaMensal} />
+            <Numero rotulo="Have received" valor={data.jaReceberamAlgum} />
           </dl>
 
           {/* **A taxa de vinculação do Telegram** — o número que o JOB-32
@@ -361,8 +361,8 @@ function MetricasDoEmail() {
               canal. Fica ao lado dos assinantes de propósito: é a comparação
               entre os dois canais que responde a pergunta. */}
           <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
-            <Numero rotulo="Telegram vinculados" valor={data.telegramVinculados} />
-            <Numero rotulo="Telegram recebendo" valor={data.telegramAtivos} />
+            <Numero rotulo="Telegram linked" valor={data.telegramVinculados} />
+            <Numero rotulo="Telegram receiving" valor={data.telegramAtivos} />
           </dl>
 
           {/* **Sempre visível, recolhido.**
@@ -378,8 +378,8 @@ function MetricasDoEmail() {
 
           {!data.provedorEntrega && (
             <p className="mt-4 text-sm" style={{ color: WARN_INK }}>
-              Sem servidor de e-mail configurado (provedor “{data.provedor}”):
-              as mensagens são montadas e escritas no log da API, não enviadas.
+              No email server configured (provider “{data.provedor}”): messages
+              are assembled and written to the API log, not sent.
             </p>
           )}
 
@@ -390,7 +390,7 @@ function MetricasDoEmail() {
             className="mt-5 rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
             style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
           >
-            {rodando ? 'Rodando…' : 'Rodar agora'}
+            {rodando ? 'Running…' : 'Run now'}
           </button>
 
           {resultado && (
@@ -507,9 +507,9 @@ function EscolhaDeIa({
 
   return (
     <fieldset className="border-0 p-0">
-      <legend className="text-sm font-medium">IA que faz a busca</legend>
+      <legend className="text-sm font-medium">AI that runs the search</legend>
       <p className="mt-0.5 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        Usada quando o Firecrawl está desligado.
+        Used when Firecrawl is turned off.
       </p>
 
       <div className="mt-2.5 flex flex-col gap-2">
@@ -526,7 +526,7 @@ function EscolhaDeIa({
             <span className="text-sm">
               {o.nome}
               {!o.temChave && (
-                <span style={{ color: 'var(--text-muted)' }}> — sem chave cadastrada</span>
+                <span style={{ color: 'var(--text-muted)' }}> — no key registered</span>
               )}
             </span>
           </label>
@@ -535,14 +535,14 @@ function EscolhaDeIa({
 
       {caiuNaOutra && (
         <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Sem chave da escolhida, a busca está usando{' '}
+          The selected one has no key, so the search is using{' '}
           {data.iaEfetiva === 'openai' ? 'ChatGPT' : 'Claude'}.
         </p>
       )}
       {data.iaEfetiva === null && (
         <p className="mt-2 text-sm" style={{ color: WARN_INK }}>
-          Nenhuma das duas tem chave. Com o Firecrawl desligado, a busca não
-          tem como rodar.
+          Neither one has a key. With Firecrawl turned off, the search has no
+          way to run.
         </p>
       )}
     </fieldset>
@@ -589,10 +589,10 @@ function TutorialTelegram({
       >
         <span>
           {!ligado
-            ? 'Telegram desligado — como ligar'
+            ? 'Telegram off — how to turn it on'
             : vinculados === 0
-              ? 'Telegram configurado — ninguém conectado ainda'
-              : 'Telegram — como configurar ou trocar o bot'}
+              ? 'Telegram configured — nobody connected yet'
+              : 'Telegram — how to set up or switch the bot'}
         </span>
         <span aria-hidden style={{ color: 'var(--text-muted)' }}>
           {aberto ? '▴' : '▾'}
@@ -603,13 +603,13 @@ function TutorialTelegram({
         <div className="border-t px-4 pb-4" style={{ borderColor: 'var(--border)' }}>
           <p className={passo} style={{ color: 'var(--text-muted)' }}>
             {!ligado
-              ? 'Enquanto está desligado, a opção não aparece na aba Jobs e nada é enviado por lá. São quatro passos, e nenhum custa dinheiro.'
-              : 'Token presente não é token que funciona: se o log da API mostrar 401 ao enviar, ele é inválido — refaça o passo 1. Os passos também servem para trocar o bot ou refazer o túnel.'}
+              ? 'While it is off, the option does not appear on the Jobs tab and nothing is sent through it. There are four steps, and none of them costs money.'
+              : 'A token being present is not a token that works: if the API log shows 401 when sending, it is invalid — redo step 1. The steps also work for switching the bot or rebuilding the tunnel.'}
           </p>
 
           <ol className="mt-3 flex flex-col gap-3">
             <li className="text-sm leading-relaxed">
-              <strong>1. Crie o bot.</strong> No Telegram, fale com{' '}
+              <strong>1. Create the bot.</strong> On Telegram, talk to{' '}
               <a
                 href="https://t.me/BotFather"
                 target="_blank"
@@ -619,65 +619,65 @@ function TutorialTelegram({
               >
                 @BotFather
               </a>{' '}
-              e envie <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>/newbot</code>.
-              Ele pede um nome e um username terminado em <em>bot</em>, e
-              devolve um token parecido com{' '}
+              and send <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>/newbot</code>.
+              It asks for a name and a username ending in <em>bot</em>, and
+              returns a token that looks like{' '}
               <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>
                 8123456789:AAH…
               </code>
             </li>
 
             <li className="text-sm leading-relaxed">
-              <strong>2. Guarde o token no servidor.</strong> Em{' '}
+              <strong>2. Store the token on the server.</strong> In{' '}
               <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>.env</code>:
               <pre
                 className="mt-2 overflow-x-auto rounded-md p-3 text-xs"
                 style={{ background: 'var(--surface-sunken)', color: 'var(--text)' }}
               >{`TELEGRAM_BOT_TOKEN=8123456789:AAH…
-TELEGRAM_BOT_USERNAME=seu_bot
-TELEGRAM_WEBHOOK_SECRET=uma-frase-longa-e-aleatoria`}</pre>
+TELEGRAM_BOT_USERNAME=your_bot
+TELEGRAM_WEBHOOK_SECRET=a-long-random-phrase`}</pre>
               <span style={{ color: 'var(--text-muted)' }}>
-                O segredo é o que faz o webhook recusar quem não é o Telegram —
-                sem ele, qualquer um poderia forjar mensagens.
+                The secret is what makes the webhook reject anyone who is not
+                Telegram — without it, anyone could forge messages.
               </span>
             </li>
 
             <li className="text-sm leading-relaxed">
-              <strong>3. Dê ao Telegram um endereço público.</strong> Ele só
-              entrega em HTTPS, e não alcança <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>localhost</code>.
-              Em produção é a URL do site; em desenvolvimento, um túnel:
+              <strong>3. Give Telegram a public address.</strong> It only
+              delivers over HTTPS, and does not reach <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>localhost</code>.
+              In production that is the site URL; in development, a tunnel:
               <pre
                 className="mt-2 overflow-x-auto rounded-md p-3 text-xs"
                 style={{ background: 'var(--surface-sunken)', color: 'var(--text)' }}
-              >{`# num terminal separado
+              >{`# in a separate terminal
 npx localtunnel --port 3333
 
-TELEGRAM_WEBHOOK_URL=https://o-que-ele-devolveu/api/telegram/webhook`}</pre>
+TELEGRAM_WEBHOOK_URL=https://what-it-returned/api/telegram/webhook`}</pre>
               <span style={{ color: 'var(--text-muted)' }}>
-                A API registra o webhook sozinha ao subir, e avisa no log se o
-                Telegram recusar.
+                The API registers the webhook itself on boot, and reports in
+                the log if Telegram rejects it.
               </span>
             </li>
 
             <li className="text-sm leading-relaxed">
-              <strong>4. Reinicie e conecte.</strong>{' '}
+              <strong>4. Restart and connect.</strong>{' '}
               <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>
                 docker compose up -d --build api
               </code>
-              , volte à aba Jobs e clique em <em>Connect Telegram</em>. O bot
-              não consegue iniciar conversa — é você que precisa mandar o{' '}
+              , go back to the Jobs tab and click <em>Connect Telegram</em>. The
+              bot cannot start a conversation — you are the one who has to send{' '}
               <code className={codigo} style={{ background: 'var(--surface-sunken)' }}>/start</code>,
-              e o botão faz isso pelo link.
+              and the button does that through the link.
             </li>
           </ol>
 
           <p className="mt-4 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-            <strong style={{ color: 'var(--text)' }}>Por que Telegram e não
-            e-mail:</strong>{' '}
-            os planos gratuitos de envio (Resend, Brevo) exigem domínio próprio
-            com DKIM, SPF e DMARC — comprar domínio, configurar DNS e esperar
-            propagação antes da primeira mensagem sair. O Telegram entrega com o
-            token acima, sem domínio e sem custo.
+            <strong style={{ color: 'var(--text)' }}>Why Telegram and not
+            email:</strong>{' '}
+            the free sending plans (Resend, Brevo) require your own domain with
+            DKIM, SPF and DMARC — buying a domain, configuring DNS and waiting
+            for propagation before the first message goes out. Telegram delivers
+            with the token above, with no domain and no cost.
           </p>
         </div>
       </Recolhivel>
@@ -706,7 +706,7 @@ function CartaoProvedor({
   const salvar = useCallback(async () => {
     const limpo = valor.trim()
     if (!limpo) {
-      setErro('Cole a chave antes de salvar.')
+      setErro('Paste the key before saving.')
       return
     }
     setErro(null)
@@ -753,13 +753,13 @@ function CartaoProvedor({
             className="rounded-full border px-2 py-0.5 text-xs"
             style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
           >
-            guardada · termina em {atual.hint}
+            stored · ends in {atual.hint}
           </span>
         )}
       </div>
 
       <p className="mb-4 text-sm" style={{ color: 'var(--text-muted)' }}>
-        Gere a chave em{' '}
+        Generate the key at{' '}
         <a
           href={provedor.url}
           target="_blank"
@@ -769,11 +769,11 @@ function CartaoProvedor({
         >
           {provedor.ondeIr}
         </a>
-        . Começa com <code className="font-mono">{provedor.prefixo}</code>.
+        . Starts with <code className="font-mono">{provedor.prefixo}</code>.
       </p>
 
       <label htmlFor={idCampo} className="mb-1 block text-sm font-medium">
-        {atual ? 'Substituir a chave' : 'Chave'}
+        {atual ? 'Replace the key' : 'Key'}
       </label>
       <div className="flex flex-wrap items-start gap-2">
         <input
@@ -805,7 +805,7 @@ function CartaoProvedor({
           className="rounded-md px-4 py-2.5 text-sm font-semibold disabled:opacity-90"
           style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
         >
-          {estado === 'salvando' ? 'Salvando…' : 'Salvar'}
+          {estado === 'salvando' ? 'Saving…' : 'Save'}
         </button>
 
         {atual &&
@@ -816,7 +816,7 @@ function CartaoProvedor({
               className="rounded-md border px-4 py-2.5 text-sm font-medium"
               style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
             >
-              Remover
+              Remove
             </button>
           ) : (
             <span role="alert" className="flex items-center gap-2 text-sm">
@@ -826,7 +826,7 @@ function CartaoProvedor({
                 className="rounded-md px-3 py-2.5 text-sm font-semibold"
                 style={{ background: WARN_INK, color: '#fff' }}
               >
-                Remover
+                Remove
               </button>
               <button
                 type="button"
@@ -834,7 +834,7 @@ function CartaoProvedor({
                 className="rounded-md border px-3 py-2.5 text-sm font-medium"
                 style={{ borderColor: 'var(--border)' }}
               >
-                Manter
+                Keep
               </button>
             </span>
           ))}
@@ -846,7 +846,7 @@ function CartaoProvedor({
         className="mt-2 text-sm"
         style={{ color: 'var(--text-muted)' }}
       >
-        {estado === 'salvo' ? 'Chave guardada.' : ''}
+        {estado === 'salvo' ? 'Key stored.' : ''}
       </p>
 
       {erro && (

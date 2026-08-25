@@ -50,8 +50,8 @@ function Engrenagem({ admin }: { admin: boolean }) {
       to="/config"
       // Icone sozinho precisa de nome acessivel: sem isto o leitor de tela
       // anuncia so "link".
-      aria-label="Configurações"
-      title="Configurações"
+      aria-label="Settings"
+      title="Settings"
       aria-current={ativa ? 'page' : undefined}
       // 36px de alvo, acima dos 24px minimos da WCAG 2.5.8.
       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
@@ -126,7 +126,7 @@ function Conta({
           className="shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium"
           style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
         >
-          Sair
+          Sign out
         </button>
       )}
     </div>
@@ -136,7 +136,7 @@ function Conta({
 function Abas() {
   const { pathname } = useLocation()
   const abas = [
-    { to: '/', label: 'Trilhas', ativa: pathname === '/' || pathname.startsWith('/t/') },
+    { to: '/', label: 'Tracks', ativa: pathname === '/' || pathname.startsWith('/t/') },
     { to: '/vagas', label: 'Jobs', ativa: pathname === '/vagas' },
     { to: '/salvas', label: 'Saved', ativa: pathname === '/salvas' },
     { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
@@ -146,7 +146,7 @@ function Abas() {
   // enquanto o projeto esta sendo construido. Fora do build publico: o
   // backlog interno nao e para quem chega de fora.
   if (MOSTRA_QUADRO) {
-    abas.push({ to: '/quadro', label: 'Quadro', ativa: pathname === '/quadro' })
+    abas.push({ to: '/quadro', label: 'Board', ativa: pathname === '/quadro' })
   }
 
   return (
@@ -155,7 +155,7 @@ function Abas() {
     // 525px de conteudo numa viewport de 390, em Trilhas, Invoice e Vagas).
     // A rolagem fica DENTRO da nav, que e o conteudo que de fato nao cabe.
     <nav
-      aria-label="Produtos"
+      aria-label="Products"
       className="flex min-w-0 items-center gap-1 overflow-x-auto text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {abas.map((aba) => (
@@ -185,13 +185,13 @@ function NotFound() {
       tabIndex={-1}
       className="mx-auto max-w-3xl px-4 py-20 text-center"
     >
-      <h1 className="text-2xl font-bold">Página não encontrada</h1>
+      <h1 className="text-2xl font-bold">Page not found</h1>
       <Link
         to="/"
         className="mt-4 inline-block font-medium underline"
         style={{ color: 'var(--accent-ink)' }}
       >
-        Voltar para as trilhas
+        Back to tracks
       </Link>
     </main>
   )
@@ -244,7 +244,7 @@ export default function App() {
   if (!conferido) {
     return (
       <div className="min-h-dvh">
-        <LoadingState label="Carregando…" />
+        <LoadingState label="Loading…" />
       </div>
     )
   }
@@ -263,7 +263,7 @@ export default function App() {
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-20 focus:rounded-md focus:px-4 focus:py-2 focus:font-semibold"
           style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
         >
-          Pular para o conteúdo
+          Skip to content
         </a>
         <header
           className="sticky top-0 z-10 border-b backdrop-blur"

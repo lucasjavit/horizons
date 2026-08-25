@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { Recolhivel } from '../components/Recolhivel'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { SelectField, TextAreaField, TextField } from '../components/invoice/Field'
-import { Hint } from '../components/invoice/Hint'
+import { Hint } from '../components/Hint'
 import { InvoiceHistory } from '../components/invoice/InvoiceHistory'
 import { InvoicePreview } from '../components/invoice/InvoicePreview'
 import { IssuerFields } from '../components/invoice/IssuerFields'
@@ -444,6 +444,9 @@ export function InvoicePage() {
                 resumo={`${draft.invoiceNumber.trim() || 'No number'} · ${draft.currency}`}
                 dica={{
                   title: 'Invoice details',
+                  // "What is Invoice details?" sai torto. A prop `label` do
+                  // `Hint` existe para isto (QA, 25/08).
+                  label: 'About the invoice details',
                   texto:
                     'The invoice number identifies this charge — keep it sequential (INV-0001, INV-0002) so you and your client can track payments. The due date sets when payment is expected; 30 days is the common default.',
                 }}
@@ -497,6 +500,7 @@ export function InvoicePage() {
                 titulo="Who is billing whom"
                 dica={{
                   title: 'Who is billing whom',
+                  label: 'About who is billing whom',
                   texto:
                     'Use the full legal name and address on both sides — mismatched details are the most common reason an invoice sits unpaid in a finance department. The Tax ID is optional, but many companies need it to process payment abroad.',
                 }}
@@ -792,7 +796,7 @@ function Bloco({
   numero: number
   titulo: string
   resumo: string
-  dica?: { title: string; texto: string }
+  dica?: { title: string; texto: string; label?: string }
   aberto: boolean
   onToggle: () => void
   children: ReactNode
@@ -833,7 +837,11 @@ function Bloco({
           </span>
         </button>
         </h2>
-        {dica && <Hint title={dica.title}>{dica.texto}</Hint>}
+        {dica && (
+          <Hint title={dica.title} label={dica.label}>
+            {dica.texto}
+          </Hint>
+        )}
       </div>
       {/* hidden em vez de desmontar: o conteudo continua no DOM, entao o
           rascunho nao se perde e o Ctrl+F do navegador continua achando. */}

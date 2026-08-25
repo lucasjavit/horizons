@@ -70,7 +70,8 @@ export function formatarFaixaSalarial(vaga: Vaga): string | null {
   const n = (v: number) => {
     if (v >= 1000) {
       const mil = v / 1000
-      const texto = Number.isInteger(mil) ? String(mil) : mil.toFixed(1).replace('.', ',')
+      // Ponto decimal, nao virgula: a interface e em ingles (25/08/2026).
+      const texto = Number.isInteger(mil) ? String(mil) : mil.toFixed(1)
       return `${texto}K`
     }
     return String(v)
@@ -82,8 +83,8 @@ export function formatarFaixaSalarial(vaga: Vaga): string | null {
     if (salaryMin === salaryMax) return `${currency} ${n(salaryMin)}${sufixo}`
     return `${currency} ${n(salaryMin)}—${n(salaryMax)}${sufixo}`
   }
-  if (salaryMin != null) return `${currency} a partir de ${n(salaryMin)}${sufixo}`
-  return `${currency} até ${n(salaryMax as number)}${sufixo}`
+  if (salaryMin != null) return `${currency} from ${n(salaryMin)}${sufixo}`
+  return `${currency} up to ${n(salaryMax as number)}${sufixo}`
 }
 
 /**

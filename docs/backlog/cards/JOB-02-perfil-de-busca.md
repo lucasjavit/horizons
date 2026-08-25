@@ -577,9 +577,192 @@ Isso é conta a pagar, não defeito. Com uma chave válida, o que falta conferir
 se o modelo lê o CV bem: se acerta senioridade, se não inventa stack, e se
 `ehCurriculo: false` dispara num arquivo que não é currículo.
 
+## Redesenho da caixa de upload (25/08/2026)
+
+O designer levantou três direções e o stakeholder escolheu a **C** — faixa de
+uma linha, mais o ciclo de vida completo dos quatro estados. O detalhe que
+ocupava a tela foi para o tooltip que já existia.
+
+### Os quatro problemas, medidos antes e depois
+
+Medido com Playwright contra o app servido em :5173, viewports 1400×900 e
+390×844:
+
+| | antes | depois |
+|---|---|---|
+| altura da caixa (desktop) | 252px | **102px** |
+| altura da caixa (celular) | 461px | **205px** |
+| consumido até o 1º filtro (desktop) | 272px | **122px** |
+| consumido até o 1º filtro (celular) | 473px | **217px** |
+| y do 1º controle de filtro (celular, tela 844px) | 678px | **422px** |
+| alvo de toque do upload | **20px** (reprova) | **38px** |
+
+A caixa depois do sucesso colapsa para **54px** — o passo já usado deixa de
+ocupar o topo como se fosse permanente.
+
+Os outros dois problemas:
+
+- **O input nativo vazava o idioma do SO** — "Escolher arquivo" em português
+  numa aba toda em inglês. Agora quem aparece é um `<button>` de verdade que
+  dispara um `<input type="file">` escondido por `sr-only`. O `<label htmlFor>`
+  continua apontando para o input, então o campo continua tendo nome.
+- **Não existia estado de sucesso.** Depois da leitura a caixa ficava idêntica
+  e a pessoa tinha de inferir olhando os dropdowns. Agora nomeia o arquivo e
+  conta os filtros: "Read cv.docx — we ticked 7 filters marked CV".
+
+### O aviso perdeu peso de erro, não perdeu a tela
+
+Correção ao diagnóstico inicial: **o contraste estava todo aprovado** (pior
+caso 4,91:1). O problema nunca foi cor, era **peso** — o aviso usava linguagem
+de erro (`border-l-4`, `⚠`, fundo `--surface-sunken`) para conteúdo
+informativo, e pesava mais que o botão que era a ação. Agora é texto de 13px em
+`--text-muted`, com o `⚠` em `WARN_INK` e `aria-hidden`.
+
+**O que NÃO foi para o tooltip, e não pode ir:** o fato de que o arquivo é
+enviado ao provedor de IA. Continua permanente na tela, sem depender de hover
+nem de clique — é critério de aceite deste card, e um tooltip esconderia
+justamente a informação que decide se a pessoa sobe o arquivo. O que foi para
+dentro do `?` é o *detalhe*: o que é guardado, os formatos e o limite.
+
+Verificado nos dois temas: o aviso aparece sem hover e sem clique em ambos.
+
+### Decisão de produto: "Replace file" reabre o estado ocioso
+
+No sucesso o aviso sai — a decisão já foi tomada. Mas **trocar o arquivo é um
+novo envio ao provedor**, e o card promete o aviso *antes* de escolher o
+arquivo, não apenas antes do primeiro. Então "Replace file" volta ao estado
+ocioso com o aviso de volta, em vez de abrir o seletor direto.
+
+Custa um clique a mais a quem troca de arquivo. Paga: o segundo upload também
+é um upload. Verificado — depois de "Replace file" a caixa volta a 102px e o
+`#cv-privacidade` reaparece.
+
+### O erro passou a dizer a garantia que o código já dava
+
+O `catch` nunca chamou `onLeu`, então uma leitura que falha nunca mexeu nos
+filtros. Isso estava no código e não aparecia na tela. Agora o erro diz
+**"Nothing was changed in your filters"** junto da mensagem do servidor, com
+`role="alert"`, borda em `WARN_INK` na faixa e `aria-invalid` no controle.
+
+### `Hint` subiu de `components/invoice/` para `components/`
+
+Nada nele era do invoice, e a caixa de CV precisava do mesmo tooltip. Copiar
+seria a mesma acessibilidade escrita duas vezes e corrigida uma só. O único uso
+existente (`InvoicePage.tsx`) foi atualizado na mesma leva — conferido depois
+no navegador: os 4 tooltips do invoice continuam abrindo, sem erro de console.
+
+Ganhou uma prop opcional `label`, porque o `aria-label` padrão
+(`What is {title}?`) sai torto quando o título é frase em vez de substantivo.
+
+### Um defeito encontrado durante a verificação, e corrigido
+
+Esconder o input com `sr-only` **o deixou na ordem de Tab**. O teclado parava
+duas vezes para um controle só: primeiro no input invisível, que não mostra
+foco nenhum e parecia foco perdido no nada, depois no botão. Corrigido com
+`tabIndex={-1}` no input — e o `aria-describedby` migrou para o botão, que é
+quem recebe o foco agora. Sem essa migração o aviso de privacidade deixaria de
+ser anunciado a quem chega pelo teclado, que é exatamente o "antes do upload"
+de quem não enxerga a tela.
+
+Ordem de Tab conferida depois da correção: `Upload résumé` → `?` → dropdowns.
+Ambos com outline de foco de 2px. O `?` alcança 24×24, abre no foco e fecha no
+Escape.
+
+### Como o caminho de sucesso foi exercitado
+
+As chaves continuam mortas (Anthropic 401, OpenAI 429). Subi um provedor HTTP
+falso no host respondendo no formato de `messages.create` e apontei
+`ANTHROPIC_BASE_URL` para ele por um override de compose **fora do repo** — o
+SDK lê essa variável sozinho, então não foi preciso tocar em código. Andaime
+desmontado no fim: processo morto, porta 8791 fechada, `ANTHROPIC_BASE_URL`
+ausente do container, API de volta ao healthy.
+
+Continua valendo o que já estava escrito acima: isso prova o **encanamento**,
+não a qualidade da extração do modelo.
+
 ## Fica de fora, deliberadamente
 
 - **`anos` é lido e devolvido mas não vira filtro** — a barra não tem eixo de
   anos, só de senioridade. O dado está no `cvProfile` para quando houver.
 - **A frase-resumo** ("entendemos que você é backend pleno") continua fora: o
   selo por campo resolve a distinção que o card exigia, e com mais precisão.
+
+
+---
+
+# A caixa foi redesenhada (25/08/2026)
+
+O stakeholder olhou a caixa e pediu o designer. Ele mediu, contestou parte do
+diagnóstico e propôs três direções; a escolhida foi a **C**, com o detalhe indo
+para o tooltip que já existia.
+
+## O que estava errado, medido
+
+| | antes | agora |
+| --- | ---: | ---: |
+| 1º filtro (desktop) | y=468 | **y=319** |
+| **1º filtro (celular, tela 844px)** | **y=678** | **y=422** |
+| alvo do botão de upload | **20px** (reprova) | **38px** |
+| depois de usada | 252px, para sempre | **encolhe 48px** |
+
+**O caso pior era o celular, e ninguém tinha medido.** A caixa tinha 461px e
+empurrava o primeiro filtro para fora da dobra: a pessoa abria a busca de vagas
+e via uma tela inteira de currículo opcional, sem um filtro sequer.
+
+O designer também corrigiu o diagnóstico do stakeholder num ponto: **o
+contraste estava todo aprovado** (pior caso 4,91:1). O problema do aviso não era
+cor, era **peso** — ele usava linguagem de erro (barra grossa, `WARN_INK`, fundo
+rebaixado) para conteúdo informativo, e pesava mais que a própria ação.
+
+## O que mudou
+
+- O `<input type="file">` nativo virou **`<button>` de verdade** disparando um
+  input `sr-only`. Mata de uma vez o alvo de 20px e o rótulo do SO — que
+  aparecia "Escolher arquivo", em português, numa aba em inglês.
+- O aviso perdeu o peso de erro e virou nota com o `⚠`.
+- **O detalhe foi para o `Hint`**, o tooltip que já existia no invoice —
+  promovido para `components/`. O que fica na tela, sem hover e sem clique, é
+  "your file is sent to the AI provider to be read": o critério do JOB-02 é que
+  a pessoa saiba disso **antes** de escolher o arquivo, e um tooltip não cumpre
+  isso.
+- **Estado de sucesso**, que não existia: a caixa colapsa e diz o que fez.
+- **"Replace file" volta ao ocioso com o aviso de volta.** Trocar de arquivo é
+  um novo envio ao provedor, e o card diz "antes do upload" — o segundo upload
+  também é um upload.
+
+## Os quatro defeitos do QA (25/08), corrigidos
+
+**[GRAVE] O acúmulo entre currículos.** Subir um segundo CV, de outra pessoa,
+dizia "we ticked 8 filters" nomeando só o arquivo novo — os 4 valores do
+primeiro continuavam marcados e iam para a busca. **A busca saía com o stack de
+dois currículos misturados.**
+
+A correção não foi mudar a frase: **"Replace file" promete substituir**, e
+acumular em silêncio faz o botão mentir sobre o que faz. Agora ele esquece a
+origem anterior. O acúmulo continua valendo para quem sobe um segundo currículo
+sem passar por ali — são gestos diferentes. Medido: selos 8 → 0 no Replace, e o
+segundo CV dá 4.
+
+**"we ticked 0 filters. Uncheck anything we got wrong."** — tique verde e
+instrução para desmarcar o que não existe. Acontecia com um CV cujo stack não
+casa com o catálogo, ou depois de a pessoa desmarcar tudo. Ler o arquivo e não
+marcar nada são coisas diferentes de ler e marcar; agora a tela diz *"but
+nothing in it matched our filters. Pick them by hand below."*, sem o ✓.
+
+**O tooltip precisava de dois toques no celular.** O gesto dispara `focus` (que
+abre) e `click` (que alternava para fechado) — o painel abria e fechava dentro
+do mesmo toque. Pré-existente, mas o redesenho pôs um tooltip no aviso de
+privacidade, onde o toque é o gesto principal. O clique deixou de alternar:
+fechar tem Escape, toque fora e `blur`.
+
+**`aria-label` torto em 2 dos 4 tooltips do invoice** — "What is Invoice
+details?". A prop `label` existia justamente para isso e não tinha sido usada.
+
+## Fica registrado, não corrigido
+
+**As mensagens de erro do backend vêm em português** dentro da caixa em inglês:
+"Formato nao suportado. Envie o curriculo em PDF ou DOCX." O CLAUDE.md manda
+erro em português sem acento, então isto é dívida conhecida, não descuido — e
+resolver exige decidir onde mora a tradução (código de erro no backend, ou mapa
+no front). O QA classificou como médio, e maior que o do `/email/sair`: aqui é o
+passo principal da feature, e sem acento parece texto quebrado, não outro idioma.

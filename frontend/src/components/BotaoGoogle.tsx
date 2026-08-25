@@ -86,7 +86,7 @@ export function BotaoGoogle({ onEntrou, tamanho = 'compacto' }: BotaoGoogleProps
         size: tamanho === 'compacto' ? 'medium' : 'large',
         text: 'signin_with',
         shape: 'pill',
-        locale: 'pt-BR',
+        locale: 'en',
       })
       setPronto(true)
     }
@@ -110,7 +110,7 @@ export function BotaoGoogle({ onEntrou, tamanho = 'compacto' }: BotaoGoogleProps
       )}
       {/* Nada de placeholder enquanto carrega: um "Entrar" falso que vira o
           botao do Google meio segundo depois pisca e desloca a barra. */}
-      {!pronto && !erro && <span className="sr-only">Carregando login…</span>}
+      {!pronto && !erro && <span className="sr-only">Loading sign-in…</span>}
     </div>
   )
 }
@@ -139,7 +139,7 @@ export function carregarScript(): Promise<void> {
     s.onerror = () => {
       s.remove()
       carregamento = null
-      erro(new Error('Falha ao carregar o Google Sign-In'))
+      erro(new Error('Failed to load Google Sign-In'))
     }
     document.head.appendChild(s)
   })

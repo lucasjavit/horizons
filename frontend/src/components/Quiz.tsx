@@ -20,7 +20,7 @@ export function Quiz({ questions }: QuizProps) {
 
   return (
     <section className="mt-12">
-      <h2 className="mb-4 text-lg font-semibold tracking-tight">Auto-teste</h2>
+      <h2 className="mb-4 text-lg font-semibold tracking-tight">Self-check</h2>
       <ol className="space-y-3">
         {questions.map((item, i) => {
           const aberta = abertas.has(i)
@@ -42,18 +42,20 @@ export function Quiz({ questions }: QuizProps) {
                 >
                   {i + 1}
                 </span>
-                <span className="flex-1 font-medium leading-relaxed">
+                {/* Pergunta e resposta sao conteudo da aula, em portugues. */}
+                <span lang="pt-BR" className="flex-1 font-medium leading-relaxed">
                   {inline(item.q)}
                 </span>
                 <span
                   className="mt-0.5 shrink-0 text-xs font-semibold uppercase tracking-wide"
                   style={{ color: 'var(--accent-ink)' }}
                 >
-                  {aberta ? 'ocultar' : 'ver'}
+                  {aberta ? 'hide' : 'show'}
                 </span>
               </button>
               {aberta && (
                 <div
+                  lang="pt-BR"
                   className="border-t px-4 py-4 pl-[3.25rem] leading-relaxed"
                   style={{
                     borderColor: 'var(--border)',

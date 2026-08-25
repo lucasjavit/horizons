@@ -12,7 +12,7 @@ export function TracksPage() {
     (signal) => api.listTracks(signal),
     [],
   )
-  useDocumentTitle('Trilhas')
+  useDocumentTitle('Tracks')
 
   return (
     <main
@@ -24,19 +24,19 @@ export function TracksPage() {
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
           {/* "Suas" so depois de entrar: sem sessao nao ha progresso guardado,
               e o possessivo prometeria algo que a pagina nao entrega. */}
-          {usuario ? 'Suas trilhas' : 'Trilhas'}
+          {usuario ? 'Your tracks' : 'Tracks'}
         </h1>
         <p className="mt-2" style={{ color: 'var(--text-muted)' }}>
           {usuario
-            ? 'Estudo estruturado, no seu ritmo.'
-            : 'Estudo estruturado, no seu ritmo. Entre com o Google para guardar seu progresso.'}
+            ? 'Structured study, at your own pace.'
+            : 'Structured study, at your own pace. Sign in with Google to save your progress.'}
         </p>
       </header>
 
-      {loading && <LoadingState label="Carregando trilhas…" />}
+      {loading && <LoadingState label="Loading tracks…" />}
       {error && <ErrorState message={error} onRetry={reload} />}
       {data && data.length === 0 && (
-        <EmptyState message="Nenhuma trilha publicada ainda." />
+        <EmptyState message="No tracks published yet." />
       )}
 
       <div className="space-y-4">
@@ -57,10 +57,13 @@ export function TracksPage() {
                 </span>
               )}
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-semibold tracking-tight">
+                {/* Titulo e descricao da trilha sao conteudo autoral em
+                    portugues; a moldura em volta e em ingles. */}
+                <h2 lang="pt-BR" className="text-lg font-semibold tracking-tight">
                   {track.title}
                 </h2>
                 <p
+                  lang="pt-BR"
                   className="mt-1 text-sm leading-relaxed"
                   style={{ color: 'var(--text-muted)' }}
                 >

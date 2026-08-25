@@ -55,7 +55,7 @@ export function LessonPage() {
       setPrecisaEntrar(ehSemSessao(err))
       setErroAcao(
         ehSemSessao(err)
-          ? 'Entre com o Google, ali em cima, para guardar seu progresso.'
+          ? 'Sign in with Google, up above, to save your progress.'
           : errorMessage(err),
       )
     }
@@ -78,7 +78,7 @@ export function LessonPage() {
     },
   })
 
-  if (lesson.loading) return <LoadingState label="Carregando aula…" />
+  if (lesson.loading) return <LoadingState label="Loading lesson…" />
   if (lesson.error)
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
@@ -100,7 +100,7 @@ export function LessonPage() {
           className="mb-4 flex w-full items-center justify-between rounded-lg border px-4 py-2.5 text-sm font-medium lg:hidden"
           style={{ borderColor: 'var(--border)' }}
         >
-          Aulas da trilha
+          Lessons in this track
           <span aria-hidden>{menuAberto ? '▲' : '▼'}</span>
         </button>
 
@@ -125,11 +125,18 @@ export function LessonPage() {
           moduleSlug={dados.module.slug}
           moduleTitle={dados.module.title}
         />
-        <h1 className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">
+        {/* O conteudo da aula e escrito em portugues, e a interface e em
+            ingles: sem o `lang` o leitor de tela le o texto da aula com voz
+            inglesa. Marca so o conteudo, nao a moldura. */}
+        <h1
+          lang="pt-BR"
+          className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl"
+        >
           {dados.title}
         </h1>
         {dados.summary && (
           <p
+            lang="pt-BR"
             className="mt-3 text-[1.0625rem] leading-relaxed"
             style={{ color: 'var(--text-muted)' }}
           >
@@ -141,7 +148,7 @@ export function LessonPage() {
 
         {dados.content ? (
           <>
-            <article>
+            <article lang="pt-BR">
               <BlockRenderer blocks={dados.content.blocks} />
             </article>
             {dados.content.quiz && dados.content.quiz.length > 0 && (
@@ -153,17 +160,17 @@ export function LessonPage() {
             className="rounded-lg border border-dashed p-8 text-center"
             style={{ borderColor: 'var(--border)' }}
           >
-            <p className="font-medium">Conteúdo em produção</p>
+            <p className="font-medium">Content in progress</p>
             <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-              Esta aula ainda não tem texto autoral escrito.
-              {dados.sourceUrl && ' Por enquanto, use a leitura complementar abaixo.'}
+              This lesson does not have its written content yet.
+              {dados.sourceUrl && ' For now, use the further reading below.'}
             </p>
           </div>
         )}
 
         {dados.sourceUrl && (
           <p className="mt-8 text-sm">
-            <span style={{ color: 'var(--text-muted)' }}>Leitura complementar: </span>
+            <span style={{ color: 'var(--text-muted)' }}>Further reading: </span>
             <a
               href={dados.sourceUrl}
               target="_blank"
@@ -171,7 +178,7 @@ export function LessonPage() {
               className="inline-block py-1.5 font-medium underline"
               style={{ color: 'var(--accent-ink)' }}
             >
-              fonte original ↗
+              original source ↗
             </a>
           </p>
         )}
@@ -189,11 +196,11 @@ export function LessonPage() {
                 : { background: 'var(--brand)', color: 'var(--brand-text)' }
             }
           >
-            {dados.completed ? '✓ Aula concluída' : 'Marcar como concluída'}
+            {dados.completed ? '✓ Lesson completed' : 'Mark as completed'}
           </button>
           {erroAcao && (
             <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }} role="alert">
-              {precisaEntrar ? erroAcao : `Não foi possível salvar: ${erroAcao}`}
+              {precisaEntrar ? erroAcao : `Could not save: ${erroAcao}`}
             </p>
           )}
         </div>
@@ -201,7 +208,7 @@ export function LessonPage() {
         <nav
           className="mt-10 flex flex-col gap-3 border-t pt-6 sm:flex-row sm:justify-between"
           style={{ borderColor: 'var(--border)' }}
-          aria-label="Navegação entre aulas"
+          aria-label="Lesson navigation"
         >
           {dados.prev ? (
             <Link
@@ -210,9 +217,9 @@ export function LessonPage() {
               style={{ borderColor: 'var(--border)' }}
             >
               <span className="block text-xs" style={{ color: 'var(--text-muted)' }}>
-                ← Anterior
+                ← Previous
               </span>
-              <span className="mt-0.5 block truncate font-medium">
+              <span lang="pt-BR" className="mt-0.5 block truncate font-medium">
                 {dados.prev.title}
               </span>
             </Link>
@@ -226,9 +233,9 @@ export function LessonPage() {
               style={{ borderColor: 'var(--border)' }}
             >
               <span className="block text-xs" style={{ color: 'var(--text-muted)' }}>
-                Próxima →
+                Next →
               </span>
-              <span className="mt-0.5 block truncate font-medium">
+              <span lang="pt-BR" className="mt-0.5 block truncate font-medium">
                 {dados.next.title}
               </span>
             </Link>
@@ -263,17 +270,18 @@ function Breadcrumb({
     </span>
   )
   return (
-    <nav aria-label="Você está aqui" className="mb-1.5">
+    <nav aria-label="You are here" className="mb-1.5">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
         <li>
           <Link to="/" className="inline-block py-1.5 hover:underline" style={{ color: 'var(--text-muted)' }}>
-            Trilhas
+            Tracks
           </Link>
         </li>
         <li>{sep}</li>
         <li>
           <Link
             to={`/t/${trackSlug}`}
+            lang="pt-BR"
             className="inline-block py-1.5 hover:underline"
             style={{ color: 'var(--text-muted)' }}
           >
@@ -285,6 +293,7 @@ function Breadcrumb({
           {/* O hash identifica o módulo a abrir na página da trilha. */}
           <Link
             to={`/t/${trackSlug}#${moduleSlug}`}
+            lang="pt-BR"
             className="inline-block py-1.5 font-semibold uppercase tracking-widest hover:underline"
             style={{ color: 'var(--accent-ink)' }}
           >
@@ -408,14 +417,14 @@ function NoteBox({ lessonId, inicial }: { lessonId: string; inicial: string }) {
         htmlFor="anotacao"
         className="mb-2 block text-sm font-semibold tracking-tight"
       >
-        Sua anotação
+        Your note
       </label>
       <textarea
         id="anotacao"
         value={texto}
         onChange={(e) => aoDigitar(e.target.value)}
         rows={4}
-        placeholder="O que você não quer esquecer desta aula?"
+        placeholder="What do you not want to forget from this lesson?"
         className="w-full resize-y rounded-lg border p-3 text-sm leading-relaxed"
         style={{
           borderColor: estado === 'erro' ? WARN_INK : 'var(--border)',
@@ -426,19 +435,19 @@ function NoteBox({ lessonId, inicial }: { lessonId: string; inicial: string }) {
 
       <div className="mt-2 flex min-h-8 flex-wrap items-center gap-3 text-sm">
         {estado === 'salvando' && (
-          <span style={{ color: 'var(--text-muted)' }}>Salvando…</span>
+          <span style={{ color: 'var(--text-muted)' }}>Saving…</span>
         )}
         {estado === 'salvo' && !pendente && (
-          <span style={{ color: 'var(--accent-ink)' }}>Salvo.</span>
+          <span style={{ color: 'var(--accent-ink)' }}>Saved.</span>
         )}
         {estado === 'ocioso' && pendente && !confirmandoLimpeza && (
           <span style={{ color: 'var(--text-muted)' }}>
-            Salvando automaticamente…
+            Saving automatically…
           </span>
         )}
         {estado === 'ocioso' && !pendente && texto === '' && (
           <span style={{ color: 'var(--text-muted)' }}>
-            Salva sozinho enquanto você escreve.
+            Saves itself as you write.
           </span>
         )}
         {pendente && !confirmandoLimpeza && (
@@ -448,7 +457,7 @@ function NoteBox({ lessonId, inicial }: { lessonId: string; inicial: string }) {
             className="rounded-md border px-3 py-1.5 font-medium"
             style={{ borderColor: 'var(--border)' }}
           >
-            Salvar agora
+            Save now
           </button>
         )}
       </div>
@@ -460,10 +469,10 @@ function NoteBox({ lessonId, inicial }: { lessonId: string; inicial: string }) {
           role="alert"
         >
           <p className="text-sm font-medium">
-            Apagar a anotação desta aula?
+            Delete the note for this lesson?
           </p>
           <p className="mt-0.5 text-sm" style={{ color: 'var(--text-muted)' }}>
-            O texto salvo ainda está guardado. Nada foi apagado até agora.
+            The saved text is still stored. Nothing has been deleted yet.
           </p>
           <div className="mt-2.5 flex gap-2">
             <button
@@ -472,7 +481,7 @@ function NoteBox({ lessonId, inicial }: { lessonId: string; inicial: string }) {
               className="rounded-md px-3 py-1.5 text-sm font-semibold"
               style={{ background: WARN_INK, color: '#fff' }}
             >
-              Apagar
+              Delete
             </button>
             <button
               type="button"
@@ -480,7 +489,7 @@ function NoteBox({ lessonId, inicial }: { lessonId: string; inicial: string }) {
               className="rounded-md border px-3 py-1.5 text-sm font-medium"
               style={{ borderColor: 'var(--border)' }}
             >
-              Manter o texto
+              Keep the text
             </button>
           </div>
         </div>
@@ -492,8 +501,8 @@ function NoteBox({ lessonId, inicial }: { lessonId: string; inicial: string }) {
           style={{ borderColor: WARN_INK, color: 'var(--text)' }}
           role="alert"
         >
-          <b style={{ color: WARN_INK }}>Não foi salvo.</b> {erro} O texto
-          continua aqui — tente de novo em “Salvar agora”.
+          <b style={{ color: WARN_INK }}>Not saved.</b> {erro} The text is
+          still here — try again with “Save now”.
         </p>
       )}
     </section>

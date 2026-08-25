@@ -68,11 +68,11 @@ function ConviteParaEntrar() {
       aria-labelledby="entrar-titulo"
     >
       <h2 id="entrar-titulo" className="text-lg font-semibold">
-        Entre para ver as suas vagas
+        Sign in to see your jobs
       </h2>
       <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        As vagas encontradas são suas: ficam guardadas na sua conta, e a busca
-        roda com o seu perfil. Entre com o Google para vê-las.
+        The jobs we find are yours: they are stored in your account, and the
+        search runs with your profile. Sign in with Google to see them.
       </p>
       <div className="mt-4">
         <BotaoGoogle onEntrou={aoEntrar} tamanho="normal" />

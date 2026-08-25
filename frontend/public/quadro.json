@@ -37,6 +37,18 @@
       "total": 4
     },
     {
+      "id": "APP-02",
+      "titulo": "Erro do backend em português na interface inglesa",
+      "estado": "aberto (25/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "P",
+      "porque": "A regra de idioma mudou em 25/08: a interface é toda em inglês, só o conteúdo das trilhas é português. A tradução cobriu ~150 strings do frontend, mas o texto de erro que o usuário lê nem sempre nasce lá — parte vem do b",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "INV-01",
       "titulo": "Quantidade negativa gera invoice com total negativo",
       "estado": "feito (12/08/2026)",

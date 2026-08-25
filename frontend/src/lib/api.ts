@@ -74,11 +74,11 @@ export function errorMessage(error: unknown): string {
     const message = data?.message
     if (Array.isArray(message)) return message.join(', ')
     if (message) return message
-    if (error.code === 'ECONNABORTED') return 'A requisição demorou demais.'
-    if (!error.response) return 'Não foi possível falar com a API. Ela está no ar?'
-    return `Erro ${error.response.status}`
+    if (error.code === 'ECONNABORTED') return 'The request took too long.'
+    if (!error.response) return 'Could not reach the API. Is it running?'
+    return `Error ${error.response.status}`
   }
-  return 'Erro inesperado.'
+  return 'Unexpected error.'
 }
 
 export const api = {

@@ -276,8 +276,14 @@ else:
             ok("$99.99" in previa, "previa mostra o mesmo valor da linha")
 
             # As trilhas nao podem quebrar por causa de mexida na invoice.
+            # Confere "lessons" (o rotulo da barra de progresso), e nao o
+            # titulo da pagina: o <h1> e estatico e aparece mesmo com a API
+            # fora do ar, entao afirmar sobre ele passaria numa tela quebrada.
+            # "lessons" so existe depois que as trilhas chegam do backend.
+            # A interface e em ingles desde 25/08/2026; o titulo de cada trilha
+            # continua em portugues, por isso o texto conferido e o cromo.
             pg.goto(f"{BASE}/", wait_until="networkidle")
-            ok("trilha" in pg.locator("main").inner_text().lower(),
+            ok("lessons" in pg.locator("main").inner_text().lower(),
                "pagina de trilhas continua carregando")
 
             reais = [e for e in erros if "favicon" not in e.lower()]

@@ -69,7 +69,7 @@ export function TrackPage() {
     }
   }
 
-  if (loading) return <LoadingState label="Carregando trilha…" />
+  if (loading) return <LoadingState label="Loading track…" />
   if (error)
     return (
       <div className="mx-auto max-w-3xl px-4 py-10">
@@ -89,15 +89,19 @@ export function TrackPage() {
         className="text-sm font-medium"
         style={{ color: 'var(--accent-ink)' }}
       >
-        ← Trilhas
+        ← Tracks
       </Link>
 
       <header className="mt-4 mb-8">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+        {/* Titulo, descricao, modulos e aulas vem do seed em portugues; so a
+            moldura da pagina e em ingles. Sem o `lang` o leitor de tela le o
+            conteudo com voz inglesa. */}
+        <h1 lang="pt-BR" className="text-2xl font-bold tracking-tight sm:text-3xl">
           {data.icon && <span className="mr-2">{data.icon}</span>}
           {data.title}
         </h1>
         <p
+          lang="pt-BR"
           className="mt-2 text-sm leading-relaxed"
           style={{ color: 'var(--text-muted)' }}
         >
@@ -120,9 +124,9 @@ export function TrackPage() {
         >
           <span className="min-w-0">
             <span className="block text-xs uppercase tracking-widest opacity-80">
-              Continue de onde parou
+              Continue where you left off
             </span>
-            <span className="mt-0.5 block truncate font-semibold">
+            <span lang="pt-BR" className="mt-0.5 block truncate font-semibold">
               {data.nextLesson.title}
             </span>
           </span>
@@ -139,7 +143,7 @@ export function TrackPage() {
           onChange={(e) => setSoPendentes(e.target.checked)}
           className="h-4 w-4 accent-[var(--brand)]"
         />
-        Mostrar só pendentes
+        Show only unfinished
       </label>
 
       {erroToggle && (
@@ -148,7 +152,7 @@ export function TrackPage() {
           style={{ background: 'var(--surface-sunken)', color: 'var(--text-muted)' }}
           role="alert"
         >
-          Não foi possível salvar: {erroToggle}
+          Could not save: {erroToggle}
         </p>
       )}
 
@@ -194,14 +198,14 @@ export function TrackPage() {
                   {i + 1}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-semibold tracking-tight">
+                  <span lang="pt-BR" className="block font-semibold tracking-tight">
                     {mod.title}
                   </span>
                   <span
                     className="mt-0.5 block text-xs"
                     style={{ color: 'var(--text-muted)' }}
                   >
-                    {concluidas}/{mod.lessons.length} concluídas
+                    {concluidas}/{mod.lessons.length} completed
                   </span>
                 </span>
                 <span
@@ -222,6 +226,7 @@ export function TrackPage() {
                   style={{ borderColor: 'var(--border)' }}
                 >
                   <p
+                    lang="pt-BR"
                     className="px-4 py-3 text-sm leading-relaxed sm:px-5"
                     style={{
                       color: 'var(--text-muted)',
@@ -243,12 +248,13 @@ export function TrackPage() {
                           onChange={(e) =>
                             void alternarAula(lesson.id, e.target.checked)
                           }
-                          aria-label={`Marcar "${lesson.title}" como concluída`}
+                          aria-label={`Mark "${lesson.title}" as completed`}
                           className="mt-1 h-4 w-4 shrink-0 accent-[var(--brand)]"
                         />
                         <div className="min-w-0 flex-1">
                           <Link
                             to={`/t/${data.slug}/${lesson.slug}`}
+                            lang="pt-BR"
                             className="font-medium hover:underline"
                             style={{
                               color: lesson.completed
@@ -266,11 +272,12 @@ export function TrackPage() {
                                 color: 'var(--text-muted)',
                               }}
                             >
-                              em breve
+                              coming soon
                             </span>
                           )}
                           {lesson.summary && (
                             <p
+                              lang="pt-BR"
                               className="mt-0.5 text-sm leading-snug"
                               style={{ color: 'var(--text-muted)' }}
                             >

@@ -14,7 +14,7 @@ export function ProgressBar({ completed, total, showLabel }: ProgressBarProps) {
       {showLabel && (
         <div className="mb-1.5 flex items-baseline justify-between text-xs">
           <span style={{ color: 'var(--text-muted)' }}>
-            {completed} de {total} {total === 1 ? 'aula' : 'aulas'}
+            {completed} of {total} {total === 1 ? 'lesson' : 'lessons'}
           </span>
           <span className="font-semibold" style={{ color: 'var(--accent-ink)' }}>
             {percent}%
@@ -28,7 +28,7 @@ export function ProgressBar({ completed, total, showLabel }: ProgressBarProps) {
         aria-valuenow={percent}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={`${percent}% concluído`}
+        aria-label={`${percent}% complete`}
       >
         <div
           className="h-full rounded-full transition-[width] duration-300"

@@ -66,10 +66,13 @@ export function LessonSidebar({
   }, [termoLimpo, achados, track.slug])
 
   return (
-    <nav aria-label="Aulas da trilha" className="text-sm">
+    <nav aria-label="Track lessons" className="text-sm">
+      {/* Nomes de trilha, modulo e aula sao conteudo em portugues dentro de
+          uma interface em ingles — daí o `lang` em cada um deles. */}
       <Link
         to={`/t/${track.slug}`}
         onClick={onNavigate}
+        lang="pt-BR"
         className="block py-1 font-semibold tracking-tight hover:underline"
       >
         {track.icon && <span className="mr-1.5">{track.icon}</span>}
@@ -86,7 +89,7 @@ export function LessonSidebar({
 
       <div className="mb-5">
         <label htmlFor="busca-aulas" className="sr-only">
-          Buscar aula
+          Search lessons
         </label>
         <input
           id="busca-aulas"
@@ -100,7 +103,7 @@ export function LessonSidebar({
               campo.current?.blur()
             }
           }}
-          placeholder="Buscar aula…    /"
+          placeholder="Search lessons…    /"
           className="w-full rounded-md border px-2.5 py-1.5 text-sm"
           style={{
             borderColor: 'var(--border)',
@@ -115,10 +118,10 @@ export function LessonSidebar({
             style={{ color: 'var(--text-muted)' }}
           >
             {achados > 0
-              ? `${achados} ${achados === 1 ? 'aula' : 'aulas'}`
+              ? `${achados} ${achados === 1 ? 'lesson' : 'lessons'}`
               : noCorpo.length > 0
-                ? `${noCorpo.length} ${noCorpo.length === 1 ? 'aula cita' : 'aulas citam'} o termo`
-                : 'Nenhuma aula encontrada.'}
+                ? `${noCorpo.length} ${noCorpo.length === 1 ? 'lesson mentions' : 'lessons mention'} the term`
+                : 'No lessons found.'}
           </p>
         )}
       </div>
@@ -132,8 +135,9 @@ export function LessonSidebar({
                 onClick={onNavigate}
                 className="block rounded-md px-2 py-1.5 leading-snug"
               >
-                <span className="block">{hit.title}</span>
+                <span lang="pt-BR" className="block">{hit.title}</span>
                 <span
+                  lang="pt-BR"
                   className="block text-[0.7rem] uppercase tracking-wide"
                   style={{ color: 'var(--text-muted)' }}
                 >
@@ -149,6 +153,7 @@ export function LessonSidebar({
         {modulos.map((mod) => (
           <div key={mod.id}>
             <p
+              lang="pt-BR"
               className="mb-1.5 text-[0.7rem] font-bold uppercase tracking-widest"
               style={{ color: 'var(--text-muted)' }}
             >
@@ -183,7 +188,7 @@ export function LessonSidebar({
                             : 'var(--border)',
                         }}
                       />
-                      <span className="min-w-0">{lesson.title}</span>
+                      <span lang="pt-BR" className="min-w-0">{lesson.title}</span>
                     </Link>
                   </li>
                 )
@@ -206,8 +211,8 @@ export function LessonSidebar({
               className="h-1.5 w-1.5 shrink-0 rounded-full"
               style={{ background: 'var(--accent)' }}
             />
-            <dt className="sr-only">Ponto dourado</dt>
-            <dd>Aula concluída</dd>
+            <dt className="sr-only">Gold dot</dt>
+            <dd>Lesson completed</dd>
           </div>
           <div className="flex items-center gap-2">
             <span
@@ -215,13 +220,13 @@ export function LessonSidebar({
               className="h-1.5 w-1.5 shrink-0 rounded-full"
               style={{ background: 'var(--border)' }}
             />
-            <dt className="sr-only">Ponto cinza</dt>
-            <dd>Ainda não concluída</dd>
+            <dt className="sr-only">Grey dot</dt>
+            <dd>Not completed yet</dd>
           </div>
         </dl>
         <p className="mt-3 leading-relaxed">
-          <Tecla>J</Tecla> próxima · <Tecla>K</Tecla> anterior ·{' '}
-          <Tecla>C</Tecla> concluir · <Tecla>/</Tecla> buscar
+          <Tecla>J</Tecla> next · <Tecla>K</Tecla> previous ·{' '}
+          <Tecla>C</Tecla> complete · <Tecla>/</Tecla> search
         </p>
       </div>
     </nav>

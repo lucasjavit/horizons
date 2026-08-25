@@ -325,6 +325,19 @@ export function ListaVagas() {
     () => filtradas.slice((atual - 1) * POR_PAGINA, atual * POR_PAGINA),
     [filtradas, atual],
   )
+  /**
+   * Quantos valores foram marcados a partir do currículo — a soma dos valores
+   * por eixo, não a quantidade de eixos.
+   *
+   * É o que a linha de sucesso da `CaixaUploadCV` nomeia, e é o mesmo conjunto
+   * que carrega o selo "CV" nos dropdowns: o número na confirmação e os selos
+   * na barra contam a mesma coisa, então desmarcar um valor derruba os dois
+   * juntos. Contar eixos daria "3 filters" onde a barra mostra oito selos.
+   */
+  const filtrosDoCv = useMemo(
+    () => Object.values(origemCv).reduce((total, valores) => total + (valores?.size ?? 0), 0),
+    [origemCv],
+  )
   const novasNaBusca = useMemo(
     () => vagas.filter((v) => !descartadas.has(v.url) && !vistas.has(v.url)).length,
     [vagas, vistas, descartadas],
@@ -354,7 +367,18 @@ export function ListaVagas() {
             return { ...anterior, [eixo]: restante }
           })
         }
-        cabecalho={<CaixaUploadCV ativa={leituraCvAtiva} onLeu={aoLerCv} />}
+        cabecalho={
+          <CaixaUploadCV
+            ativa={leituraCvAtiva}
+            onLeu={aoLerCv}
+            filtrosMarcados={filtrosDoCv}
+            // Trocar de arquivo esquece a origem do anterior. O acúmulo entre
+            // uploads continua valendo para quem sobe um segundo currículo SEM
+            // passar por aqui — são gestos diferentes: "adicionar" acumula,
+            // "substituir" substitui.
+            onSubstituir={() => setOrigemCv({})}
+          />
+        }
       />
 
       {erro && (

@@ -103,7 +103,7 @@ function Warning({ title, text }: { title?: string; text: string }) {
         className="mb-1 text-[0.7rem] font-bold uppercase tracking-widest"
         style={{ color: `light-dark(${WARN}, ${WARN_DARK})` }}
       >
-        {title ?? 'Atenção'}
+        {title ?? 'Heads up'}
       </p>
       <p className="leading-relaxed">{inline(text)}</p>
     </aside>
