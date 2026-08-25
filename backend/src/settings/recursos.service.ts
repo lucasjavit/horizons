@@ -1,9 +1,87 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ApiProvider } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { IaService } from '../ia/ia.service';
+import { OrdemDaIaService } from '../ia/ordem.service';
+import { SaudeDaIaService, type EstadoDoProvedor } from '../ia/saude.service';
+import { PROVEDORES, provedor, type Capacidade } from '../ia/provedores';
+import { explicacao, type StatusDaChave } from '../ia/verificacao';
 
-/** Provedores de IA que a busca sabe usar. */
-export type IaDaBusca = 'anthropic' | 'openai';
+/**
+ * O provedor de IA preferido, como string.
+ *
+ * Era `'anthropic' | 'openai'` — uma uniao fechada escrita para exatamente
+ * dois. Agora e o `ApiProvider` do Prisma, porque a lista cresce em
+ * `src/ia/provedores.ts` e um tipo que precisa ser editado a cada provedor novo
+ * e o mesmo problema que a cadeia veio resolver.
+ */
+export type IaDaBusca = ApiProvider;
+
+/** Como um provedor aparece na tela de Configuracoes. */
+export interface ProvedorDto {
+  id: ApiProvider;
+  nome: string;
+  /** Ha chave cadastrada (no banco ou no ambiente). */
+  temChave: boolean;
+  /** Faz busca na web — logo, serve para a busca de vagas. */
+  buscaWeb: boolean;
+  /**
+   * O provedor treina modelos com o que recebe no free tier.
+   *
+   * A tela mostra isto ao lado do nome. O texto do CV vai INTEIRO para o
+   * provedor, com CPF, endereco e telefone (JOB-02), e a tela de vagas promete
+   * que so guardamos stack, senioridade e anos. Guardar pouco nao e enviar
+   * pouco, e quem liga a chave precisa saber a diferenca antes.
+   */
+  treinaComOsDados: boolean;
+  /** Onde a pessoa cria a chave. */
+  console: string;
+  /**
+   * Custa dinheiro? Duas etiquetas na tela, `Paid` e `Free tier`.
+   *
+   * Sem preco nem taxa por token de proposito: eles envelhecem, e a tela
+   * passaria a mentir sem ninguem notar. Pago-contra-gratis e a entrada
+   * inteira da decisao de ordenar a cadeia.
+   */
+  gratuito: boolean;
+  /**
+   * O estado da chave, da ultima verificacao guardada.
+   *
+   * **Nao e "ha chave cadastrada".** A tela antiga mostrava "stored" para duas
+   * chaves mortas (Anthropic 401, OpenAI 429), que e a diferenca exata entre
+   * ela e esta. Ver `src/ia/verificacao.ts`.
+   */
+  status: StatusDaChave;
+  /** O codigo HTTP da ultima verificacao. `null` se nao houve resposta. */
+  httpStatus: number | null;
+  /**
+   * A frase que explica o estado e diz o que fazer.
+   *
+   * Vazia quando nao ha o que explicar (funcionando, ou sem chave). E a metade
+   * util do selo: "Key refused" nao diz o que fazer, "401 — API key is
+   * invalid. Revoked or mistyped." diz.
+   */
+  motivo: string;
+  /** Quando foi verificado, ISO. `null` se nunca foi. */
+  checkedAt: string | null;
+  /** Os quatro ultimos caracteres da chave guardada, se houver. */
+  hint: string | null;
+}
+
+/**
+ * Quem tem free tier SEM CARTAO.
+ *
+ * Vive aqui e nao no registro por ser fato comercial, e nao capacidade
+ * tecnica: muda por decisao do provedor, sem que nada no codigo mude junto.
+ * Duas etiquetas na tela, `Paid` e `Free tier` — sem preco nem taxa por
+ * token, que envelhecem e fariam a tela mentir sem ninguem notar.
+ */
+const GRATUITOS = new Set<ApiProvider>([
+  ApiProvider.GEMINI,
+  ApiProvider.GROQ,
+  ApiProvider.CEREBRAS,
+  ApiProvider.MISTRAL,
+]);
 
 /** Chaves das flags na tabela de configuracao. */
 const LEITURA_CV = 'jobs.leituraCv';
@@ -19,9 +97,6 @@ const LEITURA_CV = 'jobs.leituraCv';
  * ja mexeu no interruptor.
  */
 const FIRECRAWL_ATIVO = 'jobs.buscaVagas';
-
-/** Qual IA a busca prefere. Preferencia, nao exigencia — ver `iaDaBusca`. */
-const IA_DA_BUSCA = 'jobs.iaDaBusca';
 
 /**
  * O motor de ATS, ligado por padrao.
@@ -113,12 +188,38 @@ export interface RecursosDto {
    * resposta inteira. Ausencia de linha significa LIGADO.
    */
   historicoAtivo: boolean;
-  /** A IA preferida para a busca, como o admin escolheu. */
-  iaPreferida: IaDaBusca;
-  /** A que vai ser usada de fato — cai na outra se a preferida nao tem chave. */
-  iaEfetiva: IaDaBusca | null;
-  temChaveAnthropic: boolean;
-  temChaveOpenAi: boolean;
+  /**
+   * A ordem COMPLETA da cadeia, como o admin a arrumou.
+   *
+   * **Substitui `iaPreferida`**, que era um provedor promovido ao topo. Com
+   * seis provedores, a segunda e a terceira posicoes decidem quem atende
+   * quando o topo cai, e uma preferencia unica nao as representa. Sempre traz
+   * os seis; a cadeia de cada uso e esta lista filtrada por capacidade.
+   */
+  ordemDaIa: IaDaBusca[];
+  /**
+   * Quem de fato serve a busca de vagas AGORA.
+   *
+   * **Substitui `iaEfetiva`**, que era "o primeiro com chave" — e chave
+   * cadastrada nao e chave que funciona. Este e o primeiro da cadeia cuja
+   * ultima verificacao deu `funcionando`. `null` significa que a busca por IA
+   * esta parada, e a tela diz isso em vez de deixar alguem descobrir clicando.
+   */
+  iaDaBusca: IaDaBusca | null;
+  /** Quem serve a leitura de CV e a leitura de anuncio. Mesma regra. */
+  iaDaExtracao: IaDaBusca | null;
+  /**
+   * Todos os provedores do registro, com o estado de cada um.
+   *
+   * Substitui os antigos `temChaveAnthropic` / `temChaveOpenAi`: um campo por
+   * provedor obrigaria a mexer no DTO, no espelho do frontend e na tela a cada
+   * provedor novo. Uma lista nao.
+   */
+  provedores: ProvedorDto[];
+  /** Quantos provedores servem a busca de vagas (exige busca na web). */
+  provedoresDeBusca: number;
+  /** Quantos provedores servem a leitura de CV (basta saida estruturada). */
+  provedoresDeExtracao: number;
   /**
    * Ha chave de IA cadastrada. Sem ela o toggle nao pode ser ligado — e a
    * tela precisa saber para explicar por que o controle esta bloqueado, em
@@ -137,26 +238,81 @@ export interface RecursosDto {
  */
 @Injectable()
 export class RecursosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ia: IaService,
+    private readonly ordemDaIa: OrdemDaIaService,
+    private readonly saude: SaudeDaIaService,
+  ) {}
 
   async obter(): Promise<RecursosDto> {
-    const [flagCv, flagFirecrawl, temChave, temFirecrawl] = await Promise.all([
-      this.flag(LEITURA_CV),
+    const [flagFirecrawl, temFirecrawl] = await Promise.all([
       this.flag(FIRECRAWL_ATIVO),
-      this.temChaveDeIa(),
       this.temChaveFirecrawl(),
     ]);
 
-    const [pref, temAnthropic, temOpenAi, ats, agendada, email, historico] =
-      await Promise.all([
-        this.iaPreferida(),
-        this.temChaveDe(ApiProvider.ANTHROPIC),
-        this.temChaveDe(ApiProvider.OPENAI),
-        this.flagLigadaPorPadrao(ATS_ATIVO),
-        this.flag(BUSCA_AGENDADA),
-        this.flag(EMAIL_SEMANAL),
-        this.flagLigadaPorPadrao(HISTORICO),
-      ]);
+    const [
+      ordem,
+      estados,
+      hints,
+      comChaveBusca,
+      comChaveExtracao,
+      ats,
+      agendada,
+      email,
+      historico,
+      flagCv,
+    ] = await Promise.all([
+      this.ordemDaIa.ordem(),
+      this.saude.estado(),
+      this.hints(),
+      this.ia.comChave('buscaWeb'),
+      this.ia.comChave('estruturada'),
+      this.flagLigadaPorPadrao(ATS_ATIVO),
+      this.flag(BUSCA_AGENDADA),
+      this.flag(EMAIL_SEMANAL),
+      this.flagLigadaPorPadrao(HISTORICO),
+      this.flag(LEITURA_CV),
+    ]);
+
+    // A leitura de CV so exige saida estruturada, e a busca exige tambem busca
+    // na web. Sao conjuntos diferentes: Groq com chave torna a leitura de CV
+    // possivel sem tornar a busca por IA possivel.
+    const comChave = new Set([...comChaveBusca, ...comChaveExtracao]);
+    const temChave = comChaveExtracao.length > 0;
+
+    const porId = new Map(estados.map((e) => [e.provider, e]));
+
+    // Na ORDEM da cadeia, e nao na ordem do registro: a lista da tela e a
+    // cadeia, e mostra-la fora de ordem faria as setas mentirem.
+    const provedores: ProvedorDto[] = ordem
+      .map((id) => ({ p: provedor(id), e: porId.get(id) }))
+      .filter((x): x is { p: NonNullable<typeof x.p>; e: EstadoDoProvedor | undefined } =>
+        x.p !== undefined,
+      )
+      .map(({ p, e }) => {
+        const status: StatusDaChave = e?.status ?? 'sem_chave';
+        return {
+          id: p.id,
+          nome: p.nome,
+          temChave: comChave.has(p.id),
+          buscaWeb: p.capacidades.includes('buscaWeb'),
+          treinaComOsDados: p.treinaComOsDados,
+          console: p.console,
+          gratuito: GRATUITOS.has(p.id),
+          status,
+          httpStatus: e?.httpStatus ?? null,
+          motivo: explicacao(status, e?.httpStatus ?? null, e?.detalhe ?? ''),
+          checkedAt: e?.checkedAt ?? null,
+          hint: hints.get(p.id) ?? null,
+        };
+      });
+
+    // **Quem SERVE, e nao quem tem chave.** A tela antiga dizia "stored" para
+    // duas chaves mortas; esta pergunta ao estado verificado, e por isso o
+    // painel de saude pode afirmar que a busca esta parada.
+    const iaDaBusca = this.saude.quemServe('buscaWeb', ordem, estados);
+    const iaDaExtracao = this.saude.quemServe('estruturada', ordem, estados);
 
     const temProvedorDeEmail = temSmtp();
 
@@ -183,10 +339,12 @@ export class RecursosService {
       emailLigado: email,
       temProvedorDeEmail,
       historicoAtivo: historico,
-      iaPreferida: pref,
-      iaEfetiva: escolherIa(pref, temAnthropic, temOpenAi),
-      temChaveAnthropic: temAnthropic,
-      temChaveOpenAi: temOpenAi,
+      ordemDaIa: ordem,
+      iaDaBusca,
+      iaDaExtracao,
+      provedores,
+      provedoresDeBusca: comChaveBusca.length,
+      provedoresDeExtracao: comChaveExtracao.length,
     };
   }
 
@@ -281,74 +439,73 @@ export class RecursosService {
   async definirLeituraCv(ativa: boolean): Promise<RecursosDto> {
     if (ativa && !(await this.temChaveDeIa())) {
       throw new BadRequestException(
-        'Cadastre uma chave da Anthropic ou da OpenAI antes de ligar a leitura de curriculo.',
+        'Cadastre a chave de algum provedor de IA antes de ligar a leitura de curriculo.',
       );
     }
     await this.gravar(LEITURA_CV, ativa);
     return this.obter();
   }
 
-  /** Existe token de algum provedor de IA cadastrado? */
+  /**
+   * Existe token de algum provedor de IA que sirva para extracao?
+   *
+   * Extracao e o piso: todo provedor do registro atende `estruturada`, entao
+   * este e o teste mais permissivo — e o certo para a leitura de CV, que e o
+   * unico recurso que ele governa.
+   */
   private async temChaveDeIa(): Promise<boolean> {
-    const [a, o] = await Promise.all([
-      this.temChaveDe(ApiProvider.ANTHROPIC),
-      this.temChaveDe(ApiProvider.OPENAI),
-    ]);
-    return a || o;
+    return this.ia.disponivel('estruturada');
   }
 
-  private async temChaveDe(provider: ApiProvider): Promise<boolean> {
-    if (provider === ApiProvider.ANTHROPIC && process.env.ANTHROPIC_API_KEY) return true;
-    if (provider === ApiProvider.OPENAI && process.env.OPENAI_API_KEY) return true;
-    const token = await this.prisma.apiToken.findFirst({
-      where: { provider },
-      select: { id: true },
+  /**
+   * Os quatro ultimos caracteres de cada chave guardada.
+   *
+   * Sem `userId`: a chave e da instalacao, e a tela de admin mostra a que a
+   * cadeia de fato usa. Uma consulta so para os seis, em vez de uma por
+   * cartao.
+   */
+  private async hints(): Promise<Map<ApiProvider, string>> {
+    const linhas = await this.prisma.apiToken.findMany({
+      select: { provider: true, hint: true },
+      orderBy: { updatedAt: 'desc' },
     });
-    return token !== null;
+    const mapa = new Map<ApiProvider, string>();
+    for (const l of linhas) {
+      if (!mapa.has(l.provider)) mapa.set(l.provider, l.hint);
+    }
+    return mapa;
   }
 
-  /** A escolha gravada. `anthropic` e o default de quem nunca escolheu. */
-  private async iaPreferida(): Promise<IaDaBusca> {
-    const linha = await this.prisma.appSetting.findUnique({
-      where: { chave: IA_DA_BUSCA },
-      select: { valor: true },
-    });
-    return linha?.valor === 'openai' ? 'openai' : 'anthropic';
-  }
-
-  async definirIaDaBusca(ia: IaDaBusca): Promise<RecursosDto> {
-    // Nao exige chave: e uma PREFERENCIA. Escolher a que ainda nao tem chave e
-    // legitimo — a pessoa esta dizendo qual quer usar quando cadastrar, e ate
-    // la a outra atende.
-    await this.prisma.appSetting.upsert({
-      where: { chave: IA_DA_BUSCA },
-      create: { chave: IA_DA_BUSCA, valor: ia },
-      update: { valor: ia },
-      select: { chave: true },
-    });
+  /**
+   * Move um provedor uma posicao na cadeia.
+   *
+   * **Substitui `definirIaDaBusca`**, que gravava UM preferido. A tela agora
+   * ordena a lista inteira com setas ↑↓, e a ordem completa e o que sobrevive
+   * ao reload — ver `OrdemDaIaService`.
+   */
+  async moverProvedor(
+    id: ApiProvider,
+    direcao: 'cima' | 'baixo',
+    cadeia?: Capacidade,
+  ): Promise<RecursosDto> {
+    if (!provedor(id)) {
+      throw new BadRequestException('Provedor de IA desconhecido.');
+    }
+    await this.ordemDaIa.mover(id, direcao, cadeia);
     return this.obter();
   }
-}
 
-/**
- * Qual IA vai rodar de fato.
- *
- * A escolha do admin e preferencia, e nao exigencia: se a preferida nao tem
- * chave, a outra atende. Uma busca que funciona vale mais que uma que respeita
- * a configuracao e nao devolve nada — e a tela mostra qual esta valendo, para
- * a divergencia nao virar surpresa.
- */
-function escolherIa(
-  preferida: IaDaBusca,
-  temAnthropic: boolean,
-  temOpenAi: boolean,
-): IaDaBusca | null {
-  if (preferida === 'anthropic') {
-    if (temAnthropic) return 'anthropic';
-    return temOpenAi ? 'openai' : null;
+  /**
+   * Verifica as seis chaves agora e devolve o estado novo.
+   *
+   * E o botao `Test all keys`. A verificacao na CARGA da tela nao existe de
+   * proposito (decisao de 25/08/2026): seriam seis chamadas reais por visita,
+   * e nas pagas isso custa dinheiro. Quem quer o valor de agora clica.
+   */
+  async verificarChaves(): Promise<RecursosDto> {
+    await this.saude.verificarTodos();
+    return this.obter();
   }
-  if (temOpenAi) return 'openai';
-  return temAnthropic ? 'anthropic' : null;
 }
 
 /**

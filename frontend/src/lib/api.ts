@@ -11,7 +11,6 @@ import type {
   LessonDetail,
   LessonSearchHit,
   CvLido,
-  IaDaBusca,
   ProgressResult,
   MetricasEmail,
   Historico,
@@ -186,10 +185,44 @@ export const api = {
     return data
   },
 
-  async definirIaDaBusca(ia: IaDaBusca): Promise<Recursos> {
-    const { data } = await http.put<Recursos>('/settings/recursos/ia-da-busca', {
-      ia,
+  /**
+   * Move um provedor uma posição na cadeia.
+   *
+   * Substitui `definirIaDaBusca`, que gravava UM preferido: a tela agora
+   * ordena a lista inteira com setas ↑↓.
+   */
+  async moverProvedor(
+    provedor: ApiProvider,
+    direcao: 'cima' | 'baixo',
+    /**
+     * Em qual cadeia a pessoa clicou.
+     *
+     * A cadeia de busca mostra 3 dos 6 provedores; sem isto, mover ali
+     * trocaria com um provedor que não aparece na lista — a tela não mudaria e
+     * o botão pareceria quebrado.
+     */
+    cadeia?: 'estruturada' | 'buscaWeb',
+  ): Promise<Recursos> {
+    const { data } = await http.put<Recursos>('/settings/recursos/ordem-da-ia', {
+      provedor,
+      direcao,
+      ...(cadeia ? { cadeia } : {}),
     })
+    return data
+  },
+
+  /**
+   * Verifica as seis chaves agora — o botão `Test all keys`.
+   *
+   * `POST` e não `GET` porque **gasta**: são até seis chamadas reais aos
+   * provedores. O timeout é generoso porque seis provedores lentos somam.
+   */
+  async verificarChaves(): Promise<Recursos> {
+    const { data } = await http.post<Recursos>(
+      '/settings/recursos/verificar-chaves',
+      undefined,
+      { timeout: 120_000 },
+    )
     return data
   },
 

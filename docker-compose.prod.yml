@@ -78,6 +78,26 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       # Vazio = ninguem e admin. Reavaliado a cada login.
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      # Provedores de IA. Como SMTP_HOST e o Telegram, e ao contrario dos
+      # segredos acima, NAO usam `${VAR:?}`: vazio e um estado valido — a chave
+      # normalmente vem do banco, cifrada, cadastrada em Configuracoes
+      # (PLT-01), e estas variaveis sao a alternativa por ambiente. Recusar o
+      # boot por falta delas impediria de subir uma aplicacao que funciona.
+      #
+      # As `*_BASE_URL` apontam um provedor para um gateway ou um proxy sem
+      # mexer em codigo. Vazias, cada provedor usa a URL oficial dele.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_BASE_URL: ${GEMINI_BASE_URL:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_BASE_URL: ${GROQ_BASE_URL:-}
+      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY:-}
+      CEREBRAS_BASE_URL: ${CEREBRAS_BASE_URL:-}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      MISTRAL_BASE_URL: ${MISTRAL_BASE_URL:-}
       # AUTH_DISABLED de proposito ausente: em producao o login e obrigatorio,
       # e o codigo so desliga quando a variavel vale exatamente 'true'.
       #

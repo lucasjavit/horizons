@@ -45,8 +45,12 @@ export class BuscaController {
     if (!buscaPossivel) {
       enviar({
         tipo: 'erro',
+        // A mensagem cita as FAMILIAS, nao os provedores: eram dois quando
+        // ela foi escrita e hoje sao seis (JOB-33), e uma lista de nomes aqui
+        // envelhece a cada provedor novo (QA, 25/08).
         mensagem:
-          'Job search needs a key. Ask an admin to add a Firecrawl token or an Anthropic key in Settings.',
+          'Job search needs a source. Ask an admin to turn on the ATS search, ' +
+          'or add an AI provider or Firecrawl key in Settings.',
       });
       res.end();
       return;

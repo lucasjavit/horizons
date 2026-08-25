@@ -57,6 +57,25 @@ uma varredura por regex de CPF, telefone, CEP e e-mail no `CvParserService`,
 substituindo por marcadores. Fica registrado como decisão em aberto, não como
 feito — não dá para descobrir isso depois de um incidente.
 
+### ⚠️ Isto ficou mais grave em 25/08/2026, e a tela passou a dizer
+
+O [JOB-33](JOB-33-cadeia-de-ia.md) trouxe quatro provedores gratuitos, e **dois
+deles treinam modelos com o que recebem no free tier**: Gemini (Google, fora de
+EU/UK/EEA) e Mistral (Experiment tier).
+
+Combinado com o que está escrito acima — o texto **inteiro** do CV sai daqui, com
+CPF, endereço e telefone — isso deixa de ser "um terceiro processa" e passa a ser
+"um terceiro pode treinar com". A tela promete que só guardamos stack,
+senioridade e anos; **guardar pouco não é enviar pouco**.
+
+**Decisão:** não bloquear — um provedor que treina e funciona vale mais que
+nenhum provedor, e as chaves pagas estão mortas. Mas a tela de Configurações
+**diz quais treinam**, em dois lugares (no cartão da chave, acima do campo; e ao
+lado do nome na lista de ordem). Quem liga a chave decide com a informação na
+mão, antes de ligar.
+
+A limpeza do texto antes da chamada continua em aberto, e agora vale mais.
+
 ## Agrupamento
 
 O campo `grupo` é a assinatura dos filtros normalizados. Perfis com a mesma
@@ -348,10 +367,12 @@ aqui foi chave PRESENTE e recusada. Então o CV também cai quando a preferida
 falha com 401, 402, 403 ou 429 (`ehChaveMorta`), que são as respostas de chave
 inválida, sem crédito, sem permissão e sem cota.
 
-O `BuscaIaService` continua sem essa segunda queda — não foi mexido, para não
-ampliar o escopo. **Vale abrir card**: a busca tem hoje o mesmo buraco que o CV
-tinha, e a `FalhaDaIa` sobe direto para a tela quando a chave preferida é
-recusada.
+~~O `BuscaIaService` continua sem essa segunda queda~~ — **corrigido em
+25/08/2026 pelo [JOB-33](JOB-33-cadeia-de-ia.md)**. A queda por chave recusada
+subiu para o `IaService` e vale para os dois usos: era pré-requisito da cadeia
+de provedores, e não escopo extra — uma cadeia que não cai quando o provedor
+recusa não é uma cadeia. Medido: Anthropic 401 → OpenAI 429 → Gemini responde,
+em 1,05s.
 
 Recusa do modelo (`ehCurriculo: false`) **não** dispara a queda: a segunda IA
 leria o mesmo texto e diria o mesmo, gastando crédito para repetir a resposta.
@@ -491,9 +512,10 @@ Falha ao ler CV: 429 You exceeded your current quota
 
 Cada passo nomeado no log, e 400 com mensagem mandando preencher à mão.
 
-**Dívida que isto revelou:** o `BuscaIaService` tem hoje o mesmo buraco que o
-CV tinha — cai só por ausência de chave, não por chave recusada. Fica
-registrado; não foi corrigido aqui para não ampliar o escopo.
+**Dívida que isto revelou — PAGA em 25/08/2026:** o `BuscaIaService` caía só
+por ausência de chave, não por chave recusada. Corrigida pelo
+[JOB-33](JOB-33-cadeia-de-ia.md), que substituiu a queda entre dois provedores
+por uma cadeia percorrida até um funcionar.
 
 ## O prompt pedia que o PII não saísse; agora o servidor garante
 

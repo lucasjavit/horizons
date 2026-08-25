@@ -15,6 +15,9 @@ import { QuadroPage } from './pages/QuadroPage'
 // 'true' liga, para um valor esquecido como '0' ou 'false' nao abrir.
 const MOSTRA_QUADRO = import.meta.env.VITE_QUADRO === 'true'
 import { SettingsPage } from './pages/SettingsPage'
+import { ConfigIaPage } from './pages/ConfigIaPage'
+import { ConfigVagasPage } from './pages/ConfigVagasPage'
+import { ConfigNotificacoesPage } from './pages/ConfigNotificacoesPage'
 import { EmailAcaoPage } from './pages/EmailAcaoPage'
 import { BotaoGoogle } from './components/BotaoGoogle'
 import { LoadingState } from './components/States'
@@ -38,7 +41,9 @@ import { SalvasPage } from './pages/SalvasPage'
 /** Atalho para as configuracoes, no canto direito do cabecalho. */
 function Engrenagem({ admin }: { admin: boolean }) {
   const { pathname } = useLocation()
-  const ativa = pathname === '/config'
+  // Qualquer sub-rota de Configuracoes deixa a engrenagem marcada: as
+  // quatro paginas sao a mesma area.
+  const ativa = pathname === '/config' || pathname.startsWith('/config/')
 
   // Config e area de administracao (PLT-04). Esconder o icone nao substitui a
   // protecao da rota — o backend exige o papel —, mas evita oferecer um
@@ -299,6 +304,15 @@ export default function App() {
           <Route path="/vagas" element={<VagasPage />} />
           <Route path="/salvas" element={<SalvasPage />} />
           <Route path="/invoice" element={<InvoicePage />} />
+          {/* As sub-rotas vem ANTES de `/config`: nao ha `:param` aqui, mas
+              manter a mais especifica primeiro e a regra da casa e evita
+              surpresa se um dia `/config/:secao` existir. */}
+          <Route path="/config/ia" element={<ConfigIaPage />} />
+          <Route path="/config/vagas" element={<ConfigVagasPage />} />
+          <Route
+            path="/config/notificacoes"
+            element={<ConfigNotificacoesPage />}
+          />
           <Route path="/config" element={<SettingsPage />} />
           {/* Os links do e-mail caem aqui, e funcionam SEM login (JOB-24 e
               JOB-25): a credencial e o token na query, nao a sessao. */}

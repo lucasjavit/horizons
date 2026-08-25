@@ -613,6 +613,66 @@
       "total": 0
     },
     {
+      "id": "JOB-33",
+      "titulo": "Cadeia de provedores de IA, com fallback gratuito",
+      "estado": "feito (25/08/2026) — chave real verificada pelo JOB-36 (ver *Atualização*)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "As duas chaves cadastradas estão mortas. Medido em 25/08/2026:",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-34",
+      "titulo": "Separar o scrape da extração no `lerVaga`",
+      "estado": "avaliado, não implementado (25/08/2026) — falta uma medição de 2 páginas",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-35",
+      "titulo": "A Anthropic rejeita o schema do extrator de CV (400)",
+      "estado": "feito (25/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-36",
+      "titulo": "Configurações vira quatro telas, e a de IA responde \"o que funciona\"",
+      "estado": "feito (25/08/2026)",
+      "coluna": "feito",
+      "tamanho": "G",
+      "porque": "O [JOB-33](JOB-33-cadeia-de-ia.md) entregou seis provedores encadeados. A tela não acompanhou: /config tinha 864 linhas num rolo só, e com seis provedores no formato de cartão daria ~3.190px de rolagem. O desenho aprovad",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-37",
+      "titulo": "O catálogo aprende com o que a busca encontra",
+      "estado": "aberto (25/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",

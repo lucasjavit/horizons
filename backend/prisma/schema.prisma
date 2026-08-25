@@ -82,12 +82,26 @@ model JobProfile {
   @@map("job_profiles")
 }
 
+/// Um servico de terceiro cujo token o admin cadastra.
+///
+/// A ORDEM aqui nao significa nada — a ordem da cadeia de IA vive em
+/// `src/ia/provedores.ts`, junto das capacidades de cada provedor. Este enum so
+/// diz quais valores a coluna aceita.
 enum ApiProvider {
   ANTHROPIC
   OPENAI
   /// Busca de vagas. Nao e provedor de IA — mora aqui porque o mecanismo e o
   /// mesmo: token de terceiro, cifrado em repouso, cadastrado pelo admin.
   FIRECRAWL
+  /// Google AI Studio. O unico gratuito com busca na web (Google Search
+  /// grounding), entao entra tanto na busca de vagas quanto na leitura de CV.
+  GEMINI
+  /// API compativel com a da OpenAI. Sem busca na web: so leitura de CV.
+  GROQ
+  /// API compativel com a da OpenAI. Sem busca na web: so leitura de CV.
+  CEREBRAS
+  /// API compativel com a da OpenAI. Sem busca na web: so leitura de CV.
+  MISTRAL
 }
 
 /// Configuracao global da aplicacao, uma linha por chave.
@@ -462,4 +476,50 @@ model Progress {
   @@unique([userId, lessonId])
   @@index([userId, completed])
   @@map("progress")
+}
+
+/// O resultado da ultima verificacao de uma chave de provedor de IA.
+///
+/// **Guardado, e nao verificado a cada carga da tela.** Verificar na carga
+/// seriam seis chamadas reais por visita, e nas pagas isso custa dinheiro.
+/// A verificacao acontece ao salvar a chave (sempre) e quando alguem pede
+/// "Test all keys"; a tela le esta linha e diz QUANDO foi verificado, em vez
+/// de fingir frescor.
+///
+/// Uma linha por provedor, sem `userId`: a chave e da instalacao (o admin
+/// cadastra, a cadeia usa para todo mundo), e o mesmo vale para a saude dela.
+model ProviderCheck {
+  provider  ApiProvider @id
+  /// `funcionando` | `chave_recusada` | `sem_cota` | `erro`.
+  ///
+  /// String e nao enum do Prisma: o conjunto e do dominio da aplicacao
+  /// (`src/ia/verificacao.ts`), e crescer nele nao deve pedir migration.
+  status    String
+  /// O codigo HTTP que o provedor devolveu. `null` quando nao houve resposta
+  /// (timeout, DNS, conexao recusada) — o que e diferente de um 500.
+  httpStatus Int?
+  /// A mensagem do provedor, ja cortada. E o que separa "troque a chave" de
+  /// "adicione credito" na tela.
+  detalhe   String
+  checkedAt DateTime    @updatedAt
+
+  @@map("provider_checks")
+}
+
+/// A ordem da cadeia de provedores, como o admin a deixou.
+///
+/// Antes era UMA preferencia (`jobs.iaDaBusca`) que promovia um provedor ao
+/// topo. Isso nao estende para seis: a tela agora ordena a lista inteira com
+/// setas, e a ordem completa precisa sobreviver ao reload.
+///
+/// Uma linha por provedor. Provedor sem linha cai no fim, na ordem do
+/// registro — assim um provedor NOVO no registro nao precisa de migracao de
+/// dados para aparecer.
+model ProviderOrder {
+  provider  ApiProvider @id
+  /// Posicao na cadeia, crescente. Nao precisa ser contigua.
+  posicao   Int
+  updatedAt DateTime    @updatedAt
+
+  @@map("provider_orders")
 }

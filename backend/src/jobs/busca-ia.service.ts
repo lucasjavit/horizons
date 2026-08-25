@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import Anthropic from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
-import { ApiProvider } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { decifrar } from '../settings/crypto';
+import { CadeiaEsgotada, IaService, RecusaDoModelo } from '../ia/ia.service';
+import { provedor } from '../ia/provedores';
 import {
   INSTRUCAO_BUSCA,
   SCHEMA_BUSCA,
@@ -22,14 +19,17 @@ import type { IaDaBusca } from '../settings/recursos.service';
  * falso, e e a conclusao mais cara que este produto pode induzir.
  */
 export class FalhaDaIa extends Error {
-  constructor(readonly provedor: string, readonly detalhe: string) {
+  constructor(
+    readonly provedor: string,
+    readonly detalhe: string,
+  ) {
     super(`busca com ${provedor} falhou: ${detalhe}`);
     this.name = 'FalhaDaIa';
   }
 }
 
 /**
- * A busca de vagas pela IA, sem Firecrawl — com Claude ou com ChatGPT.
+ * A busca de vagas pela IA, sem Firecrawl.
  *
  * **A IA nao sabe vaga de cabeca — ela precisa procurar.** Medido em
  * 18/08/2026: perguntado por vagas abertas sem acesso a web, o modelo acertou
@@ -38,123 +38,80 @@ export class FalhaDaIa extends Error {
  * vaga em Greenhouse/Lever/Ashby sao opacos e nao memorizaveis; eu produziria
  * uma URL bem formada que da 404".
  *
- * Por isso os dois caminhos usam busca na web de verdade — `web_search` na
- * Anthropic, `web_search` na Responses API da OpenAI. O que muda e a forma da
- * chamada; o que se pede, a instrucao e as defesas sao os mesmos, e moram em
- * `busca-ia.comum.ts` para nao divergirem.
+ * Por isso este motor pede a capacidade `buscaWeb`, e **so provedores que a
+ * tem entram na cadeia**: Anthropic, OpenAI e Gemini. Groq, Cerebras e Mistral
+ * ficam de fora — nao porque falhariam, mas porque teriam SUCESSO produzindo
+ * exatamente as URLs que dao 404.
+ *
+ * A queda entre provedores mora no `IaService`, e desde 25/08/2026 ela vale
+ * tambem para chave PRESENTE e RECUSADA — era a divida registrada no JOB-02:
+ * este servico caia so por AUSENCIA de chave, e um 401 do primeiro provedor
+ * subia direto para a tela com um provedor saudavel cadastrado ao lado.
  */
 @Injectable()
 export class BuscaIaService {
   private readonly log = new Logger(BuscaIaService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly ia: IaService) {}
 
-  /** Ha chave de algum provedor? E o que decide se este motor existe. */
-  async disponivel(): Promise<boolean> {
-    const [a, o] = await Promise.all([
-      this.chave(ApiProvider.ANTHROPIC),
-      this.chave(ApiProvider.OPENAI),
-    ]);
-    return a !== null || o !== null;
+  /** Ha provedor com busca na web e chave? E o que decide se este motor existe. */
+  disponivel(): Promise<boolean> {
+    return this.ia.disponivel('buscaWeb');
   }
 
   /**
-   * Busca com a IA escolhida, caindo na outra se a escolhida nao tem chave.
+   * Busca com a cadeia de provedores que sabem procurar na web.
    *
-   * O `qual` vem da configuracao (`iaEfetiva`), mas a checagem se repete aqui:
-   * o servico nao pode depender de quem o chama ter feito a conta certa.
+   * `ordem` e a lista completa como o admin a arrumou: quem responde primeiro
+   * atende, e um provedor que recusa a chave passa a vez em vez de derrubar a
+   * busca.
    */
   async buscar(
     filtros: FiltrosDto,
     consulta: string,
-    qual: IaDaBusca,
+    ordem: readonly IaDaBusca[],
   ): Promise<VagaDto[]> {
-    const preferida = qual === 'openai' ? ApiProvider.OPENAI : ApiProvider.ANTHROPIC;
-    const outra = qual === 'openai' ? ApiProvider.ANTHROPIC : ApiProvider.OPENAI;
-
-    const chavePref = await this.chave(preferida);
-    if (chavePref) {
-      return preferida === ApiProvider.OPENAI
-        ? this.comOpenAi(chavePref, filtros, consulta)
-        : this.comAnthropic(chavePref, filtros, consulta);
-    }
-
-    const chaveOutra = await this.chave(outra);
-    if (!chaveOutra) return [];
-    this.log.log(
-      `${preferida} sem chave — buscando com ${outra}`,
-    );
-    return outra === ApiProvider.OPENAI
-      ? this.comOpenAi(chaveOutra, filtros, consulta)
-      : this.comAnthropic(chaveOutra, filtros, consulta);
-  }
-
-  private async comAnthropic(
-    chave: string,
-    filtros: FiltrosDto,
-    consulta: string,
-  ): Promise<VagaDto[]> {
-    const client = new Anthropic({ apiKey: chave });
+    let bruto: string;
     try {
-      const resposta = await client.messages.create({
-        model: 'claude-opus-5',
-        max_tokens: 8000,
-        system: INSTRUCAO_BUSCA,
-        tools: [{ type: 'web_search_20260209', name: 'web_search' }],
-        output_config: { format: { type: 'json_schema', schema: SCHEMA_BUSCA } },
-        messages: [{ role: 'user', content: descreverPedido(filtros, consulta) }],
+      bruto = await this.ia.pedir('buscaWeb', ordem, {
+        instrucao: INSTRUCAO_BUSCA,
+        entrada: descreverPedido(filtros, consulta),
+        schema: SCHEMA_BUSCA as unknown as Record<string, unknown>,
+        nomeDoSchema: 'vagas',
+        maxTokens: 8000,
+        buscaWeb: true,
       });
-
-      // Refusal e 200 com content vazio: ler content[0] direto quebraria aqui.
-      if (resposta.stop_reason === 'refusal') {
+    } catch (e) {
+      // Recusa do modelo nao e falha de infraestrutura: nao ha vaga a mostrar,
+      // mas tambem nao ha erro a reportar. Continua devolvendo lista vazia,
+      // como antes.
+      if (e instanceof RecusaDoModelo) {
         this.log.warn('busca por IA recusada pelo modelo');
         return [];
       }
-      const bloco = resposta.content.find((b) => b.type === 'text');
-      if (!bloco || bloco.type !== 'text') return [];
-      return this.ler(bloco.text);
-    } catch (e) {
-      const detalhe = String(e).slice(0, 300);
-      this.log.error(`busca com Anthropic falhou: ${detalhe}`);
-      throw new FalhaDaIa('Claude', detalhe);
+      if (e instanceof CadeiaEsgotada) {
+        // Sem NENHUM provedor com chave, isto nao e falha — e ausencia de
+        // motor, e quem chama ja tratou (`disponivel()`). Devolver `[]` aqui
+        // preserva o comportamento antigo para esse caso.
+        const houveTentativa = e.tentativas.some((t) => t.motivo !== 'sem chave');
+        if (!houveTentativa) {
+          this.log.log('nenhum provedor de busca com chave cadastrada');
+          return [];
+        }
+        this.log.error(e.message);
+        // O nome mostrado e o do primeiro que de fato falhou; se nenhum
+        // chegou a ser tentado, o do topo da cadeia — e o que a pessoa
+        // reconhece na tela de Configuracoes.
+        const primeiraFalha = e.tentativas.find((t) => t.motivo !== 'sem chave');
+        throw new FalhaDaIa(
+          primeiraFalha?.provedor ?? nomeDe(ordem[0] ?? null),
+          e.tentativas.map((t) => `${t.provedor}: ${t.motivo}`).join('; '),
+        );
+      }
+      throw e;
     }
-  }
 
-  /**
-   * O caminho da OpenAI.
-   *
-   * A API e outra: `responses.create` em vez de `messages.create`, `text.format`
-   * em vez de `output_config`, e o resultado sai em `output_text` em vez de um
-   * bloco de conteudo.
-   */
-  private async comOpenAi(
-    chave: string,
-    filtros: FiltrosDto,
-    consulta: string,
-  ): Promise<VagaDto[]> {
-    const client = new OpenAI({ apiKey: chave });
-    try {
-      const resposta = await client.responses.create({
-        model: 'gpt-5.6',
-        tools: [{ type: 'web_search' }],
-        input: [
-          { role: 'system', content: INSTRUCAO_BUSCA },
-          { role: 'user', content: descreverPedido(filtros, consulta) },
-        ],
-        text: {
-          format: {
-            type: 'json_schema',
-            name: 'vagas',
-            schema: SCHEMA_BUSCA as unknown as Record<string, unknown>,
-          },
-        },
-      });
-      return this.ler(resposta.output_text ?? '');
-    } catch (e) {
-      const detalhe = String(e).slice(0, 300);
-      this.log.error(`busca com OpenAI falhou: ${detalhe}`);
-      throw new FalhaDaIa('ChatGPT', detalhe);
-    }
+    return this.ler(bruto);
   }
 
   /** O JSON vira vaga, com as defesas do JOB-09 e JOB-10 aplicadas. */
@@ -171,25 +128,10 @@ export class BuscaIaService {
       .map((v) => normalizar(v))
       .filter((v): v is VagaDto => v !== null);
   }
+}
 
-  private async chave(provider: ApiProvider): Promise<string | null> {
-    const env =
-      provider === ApiProvider.ANTHROPIC
-        ? process.env.ANTHROPIC_API_KEY
-        : process.env.OPENAI_API_KEY;
-    if (env) return env;
-
-    const guardado = await this.prisma.apiToken.findFirst({
-      where: { provider },
-      select: { secret: true },
-      orderBy: { updatedAt: 'desc' },
-    });
-    if (!guardado) return null;
-    try {
-      return decifrar(guardado.secret);
-    } catch {
-      this.log.error(`token ${provider} nao pode ser decifrado`);
-      return null;
-    }
-  }
+/** Nome legivel de um provedor, para a mensagem que chega a tela. */
+function nomeDe(id: IaDaBusca | null): string {
+  if (!id) return 'AI';
+  return provedor(id)?.nome ?? String(id);
 }

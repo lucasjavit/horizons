@@ -29,7 +29,13 @@ const SCHEMA_VAGA = {
     degree: { type: ['string', 'null'] },
     local: { type: ['string', 'null'] },
     paisIso: { type: ['string', 'null'], description: 'ISO-3166 alpha-2 minusculo. null se nao der para dizer.' },
-    regime: { type: ['string', 'null'], enum: ['remoto', 'hibrido', 'presencial', null] },
+    // `anyOf` em vez de `type:['string','null']` com `null` no enum: a
+    // Anthropic recusa aquela forma com 400 (JOB-35). Este schema vai hoje
+    // para o Firecrawl, mas o JOB-34 avalia passa-lo pela cadeia — e a forma
+    // canonica e a que mais provedores aceitam.
+    regime: {
+      anyOf: [{ type: 'string', enum: ['remoto', 'hibrido', 'presencial'] }, { type: 'null' }],
+    },
     salaryMin: { type: ['integer', 'null'], description: 'Salario ANUAL. null se nao publicado.' },
     salaryMax: { type: ['integer', 'null'] },
     currency: { type: ['string', 'null'] },
@@ -145,7 +151,7 @@ export class BuscaService {
     // O interruptor decide o motor, e nao so a existencia da chave: com o
     // Firecrawl desligado a chave continua cadastrada, e usa-la assim mesmo
     // faria o interruptor nao significar nada.
-    const { firecrawlAtivo, iaEfetiva, atsAtivo } = await this.recursos.obter();
+    const { firecrawlAtivo, ordemDaIa, atsAtivo } = await this.recursos.obter();
 
     // O ATS vem PRIMEIRO por ser o mais barato: 27.725 vagas por R$ 0 contra
     // 7 do Firecrawl por 42 creditos (medido em 18/08). So faz sentido gastar
@@ -179,7 +185,7 @@ export class BuscaService {
         yield {
           tipo: 'erro',
           mensagem:
-            'Job search needs a Firecrawl or Anthropic key. Ask an admin to add one in Settings.',
+            'Job search needs a Firecrawl key, or a key for an AI provider that can search the web. Ask an admin to add one in Settings.',
         };
         return;
       }
@@ -188,7 +194,10 @@ export class BuscaService {
           ? 'Firecrawl sem chave — buscando pela IA'
           : 'Firecrawl desligado — buscando pela IA',
       );
-      yield* this.buscarPelaIa(filtros, consulta, iaEfetiva ?? 'anthropic');
+      // `ordemDaIa` cobre os seis provedores, na ordem que o admin arrumou;
+      // a cadeia a filtra por capacidade. `disponivel()` logo acima ja
+      // garantiu que ha ao menos um com chave.
+      yield* this.buscarPelaIa(filtros, consulta, ordemDaIa);
       return;
     }
 
@@ -354,11 +363,11 @@ export class BuscaService {
   private async *buscarPelaIa(
     filtros: FiltrosDto,
     consulta: string,
-    qual: IaDaBusca,
+    ordem: readonly IaDaBusca[],
   ): AsyncGenerator<EventoBusca> {
     let vagas: VagaDto[];
     try {
-      vagas = await this.ia.buscar(filtros, consulta, qual);
+      vagas = await this.ia.buscar(filtros, consulta, ordem);
     } catch (e) {
       // **"Nao consegui procurar" nao e "nao achei".**
       //

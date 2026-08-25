@@ -52,6 +52,27 @@ services:
       # para um segredo de verdade — commitar chave no compose so vale
       # enquanto o app roda na rede local.
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-horizons dev key trocar antes de publicar}
+      # Provedores de IA: chave e URL base.
+      #
+      # A CHAVE normalmente vem do banco, cifrada, cadastrada em Configuracoes
+      # (PLT-01) — estas variaveis sao a alternativa por ambiente, que e como o
+      # deploy injeta segredo sem passar pela tela. Vazias por padrao.
+      #
+      # A URL BASE existe para apontar o provedor para um gateway, um proxy ou
+      # um duble de teste, sem mexer em codigo. Foi o que permitiu verificar a
+      # cadeia de queda sem nenhuma chave valida (25/08/2026).
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_BASE_URL: ${ANTHROPIC_BASE_URL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_BASE_URL: ${GEMINI_BASE_URL:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_BASE_URL: ${GROQ_BASE_URL:-}
+      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY:-}
+      CEREBRAS_BASE_URL: ${CEREBRAS_BASE_URL:-}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      MISTRAL_BASE_URL: ${MISTRAL_BASE_URL:-}
       # Login com Google (PLT-02). O client id e publico — sai no HTML de
       # qualquer site que use Google Sign-In —, entao vem por variavel so
       # para nao amarrar o codigo a uma conta.

@@ -103,7 +103,21 @@ export interface ProgressResult {
   note: string | null
 }
 
-export type ApiProvider = 'ANTHROPIC' | 'OPENAI' | 'FIRECRAWL'
+/**
+ * Espelha `ApiProvider` do `schema.prisma`.
+ *
+ * Os quatro últimos são gratuitos e sem cartão — foram adicionados em
+ * 25/08/2026 porque as duas chaves pagas cadastradas estavam mortas (401 e
+ * 429) e a leitura de CV não funcionava nesta instalação.
+ */
+export type ApiProvider =
+  | 'ANTHROPIC'
+  | 'OPENAI'
+  | 'FIRECRAWL'
+  | 'GEMINI'
+  | 'GROQ'
+  | 'CEREBRAS'
+  | 'MISTRAL'
 
 /** O valor do token nunca vem da API — so o final, para reconhecer qual e. */
 export interface ApiTokenInfo {
@@ -130,8 +144,15 @@ export type Regiao = 'latam'
 /** Espelha `PORTES` do backend. */
 export type Porte = 'grande' | 'startup'
 
-/** Espelha `IaDaBusca` do backend. */
-export type IaDaBusca = 'anthropic' | 'openai'
+/**
+ * Espelha `IaDaBusca` do backend — que hoje é o próprio `ApiProvider`.
+ *
+ * Era `'anthropic' | 'openai'`, uma união escrita para exatamente dois. A lista
+ * de provedores agora cresce em `backend/src/ia/provedores.ts`, e um tipo que
+ * precisasse ser editado a cada provedor novo seria o mesmo problema que a
+ * cadeia veio resolver.
+ */
+export type IaDaBusca = ApiProvider
 
 export type Contrato = 'clt' | 'pj' | 'contractor' | 'freelance'
 
@@ -241,13 +262,93 @@ export interface Recursos {
   buscaPossivel: boolean
   /** Sem token do Firecrawl a busca não pode ser ligada. */
   temChaveFirecrawl: boolean
-  /** A IA escolhida pelo admin para a busca. */
-  iaPreferida: IaDaBusca
-  /** A que roda de fato — cai na outra se a preferida não tem chave. */
-  iaEfetiva: IaDaBusca | null
-  temChaveAnthropic: boolean
-  temChaveOpenAi: boolean
+  /**
+   * A ordem COMPLETA da cadeia, como o admin a arrumou.
+   *
+   * **Substitui `iaPreferida`**, que era um provedor promovido ao topo. Com
+   * seis provedores, a segunda e a terceira posições decidem quem atende
+   * quando o topo cai. Sempre traz os seis, na ordem gravada.
+   */
+  ordemDaIa: IaDaBusca[]
+  /**
+   * Quem de fato SERVE a busca de vagas agora.
+   *
+   * **Substitui `iaEfetiva`**, que era "o primeiro com chave" — e chave
+   * cadastrada não é chave que funciona. Este é o primeiro da cadeia cuja
+   * última verificação deu `funcionando`. `null` = a busca por IA está parada.
+   */
+  iaDaBusca: IaDaBusca | null
+  /** Quem serve a leitura de CV e de anúncio. Mesma regra. */
+  iaDaExtracao: IaDaBusca | null
+  /**
+   * Todos os provedores do registro, com o estado de cada um.
+   *
+   * Substitui os antigos `temChaveAnthropic` / `temChaveOpenAi`: um campo por
+   * provedor obrigaria a mexer no DTO, neste espelho e na tela a cada provedor
+   * novo. Uma lista não.
+   */
+  provedores: ProvedorIa[]
+  /** Quantos provedores servem a busca de vagas (exige busca na web). */
+  provedoresDeBusca: number
+  /** Quantos provedores servem a leitura de CV (basta saída estruturada). */
+  provedoresDeExtracao: number
 }
+
+/** Espelha `ProvedorDto` do backend. */
+export interface ProvedorIa {
+  id: ApiProvider
+  nome: string
+  /** Há chave cadastrada (no banco ou no ambiente). */
+  temChave: boolean
+  /** Faz busca na web — logo, serve para a busca de vagas. */
+  buscaWeb: boolean
+  /**
+   * O provedor treina modelos com o que recebe no free tier.
+   *
+   * A tela mostra isto ao lado do nome, e não é decoração: o texto do CV vai
+   * INTEIRO para o provedor, com CPF, endereço e telefone (JOB-02). Guardar
+   * pouco não é enviar pouco, e quem liga a chave precisa saber antes.
+   */
+  treinaComOsDados: boolean
+  /** Onde a pessoa cria a chave. */
+  console: string
+  /**
+   * Tem free tier sem cartão?
+   *
+   * Duas etiquetas na tela, `Paid` e `Free tier` — sem preço nem taxa por
+   * token, que envelhecem e fariam a tela mentir sem ninguém notar.
+   */
+  gratuito: boolean
+  /** O estado da chave, da última verificação guardada. */
+  status: StatusDaChave
+  /** O código HTTP da última verificação. `null` se não houve resposta. */
+  httpStatus: number | null
+  /** A frase que explica o estado e diz o que fazer. Vazia quando não há. */
+  motivo: string
+  /** Quando foi verificado, ISO. `null` se nunca foi. */
+  checkedAt: string | null
+  /** Os quatro últimos caracteres da chave guardada, se houver. */
+  hint: string | null
+}
+
+/**
+ * Espelha `StatusDaChave` de `backend/src/ia/verificacao.ts`.
+ *
+ * **`chave_recusada` e `sem_cota` são separados de propósito**: os dois vêm de
+ * uma chave que o provedor não aceitou, mas a ação de quem lê é oposta — um
+ * pede trocar a chave, o outro pede adicionar crédito. Um selo só mandaria
+ * metade dos admins pelo caminho errado.
+ *
+ * O quinto estado da tela, `Checking…`, é só do frontend: dura o tempo da
+ * requisição e nunca é gravado.
+ */
+export type StatusDaChave =
+  | 'sem_chave'
+  | 'nao_verificado'
+  | 'funcionando'
+  | 'chave_recusada'
+  | 'sem_cota'
+  | 'erro'
 
 /**
  * O que a leitura do currículo devolve, antes de a pessoa revisar.

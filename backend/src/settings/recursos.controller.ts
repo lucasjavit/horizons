@@ -1,20 +1,50 @@
-import { Body, Controller, Get, Put } from '@nestjs/common';
-import { IsBoolean, IsIn } from 'class-validator';
+import { Body, Controller, Get, Post, Put } from '@nestjs/common';
+import { ApiProvider } from '@prisma/client';
+import { IsBoolean, IsEnum, IsIn, IsOptional } from 'class-validator';
 import { AdminOnly } from '../auth/current-user';
-import {
-  RecursosService,
-  type RecursosDto,
-  type IaDaBusca,
-} from './recursos.service';
+import { RecursosService, type RecursosDto } from './recursos.service';
+import type { Capacidade } from '../ia/provedores';
 
 export class DefinirFlagDto {
   @IsBoolean()
   ativa!: boolean;
 }
 
-export class DefinirIaDto {
-  @IsIn(['anthropic', 'openai'])
-  ia!: IaDaBusca;
+/**
+ * Mover um provedor uma posicao na cadeia.
+ *
+ * **Substitui `DefinirIaDto`**, que gravava UM preferido. A tela agora ordena
+ * a lista inteira com setas ↑↓, e uma preferencia unica nao representa o que
+ * a pessoa arrumou.
+ *
+ * `@IsEnum(ApiProvider)` e nao uma lista fixa: o conjunto valido cresce em
+ * `prisma/schema.prisma` + `src/ia/provedores.ts`, e repetir os nomes aqui
+ * seria um terceiro lugar para esquecer de atualizar. O servico ainda recusa um
+ * id que esteja no enum mas fora do registro (FIRECRAWL, por exemplo).
+ */
+export class MoverProvedorDto {
+  @IsEnum(ApiProvider)
+  provedor!: ApiProvider;
+
+  /**
+   * Para onde. Duas palavras e nao um numero de posicao: a tela move de um em
+   * um, e mandar a posicao final abriria a porta para dois cliques rapidos
+   * gravarem uma ordem que ninguem viu.
+   */
+  @IsIn(['cima', 'baixo'])
+  direcao!: 'cima' | 'baixo';
+
+  /**
+   * Em qual das duas cadeias a pessoa clicou.
+   *
+   * Sem isto, mover na cadeia de BUSCA (que mostra 3 dos 6) trocaria com um
+   * provedor que nao aparece ali — a tela nao mudaria e o botao pareceria
+   * quebrado. `@IsOptional()` porque a cadeia de leitura tem os seis e nao
+   * precisa filtrar.
+   */
+  @IsOptional()
+  @IsIn(['estruturada', 'buscaWeb'])
+  cadeia?: Capacidade;
 }
 
 /**
@@ -72,9 +102,22 @@ export class RecursosController {
     return this.recursos.definirHistorico(body.ativa);
   }
 
-  @Put('ia-da-busca')
+  @Put('ordem-da-ia')
   @AdminOnly()
-  definirIaDaBusca(@Body() body: DefinirIaDto): Promise<RecursosDto> {
-    return this.recursos.definirIaDaBusca(body.ia);
+  moverProvedor(@Body() body: MoverProvedorDto): Promise<RecursosDto> {
+    return this.recursos.moverProvedor(body.provedor, body.direcao, body.cadeia);
+  }
+
+  /**
+   * Verifica as seis chaves agora.
+   *
+   * `POST` e nao `GET` porque isto **gasta**: sao ate seis chamadas reais aos
+   * provedores. Um GET convidaria o navegador a repetir sozinho, e um prefetch
+   * viraria conta a pagar.
+   */
+  @Post('verificar-chaves')
+  @AdminOnly()
+  verificarChaves(): Promise<RecursosDto> {
+    return this.recursos.verificarChaves();
   }
 }

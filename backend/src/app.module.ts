@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProgressModule } from './progress/progress.module';
 import { JobsModule } from './jobs/jobs.module';
 import { EmailModule } from './email/email.module';
+import { IaModule } from './ia/ia.module';
 import { SettingsModule } from './settings/settings.module';
 import { TracksModule } from './tracks/tracks.module';
 
@@ -17,6 +18,9 @@ import { TracksModule } from './tracks/tracks.module';
     ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    // A cadeia de provedores de IA. Global, como o Prisma: e infraestrutura
+    // que `jobs` e `settings` usam sem se importarem com qual provedor atende.
+    IaModule,
     AuthModule,
     TracksModule,
     ProgressModule,

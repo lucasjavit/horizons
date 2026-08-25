@@ -121,6 +121,39 @@ Um módulo por pasta, sem barrel: `x.module.ts`, `x.controller.ts`,
   resposta é interface.** O `ValidationPipe` global usa
   `forbidNonWhitelisted`, então campo sem decorador **rejeita com 400** — não
   é ignorado em silêncio.
+- **A tela de Configuracoes sao QUATRO sub-paginas**, com a barra de abas de
+  `components/settings/AbasDeConfig.tsx`: `/config/ia` (as duas cadeias e o
+  painel de saude), `/config/vagas` (Firecrawl, ATS, busca agendada),
+  `/config/notificacoes` (e-mail e Telegram) e `/config` (Features). Sub-pagina
+  nova entra na lista de `AbasDeConfig` **e** como rota antes do `path="*"`.
+  O Firecrawl mora em Job sources, e nao na pagina de IA: ele e implementacao
+  concorrente do mesmo passo de leitura, e o agrupamento e *de onde vem a vaga*.
+- **"Tem chave" nao e "a chave funciona", e a tela mostra a segunda.**
+  `ProviderCheck` guarda o resultado da ultima verificacao por provedor.
+  **Verifica-se ao salvar a chave (sempre) e no botao `Test all keys` — nunca
+  na carga da pagina**, que seriam seis chamadas reais por visita e custam
+  dinheiro nas pagas. Resultado com mais de 24h aparece como "checked
+  yesterday" em vez de fingir frescor.
+- **401 e 429 sao estados DIFERENTES na tela** (`chave_recusada` / `sem_cota`).
+  A cadeia trata os dois igual — cai para o proximo —, mas a acao de quem le e
+  oposta: um pede trocar a chave, o outro pede pagar. Ver
+  `src/ia/verificacao.ts`.
+- **A ordem da cadeia e gravada inteira** (`ProviderOrder`), e nao um
+  preferido. `IaService.pedir(capacidade, ordem, …)` recebe a lista completa e
+  a filtra por capacidade. Ao mover pela tela, o vizinho e o **visivel** na
+  cadeia que a pessoa esta vendo — a de busca mostra 3 dos 6, e trocar com o
+  adjacente da lista completa faria o botao parecer quebrado.
+- **Provedor de IA novo é UMA entrada em `src/ia/provedores.ts`.** A cadeia é
+  percorrida até um funcionar, e é filtrada por **capacidade**: `estruturada`
+  (saída por schema) e `buscaWeb`. Groq, Cerebras e Mistral não têm busca na
+  web, então a busca de vagas nem os tenta — um modelo sem busca não falha ao
+  receber um pedido de vagas, ele **inventa URLs bem formadas que dão 404**.
+  Nunca chame um SDK de IA direto: use `IaService.pedir(capacidade, …)`.
+  Os SDKs vão com `maxRetries: 0` de propósito — a cadeia é o retry, e repetir
+  o mesmo 429 custava 2,5s contra 1,05s (medido 25/08).
+- **Gemini e Mistral treinam com os dados do free tier**, e a leitura de CV
+  envia o texto INTEIRO do currículo. A tela de Configurações **diz quais
+  treinam**, ao lado do nome. Provedor novo: preencha `treinaComOsDados`.
 - Rota específica antes de rota com `:param`, senão a genérica engole.
 - Data cruza a API como string ISO, nunca `Date`.
 - Erro: `NotFoundException` com mensagem em português sem acento.
