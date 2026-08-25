@@ -14,6 +14,7 @@ import type {
   ProgressResult,
   MetricasEmail,
   Historico,
+  HostDescoberto,
   Recursos,
   ResultadoRodada,
   SalvarPerfil,
@@ -243,6 +244,34 @@ export const api = {
     const { data } = await http.put<Recursos>('/settings/recursos/busca-vagas', {
       ativa,
     })
+    return data
+  },
+
+  async definirDescobertas(ativa: boolean): Promise<Recursos> {
+    const { data } = await http.put<Recursos>('/settings/recursos/descobertas', {
+      ativa,
+    })
+    return data
+  },
+
+  /** A fila de descobertas do catálogo, agrupada por host (JOB-37). */
+  async descobertas(signal?: AbortSignal): Promise<HostDescoberto[]> {
+    const { data } = await http.get<HostDescoberto[]>('/jobs/descobertas', {
+      signal,
+    })
+    return data
+  },
+
+  /**
+   * Roda a verificação agora, sem esperar as 3h.
+   *
+   * Sem `signal`: ela leva minutos (uma consulta a cada 5s) e abortar no meio
+   * deixaria metade da fila verificada — o que já está gravado, está.
+   */
+  async verificarDescobertas(): Promise<{ verificadas: number }> {
+    const { data } = await http.post<{ verificadas: number }>(
+      '/jobs/descobertas/verificar',
+    )
     return data
   },
 

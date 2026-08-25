@@ -1,7 +1,23 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AbasDeConfig } from '../components/settings/AbasDeConfig'
 import { CartaoProvedor } from '../components/settings/CartaoProvedor'
+/**
+ * A tabela de descobertas entra por `import()` dinâmico.
+ *
+ * **Ela é a única tela de admin com tabela**, e paga o próprio peso em chunk
+ * separado: medido em 25/08, embutida ela levava o bundle principal a 450,3 KB
+ * contra o teto de 450 KB do `qa-rapido.py` — que existe porque quem só quer
+ * ler uma aula baixa esse arquivo. Fora dele, o principal volta a 445,6 KB e
+ * quem abre `/config/vagas` paga os ~5 KB.
+ *
+ * Mesma razão do jsPDF no Invoice, na escala menor que este caso pede.
+ */
+const CatalogoDescoberto = lazy(() =>
+  import('../components/settings/CatalogoDescoberto').then((m) => ({
+    default: m.CatalogoDescoberto,
+  })),
+)
 import { Interruptor } from '../components/settings/Interruptor'
 import { ErrorState, LoadingState } from '../components/States'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
@@ -111,6 +127,23 @@ export function ConfigVagasPage() {
               />
 
               <Interruptor
+                id="descobertas"
+                titulo="Learn from what the search finds"
+                ligado={data.descobertasAtivas}
+                // Sem dependência, como o ATS: a captura é parsing puro de uma
+                // URL que já está em memória, e a verificação da madrugada bate
+                // em API pública e sem chave.
+                temDependencia
+                salvando={salvando}
+                onAlternar={() =>
+                  void alternar(api.definirDescobertas, data.descobertasAtivas)
+                }
+                ajudaLigada="Every search notes the job boards it ran into that the catalog does not list. At 3am each one is checked against the real ATS — does the board exist, how many jobs does it return. Nothing is added to the catalog without a person deciding."
+                ajudaDesligada="Turned off, the search records nothing and the nightly check does not run. What was already found stays in the list below."
+                ajudaSemChave=""
+              />
+
+              <Interruptor
                 id="busca-agendada"
                 titulo="Search for jobs automatically"
                 ligado={data.buscaAgendadaAtiva}
@@ -149,6 +182,10 @@ export function ConfigVagasPage() {
               .
             </p>
           </section>
+
+          <Suspense fallback={<LoadingState label="Loading…" />}>
+            <CatalogoDescoberto ligado={data.descobertasAtivas} />
+          </Suspense>
 
           <h2 className="mt-9 mb-3 text-lg font-semibold">Firecrawl key</h2>
           {tokens.loading && <LoadingState label="Loading key…" />}

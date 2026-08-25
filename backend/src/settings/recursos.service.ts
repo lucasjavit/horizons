@@ -142,6 +142,20 @@ const EMAIL_SEMANAL = 'jobs.emailSemanal';
  */
 const HISTORICO = 'jobs.historico';
 
+/**
+ * A colheita do catalogo de ATS (JOB-37).
+ *
+ * Default LIGADO, como o ATS e o historico: nao gasta credito, nao chama
+ * provedor pago e nao manda nada para ninguem. A captura e parsing de uma URL
+ * que ja esta em memoria, e a verificacao bate em API publica e sem chave, a
+ * uma consulta a cada 5s de madrugada.
+ *
+ * O que ele governa sao DUAS coisas ao mesmo tempo: a busca deixa de anotar e o
+ * cron das 3h nao roda. Desligar um e nao o outro deixaria o cron mastigando
+ * uma fila que ninguem mais alimenta.
+ */
+const DESCOBERTAS = 'jobs.descobertas';
+
 export interface RecursosDto {
   /** A leitura de curriculo esta ligada e funcionando. */
   leituraCvAtiva: boolean;
@@ -188,6 +202,13 @@ export interface RecursosDto {
    * resposta inteira. Ausencia de linha significa LIGADO.
    */
   historicoAtivo: boolean;
+  /**
+   * A colheita do catalogo esta ligada (JOB-37).
+   *
+   * Sem dependencia, como o ATS: as APIs de Greenhouse, Lever e Ashby sao
+   * publicas. Ausencia de linha significa LIGADO.
+   */
+  descobertasAtivas: boolean;
   /**
    * A ordem COMPLETA da cadeia, como o admin a arrumou.
    *
@@ -261,6 +282,7 @@ export class RecursosService {
       agendada,
       email,
       historico,
+      descobertas,
       flagCv,
     ] = await Promise.all([
       this.ordemDaIa.ordem(),
@@ -272,6 +294,7 @@ export class RecursosService {
       this.flag(BUSCA_AGENDADA),
       this.flag(EMAIL_SEMANAL),
       this.flagLigadaPorPadrao(HISTORICO),
+      this.flagLigadaPorPadrao(DESCOBERTAS),
       this.flag(LEITURA_CV),
     ]);
 
@@ -339,6 +362,7 @@ export class RecursosService {
       emailLigado: email,
       temProvedorDeEmail,
       historicoAtivo: historico,
+      descobertasAtivas: descobertas,
       ordemDaIa: ordem,
       iaDaBusca,
       iaDaExtracao,
@@ -384,6 +408,19 @@ export class RecursosService {
     // Sem checagem de dependencia: o historico so grava a URL do que a pessoa
     // marcou, e nao chama servico nenhum de fora.
     await this.gravar(HISTORICO, ativa);
+    return this.obter();
+  }
+
+  /**
+   * Liga a colheita do catalogo.
+   *
+   * Sem checagem de dependencia, como o ATS: as APIs sao publicas e nao ha
+   * chave que possa faltar. Desligada, a busca para de anotar e o cron das 3h
+   * nao roda — a fila ja gravada continua no banco, intacta. Apagar seria uma
+   * decisao que um interruptor nao tem o direito de tomar.
+   */
+  async definirDescobertas(ativa: boolean): Promise<RecursosDto> {
+    await this.gravar(DESCOBERTAS, ativa);
     return this.obter();
   }
 

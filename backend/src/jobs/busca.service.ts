@@ -4,6 +4,7 @@ import { Firecrawl } from 'firecrawl';
 import { PrismaService } from '../prisma/prisma.service';
 import { BuscaIaService, FalhaDaIa } from './busca-ia.service';
 import { BuscaAtsService } from './busca-ats.service';
+import { DescobertasService } from './descobertas.service';
 import { RecursosService } from '../settings/recursos.service';
 import type { IaDaBusca } from '../settings/recursos.service';
 import { decifrar } from '../settings/crypto';
@@ -144,9 +145,35 @@ export class BuscaService {
     private readonly ia: BuscaIaService,
     private readonly recursos: RecursosService,
     private readonly ats: BuscaAtsService,
+    private readonly descobertas: DescobertasService,
   ) {}
 
   async *buscar(filtros: FiltrosDto): AsyncGenerator<EventoBusca> {
+    // **A captura de descobertas envolve a busca inteira, e nao um motor.**
+    //
+    // Toda vaga que sai por aqui passa por `anotar` (JOB-37), venha do ATS, do
+    // Firecrawl ou da IA — e a da IA e justamente a que pode trazer host
+    // desconhecido, porque ela nao esta presa ao catalogo.
+    //
+    // Este gerador so envolve o de verdade (`buscarMotores`): repassa cada
+    // evento intacto, guarda as vagas de passagem e anota no fim. E o unico
+    // lugar onde os tres motores se encontram.
+    const colhidas: VagaDto[] = [];
+    try {
+      for await (const ev of this.buscarMotores(filtros)) {
+        if (ev.tipo === 'vaga' && ev.vaga) colhidas.push(ev.vaga);
+        yield ev;
+      }
+    } finally {
+      // **`finally`, e sem `await`.** A busca ja acabou para quem pediu; a
+      // captura nao pode atrasa-la nem um pouco, e uma busca interrompida no
+      // meio (a pessoa fechou a aba) ainda ensinou o que viu ate ali.
+      // `anotar` nao lanca — o `void` aqui nao esconde erro nenhum.
+      void this.descobertas.anotar(colhidas);
+    }
+  }
+
+  private async *buscarMotores(filtros: FiltrosDto): AsyncGenerator<EventoBusca> {
     const consulta = montarConsulta(filtros);
     // O interruptor decide o motor, e nao so a existencia da chave: com o
     // Firecrawl desligado a chave continua cadastrada, e usa-la assim mesmo

@@ -523,3 +523,76 @@ model ProviderOrder {
 
   @@map("provider_orders")
 }
+
+/// Um par (ATS, slug) que a busca viu e o catalogo nao tinha (JOB-37).
+///
+/// **A fila de descobertas.** O catalogo de `backend/data/ats/` e o teto da
+/// busca: o motor de ATS so consulta quem esta na lista. Cada busca passa por
+/// dezenas de empresas e, sem isto, jogava fora tudo o que aprendeu.
+///
+/// Sao dois tempos, e separa-los e o que faz isto funcionar:
+///
+/// 1. **A busca so ANOTA** — host e slug saem da propria URL da vaga, sem
+///    nenhuma chamada de rede a mais. Efeito colateral, nunca caminho critico.
+/// 2. **O cron da madrugada VERIFICA** — consulta o ATS de verdade, conta as
+///    vagas e classifica. Lento de proposito, fora do horario da busca.
+///
+/// Promover para o catalogo continua sendo decisao humana: nada e gravado em
+/// `backend/data/ats/` automaticamente (ver `scripts/exportar-descobertas.py`).
+model AtsDiscovery {
+  id        String   @id @default(uuid())
+  /// O host de onde a vaga veio, sem `www.` — `job-boards.greenhouse.io`,
+  /// `careers.duolingo.com`, `app.careerpuck.com`.
+  ///
+  /// **Agrupar por host e onde esta o valor.** Tres empresas em
+  /// `app.careerpuck.com` valem mais que trinta em `job-boards.greenhouse.io`:
+  /// as primeiras revelam um ATS inteiro por descobrir, as segundas so
+  /// confirmam o que ja se sabe.
+  host      String
+  /// Qual dialeto de ATS, quando da para dizer pela URL: `greenhouse`,
+  /// `lever`, `ashby`. Nulo quando o host nao e conhecido — e justamente o
+  /// caso que interessa, porque pode ser um ATS novo.
+  ats       String?
+  /// O slug do board, extraido da URL. **String VAZIA quando a URL nao o
+  /// carrega** (dominio proprio com `?gh_jid=`, por exemplo) — e a verificacao
+  /// tenta adivinha-lo a partir do host.
+  ///
+  /// Vazia e nao `null` de proposito: no Postgres `NULL` nunca e igual a
+  /// `NULL`, entao um `@@unique([host, slug])` com slug nulo NAO impede
+  /// duplicata — cada aparicao de `careers.duolingo.com` viraria linha nova, e
+  /// o contador de aparicoes (que e o ponto) nunca passaria de 1.
+  slug      String
+  /// O nome da empresa como a vaga trouxe. So para a lista ser legivel — a
+  /// chave e o par (host, slug), que e unico; o nome nao e.
+  empresa   String
+  /// Uma URL de exemplo, para quem for decidir poder abrir e olhar.
+  exemploUrl String
+  /// Quantas vezes este par ja apareceu. Aparicao repetida incrementa aqui,
+  /// nao cria linha nova — e o numero que separa achado de acaso.
+  aparicoes Int      @default(1)
+  /// `nova` | `confirmada` | `morta` | `desconhecida` | `ja_no_catalogo`.
+  ///
+  /// String e nao enum do Prisma: o conjunto e do dominio da aplicacao
+  /// (`src/jobs/descobertas.ts`), e crescer nele nao deve pedir migration.
+  estado    String   @default("nova")
+  /// Quantas vagas o slug rendeu na ultima verificacao. **E o numero que
+  /// decide** se vale escrever adaptador para um host desconhecido. Nulo
+  /// enquanto ninguem verificou.
+  vagas     Int?
+  /// O slug que a verificacao de fato usou — pode ser o extraido da URL ou um
+  /// palpite tirado do host. Guardado porque e o que vai para o catalogo.
+  slugTestado String?
+  /// Por que a verificacao deu no que deu, ja cortado. Vazio quando confirmou.
+  detalhe   String   @default("")
+  /// Quando foi verificado pela ultima vez. Nulo = nunca. A fila gira por
+  /// aqui (nulo primeiro), pelo mesmo motivo do `buscadoEm` do JobProfile.
+  checkedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// A mesma descoberta nao entra duas vezes: aparecer de novo faz `upsert`.
+  @@unique([host, slug])
+  /// A consulta do cron: quem nunca foi verificado vem primeiro.
+  @@index([estado, checkedAt])
+  @@map("ats_discoveries")
+}

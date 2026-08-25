@@ -13,10 +13,13 @@ import { BuscaService } from './busca.service';
 import { BuscaIaService } from './busca-ia.service';
 import { BuscaAtsService } from './busca-ats.service';
 import { BuscaAgendadaService } from './busca-agendada.service';
+import { DescobertasService } from './descobertas.service';
+import { DescobertasController } from './descobertas.controller';
+import { VerificacaoDeAtsService } from './verificacao-de-ats.service';
 
 @Module({
   imports: [SettingsModule],
-  controllers: [JobsController, VagasController, BuscaController],
-  providers: [JobsService, CvParserService, CvExtratorService, VagasService, SalvasService, HistoricoService, BuscaService, BuscaIaService, BuscaAtsService, BuscaAgendadaService],
+  controllers: [JobsController, VagasController, BuscaController, DescobertasController],
+  providers: [JobsService, CvParserService, CvExtratorService, VagasService, SalvasService, HistoricoService, BuscaService, BuscaIaService, BuscaAtsService, BuscaAgendadaService, DescobertasService, VerificacaoDeAtsService],
 })
 export class JobsModule {}

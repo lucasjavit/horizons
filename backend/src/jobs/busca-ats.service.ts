@@ -222,6 +222,34 @@ export class BuscaAtsService {
     return escolhidas;
   }
 
+  /**
+   * As vagas de um slug avulso, para a verificacao de descobertas (JOB-37).
+   *
+   * **Nao replica os tres dialetos** — chama o mesmo `daEmpresa` que a busca
+   * usa. Verificar uma descoberta e exatamente "consultar este slug e olhar o
+   * resultado", e uma segunda implementacao dos mesmos tres endpoints
+   * divergiria da primeira no primeiro dia em que um deles mudasse.
+   *
+   * Propaga o erro em vez de engolir: quem verifica precisa distinguir 404
+   * (slug morto) de timeout (tente de novo amanha), e um `[]` mudo esconde a
+   * diferenca.
+   */
+  async vagasDoSlug(ats: string, slug: string): Promise<VagaDto[]> {
+    return this.daEmpresa({ nome: slug, ats, slug, contrataEm: [] });
+  }
+
+  /**
+   * Os pares `ats:slug` que o catalogo ja conhece, em minusculo.
+   *
+   * E contra este conjunto que a captura decide se uma vaga traz novidade.
+   * Um `Set` e nao uma busca linear: a captura roda por vaga, e o catalogo tem
+   * 926 empresas.
+   */
+  async paresConhecidos(): Promise<Set<string>> {
+    const todas = await this.empresas();
+    return new Set(todas.map((e) => `${e.ats}:${e.slug.toLowerCase()}`));
+  }
+
   private async daEmpresa(e: Empresa): Promise<VagaDto[]> {
     switch (e.ats) {
       case 'greenhouse':

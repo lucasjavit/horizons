@@ -20,7 +20,6 @@ destrava o resto.
 | Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
 | [JOB-34](cards/JOB-34-extracao-de-vaga-fora-do-firecrawl.md) | **Separar o scrape da extração no `lerVaga`** — hoje o Firecrawl roda a IA com o nosso prompt, a 5 créditos/página | M | avaliado (25/08): o desenho cabe e o SDK suporta (`formats:['markdown']`). **Falta medir 2 páginas** — se o markdown degradar o `salaryTrecho`, não vale. Não medido porque exige gastar crédito real |
-| [JOB-37](cards/JOB-37-catalogo-aprende-sozinho.md) | **O catálogo aprende com o que a busca encontra** — a busca anota, um cron de madrugada verifica um por um | M | ideia do stakeholder (25/08), medida: das 42 empresas já encontradas, **3 estavam fora do catálogo** — e nenhuma das três é ATS conhecido. O valor não é mais slug de Greenhouse, é **descobrir ATS que não sabemos que existe** (`careerpuck`) |
 | [APP-02](cards/APP-02-erro-do-backend-em-portugues.md) | **Erro do backend em português na interface inglesa** | P | medido (25/08) — "Formato nao suportado. Envie o curriculo em PDF ou DOCX." dentro da caixa de CV, e "Link invalido ou expirado" no `/email/sair`. Exige decidir onde mora a tradução |
 | [JOB-32](cards/JOB-32-telegram-como-canal.md) | **Telegram como segundo canal** — entrega sem domínio próprio, ao lado do e-mail | M | (24/08) o e-mail está pronto e não entrega: Resend e Brevo exigem domínio verificado. O bot **não** inicia conversa — exige `/start`, e cada passo perde gente. **As três decisões em aberto saíram** (24/08): webhook, um bot por ambiente, `chat_id` em claro |
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
@@ -59,6 +58,7 @@ _(vazio)_
 | --- | --- | --- |
 | [JOB-36](cards/JOB-36-tela-de-provedores-de-ia.md) | **Configurações vira quatro telas** — `/config` (864 linhas) dividida com barra de abas, e a de IA ganha painel de saúde com verificação de chave por trás (401 ≠ 429). Achou duas coisas no primeiro uso real: o modelo do Gemini estava aposentado (404) e `maxTokens: 16` reprovava chave boa | 25/08/2026 |
 | [JOB-33](cards/JOB-33-cadeia-de-ia.md) | **Cadeia de provedores de IA** — 6 provedores encadeados por capacidade (3 fazem busca, 6 fazem extração), 4 gratuitos sem cartão; paga a dívida da queda por chave recusada do JOB-02 | 25/08/2026 |
+| [JOB-37](cards/JOB-37-catalogo-aprende-sozinho.md) | **O catálogo aprende com o que a busca encontra** — mecanismo pronto; a hipótese que o justificava era **falsa**, e a medição está no card | 25/08/2026 |
 | [JOB-35](cards/JOB-35-schema-do-cv-rejeitado-pela-anthropic.md) | **O schema do CV era recusado pela Anthropic** — `enum` com `null` sob `type` composto, escondido atrás de um 401 | 25/08/2026 |
 | [JOB-02](cards/JOB-02-perfil-de-busca.md) | **Leitura de currículo** — sobe o CV e os filtros se preenchem, editáveis, com selo de origem | 25/08/2026 |
 | [APP-01](cards/APP-01-cabecalho-vaza-no-celular.md) | O cabeçalho vazava a largura da tela no celular, medido em 390px | 15/08/2026 |

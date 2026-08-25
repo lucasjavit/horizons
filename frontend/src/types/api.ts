@@ -256,6 +256,12 @@ export interface Recursos {
   temProvedorDeEmail: boolean
   /** O histórico de vagas vistas/descartadas está ligado. Default `true`. */
   historicoAtivo: boolean
+  /**
+   * A colheita do catálogo de ATS está ligada (JOB-37).
+   *
+   * Sem dependência, como o ATS: as APIs são públicas. Default `true`.
+   */
+  descobertasAtivas: boolean
   /** O Firecrawl está ligado e utilizável. Desligado = busca pela IA. */
   firecrawlAtivo: boolean
   /** Há ao menos um motor de busca utilizável. */
@@ -512,4 +518,37 @@ export interface VagaMarcada {
 export interface Historico {
   vistas: string[]
   descartadas: VagaMarcada[]
+}
+
+/**
+ * Um host que a busca encontrou e o catálogo não tinha (JOB-37).
+ *
+ * Espelha `HostDescobertoDto` do backend. **Agrupado por host, não por
+ * empresa**: três empresas em `app.careerpuck.com` revelam um ATS inteiro por
+ * descobrir; trinta em `job-boards.greenhouse.io` só confirmam o já sabido.
+ */
+export interface HostDescoberto {
+  host: string
+  /** `greenhouse` | `lever` | `ashby`, ou `null` quando não se sabe consultar. */
+  ats: string | null
+  /** Quantos slugs distintos deste host já apareceram. */
+  slugs: number
+  /** Soma das aparições de todos os slugs deste host. */
+  aparicoes: number
+  /** Vagas que os slugs confirmados renderam. É o número que decide. */
+  vagas: number
+  confirmadas: number
+  mortas: number
+  desconhecidas: number
+  novas: number
+  /**
+   * Slugs que a verificação achou, mas que o catálogo já tinha.
+   *
+   * **Não é descoberta**: o que era novo era o host, não a empresa. Duolingo
+   * publica em `careers.duolingo.com` e já está no catálogo.
+   */
+  jaNoCatalogo: number
+  exemploUrl: string
+  /** Quando foi verificado pela última vez, ISO. `null` = nunca. */
+  checkedAt: string | null
 }
