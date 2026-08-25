@@ -1,6 +1,6 @@
 # JOB-12 · URL de vaga não se valida por status HTTP
 
-**Estado:** aberto (18/08/2026)
+**Estado:** aberto, e ainda não morde (25/08/2026)
 **Tamanho:** P
 
 ## Por quê
@@ -42,7 +42,7 @@ Em ATS, `?error=true` no destino final é sinal forte de ID inexistente.
 
 ## Critérios de aceite
 
-- [ ] Nenhum ponto do código trata `200` como "vaga existe"
+- [x] Nenhum ponto do código trata `200` como "vaga existe" — conferido em 25/08/2026: a regra ruim nunca chegou a ser escrita
 - [ ] Se `applicationUrl` for exibido, a validação usa destino final + corpo
 - [ ] O controle negativo (`/jobs/0000000`) é reprovado pela regra escolhida
 - [ ] Uma vaga real que responde 403 a `curl` **não** é descartada
@@ -53,3 +53,13 @@ Achado por um agente que tentava medir alucinação de IA sem web, como efeito
 colateral: ele precisou de um controle negativo e descobriu que o controle
 negativo passava. O teste original não produziu número — três instâncias se
 recusaram a inventar vagas —, mas este subproduto vale mais que o teste.
+
+
+## Conferido em 25/08/2026: continua preventivo
+
+Varredura no `backend/src/jobs/`: nenhum ponto valida vaga por status HTTP, e
+`applicationUrl` continua sem ser exibido. O card **não virou dívida** — ele é
+um aviso deixado no caminho de quem for implementar a exibição.
+
+Segue aberto de propósito. Fechar seria apagar o aviso justamente antes da hora
+em que ele serve.

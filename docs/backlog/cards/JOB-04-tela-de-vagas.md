@@ -64,11 +64,11 @@ houver vagas — foi decisão do stakeholder que ninguém espera olhando.
 
 ## Critério de aceite
 
-- [ ] Lista as vagas não vencidas do grupo da pessoa
+- [x] Lista as vagas não vencidas do grupo da pessoa
 - [ ] O cartão responde as quatro perguntas
-- [ ] Vaga sem salário mostra "não informado", nunca um número
+- [x] Vaga sem salário mostra "não informado", nunca um número
 - [ ] Extraído e inferido são visualmente distintos
-- [ ] O trecho de origem do salário fica acessível
+- [x] O trecho de origem do salário fica acessível
 - [ ] Estado vazio explica que a busca roda sozinha
 - [ ] Acessibilidade: label em todo campo, alvo ≥24px, erro por borda +
       `aria-invalid` + texto
@@ -395,3 +395,29 @@ perde-se o enfeite, não a informação.
 
 **O que não foi exercitado:** `logoUrl` está vazio nas cinco vagas, então só o
 caminho das iniciais rodou — a imagem carregando não foi vista.
+
+
+## Conferido em 25/08/2026
+
+Três critérios estavam abertos no card e **já estavam entregues** — o card é que
+não tinha sido atualizado.
+
+**Os trechos de origem são renderizados.** `LinhaVaga.tsx` passa
+`trecho={vaga.salaryTrecho}` (linha 156) e `trecho={vaga.elegibilidadeTrecho}`
+(linhas 181, 198, 206). No banco, 47 das 58 vagas têm
+`elegibilidadeTrecho` e 6 têm `salaryTrecho` — a diferença é esperada: quase
+toda vaga diz onde contrata, poucas dizem quanto pagam.
+
+**A reaplicação de filtro na exibição está feita**, e era o alerta mais sério
+deste card — o defeito que "não aparece em teste". `vagas.service.ts:57` filtra
+por `passaNoFiltro(v, filtros)`, com `exclude_keywords`, `posted_within_days` e
+`salary_min` tratados nas linhas 83–100. Quem pede mínimo de 12k não recebe a
+vaga de 8k que outra pessoa do mesmo grupo pediu.
+
+**`postedAt` está preenchido em 58 de 58** — o
+[JOB-08](JOB-08-prompt-de-busca.md) listava "postedAt extraído de verdade, ou
+`posted_within_days` sai da tela" como pendência, e o motor de ATS resolveu
+isso: a data vem do campo da API, não de leitura de texto.
+
+Continua faltando: fuso/overlap, "o que falta no perfil", e a distinção visual
+entre extraído e inferido.

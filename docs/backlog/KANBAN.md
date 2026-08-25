@@ -23,15 +23,12 @@ destrava o resto.
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
 | [PLT-04](cards/PLT-04-crud-de-prompts.md) | Config vira área de admin, com CRUD dos prompts de busca | M | agora tem `@AdminOnly()` de verdade por trás |
 | [JOB-08](cards/JOB-08-prompt-de-busca.md) | O prompt do stakeholder vira o motor da busca | G | o descarte de vaga aberta caiu com o JOB-10; sobram os **sete níveis de elegibilidade** e o **dedup** |
-| [JOB-02](cards/JOB-02-perfil-de-busca.md) | Perfil de busca e agrupamento | M | **quase** — perfil, filtros, agrupamento e tela prontos; falta ligar a leitura de CV (precisa de chave de IA) |
 | [JOB-07](cards/JOB-07-busca-ao-vivo.md) | **A busca ao vivo** — Filter dispara Firecrawl, vagas entram uma a uma | 15/08/2026 |
 | [JOB-06](cards/JOB-06-token-do-firecrawl.md) | Token do Firecrawl em Configurações | P | **feito** (15/08) — cadastro e interruptor; não busca nada ainda |
 | [JOB-04](cards/JOB-04-tela-de-vagas.md) | A tela das vagas encontradas | M | **em andamento** (15/08) — refeita no formato RemoteYeah: 8 dropdowns + linhas densas, formulario de perfil removido da pagina; falta fuso/overlap e "o que falta no perfil" |
 | [JOB-19](cards/JOB-19-produto-dois-lados.md) | **O produto tem dois lados** — alvo vira país emergente; empresa vira cliente | G | decidido (18/08) — 501 empresas contratam em emergentes, contra 118 só do Brasil |
 | [JOB-17](cards/JOB-17-catalogo-de-ats.md) | Catálogo de 1.953 empresas do look4job + API de ATS grátis | M | medido (18/08) — 199 vagas numa chamada, mas só 4 de 771 eram BR/LATAM |
-| [JOB-12](cards/JOB-12-url-de-vaga-nao-se-valida-por-status.md) | URL de vaga não se valida por status HTTP | P | medido (18/08) — id inventado dá 200, vaga real dá 403 |
-| [JOB-11](cards/JOB-11-listagem-dentro-do-ats.md) | Página de listagem dentro do ATS ainda passa | P | medido (17/08) — 2 de 7 vagas vieram do quadro da empresa, não de um anúncio |
-| [APP-01](cards/APP-01-cabecalho-vaza-no-celular.md) | O cabeçalho do App vaza a largura da tela no celular | P | achado ao verificar o JOB-04; atinge o site inteiro, medido em 390px |
+| [JOB-12](cards/JOB-12-url-de-vaga-nao-se-valida-por-status.md) | URL de vaga não se valida por status HTTP | P | preventivo — conferido em 25/08: nenhum ponto trata `200` como "vaga existe", e `applicationUrl` continua sem ser exibido. **Aberto de propósito**, como aviso para quem for implementar |
 
 ## Pronto para fazer
 
@@ -57,6 +54,9 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [JOB-02](cards/JOB-02-perfil-de-busca.md) | **Leitura de currículo** — sobe o CV e os filtros se preenchem, editáveis, com selo de origem | 25/08/2026 |
+| [APP-01](cards/APP-01-cabecalho-vaza-no-celular.md) | O cabeçalho vazava a largura da tela no celular, medido em 390px | 15/08/2026 |
+| [JOB-11](cards/JOB-11-listagem-dentro-do-ats.md) | **Listagem dentro do ATS** — resolvido por outro caminho: o motor de ATS monta a URL pelo id do anúncio | 25/08/2026 |
 | [JOB-26](cards/JOB-26-historico-do-usuario.md) | **Histórico** — selo "New", descartar com Undo/Restore, filtro All/New/Dismissed | 24/08/2026 |
 | [JOB-32](cards/JOB-32-telegram-como-canal.md) | **Telegram como canal** — entrega sem domínio nem DNS; falta token real de bot | 24/08/2026 |
 | [JOB-24](cards/JOB-24-email-semanal.md) | **O e-mail semanal** — só vagas novas, com trecho; não manda e-mail vazio. Provedor desligado: registra no log até haver SMTP | 24/08/2026 |

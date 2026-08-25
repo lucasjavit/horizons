@@ -1,15 +1,21 @@
 import {
+  type ArgumentsHost,
   BadRequestException,
   Body,
+  Catch,
   Controller,
   Delete,
+  type ExceptionFilter,
   Get,
   HttpCode,
+  PayloadTooLargeException,
   Post,
   Put,
   UploadedFile,
+  UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { CvExtratorService } from './cv-extrator.service';
@@ -23,6 +29,26 @@ import type { CvLidoDto, JobProfileDto, VagaDto } from './job.dto';
 
 // Sem @Public() nem @SessaoOpcional(): o perfil de busca e de alguem, e nao
 // faz sentido anonimo. O guard global ja fecha por padrao.
+/**
+ * Traduz o erro do multer.
+ *
+ * O `limits.fileSize` do `FileInterceptor` rejeita antes do handler, com
+ * `PayloadTooLargeException` e a mensagem `File too large` — em ingles, e num
+ * formato que o `errorMessage` do frontend nao reconhece, entao a tela
+ * mostrava "Erro 413". A regra da casa e erro em portugues sem acento.
+ */
+@Catch(PayloadTooLargeException)
+class MulterErroFilter implements ExceptionFilter {
+  catch(_erro: PayloadTooLargeException, host: ArgumentsHost) {
+    const resposta = host.switchToHttp().getResponse<Response>();
+    resposta.status(400).json({
+      statusCode: 400,
+      error: 'Bad Request',
+      message: 'O arquivo passa de 5 MB. Envie um PDF ou DOCX menor.',
+    });
+  }
+}
+
 @Controller('jobs/profile')
 export class JobsController {
   constructor(
@@ -62,10 +88,18 @@ export class JobsController {
    * disco, e o card exige que nenhum arquivo sobre no servidor.
    */
   @Post('cv')
+  @UseFilters(MulterErroFilter)
   @UseInterceptors(
     FileInterceptor('arquivo', {
       storage: memoryStorage(),
       limits: { fileSize: TAMANHO_MAXIMO },
+      // **A mensagem do 413 e traduzida pelo `MulterErroFilter` abaixo.**
+      //
+      // Medido pelo QA em 25/08: um PDF de 6 MB devolvia
+      // `{"message":"File too large"}` e a tela mostrava "Erro 413" cru, em
+      // ingles. O `limits` corta ANTES do servico rodar, entao a mensagem em
+      // portugues do `CvParserService` era codigo morto — ela continua la para
+      // quem chamar o servico direto, e o filtro cobre a rota.
     }),
   )
   async lerCurriculo(

@@ -243,13 +243,13 @@
     {
       "id": "JOB-02",
       "titulo": "Perfil de busca e agrupamento",
-      "estado": "backlog",
-      "coluna": "backlog",
+      "estado": "feito (25/08/2026) — falta chave de IA válida para uma leitura real",
+      "coluna": "feito",
       "tamanho": "M",
       "porque": "Sem perfil não há o que buscar. É o que a pessoa cadastra uma vez, e o que o job de 50 minutos lê para saber o que procurar.",
       "decisao": "",
       "bloqueio": "PLT-02 (perfil precisa de dono)",
-      "feitos": 5,
+      "feitos": 6,
       "total": 6
     },
     {
@@ -273,7 +273,7 @@
       "porque": "O valor da feature não é \"buscar vagas\" — é não ler as 40 que não serviam. A tela é onde isso se prova ou se perde.",
       "decisao": "",
       "bloqueio": "JOB-03 (ter vaga para mostrar)",
-      "feitos": 0,
+      "feitos": 3,
       "total": 8
     },
     {
@@ -351,7 +351,7 @@
     {
       "id": "JOB-11",
       "titulo": "Página de listagem dentro do ATS ainda passa",
-      "estado": "aberto (17/08/2026)",
+      "estado": "resolvido por outro caminho (25/08/2026)",
       "coluna": "backlog",
       "tamanho": "P",
       "porque": "O [JOB-10](JOB-10-consultas-dirigidas.md) tirou do caminho a listagem de job board (roberthalf.com/.../java-developer, \"140 results\"). Sobrou uma versão menor do mesmo problema, dentro dos ATS.",
@@ -363,7 +363,7 @@
     {
       "id": "JOB-12",
       "titulo": "URL de vaga não se valida por status HTTP",
-      "estado": "aberto (18/08/2026)",
+      "estado": "aberto, e ainda não morde (25/08/2026)",
       "coluna": "backlog",
       "tamanho": "P",
       "porque": "Medido em 18/08, com curl -L -o /dev/null -w \"%{http_code} %{url_effective}\":",

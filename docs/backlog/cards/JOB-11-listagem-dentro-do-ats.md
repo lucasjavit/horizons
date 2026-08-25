@@ -1,6 +1,6 @@
 # JOB-11 · Página de listagem dentro do ATS ainda passa
 
-**Estado:** aberto (17/08/2026)
+**Estado:** resolvido por outro caminho (25/08/2026)
 **Tamanho:** P
 
 ## Por quê
@@ -56,8 +56,8 @@ Em `backend/src/jobs/busca.service.ts`:
 
 ## Critérios de aceite
 
-- [ ] `jobs.lever.co/<empresa>?...` não é aberta
-- [ ] `job-boards.greenhouse.io/<empresa>/jobs/<id>` continua sendo aberta
+- [x] `jobs.lever.co/<empresa>?...` não é aberta
+- [x] `job-boards.greenhouse.io/<empresa>/jobs/<id>` continua sendo aberta
 - [ ] Uma busca real por `regiao: latam` não devolve vaga de Business Development
 - [ ] O log diz quantas URLs foram descartadas por listagem
 
@@ -65,3 +65,32 @@ Em `backend/src/jobs/busca.service.ts`:
 
 Não transformar isto em lista de domínio proibido. Os domínios estão certos — é
 a **forma da URL** que separa anúncio de índice, e `lever.co` hospeda os dois.
+
+
+## Resolvido pelo caminho que o produto tomou (25/08/2026)
+
+Não foi corrigido — **deixou de ser alcançável**. Duas mudanças posteriores
+mataram o defeito pelos dois lados:
+
+**1. O `ehListagem` passou a descartar de verdade.** O card pedia "ligar o
+`ehListagem` que o schema já extrai"; ele está ligado em
+`backend/src/jobs/busca.service.ts:270` — `if (j.ehListagem === true) return null`.
+
+**2. O motor de ATS ([JOB-20](JOB-20-motor-de-ats.md)) virou o caminho
+principal, e ele não consegue devolver listagem.** A URL não vem de uma busca
+que pode cair num quadro de vagas: é montada a partir do id do anúncio na API
+do ATS. Conferido nas 58 vagas do banco — as 58 têm id de anúncio:
+
+```
+job-boards.greenhouse.io/sonyinteractiveentertainmentglobal/jobs/6145057004
+jobs.lever.co/netomi/0e6b7355-330a-4d10-b8d5-c235bd555622
+jobs.ashbyhq.com/belvo/d9156c58-6c5e-4852-b9d9-00b8133d1b2d
+```
+
+Nenhuma com query string, nenhuma parando no nome da empresa — que eram
+exatamente os dois padrões que o card identificou como listagem.
+
+**O que continua valendo:** se o motor do Firecrawl voltar a ser o caminho
+principal, o descarte por URL **antes** do scrape (que economizaria 5 créditos
+por página inútil) segue não implementado. Fica registrado, não fechado por
+esquecimento.

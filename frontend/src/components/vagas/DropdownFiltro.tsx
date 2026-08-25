@@ -26,11 +26,21 @@ export function DropdownFiltro({
   opcoes,
   marcados,
   onChange,
+  doCv,
 }: {
   rotulo: string
   opcoes: Opcao[]
   marcados: string[]
   onChange: (valores: string[]) => void
+  /**
+   * Os valores que vieram do currículo, e não da pessoa.
+   *
+   * **A distinção é o ponto do JOB-02**: a pessoa precisa ver o que a IA
+   * chutou para poder corrigir. Um `Set` e não um booleano porque os dois tipos
+   * convivem no mesmo dropdown — ela acrescenta "Kotlin" ao lado do "Java" que
+   * o CV trouxe, e só o Java leva o selo.
+   */
+  doCv?: ReadonlySet<string>
 }) {
   const [aberto, setAberto] = useState(false)
   const raiz = useRef<HTMLDivElement>(null)
@@ -99,6 +109,8 @@ export function DropdownFiltro({
   // presente e apagado diz "existe este filtro, e ainda não há o que filtrar".
   const vazio = opcoes.length === 0
   const n = marcados.length
+  // Quantos dos marcados vieram do CV. Zero = a barra volta a ser a de antes.
+  const nCv = doCv ? marcados.filter((v) => doCv.has(v)).length : 0
 
   return (
     <div ref={raiz} className="relative" onBlur={aoSairOFoco}>
@@ -110,6 +122,20 @@ export function DropdownFiltro({
         aria-expanded={aberto}
         aria-haspopup="listbox"
         aria-controls={aberto ? idPainel : undefined}
+        // Nome montado, não concatenado dos filhos: o rótulo, o selo e o
+        // contador são três `<span>` vizinhos, e o leitor de tela os juntava
+        // sem separador — "SkillsCV5 options from your CV5" (QA, 25/08).
+        aria-label={
+          [
+            rotulo,
+            n > 0 ? `${n} selected` : null,
+            nCv > 0
+              ? `${nCv} ${nCv === 1 ? 'option' : 'options'} from your CV`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(', ')
+        }
         className="flex min-h-9 w-full items-center justify-between gap-2 rounded-md border px-3 py-1.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         style={{
           borderColor: n > 0 ? 'var(--brand)' : 'var(--border)',
@@ -119,6 +145,25 @@ export function DropdownFiltro({
       >
         <span className="truncate">{rotulo}</span>
         <span className="flex shrink-0 items-center gap-1.5">
+          {nCv > 0 && (
+            // O selo "CV" no botão FECHADO: sem ele a origem só apareceria
+            // depois de abrir o dropdown, e a pessoa não teria como saber que
+            // há chute da IA ali dentro sem abrir os oito.
+            //
+            // `--accent-ink` e não `--accent`: o dourado puro dá ~2,2:1 sobre
+            // fundo claro e reprova em AA. O texto ("CV") acompanha a cor —
+            // cor sozinha nunca carrega significado nesta base.
+            <span
+              className="inline-flex items-center rounded-full border px-1.5 text-xs font-semibold leading-5"
+              style={{ color: 'var(--accent-ink)', borderColor: 'var(--accent-ink)' }}
+            >
+              {/* Visual apenas — o nome acessível do botão é montado no
+                  `aria-label` dele, senão os nós vizinhos se concatenam e o
+                  leitor de tela anuncia "SkillsCV5 options from your CV5"
+                  (QA, 25/08). */}
+              CV
+            </span>
+          )}
           {n > 0 && (
             // O contador verde do RemoteYeah — aqui o verde da marca, que já é
             // verde e já tem o par de texto medido: 6,15:1 no claro e 5,99:1
@@ -163,8 +208,38 @@ export function DropdownFiltro({
                   onChange={() => alternar(o.valor)}
                   className="h-4 w-4 shrink-0"
                   style={{ accentColor: 'var(--brand)' }}
+                  // **O nome acessível vem daqui, não do texto do `<label>`.**
+                  //
+                  // Medido pelo QA em 25/08: com o selo dentro do label, o
+                  // leitor de tela anunciava "JavaCVfrom your CV" — os nós de
+                  // texto entram no nome concatenados, sem separador. Nomear o
+                  // input explicitamente resolve sem depender de onde cada
+                  // `<span>` está na árvore.
+                  aria-label={
+                    marcado && doCv?.has(o.valor)
+                      ? `${o.rotulo}, from your CV`
+                      : o.rotulo
+                  }
                 />
                 <span className="min-w-0 break-words">{o.rotulo}</span>
+                {/* `marcado &&` junto: o selo diz "este valor MARCADO veio do
+                    CV". Sem isso ele sobrevivia ao desmarcar e ao "Limpar
+                    filtros" — uma opção vazia com etiqueta de origem, que
+                    afirma o que não é mais verdade. */}
+                {marcado && doCv?.has(o.valor) && (
+                  // O selo por opção: dentro do painel dá para ver EXATAMENTE
+                  // qual valor a IA trouxe, que é o que permite desmarcar só o
+                  // errado em vez de limpar o filtro inteiro.
+                  <span
+                    className="ml-auto shrink-0 rounded-full border px-1.5 text-xs font-medium"
+                    style={{ color: 'var(--accent-ink)', borderColor: 'var(--accent-ink)' }}
+                  >
+                    {/* Puramente visual: o `aria-label` do input acima já
+                        carrega "from your CV". Repetir aqui faria o leitor de
+                        tela anunciar a origem duas vezes. */}
+                    CV
+                  </span>
+                )}
               </label>
             )
           })}

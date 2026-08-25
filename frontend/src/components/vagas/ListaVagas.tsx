@@ -3,13 +3,14 @@ import { AxiosError } from 'axios'
 import { Link } from 'react-router-dom'
 import { WARN_INK } from '../blocks/BlockRenderer'
 import { BarraFiltros } from './BarraFiltros'
+import { CaixaUploadCV } from './CaixaUploadCV'
 import { LinhaVaga } from './LinhaVaga'
 import { POR_PAGINA, Paginacao } from './Paginacao'
 import { api, ehSemSessao } from '../../lib/api'
 import { buscarVagas } from '../../lib/busca-vagas'
-import { paraFiltrosApi } from './vaga-filtro'
-import type { Selecao } from './vaga-filtro'
-import type { Historico, Vaga } from '../../types/api'
+import { SELECAO_VAZIA, aplicarCv, paraFiltrosApi } from './vaga-filtro'
+import type { OrigemCv, Selecao } from './vaga-filtro'
+import type { CvLido, Historico, Vaga } from '../../types/api'
 
 type Estado = 'ocioso' | 'buscando' | 'pronto'
 
@@ -60,6 +61,23 @@ export function ListaVagas() {
    * "Dismissed", que é o desfazer tardio.
    */
   const [ultimoDescarte, setUltimoDescarte] = useState<Vaga | null>(null)
+  /**
+   * O rascunho dos filtros, que era estado da `BarraFiltros`.
+   *
+   * Subiu para cá no JOB-02: a caixa de currículo precisa escrever nos
+   * dropdowns, e o irmão não alcança o estado interno do outro. Continua
+   * rascunho — só o botão "Filter" o transforma em busca.
+   */
+  const [rascunho, setRascunho] = useState<Selecao>(SELECAO_VAZIA)
+  // Espelho do rascunho para quem lê fora do render — hoje o `aoLerCv`, que
+  // resolve segundos depois do clique e não pode usar a closure daquele
+  // momento. Ver o comentário lá.
+  const rascunhoRef = useRef(rascunho)
+  rascunhoRef.current = rascunho
+  /** O que veio do CV, por eixo. Alimenta o selo "CV" nos dropdowns. */
+  const [origemCv, setOrigemCv] = useState<OrigemCv>({})
+  /** A leitura de CV está ligada no servidor. `undefined` = ainda não se sabe. */
+  const [leituraCvAtiva, setLeituraCvAtiva] = useState<boolean | undefined>()
 
   const buscar = useCallback(async (selecao: Selecao) => {
     // Uma busca por vez: sem isto, dois cliques em Filter escreveriam na mesma
@@ -127,13 +145,66 @@ export function ListaVagas() {
     const ctrl = new AbortController()
     api
       .recursos(ctrl.signal)
-      .then((r) => (r.historicoAtivo ? api.listarHistorico(ctrl.signal) : null))
+      .then((r) => {
+        // A mesma resposta decide as duas coisas: um `GET /settings/recursos`
+        // e não dois. Com a leitura desligada a caixa nem é montada — e o
+        // servidor confere o mesmo interruptor, então esconder não é a
+        // proteção, é só a cortesia.
+        setLeituraCvAtiva(r.leituraCvAtiva)
+        return r.historicoAtivo ? api.listarHistorico(ctrl.signal) : null
+      })
       .then((h) => {
         if (h) setHistorico(h)
       })
       .catch(() => {})
     return () => ctrl.abort()
   }, [])
+
+  /**
+   * O currículo lido vira marcação nos dropdowns.
+   *
+   * **Acrescenta ao que já estava marcado, e nada fica travado**: os checkbox
+   * continuam os mesmos, e desmarcar um valor que veio do CV é um clique — que
+   * é exatamente o ponto do card. A pessoa vê o que o sistema entendeu dela e
+   * corrige.
+   *
+   * A origem se acumula entre uploads (`{...anterior}`) porque subir um
+   * segundo currículo não desfaz o primeiro: os valores dos dois continuam
+   * marcados, e o selo tem de continuar valendo para os dois.
+   */
+  const aoLerCv = useCallback(
+    (lido: CvLido) => {
+      // **O rascunho vem de um ref, não da closure.**
+      //
+      // Medido pelo QA em 25/08: marcar "Kotlin" à mão DURANTE a leitura do
+      // currículo e esperar — Kotlin sumia, sem aviso. A `CaixaUploadCV`
+      // captura `onLeu` no clique, então a versão que roda na resolução
+      // carregava o rascunho de ANTES do upload, e o `setRascunho` o
+      // sobrescrevia. Perda silenciosa de escolha da pessoa, e o card promete
+      // o contrário: "acrescenta ao que já estava marcado".
+      //
+      // O updater funcional resolveria a corrida mas traz outro problema: são
+      // DOIS estados saindo do mesmo cálculo, e chamar `setOrigemCv` dentro de
+      // um updater é efeito colateral num reducer — o StrictMode o roda duas
+      // vezes e o selo sai dobrado. O ref dá o valor atual sem nenhum dos dois.
+      const { selecao, origem } = aplicarCv(rascunhoRef.current, {
+        stack: lido.cvProfile.stack,
+        senioridade: lido.cvProfile.senioridade,
+        // `job_titles` é o nome do backend; o catálogo da tela chama de cargos.
+        cargos: lido.filtrosSugeridos.job_titles ?? [],
+      })
+      setRascunho(selecao)
+      setOrigemCv((anterior) => {
+        const junto: OrigemCv = { ...anterior }
+        for (const [eixo, valores] of Object.entries(origem)) {
+          const eixoTipado = eixo as keyof OrigemCv
+          junto[eixoTipado] = new Set([...(anterior[eixoTipado] ?? []), ...valores])
+        }
+        return junto
+      })
+    },
+    [],
+  )
 
   /**
    * Descarta a vaga. **Sem otimismo, ao contrário da estrela.**
@@ -266,6 +337,24 @@ export function ListaVagas() {
         buscando={estado === 'buscando'}
         encontradas={vagas.length}
         jaBuscou={estado !== 'ocioso'}
+        rascunho={rascunho}
+        setRascunho={setRascunho}
+        origemCv={origemCv}
+        aoLimpar={() => setOrigemCv({})}
+        aoDesmarcar={(eixo, valor) =>
+          // **Desmarcar apaga a origem daquele valor.** O selo afirma "isto
+          // veio do currículo, confira" — depois que a pessoa desmarcou e
+          // marcou de novo, a escolha é dela, e o selo voltava afirmando o
+          // contrário (QA, 25/08).
+          setOrigemCv((anterior) => {
+            const doEixo = anterior[eixo]
+            if (!doEixo?.has(valor)) return anterior
+            const restante = new Set(doEixo)
+            restante.delete(valor)
+            return { ...anterior, [eixo]: restante }
+          })
+        }
+        cabecalho={<CaixaUploadCV ativa={leituraCvAtiva} onLeu={aoLerCv} />}
       />
 
       {erro && (

@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Recolhivel } from '../Recolhivel'
 import { DropdownFiltro } from './DropdownFiltro'
 import { CATALOGO, SELECAO_VAZIA, temSelecao } from './vaga-filtro'
-import type { Eixo, Selecao } from './vaga-filtro'
+import type { Eixo, OrigemCv, Selecao } from './vaga-filtro'
 
 /** O rótulo de cada eixo, na ordem da tela. */
 /**
@@ -45,6 +46,12 @@ export function BarraFiltros({
   buscando,
   encontradas,
   jaBuscou,
+  cabecalho,
+  rascunho,
+  setRascunho,
+  origemCv,
+  aoLimpar,
+  aoDesmarcar,
 }: {
   onAplicar: (s: Selecao) => void
   buscando: boolean
@@ -52,17 +59,60 @@ export function BarraFiltros({
   /** Houve ao menos uma busca. Antes disso não há resultado a relatar. */
   jaBuscou: boolean
   /** Se há filtro **aplicado** — não o rascunho. É o que decide o contador. */
+  /**
+   * O que entra acima dos dropdowns — hoje a caixa de upload do currículo.
+   *
+   * Vem de fora em vez de a barra montar a caixa: quem sabe se a leitura de CV
+   * está ligada é a lista (ela já consulta `recursos` para o histórico), e a
+   * barra não deve ganhar uma chamada de rede só para decidir o que desenhar.
+   */
+  cabecalho?: ReactNode
+  /**
+   * O rascunho, elevado para o pai.
+   *
+   * **Era estado interno até o JOB-02.** Subiu porque o upload de currículo
+   * precisa escrever nos dropdowns, e um estado que só o componente enxerga
+   * não pode ser preenchido de fora. O comportamento não mudou: continua sendo
+   * rascunho, e continua só o botão "Filtrar" o promovendo a busca.
+   */
+  rascunho: Selecao
+  setRascunho: React.Dispatch<React.SetStateAction<Selecao>>
+  /** O que veio do CV, por eixo — para o selo. */
+  origemCv?: OrigemCv
+  /**
+   * Avisa que a origem do CV tem de ser esquecida.
+   *
+   * "Limpar filtros" zerava o rascunho e **deixava a origem para trás**: a
+   * pessoa limpava, marcava "Java" à mão, e o selo dizia "from your CV" sobre
+   * uma escolha dela (QA, 25/08). O selo é o ponto do card — ele afirmando
+   * origem falsa é pior que não existir.
+   */
+  aoLimpar?: () => void
+  /** Um valor com selo foi desmarcado — a origem dele deixa de valer. */
+  aoDesmarcar?: (eixo: Eixo, valor: string) => void
 }) {
-  const [rascunho, setRascunho] = useState<Selecao>(SELECAO_VAZIA)
-
-  const editar = useCallback((eixo: Eixo, valores: string[]) => {
-    setRascunho((r) => ({ ...r, [eixo]: valores }))
-  }, [])
+  const editar = useCallback(
+    (eixo: Eixo, valores: string[]) => {
+      // O que saiu da seleção deixa de ser "do currículo": remarcar depois é
+      // ato da pessoa, e o selo não pode dizer outra coisa.
+      //
+      // A comparação fica FORA do updater de propósito: `setRascunho` roda
+      // duas vezes no StrictMode, e avisar de dentro dele dispararia o
+      // esquecimento em dobro. `rascunho` aqui é o do render atual, que é
+      // exatamente o que o dropdown acabou de editar.
+      for (const antigo of rascunho[eixo]) {
+        if (!valores.includes(antigo)) aoDesmarcar?.(eixo, antigo)
+      }
+      setRascunho((r) => ({ ...r, [eixo]: valores }))
+    },
+    [aoDesmarcar, rascunho, setRascunho],
+  )
 
   const limpar = useCallback(() => {
     setRascunho(SELECAO_VAZIA)
     onAplicar(SELECAO_VAZIA)
-  }, [onAplicar])
+    aoLimpar?.()
+  }, [aoLimpar, onAplicar, setRascunho])
 
   // "Limpar" some quando não há nada para limpar — nem no rascunho, nem
   // aplicado. Um botão que não faz nada só ocupa o lugar do que faz.
@@ -81,6 +131,11 @@ export function BarraFiltros({
       <h2 id="filtros-titulo" className="sr-only">
         Filter jobs
       </h2>
+
+      {/* Acima dos dropdowns, e não abaixo: a caixa de CV é o atalho para
+          preenchê-los, e um atalho que aparece depois do trabalho manual
+          chega tarde. */}
+      {cabecalho}
 
       {/* No celular os oito dropdowns empilham em coluna e ocupam ~400px
           antes da primeira vaga — a tela inteira de filtro, e a lista some
@@ -110,11 +165,12 @@ export function BarraFiltros({
         <PainelDropdowns
           rascunho={rascunho}
           editar={editar}
+          origemCv={origemCv}
         />
       </div>
       <div id="painel-filtros" className="sm:hidden">
         <Recolhivel aberto={aberto}>
-          <PainelDropdowns rascunho={rascunho} editar={editar} />
+          <PainelDropdowns rascunho={rascunho} editar={editar} origemCv={origemCv} />
         </Recolhivel>
       </div>
 
@@ -145,7 +201,7 @@ export function BarraFiltros({
             className="inline-flex min-h-9 items-center rounded-md border px-4 py-1.5 text-sm"
             style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
           >
-            Limpar filtros
+            Clear filters
           </button>
         )}
       </div>
@@ -187,9 +243,11 @@ export function BarraFiltros({
 function PainelDropdowns({
   rascunho,
   editar,
+  origemCv,
 }: {
   rascunho: Selecao
   editar: (eixo: keyof Selecao, valores: string[]) => void
+  origemCv?: OrigemCv
 }) {
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -200,6 +258,7 @@ function PainelDropdowns({
           opcoes={CATALOGO[eixo]}
           marcados={rascunho[eixo]}
           onChange={(v) => editar(eixo, v)}
+          doCv={origemCv?.[eixo]}
         />
       ))}
     </div>

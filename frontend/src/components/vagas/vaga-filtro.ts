@@ -216,3 +216,115 @@ export function paraFiltrosApi(s: Selecao): Record<string, unknown> {
   }
   return f
 }
+
+/**
+ * O que o currículo preencheu, por eixo.
+ *
+ * Serve ao selo "from your CV": a barra precisa distinguir o que a pessoa
+ * marcou do que a IA chutou, e para isso não basta saber os valores — é
+ * preciso saber a ORIGEM de cada um. Um `Set` por eixo, e não um booleano por
+ * dropdown, porque a pessoa acrescenta escolhas suas ao lado das da IA e o
+ * selo tem de continuar contando só as dela.
+ */
+export type OrigemCv = Partial<Record<Eixo, ReadonlySet<string>>>
+
+/**
+ * Casa um texto livre do CV com uma opção do catálogo.
+ *
+ * A IA devolve "Spring Boot 3", "AWS (EC2, S3)" ou "postgres" — e o catálogo
+ * tem `Spring Boot`, `AWS` e `PostgreSQL`. Comparar por igualdade perderia os
+ * três, e a pessoa veria um upload que "não preencheu nada".
+ *
+ * A regra é conter, nos dois sentidos, sem caixa nem pontuação. **Casa só o
+ * que o catálogo já oferece**: valor fora dele viraria um checkbox que não
+ * existe, e o filtro simplesmente não sairia na busca.
+ *
+ * O piso de 2 caracteres evita que "Go" case dentro de "Django" e que "C#"
+ * — depois de tirada a pontuação — case com qualquer coisa que tenha "c".
+ */
+function casar(texto: string, opcoes: Opcao[]): string | null {
+  const limpo = normalizarTermo(texto)
+  if (limpo.length < 2) return null
+
+  // Igualdade primeiro: sem isto "React" casaria com "React" e com "React
+  // Native" se ele existisse no catálogo, e o primeiro da lista venceria.
+  const exato = opcoes.find((o) => normalizarTermo(o.valor) === limpo)
+  if (exato) return exato.valor
+
+  const parcial = opcoes.find((o) => {
+    const alvo = normalizarTermo(o.valor)
+    if (alvo.length < 2) return false
+    return alvo.includes(limpo) || limpo.includes(alvo)
+  })
+  return parcial?.valor ?? null
+}
+
+/**
+ * Minúsculas, sem acento e quase sem pontuação — "Node.js" e "nodejs" são o
+ * mesmo termo.
+ *
+ * `+` e `#` sobrevivem porque são NOME, e não pontuação: sem eles "C#" vira
+ * "c" e "C++" vira "c", os dois indistinguíveis entre si e curtos demais para
+ * passar no piso de 2 caracteres do `casar` — medido, "C#" no CV não casava
+ * com "C#" no catálogo.
+ */
+function normalizarTermo(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9+#]/g, '')
+}
+
+/**
+ * O currículo lido vira seleção nos dropdowns.
+ *
+ * **Acrescenta, nunca substitui.** O que a pessoa já tinha marcado continua
+ * marcado: ela pode ter subido o CV depois de escolher dois filtros à mão, e
+ * apagar a escolha dela para pôr a da IA no lugar seria a inversão exata do
+ * que o card pede.
+ *
+ * Devolve também a origem, para a barra saber o que veio do CV. Só entram os
+ * valores que o `casar` reconheceu — o resto do CV fica de fora em silêncio,
+ * porque um filtro que o backend não aceita é um 400 na cara da pessoa.
+ */
+export function aplicarCv(
+  atual: Selecao,
+  lido: { stack: string[]; senioridade: string | null; cargos?: string[] },
+): { selecao: Selecao; origem: OrigemCv } {
+  const selecao: Selecao = { ...atual }
+  const origem: OrigemCv = {}
+
+  const juntar = (eixo: Eixo, valores: string[]) => {
+    const novos = valores.filter((v) => !atual[eixo].includes(v))
+    if (!novos.length) return
+    selecao[eixo] = [...atual[eixo], ...novos]
+    origem[eixo] = new Set(novos)
+  }
+
+  const skills = [
+    ...new Set(
+      lido.stack.map((s) => casar(s, CATALOGO.skills)).filter((v): v is string => v !== null),
+    ),
+  ]
+  juntar('skills', skills)
+
+  const cargos = [
+    ...new Set(
+      (lido.cargos ?? [])
+        .map((c) => casar(c, CATALOGO.cargos))
+        .filter((v): v is string => v !== null),
+    ),
+  ]
+  juntar('cargos', cargos)
+
+  // A senioridade vem do backend já no vocabulário do catálogo (`SENIORIDADES`
+  // é a mesma lista dos dois lados), então aqui é conferir que existe — e não
+  // casar por texto.
+  if (lido.senioridade) {
+    const existe = CATALOGO.experiencias.some((o) => o.valor === lido.senioridade)
+    if (existe) juntar('experiencias', [lido.senioridade])
+  }
+
+  return { selecao, origem }
+}

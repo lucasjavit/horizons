@@ -1,6 +1,6 @@
 # JOB-02 · Perfil de busca e agrupamento
 
-**Estado:** backlog
+**Estado:** feito (25/08/2026) — falta chave de IA válida para uma leitura real
 **Tamanho:** M
 
 ## Por quê
@@ -136,8 +136,11 @@ com o bug no lugar.
 
 ## Critério de aceite
 
-- [ ] Subir CV preenche os campos, editáveis, antes de salvar — depende da
-      tela (em andamento) e de uma chave de IA no servidor
+- [x] Subir CV preenche os campos, editáveis, antes de salvar — feito em
+      25/08 na barra de 8 filtros: o CV marca os dropdowns Skills, Experience
+      e Job title, e cada valor continua sendo um checkbox que dá para
+      desmarcar. Medido no navegador: 7 skills, 1 senioridade e 2 cargos
+      marcados a partir do CV sintético, e desmarcar leva de 7 para 6
 - [x] Dá para cadastrar só com filtros, sem CV
 - [x] Depois de salvar, nenhum arquivo no servidor — `memoryStorage` explícito,
       verificado com `find` no container
@@ -324,3 +327,259 @@ dizia *"não existe login de verdade nesta aplicação"* — falso desde o PLT-0
 dois previstos no desenho. O caminho de dados existe; falta a apresentação.
 Testar a extração de ponta a ponta depende de uma chave real — com uma chave
 falsa, o caminho vai até a API da Anthropic e volta com erro tratado.
+
+
+## Ligando a leitura de currículo (25/08/2026)
+
+Faltavam duas coisas: o extrator só falava com a Anthropic, e não havia caixa
+de upload na tela desde `7fb2d72`.
+
+### O extrator caiu para a outra IA
+
+Reproduzido antes de mexer: `POST /api/jobs/profile/cv` devolvia **400 em
+0,32s**, e o log dizia `401 authentication_error API key is invalid` — com
+`temChaveOpenAi: true` ao lado. O `CvExtratorService` ignorava a escolha do
+admin e a segunda chave.
+
+Agora ele segue o mesmo desenho do `BuscaIaService`: lê `iaEfetiva` do
+`RecursosService` e cai para a outra IA. **Com uma diferença que importa** — o
+`BuscaIaService` cai só quando a preferida NÃO TEM CHAVE, e o que aconteceu
+aqui foi chave PRESENTE e recusada. Então o CV também cai quando a preferida
+falha com 401, 402, 403 ou 429 (`ehChaveMorta`), que são as respostas de chave
+inválida, sem crédito, sem permissão e sem cota.
+
+O `BuscaIaService` continua sem essa segunda queda — não foi mexido, para não
+ampliar o escopo. **Vale abrir card**: a busca tem hoje o mesmo buraco que o CV
+tinha, e a `FalhaDaIa` sobe direto para a tela quando a chave preferida é
+recusada.
+
+Recusa do modelo (`ehCurriculo: false`) **não** dispara a queda: a segunda IA
+leria o mesmo texto e diria o mesmo, gastando crédito para repetir a resposta.
+Medido — nesse caso o provedor secundário recebe **0 chamadas**.
+
+### Verificação, e por que ela precisou de um provedor falso
+
+**As duas chaves cadastradas estão mortas:** Anthropic devolve 401
+(`API key is invalid`) e OpenAI devolve 429 (`You exceeded your current
+quota`). Não há chave boa em lugar nenhum — nem no `.env`, nem no ambiente do
+container. Isso é conta a pagar, não código.
+
+Para exercitar o caminho de sucesso, os SDKs foram apontados para um servidor
+falso via `ANTHROPIC_BASE_URL` / `OPENAI_BASE_URL` (andaime de teste, fora do
+repositório). Os seis casos:
+
+| Caso | Resultado |
+| --- | --- |
+| Anthropic OK | **201** em 0,45s, perfil completo |
+| Anthropic **401** → OpenAI OK | **201** em 0,20s; log: *"ANTHROPIC falhou (chave recusada) — lendo o CV com OPENAI"* |
+| Anthropic **429** → OpenAI OK | **201** em 1,45s |
+| As duas mortas | **400**: *"Nao consegui ler o curriculo agora… preencha os filtros a mao"* |
+| `ehCurriculo: false` | **400**: *"Este arquivo nao parece um curriculo"*, e **0 chamadas** ao segundo provedor |
+| Modelo devolvendo PII | ver abaixo |
+
+Com as chaves reais e sem o andaime, o comportamento é o esperado: cai da
+Anthropic para a OpenAI e só então falha, em 5,6s.
+
+### O prompt não bastava para proteger o dado pessoal
+
+O CV de teste tem CPF, telefone, e-mail e endereço de propósito. Simulando um
+modelo **desobediente**, que devolve esses dados apesar da instrução:
+
+- os campos EXTRAS que ele inventou (`cpf`, `telefone`, `endereco` no topo do
+  JSON) já eram descartados — a montagem do DTO só lê os cinco campos
+  conhecidos;
+- mas o que ele escondeu **dentro** de `stack` e `cargos` (`"CPF
+  123.456.789-00"` como se fosse tecnologia) **chegava inteiro na tela**.
+
+Instrução é pedido, não garantia. Entrou uma segunda defesa no `limitar()`, por
+onde `stack`, `technologies` e `job_titles` já passavam: cinco padrões (CPF,
+telefone, arroba, logradouro, CEP). Medido: **68 tecnologias e cargos legítimos
+passam** (`C#`, `.NET`, `Java 17`, `CI/CD`, `Ubuntu 22.04`, `SQL Server 2022`…)
+e **11 formas de PII são bloqueadas**, inclusive `12345678900` e
+`11987654321` sem pontuação. Depois da correção, a resposta ao modelo
+desobediente traz só `["Java"]` e `["Tech Lead"]`.
+
+### O selo "do currículo"
+
+A barra de dropdowns não comporta um selo por campo dentro do botão sem
+quebrar a grade de 8. A saída foi um selo **em dois níveis**:
+
+- no botão fechado, um `CV` ao lado do contador verde — dá para ver que há
+  chute da IA ali sem abrir os oito dropdowns;
+- dentro do painel, um `CV` por opção, para saber **qual** valor veio do CV e
+  desmarcar só o errado.
+
+Cor `--accent-ink`, medida no navegador: **6,24:1 no claro** (`rgb(122,92,12)`)
+e **9,56:1 no escuro** (`rgb(229,190,79)`) — AA nos dois. O selo carrega texto
+("CV" + `sr-only` "N options from your CV"), então não é cor sozinha.
+
+O selo só aparece em opção **marcada**: preso ao `marcado &&`, senão ele
+sobrevivia ao desmarcar e ao "Limpar filtros", afirmando origem de um valor que
+não está mais escolhido.
+
+### O casamento entre o CV e o catálogo
+
+A IA devolve `"Spring Boot 3"`, `"AWS (EC2, S3)"`, `"postgres"`; o catálogo tem
+`Spring Boot`, `AWS`, `PostgreSQL`. Comparar por igualdade perderia os três, e
+o upload pareceria não ter feito nada. `casar()` normaliza (minúscula, sem
+acento, sem pontuação) e tenta igualdade antes de conter.
+
+Dois achados do teste:
+
+- **`C#` não casava consigo mesmo.** Tirada a pontuação, virava `"c"` — um
+  caractere, abaixo do piso de 2 que existe para "Go" não casar dentro de
+  "Django". `#` e `+` agora sobrevivem à normalização, porque são nome e não
+  pontuação.
+- A igualdade-antes-de-conter é o que impede `Java` de arrastar `JavaScript`,
+  e `Go` de casar com `MongoDB`.
+
+11 casos de casamento passam, incluindo os falsos positivos acima.
+
+### O rascunho dos filtros subiu para a lista
+
+Era estado interno da `BarraFiltros`. A caixa de upload é irmã dela e precisa
+escrever nos dropdowns, então o rascunho passou para a `ListaVagas`. O
+comportamento não mudou: continua rascunho, e só "Filter" o promove a busca.
+
+O CV **acrescenta, nunca substitui** — quem já tinha marcado dois filtros à mão
+os mantém, e esses não ganham selo.
+
+### Conferido no navegador
+
+Nos dois temas, em `localhost:5173/vagas`, com o bundle servido conferido
+(hash `Be2zHDD9` → `DO-ZPWBY`, +4,7 KB): a caixa aparece, o aviso de
+privacidade fica **acima** do input (y=295 contra y=388), o upload preenche os
+três dropdowns, desmarcar funciona, uma escolha nova da pessoa não leva selo, e
+não há erro de console. Com `jobs.leituraCv = false`: a caixa **some** da tela
+e o endpoint responde 400.
+
+`scripts/qa-rapido.py`: tudo certo.
+
+### O que continua faltando
+
+- **Chave de IA que funcione.** É o único motivo de o card não poder ser
+  fechado com uma leitura real ponta a ponta. As duas cadastradas estão
+  mortas por conta/billing.
+- A frase-resumo do que a IA entendeu ("entendemos que você é backend pleno,
+  ~5 anos") continua fora — o selo por campo resolveu a distinção que o card
+  exigia, e a frase é reforço.
+- `anos` é lido e devolvido, mas **não vira filtro**: a barra não tem eixo de
+  anos de experiência, só de senioridade.
+
+
+---
+
+# A leitura ligou (25/08/2026)
+
+O backend estava pronto desde 15/08 e **nunca tinha sido exercitado**. A
+primeira chamada real devolveu 400, com `401 API key is invalid` no log.
+
+## O extrator passou a escolher a IA, e a cair quando ela recusa
+
+Ele só falava com a Anthropic, mesmo com `temChaveOpenAi: true`. O
+[JOB-15](JOB-15-escolha-da-ia.md) já tinha resolvido isso para a busca; o CV
+seguia ignorando a escolha do admin.
+
+Agora lê `iaEfetiva` e cai para a outra IA — **e não só por ausência de
+chave**: também quando a chave é recusada (401/402/403/429), que era exatamente
+o caso aqui. Medido com as chaves reais:
+
+```
+ANTHROPIC falhou (chave recusada) — lendo o CV com OPENAI
+Falha ao ler CV: 429 You exceeded your current quota
+```
+
+Cada passo nomeado no log, e 400 com mensagem mandando preencher à mão.
+
+**Dívida que isto revelou:** o `BuscaIaService` tem hoje o mesmo buraco que o
+CV tinha — cai só por ausência de chave, não por chave recusada. Fica
+registrado; não foi corrigido aqui para não ampliar o escopo.
+
+## O prompt pedia que o PII não saísse; agora o servidor garante
+
+Instrução é pedido, não garantia. Simulando um modelo desobediente, PII
+escondido *dentro* de `stack` e `cargos` (`"CPF 123.456.789-00"` como se fosse
+tecnologia) chegava inteiro à tela — o DTO descartava campos extras, mas não
+olhava dentro dos arrays.
+
+Filtro no `limitar()`, com o falso positivo barato e o falso negativo caro:
+some um item de uma lista de sugestões, contra CPF gravado no perfil de alguém.
+
+Medido: **39 tecnologias legítimas passam** (`@angular/core`, `C#`,
+`Ubuntu 22.04`, `IEEE 802.11`, `SAP S/4HANA`, `AWS EC2 t3.medium`) e **14
+formas de PII bloqueadas**. Zero erro dos dois lados.
+
+Duas correções na regra original, ambas de medição:
+
+- `/@/` apagava **pacote npm com escopo** — `@angular/core`, `@nestjs/common`,
+  `@types/node`. O comentário afirmava que "nenhuma tecnologia tem arroba", e
+  tem. Trocado por um padrão de e-mail que exige o ponto no domínio.
+- A regra de telefone exigia dois blocos de 4+ dígitos e deixava passar
+  `+1 (415) 555-2671`; **data de nascimento era proibida pela instrução e não
+  tinha regra nenhuma atrás**. Ambas cobertas (QA, 25/08).
+
+## O selo, e os quatro defeitos que o QA achou nele
+
+O selo `CV` marca o que veio do currículo — é o que permite desmarcar só o que
+a IA errou. Ele apareceu em dois níveis porque a grade de 8 dropdowns não
+comporta um selo por campo: no botão fechado e por opção dentro do painel.
+
+**Ele mentia em três situações**, todas medidas pelo QA e corrigidas:
+
+| Situação | Dizia | Diz agora |
+| --- | --- | --- |
+| Marcar à mão **durante** a leitura | 5 selected (Kotlin apagado) | **6 selected, 5 do CV** |
+| "Clear filters" e marcar Java à mão | CV · 1 option from your CV | **1 selected** |
+| Desmarcar e remarcar um valor do CV | 5 selected, 5 do CV | **5 selected, 4 do CV** |
+
+O primeiro era o pior: **perda silenciosa de escolha da pessoa**. A
+`CaixaUploadCV` captura `onLeu` no clique, então a versão que resolvia segundos
+depois carregava o rascunho de antes do upload e o sobrescrevia. O card promete
+o contrário — "acrescenta ao que já estava marcado".
+
+A correção não foi o updater funcional: são **dois** estados saindo do mesmo
+cálculo, e chamar `setOrigemCv` de dentro de um updater é efeito colateral num
+reducer, que o StrictMode roda duas vezes e faz o selo sair dobrado. Um ref
+resolve sem nenhum dos dois.
+
+**Decisão de produto, que o QA perguntou:** desmarcar apaga a origem para
+sempre. O selo afirma "isto veio do currículo, confira" — depois que a pessoa
+desmarcou e marcou de novo, a escolha é dela.
+
+## Mais três, menores
+
+- **O 413 aparecia cru.** Arquivo de 6 MB dava `{"message":"File too large"}` e
+  a tela mostrava "Erro 413". O `limits` do multer corta **antes** do serviço,
+  então a mensagem em português que o `CvParserService` tem era código morto.
+  Um `@Catch(PayloadTooLargeException)` na rota traduz; a mensagem do serviço
+  continua lá para quem o chamar direto.
+- **O selo quebrava o nome acessível.** O leitor de tela anunciava
+  `"JavaCVfrom your CV"` — os nós de texto entram no nome concatenados, sem
+  separador. Agora o `aria-label` é montado no input e no botão:
+  `"Java, from your CV"` e `"Skills, 5 selected, 5 options from your CV"`.
+- **O CV podia fechar a própria tag.** `texto` ia cru para dentro de
+  `<curriculo>…</curriculo>`, então um currículo contendo `</curriculo>`
+  produzia quatro tags no prompt. Não foi possível demonstrar exploração (as
+  chaves estão mortas) e a instrução de sistema continua no lugar, mas fechar
+  a tag é barato: o prompt reduz a chance, isto tira o mecanismo.
+
+E `Limpar filtros` virou `Clear filters` — era o único texto em português numa
+aba em inglês.
+
+## O que não foi verificado, e não dá para verificar aqui
+
+**Nenhuma leitura real de CV completou.** As duas chaves cadastradas estão
+mortas: Anthropic **401 `API key is invalid`**, OpenAI **429 `exceeded your
+current quota`**. Todo o caminho de sucesso foi exercitado com um provedor HTTP
+falso — o que prova o **encanamento**, não a qualidade da extração do modelo.
+
+Isso é conta a pagar, não defeito. Com uma chave válida, o que falta conferir é
+se o modelo lê o CV bem: se acerta senioridade, se não inventa stack, e se
+`ehCurriculo: false` dispara num arquivo que não é currículo.
+
+## Fica de fora, deliberadamente
+
+- **`anos` é lido e devolvido mas não vira filtro** — a barra não tem eixo de
+  anos, só de senioridade. O dado está no `cvProfile` para quando houver.
+- **A frase-resumo** ("entendemos que você é backend pleno") continua fora: o
+  selo por campo resolve a distinção que o card exigia, e com mais precisão.
