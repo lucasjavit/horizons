@@ -1,15 +1,23 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AxiosError } from 'axios'
 import { Link } from 'react-router-dom'
 import { WARN_INK } from '../blocks/BlockRenderer'
-import { BarraFiltros } from './BarraFiltros'
+import { BarraDeBusca } from './BarraDeBusca'
+
+/**
+ * O modal entra por `import()` dinâmico.
+ *
+ * ~15 KB que só servem a quem clica em "All filters". Mesma decisão do jsPDF
+ * no Invoice: o custo fica com quem usa a feature.
+ */
+const ModalFiltros = lazy(() =>
+  import('./ModalFiltros').then((m) => ({ default: m.ModalFiltros })),
+)
 import { CaixaUploadCV } from './CaixaUploadCV'
 import { LinhaVaga } from './LinhaVaga'
 import { POR_PAGINA, Paginacao } from './Paginacao'
 import { api, ehSemSessao } from '../../lib/api'
 import { buscarVagas } from '../../lib/busca-vagas'
-import { SELECAO_VAZIA, aplicarCv, paraFiltrosApi } from './vaga-filtro'
-import type { OrigemCv, Selecao } from './vaga-filtro'
 import type { CvLido, Historico, Vaga } from '../../types/api'
 
 type Estado = 'ocioso' | 'buscando' | 'pronto'
@@ -61,25 +69,24 @@ export function ListaVagas() {
    * "Dismissed", que é o desfazer tardio.
    */
   const [ultimoDescarte, setUltimoDescarte] = useState<Vaga | null>(null)
-  /**
-   * O rascunho dos filtros, que era estado da `BarraFiltros`.
-   *
-   * Subiu para cá no JOB-02: a caixa de currículo precisa escrever nos
-   * dropdowns, e o irmão não alcança o estado interno do outro. Continua
-   * rascunho — só o botão "Filter" o transforma em busca.
-   */
-  const [rascunho, setRascunho] = useState<Selecao>(SELECAO_VAZIA)
-  // Espelho do rascunho para quem lê fora do render — hoje o `aoLerCv`, que
-  // resolve segundos depois do clique e não pode usar a closure daquele
-  // momento. Ver o comentário lá.
-  const rascunhoRef = useRef(rascunho)
-  rascunhoRef.current = rascunho
+  // O `rascunho` e o `origemCv` morreram com os dropdowns (26/08): eram o
+  // estado que ELES renderizavam. O currículo agora escreve direto nos campos
+  // do modal — ver `aoLerCv`.
   /** O que veio do CV, por eixo. Alimenta o selo "CV" nos dropdowns. */
-  const [origemCv, setOrigemCv] = useState<OrigemCv>({})
   /** A leitura de CV está ligada no servidor. `undefined` = ainda não se sabe. */
   const [leituraCvAtiva, setLeituraCvAtiva] = useState<boolean | undefined>()
 
-  const buscar = useCallback(async (selecao: Selecao) => {
+  /**
+   * Dispara a busca.
+   *
+   * Dois argumentos desde que os dropdowns saíram (26/08): o que o modal
+   * marcou e o que a barra do topo contribui. Antes havia um terceiro — a
+   * `Selecao` dos oito eixos —, que deixou de existir junto com eles.
+   */
+  const buscar = useCallback(async (
+    avancados?: Record<string, string[]>,
+    doTopo?: Record<string, string[] | string>,
+  ) => {
     // Uma busca por vez: sem isto, dois cliques em Filter escreveriam na mesma
     // lista e o resultado seria a mistura de duas consultas.
     abortar.current?.abort()
@@ -95,7 +102,15 @@ export function ListaVagas() {
     setEstado('buscando')
 
     try {
-      for await (const ev of buscarVagas(paraFiltrosApi(selecao), ctrl.signal)) {
+      // Os oito eixos da barra e os do modal viajam juntos: o backend recebe
+      // um `FiltrosDto` só, e é ele quem sabe traduzir cada eixo para o motor.
+      // **A ordem do spread é a precedência**, e o topo vem por último: o que
+      // a pessoa digitou na barra grande ganha do dropdown, porque foi o
+      // gesto mais recente e mais específico.
+      // A ordem do spread é a precedência: o topo ganha do modal, porque foi
+      // o gesto mais recente e mais específico.
+      const filtros = { ...(avancados ?? {}), ...(doTopo ?? {}) }
+      for await (const ev of buscarVagas(filtros, ctrl.signal)) {
         if (ctrl.signal.aborted) return
         if (ev.tipo === 'inicio') setTotal(ev.total ?? null)
         // A vaga entra assim que chega — este é o ponto do streaming.
@@ -172,39 +187,57 @@ export function ListaVagas() {
    * segundo currículo não desfaz o primeiro: os valores dos dois continuam
    * marcados, e o selo tem de continuar valendo para os dois.
    */
-  const aoLerCv = useCallback(
-    (lido: CvLido) => {
-      // **O rascunho vem de um ref, não da closure.**
-      //
-      // Medido pelo QA em 25/08: marcar "Kotlin" à mão DURANTE a leitura do
-      // currículo e esperar — Kotlin sumia, sem aviso. A `CaixaUploadCV`
-      // captura `onLeu` no clique, então a versão que roda na resolução
-      // carregava o rascunho de ANTES do upload, e o `setRascunho` o
-      // sobrescrevia. Perda silenciosa de escolha da pessoa, e o card promete
-      // o contrário: "acrescenta ao que já estava marcado".
-      //
-      // O updater funcional resolveria a corrida mas traz outro problema: são
-      // DOIS estados saindo do mesmo cálculo, e chamar `setOrigemCv` dentro de
-      // um updater é efeito colateral num reducer — o StrictMode o roda duas
-      // vezes e o selo sai dobrado. O ref dá o valor atual sem nenhum dos dois.
-      const { selecao, origem } = aplicarCv(rascunhoRef.current, {
-        stack: lido.cvProfile.stack,
-        senioridade: lido.cvProfile.senioridade,
-        // `job_titles` é o nome do backend; o catálogo da tela chama de cargos.
-        cargos: lido.filtrosSugeridos.job_titles ?? [],
-      })
-      setRascunho(selecao)
-      setOrigemCv((anterior) => {
-        const junto: OrigemCv = { ...anterior }
-        for (const [eixo, valores] of Object.entries(origem)) {
-          const eixoTipado = eixo as keyof OrigemCv
-          junto[eixoTipado] = new Set([...(anterior[eixoTipado] ?? []), ...valores])
-        }
-        return junto
-      })
-    },
-    [],
-  )
+  /**
+   * O currículo preenche os filtros do MODAL (26/08).
+   *
+   * **Antes escrevia num `rascunho` que os dropdowns renderizavam** — e os
+   * dropdowns saíram. O QA mediu o estrago: os 15 valores lidos do CV
+   * continuavam viajando em toda busca, invisíveis na tela, e `Clear all` não
+   * os alcançava porque o modal usa outro estado. A busca ficava presa ao
+   * currículo até um F5, e a caixa ainda instruía "uncheck anything we got
+   * wrong" — uma ação que não existia mais.
+   *
+   * Agora escreve onde a pessoa consegue ver e desmarcar: `roles`,
+   * `technologies` e `seniorities` são os mesmos campos que os chips do modal
+   * usam, então o que o CV marcou aparece marcado lá.
+   */
+  const aoLerCv = useCallback((lido: CvLido) => {
+    const cargos = lido.filtrosSugeridos.job_titles ?? []
+    const stack = lido.cvProfile.stack ?? []
+    const senioridade = lido.cvProfile.senioridade
+
+    // **O cargo vai para o campo de busca, e não para o filtro `roles`.**
+    //
+    // `roles` é faceta de vocabulário fechado: exige o slug (`backend`), e o
+    // currículo devolve o título legível ("Backend Engineer"). Medido em
+    // 26/08, depois de o QA achar o modal em branco:
+    //
+    // | consulta                            |  total |
+    // | ----------------------------------- | -----: |
+    // | `roles=["Backend Engineer"]`        |      0 |
+    // | `roles=["backend"]`                 | 27.077 |
+    // | `job_titles=["Backend Engineer"]`   | 80.403 |
+    //
+    // O zero não dava erro: zerava todas as facetas, e o modal lia isso como
+    // "indisponível" — a mensagem mandava revisar em "All filters" e a tela
+    // abria vazia. `job_titles` é full-text e aceita o título como ele veio.
+    //
+    // E o campo de busca é onde a pessoa VÊ o cargo e consegue apagá-lo, que
+    // era a promessa quebrada do bug original.
+    if (cargos[0]) setTextoDaBusca(cargos[0])
+
+    setAvancadosDaBarra((atual) => {
+      // **Acumula, não substitui.** É a promessa do JOB-02: quem já tinha
+      // marcado algo à mão não perde por subir um currículo.
+      const juntar = (campo: string, valores: string[]): string[] =>
+        Array.from(new Set([...(atual[campo] ?? []), ...valores.filter(Boolean)]))
+
+      const novo = { ...atual }
+      if (stack.length > 0) novo.technologies = juntar('technologies', stack)
+      if (senioridade) novo.seniorities = juntar('seniorities', [senioridade])
+      return novo
+    })
+  }, [])
 
   /**
    * Descarta a vaga. **Sem otimismo, ao contrário da estrela.**
@@ -334,9 +367,54 @@ export function ListaVagas() {
    * na barra contam a mesma coisa, então desmarcar um valor derruba os dois
    * juntos. Contar eixos daria "3 filters" onde a barra mostra oito selos.
    */
+  // A barra de busca do topo (JOB-43): texto livre + local, que viajam junto
+  // dos filtros da barra e do modal na mesma chamada.
+  const [textoDaBusca, setTextoDaBusca] = useState('')
+  const [formatos, setFormatos] = useState<string[]>([])
+  const [regioes, setRegioes] = useState<string[]>([])
+  const [avancadosDaBarra, setAvancadosDaBarra] = useState<Record<string, string[]>>({})
+  /**
+   * O modal de filtros, montado aqui desde que a `BarraFiltros` saiu (26/08).
+   *
+   * Antes ele vivia dentro dela e era aberto por um contador de pedidos —
+   * indireção que existia só porque o botão estava numa barra e o modal em
+   * outra. Com um dono só, é um booleano.
+   */
+  const [modalAberto, setModalAberto] = useState(false)
+
+  /**
+   * O que a barra do topo contribui para a consulta.
+   *
+   * `work_modes` e `regions` são os MESMOS campos que o modal usa — marcar
+   * "Remote" aqui aparece marcado lá, porque é o mesmo filtro visto de dois
+   * lugares, e não dois filtros parecidos.
+   */
+  const doTopo = useCallback((texto?: string): Record<string, string[] | string> => {
+    const f: Record<string, string[] | string> = {}
+    // O texto vem por parâmetro quando quem chama já sabe o valor novo — o
+    // `×`, que limpa e busca no mesmo clique. Sem ele, cai no estado.
+    const t = (texto ?? textoDaBusca).trim()
+    if (t) f.job_titles = [t]
+    if (formatos.length > 0) f.work_modes = formatos
+    if (regioes.length > 0) f.regions = regioes
+    return f
+  }, [textoDaBusca, formatos, regioes])
+
+  /**
+   * Quantos filtros o currículo marcou — o número da mensagem da caixa.
+   *
+   * Conta o que o CV escreveu nos campos do modal, e não um `origemCv`
+   * separado: aquele existia para o selo "from your CV" nos dropdowns, que
+   * saíram. Contar a fonte da verdade evita o número divergir do que está
+   * marcado de fato.
+   */
   const filtrosDoCv = useMemo(
-    () => Object.values(origemCv).reduce((total, valores) => total + (valores?.size ?? 0), 0),
-    [origemCv],
+    () =>
+      (['technologies', 'seniorities'] as const).reduce(
+        (total, campo) => total + (avancadosDaBarra[campo]?.length ?? 0),
+        0,
+      ),
+    [avancadosDaBarra],
   )
   const novasNaBusca = useMemo(
     () => vagas.filter((v) => !descartadas.has(v.url) && !vistas.has(v.url)).length,
@@ -345,41 +423,81 @@ export function ListaVagas() {
 
   return (
     <div className="flex flex-col gap-4">
-      <BarraFiltros
-        onAplicar={(s) => void buscar(s)}
-        buscando={estado === 'buscando'}
-        encontradas={vagas.length}
-        jaBuscou={estado !== 'ocioso'}
-        rascunho={rascunho}
-        setRascunho={setRascunho}
-        origemCv={origemCv}
-        aoLimpar={() => setOrigemCv({})}
-        aoDesmarcar={(eixo, valor) =>
-          // **Desmarcar apaga a origem daquele valor.** O selo afirma "isto
-          // veio do currículo, confira" — depois que a pessoa desmarcou e
-          // marcou de novo, a escolha é dela, e o selo voltava afirmando o
-          // contrário (QA, 25/08).
-          setOrigemCv((anterior) => {
-            const doEixo = anterior[eixo]
-            if (!doEixo?.has(valor)) return anterior
-            const restante = new Set(doEixo)
-            restante.delete(valor)
-            return { ...anterior, [eixo]: restante }
-          })
+      <BarraDeBusca
+        texto={textoDaBusca}
+        onTexto={setTextoDaBusca}
+        formatos={formatos}
+        regioes={regioes}
+        onLocal={(f, r) => {
+          setFormatos(f)
+          setRegioes(r)
+        }}
+        quantosFiltros={
+          Object.values(avancadosDaBarra).reduce<number>(
+            (n, l) => n + (Array.isArray(l) ? l.length : 0),
+            0,
+          ) +
+          formatos.length +
+          regioes.length
         }
-        cabecalho={
-          <CaixaUploadCV
-            ativa={leituraCvAtiva}
-            onLeu={aoLerCv}
-            filtrosMarcados={filtrosDoCv}
-            // Trocar de arquivo esquece a origem do anterior. O acúmulo entre
-            // uploads continua valendo para quem sobe um segundo currículo SEM
-            // passar por aqui — são gestos diferentes: "adicionar" acumula,
-            // "substituir" substitui.
-            onSubstituir={() => setOrigemCv({})}
-          />
-        }
+        onAbrirFiltros={() => setModalAberto(true)}
+        onBuscar={(t) => void buscar(avancadosDaBarra, doTopo(t))}
       />
+
+      {/*
+        **A caixa de currículo sai da barra de filtros, que deixou de existir.**
+
+        Ela vivia no `cabecalho` da `BarraFiltros` porque quem sabe se a
+        leitura de CV está ligada é esta lista, não a barra (JOB-02). Com a
+        barra removida (26/08), a caixa passa a ser filha direta daqui — o
+        dono do estado nunca mudou.
+      */}
+      <CaixaUploadCV
+        ativa={leituraCvAtiva}
+        onLeu={aoLerCv}
+        filtrosMarcados={filtrosDoCv}
+        // Trocar de arquivo limpa o que o CV anterior marcou — e só isso: o
+        // que a pessoa marcou à mão no modal fica. São gestos diferentes:
+        // "adicionar" acumula, "substituir" substitui.
+        onSubstituir={() => {
+          setTextoDaBusca('')
+          setAvancadosDaBarra((a) => {
+            const novo = { ...a }
+            delete novo.technologies
+            delete novo.seniorities
+            return novo
+          })
+        }}
+      />
+
+      {/*
+        O "N jobs found" também era da barra.
+
+        `aria-live` porque, depois de buscar, esta é a única confirmação de
+        que algo aconteceu — sem ela, quem usa leitor de tela busca e não ouve
+        nada mudar. E só aparece DEPOIS de buscar: "0 jobs found" numa tela
+        que ninguém pesquisou afirma um resultado que não houve.
+      */}
+      {/*
+        **Uma mensagem, e não três.** Havia três blocos verdadeiros ao mesmo
+        tempo, e um deles mentia: "the list below is from your previous search"
+        aparecia depois de `setVagas([])`, com a lista já vazia (QA, 26/08).
+        Dois `role="status"` juntos também disparavam em dobro no leitor de
+        tela.
+
+        Só aparece DEPOIS de buscar: "0 jobs found" numa tela que ninguém
+        pesquisou afirma um resultado que não houve.
+      */}
+      {estado !== 'ocioso' && estado !== 'buscando' && !erro && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-sm"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {vagas.length} {vagas.length === 1 ? 'job found' : 'jobs found'}
+        </p>
+      )}
 
       {erro && (
         <p role="alert" className="text-sm" style={{ color: WARN_INK }}>
@@ -418,7 +536,12 @@ export function ListaVagas() {
       {estado === 'buscando' && (
         // `role="status"` e não `alert`: é progresso, não urgência — o leitor
         // de tela anuncia sem interromper o que a pessoa está fazendo.
-        <p role="status" className="text-sm" style={{ color: 'var(--text-muted)' }}>
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-sm"
+          style={{ color: 'var(--text-muted)' }}
+        >
           {total === null
             ? 'Searching job boards…'
             : `Reading ${total} listings — ${vagas.length} done`}
@@ -612,6 +735,23 @@ export function ListaVagas() {
           No jobs matched. Try fewer filters or a broader job title.
         </p>
       )}
+      {/* Só monta depois do clique — antes disso nem o chunk é baixado. */}
+      {modalAberto && (
+        <Suspense fallback={null}>
+          <ModalFiltros
+            aberto={modalAberto}
+            selecaoInicial={avancadosDaBarra}
+            onFechar={() => setModalAberto(false)}
+            onAplicar={(sel) => {
+              setAvancadosDaBarra(sel)
+              // Aplicar no modal dispara a busca: quem clicou em "Show jobs"
+              // pediu para ver as vagas, e não para fechar e clicar de novo.
+              void buscar(sel, doTopo())
+            }}
+          />
+        </Suspense>
+      )}
+
     </div>
   )
 }

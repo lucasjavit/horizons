@@ -84,6 +84,12 @@ export class RecursosController {
     return this.recursos.definirAts(body.ativa);
   }
 
+  @Put('freehire')
+  @AdminOnly()
+  definirFreehire(@Body() body: DefinirFlagDto): Promise<RecursosDto> {
+    return this.recursos.definirFreehire(body.ativa);
+  }
+
   @Put('busca-agendada')
   @AdminOnly()
   definirBuscaAgendada(@Body() body: DefinirFlagDto): Promise<RecursosDto> {

@@ -31,7 +31,8 @@ export function VagasPage() {
             104px e empurrava a primeira vaga para fora da dobra. A promessa
             ("nao precisa ficar olhando") cabe em meia frase. */}
         <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Set your filters and search — we scan job boards and read each listing.
+          Search job boards and read each listing — filter by role, stack,
+          location and more.
         </p>
       </header>
 

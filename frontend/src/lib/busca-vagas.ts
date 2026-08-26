@@ -37,6 +37,24 @@ export async function* buscarVagas(
   )
 
   if (!resposta.ok || !resposta.body) {
+    // **4xx é o servidor RESPONDENDO, e a resposta diz o que houve.**
+    //
+    // Tratar tudo como "não alcancei o servidor" descartava o corpo e mentia
+    // duas vezes (QA, 26/08): o termo de busca com mais de 80 caracteres
+    // devolvia 400 explicando o limite, e a tela dizia que o servidor estava
+    // fora — depois de ele ter respondido.
+    if (resposta.status >= 400 && resposta.status < 500) {
+      const corpo = (await resposta.json().catch(() => null)) as
+        | { message?: string | string[] }
+        | null
+      const m = corpo?.message
+      const texto = Array.isArray(m) ? m[0] : m
+      yield {
+        tipo: 'erro',
+        mensagem: texto || 'The server rejected this search.',
+      }
+      return
+    }
     yield { tipo: 'erro', mensagem: 'Could not reach the server.' }
     return
   }

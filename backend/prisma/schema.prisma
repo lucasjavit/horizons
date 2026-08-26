@@ -40,6 +40,7 @@ model User {
   telegram    TelegramLink?
   telegramConvites TelegramConvite[]
   jobHistory  JobHistory[]
+  savedSearches SavedSearch[]
 
   @@index([provider, providerId])
   @@map("users")
@@ -595,4 +596,35 @@ model AtsDiscovery {
   /// A consulta do cron: quem nunca foi verificado vem primeiro.
   @@index([estado, checkedAt])
   @@map("ats_discoveries")
+}
+
+
+/// Uma busca guardada, com os filtros que a pessoa montou (JOB-41).
+///
+/// **O filtro inteiro em `Json`, e nao uma coluna por eixo.** Sao 25 facetas
+/// hoje, e o vocabulario vive na API do freehire — uma coluna por eixo pediria
+/// migration a cada faceta nova deles, para um dado que so a tela interpreta.
+///
+/// O que se ganha em troca: nada consulta o interior deste JSON. Ele sai
+/// inteiro, vai para o `FiltrosDto` e o `ValidationPipe` o valida na entrada.
+model SavedSearch {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Como a pessoa chamou a busca. "Backend LATAM remoto".
+  nome      String
+  /// Os filtros, como o `FiltrosDto` os recebe. Coluna Json? recebe
+  /// `Prisma.DbNull`, nunca `null`.
+  filtros   Json?
+  /// Avisar por e-mail quando houver vaga nova. Reusa o canal do JOB-24.
+  porEmail  Boolean  @default(false)
+  /// Avisar por Telegram. Reusa o canal do JOB-32.
+  porTelegram Boolean @default(false)
+  /// Quando o alerta rodou pela ultima vez — evita reenviar o que ja foi.
+  avisadoEm DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("savedsearches")
 }

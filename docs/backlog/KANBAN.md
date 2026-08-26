@@ -19,6 +19,9 @@ destrava o resto.
 
 | Card | Título | Tam. | Nota |
 | --- | --- | --- | --- |
+| [JOB-40](cards/JOB-40-catalogo-aprende-com-o-freehire.md) | **O catálogo aprende com o freehire** — transformar dado emprestado em ativo nosso | M | medido (26/08): 60 das 63 empresas de uma amostra do freehire não estão no `empresas.json`. É o que sobrevive ao dia em que o serviço fechar |
+| [JOB-42](cards/JOB-42-alerta-de-busca-salva.md) | **A busca salva dispara alerta** — hoje ela é guardada e nunca consultada | M | o interruptor "avisar por e-mail" existe na tela e **promete o que não acontece**; os dois canais mandam um filtro único |
+| [JOB-39](cards/JOB-39-cv-nao-preenche-o-modal-de-filtros.md) | **O currículo não preenche mais os filtros** — a caixa diz "we ticked 13 filters" e nenhum aparece | P | medido (26/08) — a barra de dropdowns virou modal em trabalho não commitado; o `aoLerCv` continua certo, falta o modal ler o rascunho |
 | [APP-02](cards/APP-02-erro-do-backend-em-portugues.md) | **Erro do backend em português na interface inglesa** | P | medido (25/08) — "Formato nao suportado. Envie o curriculo em PDF ou DOCX." dentro da caixa de CV, e "Link invalido ou expirado" no `/email/sair`. Exige decidir onde mora a tradução |
 | [APP-03](cards/APP-03-revisar-motion-effects.md) | **Revisar motion effects e referências de interface** | P | revisão, não implementação — 5 fontes copy-paste/open-source; `prefers-reduced-motion` é eliminatório, e o `invoicegenerator.io` entra como concorrente |
 | [INV-10](cards/INV-10-clientes-salvos-e-historico.md) | Clientes salvos, histórico e duplicar do mês passado | G | **destravado** (13/08) — o login existe; falta decidir se ainda vale, já que o INV-14 entregou o histórico local |
@@ -53,6 +56,9 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [JOB-43](cards/JOB-43-barra-de-busca-do-topo.md) | **A barra de busca do topo** — Location, texto livre, filtros com badge, sino, tema e menu. De quebra, as páginas viraram chunks: o bundle principal caiu de 438 para **412 KB** | 26/08/2026 |
+| [JOB-41](cards/JOB-41-modal-de-filtros-avancados.md) | **Modal de filtros avançados** — 11 categorias, chips de três estados com contagem ao vivo, busca por seção e buscas salvas. O QA achou **8 defeitos em duas rodadas**, todos corrigidos; o mais instrutivo foi o `.catch()` que disfarçava bug nosso de motor fora do ar | 26/08/2026 |
+| [JOB-39](cards/JOB-39-freehire-como-motor-de-busca.md) | **freehire.me vira o PRIMEIRO motor de busca** — API pública sem chave. Entrou como fallback e a medição virou a mesa: **60 vagas em 2,6s contra 1–15 em 128s** do ATS, que passou a ser a rede de segurança | 26/08/2026 |
 | [JOB-36](cards/JOB-36-tela-de-provedores-de-ia.md) | **Configurações vira quatro telas** — `/config` (864 linhas) dividida com barra de abas, e a de IA ganha painel de saúde com verificação de chave por trás (401 ≠ 429). Achou duas coisas no primeiro uso real: o modelo do Gemini estava aposentado (404) e `maxTokens: 16` reprovava chave boa | 25/08/2026 |
 | [JOB-33](cards/JOB-33-cadeia-de-ia.md) | **Cadeia de provedores de IA** — 6 provedores encadeados por capacidade (3 fazem busca, 6 fazem extração), 4 gratuitos sem cartão; paga a dívida da queda por chave recusada do JOB-02 | 25/08/2026 |
 | [JOB-32](cards/JOB-32-telegram-como-canal.md) | **Telegram como segundo canal** — entrega sem domínio próprio; falta token real de bot | 24/08/2026 |

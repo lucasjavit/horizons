@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { IaService } from '../ia/ia.service';
 import { BuscaIaService, FalhaDaIa } from './busca-ia.service';
 import { BuscaAtsService } from './busca-ats.service';
+import { BuscaFreehireService } from './busca-freehire.service';
 import { DescobertasService } from './descobertas.service';
 import { RecursosService } from '../settings/recursos.service';
 import type { IaDaBusca } from '../settings/recursos.service';
@@ -177,6 +178,7 @@ export class BuscaService {
     private readonly ia: BuscaIaService,
     private readonly recursos: RecursosService,
     private readonly ats: BuscaAtsService,
+    private readonly freehire: BuscaFreehireService,
     private readonly descobertas: DescobertasService,
     // A cadeia do JOB-33, e nao o `BuscaIaService` logo acima: aquele BUSCA
     // vagas na web, este EXTRAI de um texto ja lido. Sao capacidades
@@ -215,11 +217,48 @@ export class BuscaService {
     // O interruptor decide o motor, e nao so a existencia da chave: com o
     // Firecrawl desligado a chave continua cadastrada, e usa-la assim mesmo
     // faria o interruptor nao significar nada.
-    const { firecrawlAtivo, ordemDaIa, atsAtivo } = await this.recursos.obter();
+    const { firecrawlAtivo, ordemDaIa, atsAtivo, freehireAtivo } =
+      await this.recursos.obter();
 
-    // O ATS vem PRIMEIRO por ser o mais barato: 27.725 vagas por R$ 0 contra
+    // **O freehire vem PRIMEIRO** (JOB-39, medido em 26/08/2026).
+    //
+    // A ordem entre os dois motores gratuitos e por RESULTADO, e nao por
+    // proximidade da fonte — os dois custam R$ 0, entao o desempate e a vaga
+    // que chega na tela. Mesma consulta, motor contra motor:
+    //
+    // | Consulta                | ATS |  freehire |
+    // | ----------------------- | --: | --------: |
+    // | backend engineer, LATAM |   1 |        60 |
+    // | data engineer, LATAM    |  15 |        60 |
+    // | react developer, LATAM  |  15 |        60 |
+    //
+    // E o tempo nao e detalhe: **128s contra 2,6s** na mesma busca. O ATS
+    // consulta 200 boards um a um; o freehire ja rastreou todos e responde uma
+    // consulta so. Cinquenta vezes mais rapido, quatro vezes mais vaga.
+    //
+    // O ATS continua logo atras porque le a fonte primaria com dado nosso, e
+    // porque este aqui e servico de terceiro que pode sumir — no dia em que
+    // sumir, o de baixo assume sem que ninguem mexa em nada.
+    if (freehireAtivo) {
+      const doFreehire = await this.freehire.buscar(filtros).catch((e) => {
+        this.log.error(`motor freehire falhou: ${String(e).slice(0, 200)}`);
+        return [] as VagaDto[];
+      });
+      if (doFreehire.length > 0) {
+        this.log.log(`freehire devolveu ${doFreehire.length} vagas`);
+        yield { tipo: 'inicio', total: doFreehire.length };
+        for (const vaga of doFreehire) yield { tipo: 'vaga', vaga };
+        yield { tipo: 'fim' };
+        return;
+      }
+      // Zero vaga nao e falha do motor — pode ser filtro apertado demais, ou o
+      // servico fora do ar (que o `buscar` ja registrou). Cai para o ATS.
+      this.log.log('freehire nao achou nada — tentando o ATS');
+    }
+
+    // O ATS e o segundo, e ainda antes dos pagos: 27.725 vagas por R$ 0 contra
     // 7 do Firecrawl por 42 creditos (medido em 18/08). So faz sentido gastar
-    // credito no que ele nao alcanca.
+    // credito no que nenhuma API publica alcanca.
     if (atsAtivo) {
       const doAts = await this.ats.buscar(filtros).catch((e) => {
         this.log.error(`motor ATS falhou: ${String(e).slice(0, 200)}`);
@@ -234,8 +273,9 @@ export class BuscaService {
       }
       // Zero vaga nao e falha do motor — pode ser filtro apertado demais. Cai
       // para os outros em vez de devolver lista vazia.
-      this.log.log('ATS nao achou nada — tentando os outros motores');
+      this.log.log('ATS nao achou nada — tentando os motores pagos');
     }
+
     const chave = firecrawlAtivo ? await this.chave() : null;
 
     // Firecrawl desligado ou sem chave: a IA assume.

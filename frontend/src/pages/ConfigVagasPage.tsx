@@ -76,8 +76,9 @@ export function ConfigVagasPage() {
           Job sources
         </h1>
         <p className="mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          Where the jobs come from. The ATS is free and brings the most; the
-          others cost money or credits and go deeper on each posting.
+          Where the jobs come from, in the order the search tries them. The
+          first two are free; the others cost money or credits and go deeper on
+          each posting.
         </p>
       </header>
 
@@ -98,6 +99,27 @@ export function ConfigVagasPage() {
             </h2>
 
             <div className="mt-5 flex flex-col gap-5">
+              {/*
+                Primeiro na tela porque e o primeiro na cascata: mediu 60 vagas
+                em 2,6s contra 1-15 em 128s do ATS (26/08). A tela le de cima
+                para baixo na ordem em que a busca executa.
+              */}
+              <Interruptor
+                id="motor-freehire"
+                titulo="Search the freehire catalogue"
+                ligado={data.freehireAtivo}
+                // Sem dependência: a API do freehire é pública e sem chave,
+                // como as de ATS.
+                temDependencia
+                salvando={salvando}
+                onAlternar={() =>
+                  void alternar(api.definirFreehire, data.freehireAtivo)
+                }
+                ajudaLigada="The first engine the search tries. It queries freehire.me, a free public catalogue that already crawled thousands of company job boards, so it reaches companies that are not in our own list — measured at 60 jobs in 2.6s against 1–15 in 128s for the ATS. It is someone else's service: if it goes down, the ATS takes over on its own."
+                ajudaDesligada="Turned off, the search starts at the ATS instead — fewer jobs and much slower, but reading the company's own job board directly."
+                ajudaSemChave=""
+              />
+
               <Interruptor
                 id="motor-ats"
                 titulo="Search ATS directly"
@@ -108,7 +130,7 @@ export function ConfigVagasPage() {
                 salvando={salvando}
                 onAlternar={() => void alternar(api.definirAts, data.atsAtivo)}
                 ajudaLigada="Queries jobs straight from the system where the company posts them (Greenhouse, Lever, Ashby). It is free, brings hundreds of jobs and the salary comes from the field — but it does not say whether the job accepts people living abroad."
-                ajudaDesligada="Turned off, the search uses only Firecrawl or the AI — which cost money and bring fewer jobs."
+                ajudaDesligada="Turned off, a search that the freehire catalogue cannot answer goes straight to Firecrawl or the AI, which cost money."
                 ajudaSemChave=""
               />
 

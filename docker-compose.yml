@@ -52,6 +52,13 @@ services:
       # para um segredo de verdade — commitar chave no compose so vale
       # enquanto o app roda na rede local.
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-horizons dev key trocar antes de publicar}
+      # A API do freehire (JOB-38). Vazia usa https://freehire.me.
+      #
+      # Existe porque o freehire e open source (MIT) e self-hostavel: no dia em
+      # que depender do servico publico incomodar, sobe-se uma instancia e
+      # aponta-se aqui, sem mexer em codigo. Serve tambem para apontar para um
+      # duble em teste.
+      FREEHIRE_API_URL: ${FREEHIRE_API_URL:-}
       # Provedores de IA: chave e URL base.
       #
       # A CHAVE normalmente vem do banco, cifrada, cadastrada em Configuracoes

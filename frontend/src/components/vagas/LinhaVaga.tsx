@@ -132,6 +132,15 @@ export function LinhaVaga({
             )}
           </div>
 
+          {/* **A fonte NÃO é exibida, por decisão de produto** (26/08/2026).
+
+              O `fonte` continua vindo preenchido do backend e continua no
+              `VagaDto` — o que se decidiu foi não mostrá-lo na linha, e não
+              deixar de calculá-lo. Quem lê julga a vaga pelo que ela diz,
+              não pelo domínio por onde chegou.
+
+              Está escrito aqui porque um QA já apontou a ausência como bug
+              (26/08), e sem a nota o próximo apontará de novo. */}
           <p className="mt-0.5 text-sm" style={{ color: 'var(--text-muted)' }}>
             {vaga.company}
           </p>

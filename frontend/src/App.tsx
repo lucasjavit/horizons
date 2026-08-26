@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, lazy, Suspense } from 'react'
 import {
   BrowserRouter,
   Link,
@@ -28,8 +28,23 @@ import type { AuthUser } from './types/api'
 import { LessonPage } from './pages/LessonPage'
 import { TrackPage } from './pages/TrackPage'
 import { TracksPage } from './pages/TracksPage'
-import { VagasPage } from './pages/VagasPage'
-import { SalvasPage } from './pages/SalvasPage'
+/**
+ * A tela de vagas entra por `import()` dinâmico.
+ *
+ * É a maior do app — barra de busca, filtros, lista, caixa de currículo — e
+ * **quem chega para ler uma aula nunca a abre**. Importada estaticamente ela
+ * empurrou o bundle principal para 448 KB, acima do teto de 440 que o
+ * `scripts/qa-rapido.py` mede (26/08).
+ *
+ * Mesma decisão do jsPDF no Invoice e do modal de filtros: o custo fica com
+ * quem usa a feature.
+ */
+const VagasPage = lazy(() =>
+  import('./pages/VagasPage').then((m) => ({ default: m.VagasPage })),
+)
+const SalvasPage = lazy(() =>
+  import('./pages/SalvasPage').then((m) => ({ default: m.SalvasPage })),
+)
 
 /**
  * Abas dos produtos sob a marca Horizons.
@@ -297,6 +312,10 @@ export default function App() {
           </div>
         </header>
 
+        {/* `fallback={null}`: o chunk é pequeno e carrega em milissegundos;
+            um "Loading…" piscando seria mais ruído que informação. As páginas
+            têm seus próprios estados de carregamento para os DADOS. */}
+        <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<TracksPage />} />
           <Route path="/t/:trackSlug" element={<TrackPage />} />
@@ -328,6 +347,7 @@ export default function App() {
           {MOSTRA_QUADRO && <Route path="/quadro" element={<QuadroPage />} />}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </div>
     </BrowserRouter>
     </SessaoContext.Provider>

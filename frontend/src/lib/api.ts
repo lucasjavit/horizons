@@ -16,6 +16,8 @@ import type {
   Historico,
   HostDescoberto,
   Recursos,
+  Facetas,
+  BuscaSalva,
   ResultadoRodada,
   SalvarPerfil,
   TelegramStatus,
@@ -237,6 +239,53 @@ export const api = {
 
   async definirAts(ativa: boolean): Promise<Recursos> {
     const { data } = await http.put<Recursos>('/settings/recursos/ats', { ativa })
+    return data
+  },
+
+  /** As contagens do modal de filtros (JOB-41). */
+  async facetas(
+    filtros: Record<string, unknown>,
+    signal?: AbortSignal,
+  ): Promise<Facetas> {
+    const { data } = await http.post<Facetas>('/jobs/facets', filtros, { signal })
+    return data
+  },
+
+  async buscasSalvas(signal?: AbortSignal): Promise<BuscaSalva[]> {
+    const { data } = await http.get<BuscaSalva[]>('/jobs/saved-searches', { signal })
+    return data
+  },
+
+  async salvarBusca(entrada: {
+    nome: string
+    filtros: Record<string, unknown>
+    porEmail?: boolean
+    porTelegram?: boolean
+  }): Promise<BuscaSalva> {
+    const { data } = await http.post<BuscaSalva>('/jobs/saved-searches', entrada)
+    return data
+  },
+
+  async definirCanaisDaBusca(
+    id: string,
+    porEmail: boolean,
+    porTelegram: boolean,
+  ): Promise<BuscaSalva> {
+    const { data } = await http.put<BuscaSalva>(
+      `/jobs/saved-searches/${id}/canais`,
+      { porEmail, porTelegram },
+    )
+    return data
+  },
+
+  async apagarBuscaSalva(id: string): Promise<void> {
+    await http.delete(`/jobs/saved-searches/${id}`)
+  },
+
+  async definirFreehire(ativa: boolean): Promise<Recursos> {
+    const { data } = await http.put<Recursos>('/settings/recursos/freehire', {
+      ativa,
+    })
     return data
   },
 

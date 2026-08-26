@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
@@ -10,6 +10,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
   ValidateNested,
@@ -175,6 +176,302 @@ export class FiltrosDto {
   @IsString()
   @MaxLength(40)
   timezone?: string;
+
+  // ————————————————————————————————————————————————————————————————
+  // Os eixos do modal de filtros avancados (JOB-41).
+  //
+  // **Nenhum deles tem `@IsIn` com lista escrita a mao**, e isso e
+  // deliberado: o vocabulario vive em `/api/v1/jobs/facets` e muda sem
+  // aviso. Uma lista fixa aqui viraria 400 no dia em que eles renomeassem
+  // um valor, e o `ValidationPipe` rejeitaria uma busca que a API atenderia
+  // sem problema.
+  //
+  // O tamanho e limitado porque a URL da consulta tem teto pratico, e
+  // porque 20 valores num eixo ja e mais do que alguem escolhe a mao.
+  // ————————————————————————————————————————————————————————————————
+
+  // **Os eixos do modal NAO reusam os campos escalares da barra.**
+  //
+  // Medido pelo QA em 26/08: o modal e multi-selecao (marcar Brasil E Mexico),
+  // e a barra e de um valor so (`regiao?: string`). Mandar lista num campo
+  // escalar dava **400** em 7 das 22 secoes, e o erro voltava para a tela como
+  // "filtros indisponiveis" — o defeito se disfarcava de motor fora do ar.
+  //
+  // E nao e so cardinalidade: `employment_types` da barra tem `@IsIn` com
+  // `clt, pj, contractor, freelance` (vocabulario de contrato brasileiro), e a
+  // faceta do freehire fala `full_time, contract, internship`. Sao listas
+  // diferentes com o mesmo nome — reusar o campo faria uma validar a outra.
+  //
+  // Por isso cada eixo do modal tem campo proprio, no plural, sem `@IsIn`.
+
+  /** Regioes do modal. Multi, ao contrario de `regiao` — ver a nota acima. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  regions?: string[];
+
+  /** Regimes do modal (`work_mode`). Multi, ao contrario de `remote`. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5)
+  @IsString({ each: true })
+  @MaxLength(20, { each: true })
+  work_modes?: string[];
+
+  /** Senioridades do modal. Multi, ao contrario de `seniority`. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(20, { each: true })
+  seniorities?: string[];
+
+  /** Moedas do modal. Multi, ao contrario de `currency`. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(3, { each: true })
+  currencies?: string[];
+
+  /**
+   * Contratos no vocabulario do freehire (`full_time`, `contract`).
+   *
+   * Separado de `employment_types`, que e o vocabulario brasileiro da barra.
+   */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  @MaxLength(30, { each: true })
+  employment_kinds?: string[];
+
+  /**
+   * Patrocinio de visto, como lista.
+   *
+   * `['true']` / `['false']`, e nao booleano: o chip e um valor da faceta como
+   * qualquer outro, e tratar este eixo diferente dos vizinhos era o que fazia
+   * o modal mandar `visa_sponsorship: ['false']` num campo booleano.
+   */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(2)
+  @IsString({ each: true })
+  @MaxLength(10, { each: true })
+  visa_sponsorships?: string[];
+
+  /** Foco de IA (`ai_archetype`). Vocabulario proprio, nao e `domains`. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(60, { each: true })
+  ai_archetypes?: string[];
+
+  /** Fontes a INCLUIR (`source`). O par de `sources_exclude`. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  sources?: string[];
+
+  /** Cargos canonicos (`role`). Nao confundir com `job_titles`, que e texto livre. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(60, { each: true })
+  roles?: string[];
+
+  /** Familia do cargo (`category`): backend, frontend, devops… */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(60, { each: true })
+  categories?: string[];
+
+  /** Paises, ISO-3166 alpha-2 minusculo. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(2, { each: true })
+  countries?: string[];
+
+  /** Cidades, pelo nome de exibicao que a faceta usa. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(80, { each: true })
+  cities?: string[];
+
+  /** Porte da empresa (`company_size`): `1-10`, `11-50`, `1000+`… */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(20, { each: true })
+  company_sizes?: string[];
+
+  /** Tipo de empresa (`company_type`): product, outsource, startup… */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(30, { each: true })
+  company_types?: string[];
+
+  /** Setor (`domains`): fintech, devtools, healthcare… */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  domains?: string[];
+
+  /** Listas curadas (`collections`): yc, unicorn, fortune500… */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  collections?: string[];
+
+  /** Nivel de ingles exigido (`english_level`): a2, b1, b2, c1, c2, native. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  @MaxLength(10, { each: true })
+  english_levels?: string[];
+
+  /** Idioma do anuncio (`posting_language`), ISO-639-1. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(10, { each: true })
+  posting_languages?: string[];
+
+  /** Escolaridade (`education_level`): none, bachelor, master, phd. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(6)
+  @IsString({ each: true })
+  @MaxLength(20, { each: true })
+  education_levels?: string[];
+
+  /** Mudanca de pais (`relocation`): not_supported, supported, required. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(3)
+  @IsString({ each: true })
+  @MaxLength(20, { each: true })
+  relocation?: string[];
+
+  /**
+   * Frescor do anuncio (`reality`): fresh, stale, likely.
+   *
+   * O nome da faceta e deles e diz mais que "data de publicacao": marca vaga
+   * que provavelmente ainda esta aberta contra a que so nao foi removida.
+   */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(3)
+  @IsString({ each: true })
+  @MaxLength(20, { each: true })
+  reality?: string[];
+
+  /** A vaga patrocina visto? `true`/`false` da faceta `visa_sponsorship`. */
+  @IsOptional()
+  @IsBoolean()
+  visa_sponsorship?: boolean;
+
+  /** Anos de experiencia pedidos, piso e teto. */
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  experience_years_min?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  experience_years_max?: number;
+
+  // ————— As exclusoes —————
+  //
+  // **O terceiro estado do chip.** A referencia cicla off → incluir →
+  // excluir → off, e a API sustenta: `<facet>_exclude` vale para toda faceta
+  // de texto, conforme a spec deles e medido em 26/08 (`skills_exclude=python`
+  // levou 14.976 para 9.530).
+  //
+  // Sao campos SEPARADOS, e nao um valor com prefixo `-` dentro da mesma
+  // lista: prefixo obrigaria a inventar escape para o valor que comeca com
+  // hifen, e um dia haveria uma skill assim.
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  skills_exclude?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(2, { each: true })
+  countries_exclude?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  regions_exclude?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5)
+  @IsString({ each: true })
+  @MaxLength(20, { each: true })
+  work_mode_exclude?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(30, { each: true })
+  company_types_exclude?: string[];
+
+  /** Excluir vaga vinda de uma fonte (`source`) — "nao confio nesse board". */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  sources_exclude?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(60, { each: true })
+  roles_exclude?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(60, { each: true })
+  categories_exclude?: string[];
 }
 
 /**
@@ -477,4 +774,56 @@ export interface VagaMarcadaDto {
 export interface HistoricoDto {
   vistas: string[];
   descartadas: VagaMarcadaDto[];
+}
+
+
+/**
+ * Guardar uma busca do modal (JOB-41).
+ *
+ * `filtros` e objeto livre e nao um `FiltrosDto` aninhado: o que se guarda e o
+ * que a tela montou, e ele volta pela rota de busca — onde o `ValidationPipe`
+ * o valida de verdade. Validar aqui tambem faria a mesma regra existir em dois
+ * lugares, e elas divergiriam.
+ */
+export class SalvarBuscaDto {
+  // **`Transform` antes de `IsNotEmpty`**: sem ele, `"   "` passa na validacao
+  // e e gravado como string vazia (QA, 26/08) — a busca vira uma linha sem
+  // texto clicavel, so com o botao de apagar, e o `aria-label` fica truncado
+  // em "Delete saved filter ". O trim aqui deixa `IsNotEmpty` ver o que
+  // sobrou, e nao o que foi digitado.
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(80)
+  nome!: string;
+
+  @IsOptional()
+  @IsObject()
+  filtros?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsBoolean()
+  porEmail?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  porTelegram?: boolean;
+}
+
+/** Ligar ou desligar os canais de alerta de uma busca salva. */
+export class CanaisDaBuscaDto {
+  @IsBoolean()
+  porEmail!: boolean;
+
+  @IsBoolean()
+  porTelegram!: boolean;
+}
+
+export interface BuscaSalvaDto {
+  id: string;
+  nome: string;
+  filtros: Record<string, unknown>;
+  porEmail: boolean;
+  porTelegram: boolean;
+  createdAt: string;
 }

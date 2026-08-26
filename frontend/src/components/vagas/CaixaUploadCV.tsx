@@ -187,18 +187,20 @@ export function CaixaUploadCV({
             </>
           ) : (
             <>
-          Read <strong className="font-semibold">{nome}</strong> — we ticked{' '}
+          {/*
+            **A mensagem diz ONDE os filtros ficaram** (26/08).
+
+            Antes dizia "Uncheck anything we got wrong" e mostrava um selo
+            "CV" — os dois pertenciam aos dropdowns, que saíram. O QA mediu o
+            resultado: a caixa instruía uma ação que não existia mais, e os
+            valores viajavam invisíveis em toda busca. Agora eles vão para o
+            modal, e a frase aponta para lá.
+          */}
+          Read <strong className="font-semibold">{nome}</strong> — we set{' '}
           <strong className="font-semibold">
             {filtrosMarcados} {filtrosMarcados === 1 ? 'filter' : 'filters'}
-          </strong>{' '}
-          marked{' '}
-          <span
-            className="rounded-full border px-1.5 text-xs font-semibold"
-            style={{ color: 'var(--accent-ink)', borderColor: 'var(--accent-ink)' }}
-          >
-            CV
-          </span>
-          . Uncheck anything we got wrong.
+          </strong>
+          . Review them under <strong className="font-semibold">All filters</strong>.
             </>
           )}
         </p>
@@ -282,8 +284,11 @@ export function CaixaUploadCV({
             <strong className="font-semibold" style={{ color: 'var(--text)' }}>
               Start from your résumé
             </strong>{' '}
-            — optional. We read it and tick the filters below for you, all
-            editable.
+            {/* "the filters below" apontava para os dropdowns, que saíram em
+                26/08. Agora os valores vão para "All filters", onde a pessoa
+                de fato consegue vê-los e desmarcá-los. */}
+            — optional. We read it and set your filters for you — review them
+            under "All filters".
           </p>
         )}
       </div>

@@ -697,6 +697,78 @@
       "total": 0
     },
     {
+      "id": "JOB-39",
+      "titulo": "O currículo não preenche mais os filtros",
+      "estado": "aberto (26/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "P",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-39",
+      "titulo": "freehire.me como primeiro motor de busca",
+      "estado": "feito (26/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-40",
+      "titulo": "O catálogo aprende com o freehire",
+      "estado": "aberto (26/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "O [JOB-39](JOB-39-freehire-como-motor-de-busca.md) ligou o freehire e ele virou o primeiro motor da busca. Resolveu o problema de hoje e criou um de amanhã: a melhor fonte de vagas do produto agora é o servidor de outra ",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-41",
+      "titulo": "Modal de filtros avançados, com contagem ao vivo e buscas salvas",
+      "estado": "feito (26/08/2026)",
+      "coluna": "feito",
+      "tamanho": "G",
+      "porque": "A barra de filtros de hoje tem 8 dropdowns de valores fixos. O catálogo de cada eixo é escrito à mão em vaga-filtro.ts e não sabe nada sobre o que existe de fato: \"Brazil\" aparece igual quando há 16.780 vagas e quando há",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-42",
+      "titulo": "A busca salva dispara alerta",
+      "estado": "aberto (26/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "O [JOB-41](JOB-41-modal-de-filtros-avancados.md) entregou as buscas salvas: dá para montar um filtro no modal, nomeá-lo e guardá-lo. O modelo SavedSearch já tem porEmail, porTelegram e avisadoEm, e a tela liga e desliga ",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-43",
+      "titulo": "A barra de busca do topo",
+      "estado": "feito (26/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",

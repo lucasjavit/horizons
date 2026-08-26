@@ -109,6 +109,19 @@ const FIRECRAWL_ATIVO = 'jobs.buscaVagas';
 const ATS_ATIVO = 'jobs.ats';
 
 /**
+ * O motor do freehire (JOB-39), ligado por padrao.
+ *
+ * Mesma regra do ATS: a API e publica e sem chave, entao nao ha segredo a
+ * proteger nem credito a gastar, e o default e LIGADO.
+ *
+ * O interruptor existe por outro motivo — **este motor e o unico que depende
+ * de um servico de terceiro sem contrato**. Gratis, sem SLA: pode fechar,
+ * cobrar ou mudar o schema sem aviso. Desligar precisa ser um gesto, e nao um
+ * deploy.
+ */
+const FREEHIRE_ATIVO = 'jobs.freehire';
+
+/**
  * A busca que roda sozinha a cada 50 min.
  *
  * Default DESLIGADO, ao contrario do ATS: ela gasta sem ninguem pedir, e o
@@ -180,6 +193,15 @@ export interface RecursosDto {
    * linha no banco significa ligado, ao contrario das outras flags.
    */
   atsAtivo: boolean;
+  /**
+   * O motor do freehire esta ligado (JOB-39).
+   *
+   * Sem dependencia de chave, como o ATS — ausencia de linha significa LIGADO.
+   * E o PRIMEIRO motor da cascata: 60 vagas em 2,6s contra 1-15 em 128s do
+   * ATS (medido em 26/08), e os dois custam R$ 0. O ATS e que virou o
+   * fallback dele.
+   */
+  freehireAtivo: boolean;
   /** A busca automatica esta ligada. Default `false` — ela gasta sozinha. */
   buscaAgendadaAtiva: boolean;
   /**
@@ -279,6 +301,7 @@ export class RecursosService {
       comChaveBusca,
       comChaveExtracao,
       ats,
+      freehire,
       agendada,
       email,
       historico,
@@ -291,6 +314,7 @@ export class RecursosService {
       this.ia.comChave('buscaWeb'),
       this.ia.comChave('estruturada'),
       this.flagLigadaPorPadrao(ATS_ATIVO),
+      this.flagLigadaPorPadrao(FREEHIRE_ATIVO),
       this.flag(BUSCA_AGENDADA),
       this.flag(EMAIL_SEMANAL),
       this.flagLigadaPorPadrao(HISTORICO),
@@ -350,12 +374,14 @@ export class RecursosService {
       // Um motor OU o outro. Firecrawl desligado nao fecha a busca — passa a
       // vez para a IA.
       atsAtivo: ats,
+      freehireAtivo: freehire,
       // So faz sentido ligada se houver motor: sem nenhum, a rodada gasta
       // tempo para nao achar nada.
-      buscaAgendadaAtiva: agendada && (ats || (flagFirecrawl && temFirecrawl) || temChave),
+      buscaAgendadaAtiva:
+        agendada && (ats || freehire || (flagFirecrawl && temFirecrawl) || temChave),
       // O ATS entra na conta: com ele ligado ha busca mesmo sem chave nenhuma
       // cadastrada, que e o ponto de ele nao depender de credencial.
-      buscaPossivel: ats || (flagFirecrawl && temFirecrawl) || temChave,
+      buscaPossivel: ats || freehire || (flagFirecrawl && temFirecrawl) || temChave,
       // A dependencia manda sobre a flag: sem SMTP nao ha entrega, e dizer
       // "ligado" seria prometer o que nao acontece.
       emailAtivo: email && temProvedorDeEmail,
@@ -421,6 +447,17 @@ export class RecursosService {
    */
   async definirDescobertas(ativa: boolean): Promise<RecursosDto> {
     await this.gravar(DESCOBERTAS, ativa);
+    return this.obter();
+  }
+
+  /**
+   * Liga o motor do freehire.
+   *
+   * Sem checagem de dependencia, como o ATS: a API e publica e nao ha chave que
+   * possa faltar.
+   */
+  async definirFreehire(ativa: boolean): Promise<RecursosDto> {
+    await this.gravar(FREEHIRE_ATIVO, ativa);
     return this.obter();
   }
 

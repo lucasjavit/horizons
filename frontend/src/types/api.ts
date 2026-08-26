@@ -241,6 +241,14 @@ export interface Recursos {
   temChaveDeIa: boolean
   /** O motor de ATS está ligado. Não depende de chave — default é ligado. */
   atsAtivo: boolean
+  /**
+   * O motor do freehire está ligado (JOB-39).
+   *
+   * É o PRIMEIRO da cascata: 60 vagas em 2,6s contra 1–15 em 128s do ATS
+   * (medido em 26/08). O ATS é que virou o fallback dele. Não depende de
+   * chave — default é ligado.
+   */
+  freehireAtivo: boolean
   /** A busca roda sozinha a cada 50 min. Default `false` — gasta sem pedir. */
   buscaAgendadaAtiva: boolean
   /**
@@ -551,4 +559,47 @@ export interface HostDescoberto {
   exemploUrl: string
   /** Quando foi verificado pela última vez, ISO. `null` = nunca. */
   checkedAt: string | null
+}
+
+
+// ————————————————————————————————————————————————————————————————
+// O modal de filtros avançados (JOB-41)
+// ————————————————————————————————————————————————————————————————
+
+/** Uma opção dentro de uma categoria, com quantas vagas ela tem. */
+export interface OpcaoFaceta {
+  /** O valor canônico, como a API o escreve (`software_engineering`). */
+  valor: string
+  /**
+   * Quantas vagas casam, com os OUTROS filtros já aplicados.
+   *
+   * `null` no valor que a tela reinjetou por estar selecionado mas ausente da
+   * faceta — o caso do chip excluído, que sai do resultado por definição. Não
+   * sabemos o número dele, e inventar um seria pior que omitir.
+   */
+  total: number | null
+}
+
+/**
+ * As contagens que alimentam o modal.
+ *
+ * `disponivel: false` não é erro — é "o motor que sustenta isto está fora". A
+ * tela ESCONDE as categorias que dependiam dele, em vez de mostrá-las mortas:
+ * filtro que não filtra é pior que filtro ausente.
+ */
+export interface Facetas {
+  disponivel: boolean
+  /** O número do botão `Show N jobs`. `null` quando indisponível. */
+  total: number | null
+  facetas: Record<string, OpcaoFaceta[]>
+}
+
+/** Uma busca guardada, com os filtros e os canais de alerta. */
+export interface BuscaSalva {
+  id: string
+  nome: string
+  filtros: Record<string, unknown>
+  porEmail: boolean
+  porTelegram: boolean
+  createdAt: string
 }
