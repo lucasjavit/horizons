@@ -49,6 +49,18 @@
       "total": 0
     },
     {
+      "id": "APP-03",
+      "titulo": "Revisar motion effects e referências de interface",
+      "estado": "aberto (26/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "P (só a revisão; o que ela gerar vira card próprio)",
+      "porque": "O app hoje é estático: nada anima, nada responde ao ponteiro além do hover de cor. Isso é barato de manter e nunca atrapalha, mas também não ajuda em nada — não indica que algo carregou, não mostra que uma vaga entrou na",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "INV-01",
       "titulo": "Quantidade negativa gera invoice com total negativo",
       "estado": "feito (12/08/2026)",
@@ -627,8 +639,8 @@
     {
       "id": "JOB-34",
       "titulo": "Separar o scrape da extração no `lerVaga`",
-      "estado": "avaliado, não implementado (25/08/2026) — falta uma medição de 2 páginas",
-      "coluna": "backlog",
+      "estado": "feito (26/08/2026)",
+      "coluna": "feito",
       "tamanho": "M",
       "porque": "",
       "decisao": "",
@@ -664,6 +676,18 @@
       "id": "JOB-37",
       "titulo": "O catálogo aprende com o que a busca encontra",
       "estado": "feito (25/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-38",
+      "titulo": "`SCHEMA_VAGA` é rejeitado pela OpenAI e pela Anthropic",
+      "estado": "feito (26/08/2026)",
       "coluna": "feito",
       "tamanho": "M",
       "porque": "",

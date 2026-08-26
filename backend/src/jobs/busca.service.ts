@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiProvider } from '@prisma/client';
 import { Firecrawl } from 'firecrawl';
 import { PrismaService } from '../prisma/prisma.service';
+import { IaService } from '../ia/ia.service';
 import { BuscaIaService, FalhaDaIa } from './busca-ia.service';
 import { BuscaAtsService } from './busca-ats.service';
 import { DescobertasService } from './descobertas.service';
@@ -31,9 +32,10 @@ const SCHEMA_VAGA = {
     local: { type: ['string', 'null'] },
     paisIso: { type: ['string', 'null'], description: 'ISO-3166 alpha-2 minusculo. null se nao der para dizer.' },
     // `anyOf` em vez de `type:['string','null']` com `null` no enum: a
-    // Anthropic recusa aquela forma com 400 (JOB-35). Este schema vai hoje
-    // para o Firecrawl, mas o JOB-34 avalia passa-lo pela cadeia — e a forma
-    // canonica e a que mais provedores aceitam.
+    // Anthropic recusa aquela forma com 400 (JOB-35). Desde o JOB-34 este
+    // schema vai para a CADEIA, e nao mais para o Firecrawl — entao o que vale
+    // e a forma que o maior numero dos seis provedores aceita, e nao a que um
+    // deles prefere.
     regime: {
       anyOf: [{ type: 'string', enum: ['remoto', 'hibrido', 'presencial'] }, { type: 'null' }],
     },
@@ -71,7 +73,37 @@ const SCHEMA_VAGA = {
       description: 'Data de publicacao em ISO 8601 (2026-08-15). null se a pagina nao disser.',
     },
   },
-  required: ['title', 'company', 'skills', 'ehVaga', 'estaFechada', 'ehListagem'],
+  // **As 21 chaves, e nao so as 6 obrigatorias de verdade.**
+  //
+  // A OpenAI com `strict: true` exige que `required` liste TODAS as chaves de
+  // `properties` — "Missing 'area'", medido em 26/08 (JOB-38). O schema nao
+  // muda de significado: todo campo opcional ja aceita `null` no `type`, entao
+  // "obrigatorio" aqui quer dizer "sempre presente na resposta", nao "sempre
+  // preenchido". O modelo continua autorizado a devolver `null` — que e o que
+  // o JOB-09 exige: campo ausente permanece ausente.
+  required: [
+    'title',
+    'company',
+    'area',
+    'anosExp',
+    'skills',
+    'benefits',
+    'degree',
+    'local',
+    'paisIso',
+    'regime',
+    'salaryMin',
+    'salaryMax',
+    'currency',
+    'salaryTrecho',
+    'elegivelBrasil',
+    'elegibilidadeTrecho',
+    'ehVaga',
+    'estaFechada',
+    'ehListagem',
+    'applicationUrl',
+    'postedAt',
+  ],
   additionalProperties: false,
 } as const;
 
@@ -146,6 +178,11 @@ export class BuscaService {
     private readonly recursos: RecursosService,
     private readonly ats: BuscaAtsService,
     private readonly descobertas: DescobertasService,
+    // A cadeia do JOB-33, e nao o `BuscaIaService` logo acima: aquele BUSCA
+    // vagas na web, este EXTRAI de um texto ja lido. Sao capacidades
+    // diferentes (`buscaWeb` contra `estruturada`) e listas de provedores
+    // diferentes — dai os dois nomes.
+    private readonly cadeiaDeIa: IaService,
   ) {}
 
   async *buscar(filtros: FiltrosDto): AsyncGenerator<EventoBusca> {
@@ -272,7 +309,7 @@ export class BuscaService {
       const lote = alvo.slice(i, i + LOTE);
       const prontas = await Promise.all(
         lote.map((url) =>
-          this.lerVaga(fc, url).catch((e) => {
+          this.lerVaga(fc, url, ordemDaIa).catch((e) => {
             // Antes o erro morria num `.catch(() => null)` mudo, e a busca
             // voltava vazia sem nada no log — foi o que escondeu o rate limit.
             this.log.warn(`scrape falhou (${url}): ${String(e).slice(0, 160)}`);
@@ -288,16 +325,62 @@ export class BuscaService {
     yield { tipo: 'fim' };
   }
 
-  /** Abre uma pagina e extrai a vaga. `null` quando nao da para aproveitar. */
-  private async lerVaga(fc: Firecrawl, url: string): Promise<VagaDto | null> {
+  /**
+   * Abre uma pagina e extrai a vaga. `null` quando nao da para aproveitar.
+   *
+   * **Duas chamadas, cada uma fazendo uma coisa** (JOB-34). Antes, um unico
+   * `scrape` com `formats: [{type:'json'}]` fazia leitura E extracao dentro do
+   * Firecrawl. Separar paga em tres moedas, todas medidas em 26/08/2026:
+   *
+   * - **Custo:** o `json` cobra **5 creditos**; o `markdown`, **1**. Medido pelo
+   *   `getCreditUsage()` antes e depois de cada chamada, nas duas paginas: 1125
+   *   → 1120 → 1119 e 1119 → 1114 → 1113. Cinco vezes mais barato por pagina.
+   * - **Resiliencia:** a extracao passa a ter os seis provedores da cadeia
+   *   (JOB-33) atras dela. Antes, credito do Firecrawl no fim significava
+   *   extracao parada.
+   * - **Verificabilidade:** com o markdown em maos da para EXIGIR que o trecho
+   *   de origem exista no texto lido (`trechoCitavel`). Sem a pagina, o trecho
+   *   era uma alegacao sobre um texto que nao tinhamos.
+   *
+   * O `INSTRUCAO` e o `SCHEMA_VAGA` nao mudaram — sempre foram nossos; so quem
+   * roda o modelo mudou.
+   */
+  private async lerVaga(
+    fc: Firecrawl,
+    url: string,
+    ordem: readonly ApiProvider[],
+  ): Promise<VagaDto | null> {
+    // 1. O Firecrawl entrega so o texto.
     const doc = await fc.scrape(url, {
-      formats: [{ type: 'json', prompt: INSTRUCAO, schema: SCHEMA_VAGA }],
+      formats: ['markdown'],
       onlyMainContent: true,
       timeout: 45_000,
     });
+    const markdown = doc.markdown;
+    if (!markdown?.trim()) return null;
 
-    const j = (doc as { json?: Record<string, unknown> }).json;
-    if (!j) return null;
+    // 2. A extracao passa pela cadeia.
+    let j: Record<string, unknown>;
+    try {
+      const bruto = await this.cadeiaDeIa.pedir('estruturada', ordem, {
+        instrucao: INSTRUCAO,
+        entrada: markdown,
+        schema: SCHEMA_VAGA,
+        nomeDoSchema: 'vaga',
+        // 4000 e o teto do `maxOutputTokens` medido no Gemini para este schema:
+        // 21 campos, com `skills` e `benefits` como listas abertas. Apertar
+        // devolveria JSON cortado, que e `JSON.parse` quebrado — nao campo
+        // faltando.
+        maxTokens: 4000,
+      });
+      j = JSON.parse(bruto) as Record<string, unknown>;
+    } catch (e) {
+      // Uma pagina que a cadeia nao leu nao derruba a busca: as outras sete do
+      // lote seguem. O `warn` nomeia a URL porque, sem ela, "cadeia esgotada"
+      // no log nao diz em qual das oito paginas isso aconteceu.
+      this.log.warn(`extracao falhou (${url}): ${String(e).slice(0, 200)}`);
+      return null;
+    }
 
     // Pagina de listagem nao vira vaga. O schema e de UM objeto, entao sem
     // isto o modelo e forcado a inventar uma vaga a partir de N: medido pelo
@@ -331,8 +414,15 @@ export class BuscaService {
 
     const iso = texto(j.paisIso)?.toLowerCase();
 
-    // O salario so passa se o trecho de origem sustentar o numero.
-    const trechoSal = texto(j.salaryTrecho);
+    // O salario so passa se o trecho de origem sustentar o numero — e o trecho
+    // so vale se ele existir mesmo na pagina lida.
+    const trechoSal = trechoCitavel(
+      texto(j.salaryTrecho),
+      markdown,
+      url,
+      'salaryTrecho',
+      this.log,
+    );
     const min = salario(j.salaryMin);
     const max = salario(j.salaryMax);
     const minOk = salarioConfere(min, trechoSal);
@@ -374,7 +464,7 @@ export class BuscaService {
       // falou de contratacao no Brasil, e mesmo assim a tela dizia a alguem
       // que aquela empresa nao o contrataria. Sem trecho, o campo e `null`, e
       // `null` a tela ja sabe mostrar como "nao informado".
-      ...elegibilidade(j),
+      ...elegibilidade(j, markdown, url, this.log),
       postedAt: dataIso(j.postedAt),
       foundAt: new Date().toISOString(),
     };
@@ -498,17 +588,110 @@ const NAO_E_CITACAO =
   /^(nao|não|not)\s+(mencionad|informad|especificad|stated|specified|mentioned)|^(n\/?a|none|unknown|desconhecid)/i;
 
 /**
+ * O trecho de origem existe mesmo na pagina, ou o modelo o escreveu?
+ *
+ * O `salaryTrecho` nasceu no JOB-09 para ser **conferivel**: a promessa e "este
+ * numero saiu deste texto, procure voce mesmo". Ate o JOB-34 essa promessa era
+ * indemonstravel — o Firecrawl devolvia o trecho sem devolver a pagina, entao
+ * nao havia contra o que conferir. Com o markdown em maos, ha.
+ *
+ * **Compara so os caracteres que significam: sem espaco e sem marcador de
+ * enfase.** Nao e frouxidao, e a unica forma de a checagem medir o que se
+ * quer medir. Medido em 26/08/2026 numa busca real: a vaga da DuckDuckGo
+ * publica o salario como
+ *
+ * ```
+ * **$** _**178,500**_ **USD annually**
+ * ```
+ *
+ * O modelo citou `"$178,500 USD annually"` — a prosa, sem os asteriscos, que e
+ * a unica forma util de citar. Uma primeira versao desta funcao, que so
+ * colapsava espaco, REPROVOU esse trecho e jogou fora um salario verdadeiro.
+ * O `$ 178,500` com espaco no meio nao vem do modelo: esta no markdown, entre
+ * os marcadores.
+ *
+ * O que NAO se normaliza e o que sustenta o filtro: letra, numero e pontuacao
+ * ficam como estao. Verificado contra o markdown real das paginas medidas —
+ * os trechos legitimos da DuckDuckGo, do GitLab e da Assured passam, e
+ * continuam reprovando: rotulo inventado ("Compensation Range:" numa pagina
+ * que so tem o bullet), parafrase, numero trocado, frase fabricada, e a
+ * COLAGEM de dois pontos distantes da pagina ("Annual Compensation $178,500
+ * USD annually", que junta o rotulo de um bloco com a prosa de outro).
+ */
+function normalizarParaCitacao(s: string): string {
+  return (
+    s
+      // Tracos e aspas: `–` (en dash), `—` (em dash) e `−` (minus) aparecem
+      // no MESMO valor conforme quem renderizou; aspas curvas, idem. Escritos
+      // como escape de proposito — um traco unicode literal no fonte e
+      // indistinguivel de um hifen na revisao.
+      .replace(/[\u2010-\u2015\u2212]/g, '-')
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201c\u201d]/g, '"')
+      // Barra de escape do markdown: o Firecrawl escreve `$117,600 \- $252,000`
+      // para o hifen nao virar lista. Medido em 26/08 na vaga do GitLab — o
+      // trecho era legitimo e caiu so por causa da barra.
+      .replace(/\\([-\\*_`~[\]().#+!>])/g, '$1')
+      // Marcador de enfase do markdown, e todo espaco. Um deles sem o outro nao
+      // resolve o caso da DuckDuckGo: tirar `**` de `**$** _**178,500**_` ainda
+      // deixa `$ 178,500`, com o espaco que sobrou entre os marcadores.
+      .replace(/[*_`~]+/g, '')
+      .replace(/\s+/g, '')
+      .toLowerCase()
+  );
+}
+
+/**
+ * O trecho, se ele estiver no texto lido. `null` se o modelo o inventou.
+ *
+ * Descartar e a escolha certa no lugar de "mostrar mesmo assim": um trecho que
+ * nao esta na pagina e pior que trecho nenhum, porque convida quem le a
+ * procurar por uma frase que nao existe e concluir que a vaga mudou.
+ *
+ * O `warn` e o instrumento: e por ele que se mede quantos caem, e a mudanca de
+ * volume no log e o que avisaria se um provedor da cadeia comecasse a
+ * parafrasear.
+ */
+function trechoCitavel(
+  trecho: string | null,
+  pagina: string,
+  url: string,
+  campo: string,
+  log: Logger,
+): string | null {
+  if (!trecho) return null;
+  if (normalizarParaCitacao(pagina).includes(normalizarParaCitacao(trecho))) {
+    return trecho;
+  }
+  log.warn(
+    `${campo} descartado (${url}): nao e texto da pagina — ${JSON.stringify(trecho).slice(0, 120)}`,
+  );
+  return null;
+}
+
+/**
  * O par elegibilidade + trecho, resolvido junto.
  *
  * Os dois campos nao sao independentes: um `false` sem citacao e uma acusacao
  * sem fonte. Decidi-los no mesmo lugar impede que um mude sem o outro.
  */
-function elegibilidade(j: Record<string, unknown>): {
+function elegibilidade(
+  j: Record<string, unknown>,
+  pagina: string,
+  url: string,
+  log: Logger,
+): {
   paisesElegiveis: string[] | null;
   elegivelGlobal: boolean;
   elegibilidadeTrecho: string | null;
 } {
-  const trecho = texto(j.elegibilidadeTrecho);
+  const trecho = trechoCitavel(
+    texto(j.elegibilidadeTrecho),
+    pagina,
+    url,
+    'elegibilidadeTrecho',
+    log,
+  );
   const citacao = trecho && !NAO_E_CITACAO.test(trecho.trim()) ? trecho : null;
   const afirmado = typeof j.elegivelBrasil === 'boolean' ? j.elegivelBrasil : null;
   // Sem citacao nao ha afirmacao — nem a positiva. Dizer "aceita brasileiro"
@@ -516,7 +699,7 @@ function elegibilidade(j: Record<string, unknown>): {
   if (citacao === null) {
     return { paisesElegiveis: null, elegivelGlobal: false, elegibilidadeTrecho: null };
   }
-  // O prompt do Firecrawl ainda devolve um booleano ("aceita quem mora no
+  // O SCHEMA_VAGA ainda pede um booleano ("aceita quem mora no
   // Brasil?"). Ate ele ser reescrito, a resposta positiva vira a lista com o
   // pais que a pergunta assumia — e a negativa nao afirma nada, porque
   // "nao aceita brasileiro" nao diz de onde ACEITA.
