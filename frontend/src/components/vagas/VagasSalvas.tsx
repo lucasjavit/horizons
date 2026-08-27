@@ -1,13 +1,12 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { AxiosError } from 'axios'
-import { EmptyState, ErrorState, LoadingState } from '../components/States'
-import { WARN_INK } from '../components/blocks/BlockRenderer'
-import { LinhaVaga } from '../components/vagas/LinhaVaga'
-import { POR_PAGINA, Paginacao } from '../components/vagas/Paginacao'
-import { api } from '../lib/api'
-import { useAsync } from '../lib/useAsync'
-import { useDocumentTitle } from '../lib/useDocumentTitle'
-import type { Vaga } from '../types/api'
+import { EmptyState, ErrorState, LoadingState } from '../States'
+import { WARN_INK } from '../blocks/BlockRenderer'
+import { LinhaVaga } from '../vagas/LinhaVaga'
+import { POR_PAGINA, Paginacao } from '../vagas/Paginacao'
+import { api } from '../../lib/api'
+import { useAsync } from '../../lib/useAsync'
+import type { Vaga } from '../../types/api'
 
 /**
  * As vagas que a pessoa guardou.
@@ -21,8 +20,18 @@ import type { Vaga } from '../types/api'
  * vivo. A vaga sai do ar em semanas; o snapshot é o que sobrevive, com o
  * trecho de salário e elegibilidade que a torna conferível (JOB-09).
  */
-export function SalvasPage() {
-  useDocumentTitle('Saved jobs')
+/**
+ * As vagas salvas, como VISÃO dentro da tela de Jobs (26/08).
+ *
+ * Era uma aba própria (`Saved`, ao lado de Jobs) e uma página inteira. Virou
+ * uma visão porque buscar e reler o que se guardou acontecem no mesmo lugar:
+ * a estrela da barra alterna entre as duas listas, e a barra, os filtros e a
+ * paginação continuam onde estavam.
+ *
+ * A rota `/salvas` continua existindo — links antigos e o menu levam a ela —,
+ * e ela renderiza a tela de Jobs já nesta visão.
+ */
+export function VagasSalvas() {
   const { data, loading, error, reload } = useAsync(
     (signal) => api.listarSalvas(signal),
     [],
@@ -75,16 +84,18 @@ export function SalvasPage() {
   const visiveis = todas.slice((atual - 1) * POR_PAGINA, atual * POR_PAGINA)
 
   return (
-    <main id="conteudo" tabIndex={-1} className="mx-auto max-w-4xl px-4 py-8">
-      <h1
+    <div className="flex flex-col gap-2">
+      {/* `tabIndex={-1}` porque o foco vem para cá quando uma linha some —
+          senão cairia no `<body>` e o Tab recomeçaria do topo da página. */}
+      <h2
         ref={tituloRef}
         tabIndex={-1}
-        className="text-2xl font-semibold"
+        className="text-lg font-semibold"
         style={{ color: 'var(--text)' }}
       >
         Saved jobs
-      </h1>
-      <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+      </h2>
+      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
         These stay here for good — even after the original posting goes offline.
       </p>
 
@@ -149,6 +160,6 @@ export function SalvasPage() {
           )}
         </>
       )}
-    </main>
+    </div>
   )
 }

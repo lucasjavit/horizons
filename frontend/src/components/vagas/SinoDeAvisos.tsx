@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import { usePopover } from '../../lib/usePopover'
+import { HintWrap } from '../Hint'
+import { BOTAO_ICONE } from './BarraDeBusca'
 
 /**
  * O sino de notificações da barra de busca.
@@ -22,6 +24,12 @@ export function SinoDeAvisos() {
 
   return (
     <div ref={caixa} className="relative">
+      <HintWrap
+        title="Notifications"
+        align="left"
+        texto="Alerts about new jobs. Set up email and Telegram in Settings."
+        suprimido={aberto}
+      >
       <button
         ref={gatilho}
         type="button"
@@ -29,11 +37,12 @@ export function SinoDeAvisos() {
         aria-expanded={aberto}
         aria-haspopup="dialog"
         aria-label="Notifications"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md"
+        className={`h-9 w-9 ${BOTAO_ICONE}`}
         style={{ color: 'var(--text-muted)' }}
       >
         <BellIcon />
       </button>
+      </HintWrap>
 
       {aberto && (
         <div

@@ -8,6 +8,8 @@ import { api, errorMessage } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import type { Recursos } from '../types/api'
+import { AssinaturaEmail } from '../components/vagas/AssinaturaEmail'
+import { AssinaturaTelegram } from '../components/vagas/AssinaturaTelegram'
 
 /**
  * Notificações: o e-mail semanal, as métricas e o Telegram.
@@ -59,6 +61,25 @@ export function ConfigNotificacoesPage() {
           the numbers that say whether either is working.
         </p>
       </header>
+
+      {/*
+        **As assinaturas ficam ANTES dos controles de admin, e fora deles.**
+
+        Elas são pessoais — cada conta tem a sua cadência e o seu Telegram —,
+        e as rotas por trás (`minhaAssinatura`, `definirCadencia`,
+        `telegramStatus`) não são `@AdminOnly()`, ao contrário de `metricas` e
+        `rodar` mais abaixo. Aninhá-las num bloco de admin as esconderia de
+        quem não é, que é justamente quem as usa.
+
+        Vieram da tela de vagas (26/08): lá ocupavam o rodapé de quem estava
+        buscando, e configurar como o aviso chega é decisão de outro momento.
+      */}
+      <div className="mb-6 flex flex-col gap-4">
+        <AssinaturaEmail />
+        {/* Depois do e-mail, e não antes: o Telegram é o canal adicional
+            (decisão de produto do JOB-32), e a ordem na tela diz isso. */}
+        <AssinaturaTelegram />
+      </div>
 
       {recursos.loading && <LoadingState label="Loading…" />}
       {recursos.error && (

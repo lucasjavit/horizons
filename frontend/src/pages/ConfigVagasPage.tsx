@@ -120,6 +120,27 @@ export function ConfigVagasPage() {
                 ajudaSemChave=""
               />
 
+              {/*
+                Logo abaixo do freehire porque e uma propriedade DELE: e o
+                unico motor que sabe paginar. Longe dali, o interruptor
+                pareceria valer para a busca inteira.
+              */}
+              <Interruptor
+                id="paginacao"
+                titulo="Load more jobs on demand"
+                ligado={data.paginacaoAtiva}
+                // Sem dependência: é a mesma API pública do freehire, que já
+                // tem o interruptor dele logo acima.
+                temDependencia
+                salvando={salvando}
+                onAlternar={() =>
+                  void alternar(api.definirPaginacao, data.paginacaoAtiva)
+                }
+                ajudaLigada="A search returns 60 jobs and keeps the rest waiting. When someone reaches the last page, a Load more button fetches the next 60 from where the previous batch stopped, up to 300 per search — the results are cached for 10 minutes so nothing is fetched twice. Only the freehire catalogue can do this; the other engines already return everything at once."
+                ajudaDesligada="Turned off, a search returns its 60 jobs and stops there, even when the filter matches thousands."
+                ajudaSemChave=""
+              />
+
               <Interruptor
                 id="motor-ats"
                 titulo="Search ATS directly"

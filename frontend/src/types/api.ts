@@ -270,6 +270,8 @@ export interface Recursos {
    * Sem dependência, como o ATS: as APIs são públicas. Default `true`.
    */
   descobertasAtivas: boolean
+  /** A paginacao sob demanda da busca (JOB-45). Default ligado. */
+  paginacaoAtiva: boolean
   /** O Firecrawl está ligado e utilizável. Desligado = busca pela IA. */
   firecrawlAtivo: boolean
   /** Há ao menos um motor de busca utilizável. */
@@ -602,4 +604,22 @@ export interface BuscaSalva {
   porEmail: boolean
   porTelegram: boolean
   createdAt: string
+}
+
+/**
+ * A resposta de `POST /jobs/search/mais` (JOB-45).
+ *
+ * Espelha `MaisVagasDto` do backend — `busca.service.ts`. Mudou um lado, mude
+ * o outro.
+ */
+export interface MaisVagas {
+  vagas: Vaga[]
+  temMais: boolean
+  /** `teto` = o nosso limite de 300; `fim` = o filtro acabou; `null` = ha mais. */
+  motivo: 'teto' | 'fim' | null
+  /** Quantas ja foram entregues nesta sessao, somando todas as páginas. */
+  entregues: number
+  totalNoFiltro: number | null
+  /** A sessão venceu (10 min) ou é de outra instância: a tela refaz a busca. */
+  expirada: boolean
 }

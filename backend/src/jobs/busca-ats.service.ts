@@ -167,9 +167,18 @@ export class BuscaAtsService {
     // As sedes so sao lidas quando o filtro existe — carregar a lista para
     // toda busca seria I/O a toa.
     const sedes = filtros.sede_no_pais ? await this.lerSedes() : null;
-    return this.peneirar(vagas, filtros, sedes, sedePorVaga).map((v) =>
-      comElegibilidade(v),
-    );
+
+    // **A elegibilidade e calculada ANTES da peneira, e a ordem e o bug.**
+    //
+    // Era o contrario: `peneirar(...).map(comElegibilidade)`. O filtro de
+    // regiao le `v.elegivelGlobal` e `v.paisesElegiveis` — e os dois chegavam
+    // como `false`/`null` em TODA vaga, porque quem os preenche rodava depois.
+    //
+    // Medido em 26/08: pedir "Worldwide" devolvia 15 vagas, entre elas Madison
+    // (Wisconsin), New York e Prague, alem de nove sem local nenhum. O filtro
+    // rodava, testava campos vazios e deixava passar — falha silenciosa, do
+    // tipo que nao aparece em log nem em erro.
+    return this.peneirar(vagas.map(comElegibilidade), filtros, sedes, sedePorVaga);
   }
 
   /**
@@ -190,7 +199,7 @@ export class BuscaAtsService {
       if (daquele.length > 0) return daquele.slice(0, TETO_EMPRESAS);
     }
 
-    const querLatam = filtros.regiao === 'latam';
+    const querLatam = regioesPedidas(filtros).includes('latam');
     const ordenadas = querLatam
       ? [...todas].sort((a, b) => b.contrataEm.length - a.contrataEm.length)
       : todas;
@@ -350,7 +359,19 @@ export class BuscaAtsService {
         ? Date.now() - f.posted_within_days * 24 * 60 * 60 * 1000
         : null;
     const excluir = (f.exclude_keywords ?? []).map((s) => s.toLowerCase());
-    const regiao = f.regiao ? TERMOS_DE_REGIAO[f.regiao] : null;
+    // **Todas as regioes pedidas, e nao a primeira.**
+    //
+    // `regions: ['global','latam']` pegava so `global`, que nao esta no mapa —
+    // e o filtro inteiro virava `null`, ou seja, DESLIGADO. Pedir
+    // "Worldwide + LATAM" devolvia Madison, Wisconsin (medido em 26/08).
+    const pedidas = regioesPedidas(f);
+    const comLugar = pedidas.filter((r) => !REGIAO_SEM_LUGAR.has(r));
+    const regioes = comLugar
+      .map((r) => TERMOS_DE_REGIAO[r])
+      .filter((re): re is RegExp => re !== undefined);
+    // `global` pedido sozinho ou junto: a vaga que aceita de qualquer lugar
+    // serve, e e `elegivelGlobal` que diz isso.
+    const aceitaGlobal = pedidas.some((r) => REGIAO_SEM_LUGAR.has(r));
 
     const vistos = new Set<string>();
     const porEmpresa = new Map<string, number>();
@@ -407,7 +428,7 @@ export class BuscaAtsService {
       // o booleano trazia vaga presencial em Budapeste para quem pediu
       // remoto. Agora o local precisa ser compativel com trabalho a
       // distancia de fora.
-      if (f.remote === 'remoto' && !remotoDeVerdade(v)) return false;
+      if (querRemoto(f) && !remotoDeVerdade(v)) return false;
 
       // **Idade da vaga.**
       //
@@ -467,9 +488,16 @@ export class BuscaAtsService {
       //
       // Vaga que aceita de QUALQUER lugar entra em qualquer regiao: quem
       // contrata worldwide contrata na LATAM tambem.
-      if (regiao) {
+      if (regioes.length > 0 || aceitaGlobal) {
         const onde = `${v.local ?? ''} ${(v.paisesElegiveis ?? []).join(' ')}`;
-        if (!v.elegivelGlobal && !regiao.test(onde)) return false;
+        // **Sem local nao passa.** Nove das quinze vagas do caso medido em
+        // 26/08 vinham com `local` vazio e entravam por ausencia de dado —
+        // "nao sei de onde e" nao pode virar "serve para o que voce pediu".
+        const semLugar = onde.trim().length === 0;
+        const casaAlguma = regioes.some((re) => re.test(onde));
+        if (!(v.elegivelGlobal || casaAlguma) || (semLugar && !v.elegivelGlobal)) {
+          return false;
+        }
       }
 
       // **Local pedido.** Cruzado com o que a vaga diz aceitar. "Worldwide"
@@ -837,7 +865,25 @@ const SUFIXO_NEUTRO =
 const TERMOS_DE_REGIAO: Record<string, RegExp> = {
   latam:
     /\b(latam|latin america|latin & south america|south america|americas|brazil|brasil|mexico|argentina|colombia|chile|peru|uruguay|costa rica)\b/i,
+  eu: /\b(europe|european|eu|emea|portugal|spain|germany|france|poland|netherlands|ireland|italy)\b/i,
+  uk: /\b(uk|united kingdom|england|scotland|wales|london)\b/i,
+  us: /\b(usa|u\.s\.|united states|us-based|americas)\b/i,
+  north_america: /\b(usa|united states|canada|north america|americas)\b/i,
+  apac: /\b(apac|asia|singapore|india|japan|australia|new zealand)\b/i,
+  mena: /\b(mena|middle east|uae|dubai|egypt|morocco|saudi)\b/i,
+  africa: /\b(africa|nigeria|kenya|south africa|egypt)\b/i,
+  cis: /\b(cis|russia|ukraine|kazakhstan|georgia|armenia)\b/i,
 };
+
+/**
+ * `global` NAO entra no mapa acima, e isso e deliberado.
+ *
+ * "Worldwide" nao e um lugar a casar por texto — e a AUSENCIA de restricao,
+ * que `v.elegivelGlobal` ja representa. Uma regex para ele casaria a palavra
+ * "global" no nome da empresa ("PlayStation Global") e aprovaria uma vaga de
+ * Madison, Wisconsin (medido em 26/08).
+ */
+const REGIAO_SEM_LUGAR = new Set(['global']);
 
 function remotoDeVerdade(v: VagaDto): boolean {
   const local = (v.local ?? '').trim();
@@ -923,4 +969,60 @@ function iso(v: unknown): string | null {
   if (typeof v !== 'string') return null;
   const d = new Date(v);
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+
+/**
+ * As regioes pedidas, do campo antigo ou do novo.
+ *
+ * A tela passou a mandar `regions: ['latam']` (o vocabulario do freehire), e
+ * este motor so lia `regiao: 'latam'`. O campo novo era **ignorado em
+ * silencio**: pedir LATAM e receber Bangalore, medido em 26/08.
+ */
+function regioesPedidas(f: FiltrosDto): string[] {
+  const doNovo = f.regions ?? [];
+  return doNovo.length > 0 ? doNovo : f.regiao ? [f.regiao] : [];
+}
+
+/** O regime pedido, pelo campo novo ou pelo antigo. */
+function querRemoto(f: FiltrosDto): boolean {
+  return f.remote === 'remoto' || (f.work_modes?.includes('remote') ?? false);
+}
+
+/**
+ * Os filtros que este motor **nao sabe honrar**.
+ *
+ * O ATS le titulo e local; nao ha de onde tirar nivel de ingles, patrocinio de
+ * visto ou lista curada. Sem esta guarda ele respondia a um pedido que nao
+ * cumpria — e como a cascata para no primeiro motor que acha algo, o resultado
+ * ia para a tela como se fosse a resposta.
+ *
+ * Medido em 26/08: `work_modes: ['remoto']` (valor de vocabulario errado)
+ * zerou o freehire, a cascata caiu para ca, e o ATS devolveu **487 vagas, 305
+ * nao-remotas** para um pedido de vagas remotas.
+ *
+ * `regions` e `work_modes` NAO entram na lista: os dois acima os traduzem.
+ */
+const NAO_SEI_HONRAR: Array<keyof FiltrosDto> = [
+  'roles',
+  'english_levels',
+  'seniorities',
+  'collections',
+  'company_sizes',
+  'relocation',
+  'reality',
+  'visa_sponsorships',
+  'posting_languages',
+  'education_levels',
+  'ai_archetypes',
+  'domains',
+  'cities',
+];
+
+/** Ha filtro que este motor ignoraria em silencio? */
+export function atsIgnoraria(f: FiltrosDto): string[] {
+  return NAO_SEI_HONRAR.filter((c) => {
+    const v = f[c];
+    return Array.isArray(v) && v.length > 0;
+  }) as string[];
 }

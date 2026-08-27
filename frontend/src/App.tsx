@@ -6,6 +6,7 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom'
+import { BotaoDeTema } from './components/BotaoDeTema'
 import { InvoicePage } from './pages/InvoicePage'
 // QUADRO (temporario) — remover esta linha junto com a pagina
 import { QuadroPage } from './pages/QuadroPage'
@@ -42,9 +43,7 @@ import { TracksPage } from './pages/TracksPage'
 const VagasPage = lazy(() =>
   import('./pages/VagasPage').then((m) => ({ default: m.VagasPage })),
 )
-const SalvasPage = lazy(() =>
-  import('./pages/SalvasPage').then((m) => ({ default: m.SalvasPage })),
-)
+
 
 /**
  * Abas dos produtos sob a marca Horizons.
@@ -158,7 +157,6 @@ function Abas() {
   const abas = [
     { to: '/', label: 'Tracks', ativa: pathname === '/' || pathname.startsWith('/t/') },
     { to: '/vagas', label: 'Jobs', ativa: pathname === '/vagas' },
-    { to: '/salvas', label: 'Saved', ativa: pathname === '/salvas' },
     { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
   ]
 
@@ -306,6 +304,9 @@ export default function App() {
                 costuma estar vazio: exigir ADMIN aqui esconderia a
                 Configuracoes de quem desligou o login justamente para mexer
                 nela. */}
+            {/* O tema veio da barra de busca (26/08): ele vale para o app
+                inteiro, e ali só existia para quem chegava à tela de Jobs. */}
+            <BotaoDeTema />
             <Engrenagem admin={semLogin || user?.role === 'ADMIN'} />
             <Conta user={user} podeSair={!semLogin} onEntrou={setUser} />
             </div>
@@ -321,7 +322,11 @@ export default function App() {
           <Route path="/t/:trackSlug" element={<TrackPage />} />
           <Route path="/t/:trackSlug/:lessonSlug" element={<LessonPage />} />
           <Route path="/vagas" element={<VagasPage />} />
-          <Route path="/salvas" element={<SalvasPage />} />
+          {/* **`/salvas` continua existindo, e renderiza a tela de Jobs já
+              na visão de salvas** (26/08). A aba própria saiu da navegação —
+              buscar e reler o que se guardou acontecem no mesmo lugar —, mas
+              links antigos e o menu continuam funcionando. */}
+          <Route path="/salvas" element={<VagasPage salvas />} />
           <Route path="/invoice" element={<InvoicePage />} />
           {/* As sub-rotas vem ANTES de `/config`: nao ha `:param` aqui, mas
               manter a mais especifica primeiro e a regra da casa e evita

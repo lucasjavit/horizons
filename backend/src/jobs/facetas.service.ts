@@ -76,6 +76,13 @@ export class FacetasService {
 
   async obter(filtros: FiltrosDto): Promise<FacetasDto> {
     const params = paraConsultaFreehire(filtros);
+
+    // **O que a tela pediu, no log.**
+    //
+    // Um 400 do `ValidationPipe` nunca chega aqui — ele rejeita antes —, e o
+    // resultado foi um erro visível na tela e invisível no servidor (26/08).
+    // Sem isto, descobrir POR QUE o modal falhou exige adivinhar o payload.
+    this.log.debug(`facetas pedidas: ${params || '(sem filtro)'}`);
     const resposta = await this.pedir(`/api/v1/jobs/facets?${params}`);
     if (!resposta) return { disponivel: false, total: null, facetas: {} };
 
@@ -103,6 +110,13 @@ export class FacetasService {
     // `countries` daria mais que o total, porque uma vaga que aceita Brasil e
     // Mexico conta nos dois. O botao diria um numero maior que a lista.
     const total = await this.total(params);
+
+    // Zero com filtro é o sinal de vocabulário incompatível — foi assim que
+    // `pleno` (que a faceta não conhece) e `roles=["Backend Engineer"]`
+    // zeraram as 25 facetas sem dar erro nenhum.
+    if (total === 0 && params) {
+      this.log.warn(`facetas zeradas — vocabulario incompativel? ${params}`);
+    }
 
     return { disponivel: true, total, facetas };
   }

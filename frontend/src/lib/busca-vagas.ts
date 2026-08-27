@@ -6,6 +6,12 @@ export interface EventoBusca {
   total?: number
   vaga?: Vaga
   mensagem?: string
+  /** Em `fim`: o id da sessão de cache, para pedir a próxima página (JOB-45). */
+  sessao?: string
+  /** Em `fim`: há mais páginas para buscar nesta sessão? */
+  temMais?: boolean
+  /** Em `fim`: quantas vagas o filtro tem no catálogo, quando se sabe. */
+  totalNoFiltro?: number | null
 }
 
 /**

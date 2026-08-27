@@ -33,11 +33,19 @@ export type SelecaoModal = Record<string, string[]>
 export function ModalFiltros({
   aberto,
   selecaoInicial,
+  salvarAoAbrir,
   onFechar,
   onAplicar,
 }: {
   aberto: boolean
   selecaoInicial: SelecaoModal
+  /**
+   * Abrir já com o formulário de salvar aberto.
+   *
+   * É o "Save filter" do painel: sem isto ele caía num modal sem campo de
+   * nome, e chegar ao que o botão prometia custava mais dois cliques.
+   */
+  salvarAoAbrir?: boolean
   onFechar: () => void
   onAplicar: (selecao: SelecaoModal) => void
 }) {
@@ -72,6 +80,10 @@ export function ModalFiltros({
   useEffect(() => {
     if (aberto) setRascunho(selecaoInicial)
   }, [aberto, selecaoInicial])
+
+  useEffect(() => {
+    if (aberto && salvarAoAbrir) setSalvando(true)
+  }, [aberto, salvarAoAbrir])
 
   /**
    * As contagens, recarregadas a cada mudança do rascunho.

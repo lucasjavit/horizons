@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { WARN_INK } from '../blocks/BlockRenderer'
-import { Hint } from '../Hint'
+import { Hint, HintWrap } from '../Hint'
 import { api, errorMessage } from '../../lib/api'
 import type { CvLido } from '../../types/api'
+import { BOTAO_ICONE } from './BarraDeBusca'
 
 interface CaixaUploadCVProps {
   /**
@@ -79,6 +80,27 @@ export function CaixaUploadCV({
   const [erro, setErro] = useState<string | null>(null)
   const [nome, setNome] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  /**
+   * O upload virou modal (26/08).
+   *
+   * A faixa ocupava o topo da tela de vagas com um convite opcional, acima do
+   * que a pessoa veio fazer. Como botão, ela some do caminho de quem já sabe o
+   * que quer buscar — e o aviso de privacidade do JOB-02 continua aparecendo
+   * ANTES de escolher o arquivo, agora dentro do modal.
+   */
+  const [modalAberto, setModalAberto] = useState(false)
+  const gatilho = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!modalAberto) return
+    const noEsc = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      setModalAberto(false)
+      gatilho.current?.focus()
+    }
+    document.addEventListener('keydown', noEsc)
+    return () => document.removeEventListener('keydown', noEsc)
+  }, [modalAberto])
 
   // Enquanto nao se sabe, nada. Ligada = upload; desligada = nem a caixa.
   if (ativa !== true) return null
@@ -92,6 +114,9 @@ export function CaixaUploadCV({
       const lido = await api.lerCurriculo(arquivo)
       setEstado('lido')
       onLeu(lido)
+      // Fecha sozinho: o passo acabou, e manter o modal aberto obrigaria a um
+      // clique que não decide nada. O resultado aparece na linha de trás.
+      setModalAberto(false)
     } catch (e) {
       // Volta para ocioso, e NAO chama onLeu: nada preenchido a partir de uma
       // leitura que falhou. O que a pessoa ja tinha marcado continua onde
@@ -166,7 +191,7 @@ export function CaixaUploadCV({
         }}
       >
         <h2 id="cv-titulo" className="sr-only">
-          Résumé read
+          CV read
         </h2>
         {inputEscondido}
         {/* **Zero filtro nao e sucesso.** Medido pelo QA em 25/08: um CV cujo
@@ -220,126 +245,197 @@ export function CaixaUploadCV({
             setEstado('ocioso')
             setNome(null)
             if (inputRef.current) inputRef.current.value = ''
+            // Reabre o modal: "Replace CV" é um upload, e o aviso de
+            // privacidade tem de vir antes deste também — não só do primeiro.
+            setModalAberto(true)
           }}
           className="min-h-6 shrink-0 rounded text-sm underline underline-offset-2"
           style={{ color: 'var(--text-muted)' }}
         >
-          Replace file
+          Replace CV
         </button>
       </section>
     )
   }
 
   return (
-    <section
-      aria-labelledby="cv-titulo"
-      className="flex flex-col gap-2.5 rounded-xl border p-3.5"
-      style={{
-        // Borda de erro na propria faixa: erro sinalizado por borda + texto +
-        // aria-invalid, nunca so por cor.
-        borderColor: erro ? WARN_INK : 'var(--border)',
-        background: 'var(--surface-raised)',
-      }}
-    >
+    <>
+      {/*
+        **O botão, e não a faixa.** O convite é opcional e ocupava o topo da
+        tela acima do que a pessoa veio fazer. Como botão ele sai do caminho de
+        quem já sabe o que buscar, e o aviso de privacidade do JOB-02 continua
+        vindo antes de escolher o arquivo — dentro do modal.
+      */}
+      {/*
+        **Ícone na barra do topo, ao lado do sino** (26/08).
+
+        O convite é opcional e não precisa de linha própria explicando-se: o
+        que ele faz cabe no `aria-label` e no modal que abre. Ao lado do sino
+        ele fica com os outros controles da barra, e não acima do resultado.
+      */}
       <h2 id="cv-titulo" className="sr-only">
-        Start from your résumé
+        Start from your CV
       </h2>
+      <HintWrap
+        title="Upload CV"
+        align="left"
+        texto="We read your CV and set the filters for you — stack, seniority and role. The file is never stored."
+      >
+      <button
+        ref={gatilho}
+        type="button"
+        onClick={() => {
+          setErro(null)
+          setModalAberto(true)
+        }}
+        aria-haspopup="dialog"
+        aria-label="Upload CV"
+        className={`h-9 w-9 ${BOTAO_ICONE}`}
+        style={{ color: 'var(--text-muted)' }}
+      >
+        <IconeCv />
+      </button>
+      </HintWrap>
 
-      {/* A faixa de uma linha. No celular vira coluna e o botao ocupa a
-          largura toda — e a diferenca entre caber e nao caber na dobra. */}
-      <div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center sm:gap-3">
-        <label htmlFor="cv-arquivo" className="sr-only">
-          Résumé file
-        </label>
-        {inputEscondido}
-        <button
-          type="button"
-          disabled={estado === 'enviando'}
-          // Dispara o input escondido. O clique no botao visivel e o clique no
-          // campo — o `<label htmlFor>` sozinho nao bastaria, porque o proprio
-          // label visivel foi para sr-only.
-          onClick={() => inputRef.current?.click()}
-          // O botao repete o aria-describedby do input porque agora e ELE que
-          // recebe o foco (o input saiu da ordem de Tab). Sem isto o aviso de
-          // privacidade nao seria anunciado a quem chega pelo teclado — que e
-          // exatamente o "antes do upload" do JOB-02 para quem nao ve a tela.
-          aria-describedby="cv-privacidade cv-detalhe"
-          aria-invalid={erro ? true : undefined}
-          className="min-h-9 w-full shrink-0 rounded-lg border px-3.5 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-          style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+      {modalAberto && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgb(0 0 0 / 0.55)' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setModalAberto(false)
+          }}
         >
-          <span aria-hidden>⬆ </span>
-          Upload résumé
-        </button>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cv-modal-titulo"
+            className="w-full max-w-lg rounded-xl border p-5"
+            style={{
+              // Borda de erro no próprio diálogo: erro sinalizado por borda +
+              // texto + aria-invalid, nunca só por cor.
+              borderColor: erro ? WARN_INK : 'var(--border)',
+              background: 'var(--surface)',
+            }}
+          >
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <h2 id="cv-modal-titulo" className="text-lg font-semibold">
+                Upload CV
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setModalAberto(false)
+                  gatilho.current?.focus()
+                }}
+                aria-label="Close"
+                className="h-9 w-9 shrink-0 rounded-md text-xl leading-none"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                <span aria-hidden>×</span>
+              </button>
+            </div>
 
-        {estado === 'enviando' ? (
-          // Um status so, com role="status": o leitor de tela anuncia sem
-          // interromper, e a pessoa vidente ve o mesmo texto. A chamada de IA
-          // leva segundos — sem esta linha a tela fica parada e parece travada.
-          <p role="status" className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Reading {nome}…
-          </p>
-        ) : (
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-            <strong className="font-semibold" style={{ color: 'var(--text)' }}>
-              Start from your résumé
-            </strong>{' '}
-            {/* "the filters below" apontava para os dropdowns, que saíram em
-                26/08. Agora os valores vão para "All filters", onde a pessoa
-                de fato consegue vê-los e desmarcá-los. */}
-            — optional. We read it and set your filters for you — review them
-            under "All filters".
-          </p>
-        )}
-      </div>
+            <p className="mb-4 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+              We read your CV and set the filters for you — stack, seniority and
+              role. Review them under "All filters" afterwards.
+            </p>
 
-      {/* **O fato fica na tela; o detalhe vai para o `?`.**
+            <label htmlFor="cv-arquivo" className="sr-only">
+              CV file
+            </label>
+            {inputEscondido}
 
-          Esta linha nao pode virar tooltip: e criterio de aceite do JOB-02 que
-          a pessoa saiba que o arquivo vai para o provedor de IA ANTES de
-          escolher o arquivo, sem depender de hover nem de clique. O que o `?`
-          carrega e o resto — o que e guardado, formatos e limite.
+            {estado === 'enviando' ? (
+              // Um status só, com role="status": anuncia sem interromper. A
+              // chamada de IA leva segundos — sem esta linha o modal fica
+              // parado e parece travado.
+              <p role="status" className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                Reading {nome}…
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                // Repete o aria-describedby do input porque é ELE que recebe o
+                // foco (o input saiu da ordem de Tab). Sem isto o aviso de
+                // privacidade não seria anunciado a quem chega pelo teclado.
+                aria-describedby="cv-privacidade cv-detalhe"
+                aria-invalid={erro ? true : undefined}
+                className="min-h-11 w-full rounded-lg border-2 border-dashed px-4 py-6 text-sm font-medium"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+              >
+                <span aria-hidden>⬆ </span>
+                Choose a PDF or DOCX file
+              </button>
+            )}
 
-          Nao tem role="alert": alert interrompe o leitor de tela, e isto e
-          contexto, nao urgencia. O id e apontado pelo input com
-          aria-describedby, entao quem chega pelo teclado ouve o aviso ao focar
-          o campo — que e o "antes do upload" de quem nao enxerga a tela. */}
-      {estado !== 'enviando' && (
-        <p
-          className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.8125rem] leading-relaxed"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          <span id="cv-privacidade">
-            <span aria-hidden style={{ color: WARN_INK }}>
-              ⚠{' '}
-            </span>
-            Your file is sent to the AI provider to be read.
-          </span>
-          <Hint title="Your résumé and your data" label="What happens to my résumé file?">
-            {
-              'We only keep stack, seniority and years — the file and its text are never stored. PDF or DOCX, up to 5 MB. A résumé scanned as an image cannot be read.'
-            }
-          </Hint>
-          {/* O mesmo texto do tooltip, para o leitor de tela, ligado ao input
-              por aria-describedby. O tooltip so existe enquanto aberto, entao
-              sem esta copia o detalhe nao alcancaria quem nao o abre. */}
-          <span id="cv-detalhe" className="sr-only">
-            We only keep stack, seniority and years — the file and its text are
-            never stored. PDF or DOCX, up to 5 MB. A résumé scanned as an image
-            cannot be read.
-          </span>
-        </p>
+            {/* **O fato fica na tela; o detalhe vai para o `?`.**
+
+                Critério de aceite do JOB-02: a pessoa precisa saber que o
+                arquivo vai para o provedor de IA ANTES de escolhê-lo, sem
+                depender de hover nem de clique. */}
+            {estado !== 'enviando' && (
+              <p
+                className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.8125rem] leading-relaxed"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                <span id="cv-privacidade">
+                  <span aria-hidden style={{ color: WARN_INK }}>
+                    ⚠{' '}
+                  </span>
+                  Your file is sent to the AI provider to be read.
+                </span>
+                <Hint title="Your CV and your data" label="What happens to my CV file?">
+                  {
+                    'We only keep stack, seniority and years — the file and its text are never stored. PDF or DOCX, up to 5 MB. A CV scanned as an image cannot be read.'
+                  }
+                </Hint>
+                <span id="cv-detalhe" className="sr-only">
+                  We only keep stack, seniority and years — the file and its text
+                  are never stored. PDF or DOCX, up to 5 MB. A CV scanned as an
+                  image cannot be read.
+                </span>
+              </p>
+            )}
+
+            {erro && (
+              // Borda (no diálogo) + texto + aria-invalid (no input), nunca só
+              // cor. "Nothing was changed in your filters" é a garantia que o
+              // código já dava e a tela não dizia: o catch não chama onLeu.
+              <p
+                role="alert"
+                className="mt-4 text-sm leading-relaxed"
+                style={{ color: WARN_INK }}
+              >
+                <span aria-hidden>⚠ </span>
+                {erro} Nothing was changed in your filters.
+              </p>
+            )}
+          </div>
+        </div>
       )}
+    </>
+  )
+}
 
-      {erro && (
-        // Borda (na section) + texto + aria-invalid (no input), nunca so cor.
-        // "Nothing was changed in your filters" e a garantia que o codigo ja
-        // dava e a tela nao dizia: o catch nao chama onLeu.
-        <p role="alert" className="text-sm leading-relaxed" style={{ color: WARN_INK }}>
-          <span aria-hidden>⚠ </span>
-          {erro} Nothing was changed in your filters.
-        </p>
-      )}
-    </section>
+/** Documento com seta para cima. SVG e não emoji — a máquina não tem fonte de
+ *  emoji, e o glifo vira quadrado vazio (medido no JOB-04). */
+function IconeCv() {
+  return (
+    <svg
+      aria-hidden
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <path d="M12 18v-6M9.5 14.5 12 12l2.5 2.5" />
+    </svg>
   )
 }

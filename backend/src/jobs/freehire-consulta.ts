@@ -54,6 +54,21 @@ const REGIMES: Record<string, string> = {
   onsite: 'onsite',
 };
 
+/**
+ * O nosso vocabulario no deles, para os valores que se confundem.
+ *
+ * Nao e traducao de tudo — a maioria dos valores ja vem canonica da faceta. E
+ * a rede para os que a tela ainda pode mandar no formato antigo, e que a API
+ * recusaria com zero em vez de com erro.
+ */
+const VOCABULARIO: Record<string, string> = {
+  remoto: 'remote',
+  hibrido: 'hybrid',
+  presencial: 'onsite',
+  estagio: 'intern',
+  pleno: 'middle',
+};
+
 /** A nossa senioridade no vocabulario deles. */
 const SENIORIDADES: Record<string, string> = {
   estagio: 'intern',
@@ -154,7 +169,15 @@ export function paraConsultaFreehire(f: FiltrosDto): string {
     if (!Array.isArray(valores)) continue;
     for (const v of valores) {
       const t = String(v).trim();
-      if (t) p.append(deles, t);
+      if (!t) continue;
+      // **Traduz o que veio no nosso vocabulario** (26/08).
+      //
+      // `work_modes: ['remoto']` chegava assim de um caminho antigo da tela,
+      // e a API nao reconhece: devolve ZERO, sem marcar nada em
+      // `ignored_params`. A cascata lia o zero como "este motor nao achou" e
+      // passava ao ATS, que ignora o filtro — 487 vagas, 305 nao-remotas,
+      // para um pedido de vagas remotas.
+      p.append(deles, VOCABULARIO[t] ?? t);
     }
   }
 

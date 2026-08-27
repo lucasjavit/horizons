@@ -175,10 +175,10 @@ export const CATEGORIAS: CategoriaFiltro[] = [
     rotulo: 'Language',
     grupo: 'REQUIREMENTS & ELIGIBILITY',
     secoes: [
-      { faceta: 'english_level', titulo: 'English level', campo: 'english_levels' },
+      { faceta: 'english_level', titulo: 'English', campo: 'english_levels' },
       {
         faceta: 'posting_language',
-        titulo: 'Posting language',
+        titulo: 'Job language',
         campo: 'posting_languages',
         buscavel: true,
       },
@@ -288,6 +288,19 @@ const ROTULOS: Record<string, string> = {
   // visa
   true: 'Sponsors visa',
   false: 'No sponsorship',
+  // siglas que o fallback title-case estragaria: `ai` virava "Ai"
+  ai: 'AI',
+  ml: 'ML',
+  ai_ml: 'AI/ML',
+  api: 'API',
+  aws: 'AWS',
+  gcp: 'GCP',
+  sql: 'SQL',
+  ci_cd: 'CI/CD',
+  'ci-cd': 'CI/CD',
+  ui_ux: 'UI/UX',
+  qa: 'QA',
+  seo: 'SEO',
   // is_tech
   tech: 'Tech',
   non_tech: 'Non-tech',

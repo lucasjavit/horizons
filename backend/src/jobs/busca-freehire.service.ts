@@ -81,12 +81,31 @@ interface Envelope {
   error?: unknown;
 }
 
+/** Uma pagina do freehire, com o que o cache de paginacao precisa saber. */
+export interface PaginaFreehire {
+  /** As vagas ja convertidas, peneiradas e com elegibilidade. */
+  vagas: VagaDto[];
+  /**
+   * Quantas linhas a API devolveu, ANTES do nosso filtro local.
+   *
+   * E por este numero que o offset anda — ver `buscarPagina`.
+   */
+  lidasDaApi: number;
+  /** O `meta.total`: quantas vagas o filtro tem no catalogo deles. */
+  totalNoFiltro: number | null;
+}
+
 /**
  * Quantas vagas pedir por chamada.
  *
- * O teto da API e maior, mas 60 e o que a tela consome sem rolar por minutos.
- * O `/agent/jobs/search` traz a descricao inteira junto, entao **uma chamada
- * basta** — nao ha um fetch por anuncio como no Firecrawl.
+ * O teto da API e maior, mas 60 e o que a tela consome sem rolar por minutos —
+ * e desde o JOB-45 e tambem o TAMANHO DA PAGINA: quem quiser mais clica em
+ * "Load more" e recebe as 60 seguintes, ate o teto de 300 da sessao.
+ *
+ * Subir este numero encareceria a primeira pagina, que e a unica que todo mundo
+ * espera. O `/agent/jobs/search` traz a descricao inteira junto, entao cada
+ * chamada ja e uma listagem completa — nao ha um fetch por anuncio como no
+ * Firecrawl.
  */
 const LIMITE = 60;
 
@@ -97,14 +116,38 @@ const TIMEOUT_MS = 20_000;
 export class BuscaFreehireService {
   private readonly log = new Logger(BuscaFreehireService.name);
 
+  /**
+   * A pagina 1, no formato que os chamadores antigos esperam.
+   *
+   * Continua existindo com a assinatura de sempre porque o `BuscaAgendada` e o
+   * alerta de busca salva chamam por aqui e nao paginam nada — eles querem as
+   * 60 primeiras e mais nada.
+   */
   async buscar(filtros: FiltrosDto): Promise<VagaDto[]> {
-    const params = this.montar(filtros);
+    return (await this.buscarPagina(filtros, 0)).vagas;
+  }
+
+  /**
+   * Uma pagina do resultado, a partir de `offset` (JOB-45).
+   *
+   * Devolve mais que as vagas porque o cache de paginacao precisa de duas
+   * coisas que o array nao carrega: o `meta.total` (para saber se o filtro
+   * acabou) e **quantas linhas a API devolveu antes do nosso filtro local**.
+   *
+   * Esse segundo numero e o que faz o offset andar direito. O `peneirar` corta
+   * por `exclude_keywords` e `locations`, que a API nao sabe filtrar; se o
+   * offset andasse pelo que SOBROU, a proxima chamada releria as linhas ja
+   * descartadas para descarta-las outra vez, e a paginacao nunca sairia do
+   * lugar.
+   */
+  async buscarPagina(filtros: FiltrosDto, offset: number): Promise<PaginaFreehire> {
+    const params = this.montar(filtros, offset);
 
     // `/agent/jobs/search` e nao `/jobs/search`: o primeiro hidrata a
     // descricao INTEIRA de cada resultado, o segundo devolve o preview
     // truncado do indice. Uma listagem com corpos e uma requisicao so.
     const envelope = await this.pedir(`/api/v1/agent/jobs/search?${params}`);
-    if (!envelope) return [];
+    if (!envelope) return { vagas: [], lidasDaApi: 0, totalNoFiltro: null };
 
     this.checarIgnorados(envelope, params);
 
@@ -112,11 +155,16 @@ export class BuscaFreehireService {
     const total = numero(envelope.meta?.total);
     this.log.log(
       `freehire devolveu ${linhas.length} vagas` +
-        (total === null ? '' : ` de ${total} no filtro`),
+        (total === null ? '' : ` de ${total} no filtro`) +
+        (offset > 0 ? ` (offset ${offset})` : ''),
     );
 
     const vagas = linhas.map((l) => this.converter(l)).filter((v): v is VagaDto => v !== null);
-    return this.peneirar(vagas, filtros).map(comElegibilidade);
+    return {
+      vagas: semRepetirUrl(this.peneirar(vagas, filtros)).map(comElegibilidade),
+      lidasDaApi: linhas.length,
+      totalNoFiltro: total,
+    };
   }
 
   /**
@@ -127,9 +175,19 @@ export class BuscaFreehireService {
    * divergissem num parametro, o botao `Show 699 jobs` prometeria um numero
    * que esta lista nao entrega, e nenhum dos dois pareceria errado sozinho.
    */
-  private montar(f: FiltrosDto): string {
+  private montar(f: FiltrosDto, offset: number): string {
     const p = new URLSearchParams(paraConsultaFreehire(f));
     p.set('limit', String(LIMITE));
+    // **O `offset` vai SEMPRE, inclusive zero.**
+    //
+    // Nao e detalhe de estilo: o `checarIgnorados` logo abaixo so denuncia um
+    // parametro se ele for ENVIADO. Mandar `offset` so a partir da pagina 2
+    // deixaria a pagina 1 — a unica que a maioria ve — sem a guarda, e o dia em
+    // que eles renomearem o parametro passaria batido ate alguem paginar.
+    //
+    // Medido em 27/08/2026: com `offset` correto o `ignored_params` vem vazio;
+    // com `offsetzz` ele vem `[{param: 'offsetzz'}]`. A guarda funciona.
+    p.set('offset', String(offset));
     // Markdown preserva a estrutura do anuncio; `html` obrigaria a limpar tag
     // de novo do nosso lado. Valor nao reconhecido cai para `html` em SILENCIO
     // (documentado por eles), entao o valor aqui e literal e testado.
@@ -246,7 +304,7 @@ export class BuscaFreehireService {
    */
   private converter(j: VagaFreehire): VagaDto | null {
     const title = texto(j.title);
-    const url = texto(j.url);
+    const url = semRastreio(texto(j.url));
     // Sem titulo ou sem link nao ha o que mostrar nem para onde mandar quem
     // clicar. Descartar e melhor que uma linha morta na tela.
     if (!title || !url) return null;
@@ -337,6 +395,80 @@ export class BuscaFreehireService {
       return true;
     });
   }
+}
+
+/**
+ * Tira as vagas que apontam para a MESMA URL dentro de uma resposta.
+ *
+ * **Nao e paranoia: e um caso medido.** Em 27/08/2026, `regions=latam` com
+ * `job_titles=Backend Engineer` devolveu 60 linhas com 59 URLs distintas. As
+ * duas coincidentes:
+ *
+ * | `public_slug`                          | titulo                  |
+ * | -------------------------------------- | ----------------------- |
+ * | `backend-engineer-encora-xyuro6y6`      | Backend Engineer        |
+ * | `backend-engineer-mid-encora-ssjb25ol`  | Backend Engineer Mid    |
+ *
+ * Os dois apontam para `job-boards.greenhouse.io/encora10/jobs/5195751007`. Sao
+ * dois anuncios do catalogo deles para uma vaga so, e na tela viravam duas
+ * linhas que abrem a mesma pagina.
+ *
+ * **Por URL e nao por `id`**, e e por isso que o problema existia: o `id` e o
+ * `public_slug`, e os dois slugs sao diferentes. Deduplicar por id nao pega
+ * nada aqui.
+ *
+ * Fica no motor e nao no cache de paginacao (JOB-45) porque a repeticao
+ * acontece DENTRO de uma resposta, e nao entre paginas — o cache resolve a
+ * segunda, esta funcao resolve a primeira. E aqui vale tambem para a busca
+ * agendada e o alerta de busca salva, que nao passam pelo cache.
+ */
+/**
+ * Tira os parametros de rastreio da URL da vaga.
+ *
+ * O freehire carimba `?utm_source=freehire.me` em todo link — pedido do
+ * stakeholder em 27/08, e 65 das 324 vagas no banco tinham o carimbo. Ele nao
+ * serve a quem clica: a pessoa chega no anuncio da empresa com a URL suja, e
+ * ela vai junto quando ela copia o link para alguem.
+ *
+ * **Tira SO os `utm_*` e afins.** Um `?gh_jid=` ou `?lever-origin=` faz parte
+ * do endereco do anuncio — cortar a query inteira levaria o identificador da
+ * vaga junto e daria 404. Este arquivo ja aprendeu isso no JOB-37, onde o
+ * `gh_jid` era o que revelava o slug real da empresa.
+ *
+ * A URL limpa e tambem a que vai para o banco, entao o dedup passa a
+ * reconhecer a mesma vaga vinda com e sem carimbo.
+ */
+const RASTREIO = /^(utm_|fbclid$|gclid$|mc_cid$|mc_eid$|ref$|source$)/i;
+
+function semRastreio(url: string | null): string | null {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    let mexeu = false;
+    for (const chave of [...u.searchParams.keys()]) {
+      if (RASTREIO.test(chave)) {
+        u.searchParams.delete(chave);
+        mexeu = true;
+      }
+    }
+    if (!mexeu) return url;
+    // `toString()` reescreve a query inteira e deixaria um `?` orfao quando
+    // ela fica vazia — que muda a URL sem precisar.
+    return u.search === '' ? u.origin + u.pathname + u.hash : u.toString();
+  } catch {
+    // URL malformada nao e nossa para consertar: segue como veio, e o
+    // `converter` ja descarta o que nao presta.
+    return url;
+  }
+}
+
+function semRepetirUrl(vagas: VagaDto[]): VagaDto[] {
+  const vistas = new Set<string>();
+  return vagas.filter((v) => {
+    if (vistas.has(v.url)) return false;
+    vistas.add(v.url);
+    return true;
+  });
 }
 
 /**

@@ -1,4 +1,25 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
+
+/**
+ * Quanto tempo o tooltip fica na tela antes de sumir sozinho.
+ *
+ * Cinco segundos: tempo de ler duas frases sem pressa, e curto o bastante para
+ * o painel não ficar pendurado sobre o conteúdo quando o ponteiro parou ali
+ * por acaso. Some sem fechar o foco nem o hover — só o painel sai.
+ */
+const SOME_APOS_MS = 5000
+
+/** Esconde o painel depois de `SOME_APOS_MS`, reiniciando a cada reabertura. */
+function useSomeSozinho(visivel: boolean, esconder: () => void): void {
+  useEffect(() => {
+    if (!visivel) return
+    const t = setTimeout(esconder, SOME_APOS_MS)
+    return () => clearTimeout(t)
+    // `esconder` é estável (vem de `useState`), então o efeito só reinicia
+    // quando o painel reabre — que é exatamente o momento de recontar.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visivel])
+}
 
 interface HintProps {
   /** Titulo em negrito na primeira linha. */
@@ -47,6 +68,7 @@ interface HintProps {
 export function Hint({ title, children, align = 'right', label }: HintProps) {
   const id = useId()
   const [visivel, setVisivel] = useState(false)
+  useSomeSozinho(visivel, () => setVisivel(false))
 
   return (
     <span className="relative inline-flex align-middle">
@@ -104,6 +126,103 @@ export function Hint({ title, children, align = 'right', label }: HintProps) {
             {title}
           </b>
           {children}
+        </span>
+      )}
+    </span>
+  )
+}
+
+/**
+ * O mesmo painel do `Hint`, mas **em volta de um botão que já existe**.
+ *
+ * O `Hint` desenha o próprio gatilho `?`, que serve quando a explicação é
+ * opcional ao lado de um rótulo. Não serve para os ícones da barra de busca:
+ * ali o botão já está lá, e pendurar um `?` do lado dobraria os controles
+ * numa barra que já tem seis.
+ *
+ * Aqui o gatilho é o `children` — o painel abre no hover e no foco do próprio
+ * botão. Ele mantém o `aria-label`, que é o nome do controle; o painel entra
+ * como `aria-describedby`, que é a explicação. **São coisas diferentes**: o
+ * leitor de tela anuncia "Upload CV" e, em seguida, o que isso faz.
+ */
+export function HintWrap({
+  title,
+  children,
+  texto,
+  align = 'right',
+  suprimido,
+  posicao = '',
+}: {
+  title: string
+  /** O botão que recebe o tooltip. */
+  children: React.ReactNode
+  /** A explicação. Uma ou duas frases; não é documentação. */
+  texto: string
+  align?: 'left' | 'right'
+  /**
+   * Não mostrar o tooltip agora.
+   *
+   * Serve para o botão que ABRE algo no mesmo hover: o popover de Location e a
+   * etiqueta de filtros abrem ao passar o mouse, e o tooltip abria junto,
+   * cobrindo o conteúdo que o gesto acabou de revelar. Explicar o botão só faz
+   * sentido enquanto o que ele faz ainda não aconteceu.
+   */
+  suprimido?: boolean
+  /**
+   * Classes de POSICIONAMENTO do embrulho.
+   *
+   * O `HintWrap` vira o filho do flex no lugar do botão, então `order-last`,
+   * `self-start` e afins param de valer se ficarem no botão de dentro —
+   * medido em 27/08: a estrela e o × da linha de vaga pularam da direita para
+   * o meio, entre o logo e o título. Quem embrulha herda o lugar.
+   */
+  posicao?: string
+}) {
+  const id = useId()
+  const [visivel, setVisivel] = useState(false)
+  const mostrar = visivel && !suprimido
+  useSomeSozinho(mostrar, () => setVisivel(false))
+
+  return (
+    <span
+      className={`relative inline-flex align-middle ${posicao}`}
+      onMouseEnter={() => setVisivel(true)}
+      onMouseLeave={() => setVisivel(false)}
+      // `focus`/`blur` sobem do botão de dentro (ao contrário de
+      // `focusin`/`focusout` do DOM nativo, o React os faz borbulhar), então
+      // quem chega por teclado vê o mesmo painel.
+      onFocus={() => setVisivel(true)}
+      onBlur={() => setVisivel(false)}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && visivel) {
+          e.stopPropagation()
+          setVisivel(false)
+        }
+      }}
+    >
+      <span aria-describedby={mostrar ? id : undefined} className="contents">
+        {children}
+      </span>
+
+      {mostrar && (
+        <span
+          id={id}
+          role="tooltip"
+          className={`absolute top-[calc(100%+8px)] z-40 rounded-lg border p-3 text-xs leading-relaxed shadow-xl ${
+            align === 'left' ? 'right-0 w-56' : 'left-0 w-56'
+          }`}
+          style={{
+            background: 'var(--surface-raised)',
+            borderColor: 'var(--border)',
+            color: 'var(--text-muted)',
+            // Não rouba o clique de quem mira o botão que está atrás.
+            pointerEvents: 'none',
+          }}
+        >
+          <b className="mb-1 block" style={{ color: 'var(--text)' }}>
+            {title}
+          </b>
+          {texto}
         </span>
       )}
     </span>

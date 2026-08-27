@@ -90,6 +90,12 @@ export class RecursosController {
     return this.recursos.definirFreehire(body.ativa);
   }
 
+  @Put('paginacao')
+  @AdminOnly()
+  definirPaginacao(@Body() body: DefinirFlagDto): Promise<RecursosDto> {
+    return this.recursos.definirPaginacao(body.ativa);
+  }
+
   @Put('busca-agendada')
   @AdminOnly()
   definirBuscaAgendada(@Body() body: DefinirFlagDto): Promise<RecursosDto> {

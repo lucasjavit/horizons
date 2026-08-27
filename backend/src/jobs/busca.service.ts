@@ -4,8 +4,10 @@ import { Firecrawl } from 'firecrawl';
 import { PrismaService } from '../prisma/prisma.service';
 import { IaService } from '../ia/ia.service';
 import { BuscaIaService, FalhaDaIa } from './busca-ia.service';
-import { BuscaAtsService } from './busca-ats.service';
+import { BuscaAtsService, atsIgnoraria } from './busca-ats.service';
 import { BuscaFreehireService } from './busca-freehire.service';
+import { SessaoDeBuscaService } from './sessao-de-busca.service';
+import type { MotorDaSessao } from './sessao-de-busca.service';
 import { DescobertasService } from './descobertas.service';
 import { RecursosService } from '../settings/recursos.service';
 import type { IaDaBusca } from '../settings/recursos.service';
@@ -153,6 +155,36 @@ export interface EventoBusca {
   total?: number;
   vaga?: VagaDto;
   mensagem?: string;
+  /**
+   * Em `fim`: o id da sessao de cache, para pedir a proxima pagina (JOB-45).
+   *
+   * Vai no `fim` e nao no `inicio` de proposito: o que abre a sessao e o
+   * conjunto COMPLETO de vagas da primeira pagina, e ele so existe no fim. E
+   * so no fim a tela precisa do id — antes disso ela ainda esta recebendo.
+   */
+  sessao?: string;
+  /** Em `fim`: ha mais paginas para buscar nesta sessao? */
+  temMais?: boolean;
+  /** Em `fim`: quantas vagas o filtro tem no catalogo, quando se sabe. */
+  totalNoFiltro?: number | null;
+}
+
+/** A resposta de `POST /jobs/search/mais` (JOB-45). */
+export interface MaisVagasDto {
+  vagas: VagaDto[];
+  temMais: boolean;
+  /** `teto` = o nosso limite de 300; `fim` = o filtro acabou; `null` = ha mais. */
+  motivo: 'teto' | 'fim' | null;
+  /** Quantas ja foram entregues nesta sessao, somando todas as paginas. */
+  entregues: number;
+  totalNoFiltro: number | null;
+  /**
+   * A sessao venceu (10 min) ou nunca existiu neste processo.
+   *
+   * A tela refaz a busca do zero em vez de mostrar erro: o resultado e a pessoa
+   * reveer a pagina 1, e nao uma tela quebrada.
+   */
+  expirada: boolean;
 }
 
 /**
@@ -180,6 +212,7 @@ export class BuscaService {
     private readonly ats: BuscaAtsService,
     private readonly freehire: BuscaFreehireService,
     private readonly descobertas: DescobertasService,
+    private readonly sessoes: SessaoDeBuscaService,
     // A cadeia do JOB-33, e nao o `BuscaIaService` logo acima: aquele BUSCA
     // vagas na web, este EXTRAI de um texto ja lido. Sao capacidades
     // diferentes (`buscaWeb` contra `estruturada`) e listas de provedores
@@ -217,7 +250,7 @@ export class BuscaService {
     // O interruptor decide o motor, e nao so a existencia da chave: com o
     // Firecrawl desligado a chave continua cadastrada, e usa-la assim mesmo
     // faria o interruptor nao significar nada.
-    const { firecrawlAtivo, ordemDaIa, atsAtivo, freehireAtivo } =
+    const { firecrawlAtivo, ordemDaIa, atsAtivo, freehireAtivo, paginacaoAtiva } =
       await this.recursos.obter();
 
     // **O freehire vem PRIMEIRO** (JOB-39, medido em 26/08/2026).
@@ -240,15 +273,25 @@ export class BuscaService {
     // porque este aqui e servico de terceiro que pode sumir — no dia em que
     // sumir, o de baixo assume sem que ninguem mexa em nada.
     if (freehireAtivo) {
-      const doFreehire = await this.freehire.buscar(filtros).catch((e) => {
+      const pagina = await this.freehire.buscarPagina(filtros, 0).catch((e) => {
         this.log.error(`motor freehire falhou: ${String(e).slice(0, 200)}`);
-        return [] as VagaDto[];
+        return { vagas: [] as VagaDto[], lidasDaApi: 0, totalNoFiltro: null };
       });
+      const doFreehire = pagina.vagas;
       if (doFreehire.length > 0) {
         this.log.log(`freehire devolveu ${doFreehire.length} vagas`);
         yield { tipo: 'inicio', total: doFreehire.length };
         for (const vaga of doFreehire) yield { tipo: 'vaga', vaga };
-        yield { tipo: 'fim' };
+        // **O unico motor que abre sessao paginavel.** Ver `abrir`, no
+        // `SessaoDeBuscaService`: e la que o interruptor decide.
+        yield this.fim(
+          'freehire',
+          filtros,
+          doFreehire,
+          pagina.lidasDaApi,
+          pagina.totalNoFiltro,
+          paginacaoAtiva,
+        );
         return;
       }
       // Zero vaga nao e falha do motor — pode ser filtro apertado demais, ou o
@@ -256,10 +299,32 @@ export class BuscaService {
       this.log.log('freehire nao achou nada — tentando o ATS');
     }
 
+    // **Um motor nao responde pedido que nao sabe honrar** (26/08).
+    //
+    // O ATS le titulo e local; nao ha de onde tirar nivel de ingles, visto ou
+    // senioridade. Sem esta guarda ele atendia assim mesmo — e como a cascata
+    // para no primeiro motor que acha algo, a resposta ia para a tela como se
+    // cumprisse o filtro.
+    //
+    // Medido: `work_modes: ['remoto']` (vocabulario errado) zerou o freehire,
+    // a cascata caiu para o ATS, e ele devolveu **487 vagas, 305
+    // nao-remotas** para um pedido de vagas remotas. O filtro nao falhou em
+    // voz alta em lugar nenhum.
+    //
+    // Pular e melhor que responder errado: a busca segue para os motores que
+    // leem a descricao, e se nenhum servir a tela diz que nao achou — que e a
+    // verdade.
+    const ignorados = atsIgnoraria(filtros);
+    if (atsAtivo && ignorados.length > 0) {
+      this.log.log(
+        `ATS pulado — nao sabe filtrar por [${ignorados.join(', ')}]`,
+      );
+    }
+
     // O ATS e o segundo, e ainda antes dos pagos: 27.725 vagas por R$ 0 contra
     // 7 do Firecrawl por 42 creditos (medido em 18/08). So faz sentido gastar
     // credito no que nenhuma API publica alcanca.
-    if (atsAtivo) {
+    if (atsAtivo && ignorados.length === 0) {
       const doAts = await this.ats.buscar(filtros).catch((e) => {
         this.log.error(`motor ATS falhou: ${String(e).slice(0, 200)}`);
         return [] as VagaDto[];
@@ -268,7 +333,9 @@ export class BuscaService {
         this.log.log(`ATS devolveu ${doAts.length} vagas`);
         yield { tipo: 'inicio', total: doAts.length };
         for (const vaga of doAts) yield { tipo: 'vaga', vaga };
-        yield { tipo: 'fim' };
+        // Sessao esgotada na abertura: o ATS varre os 526 boards e entrega
+        // tudo de uma vez, entao nao ha proxima pagina para pedir.
+        yield this.fim('ats', filtros, doAts, doAts.length, null, paginacaoAtiva);
         return;
       }
       // Zero vaga nao e falha do motor — pode ser filtro apertado demais. Cai
@@ -301,7 +368,7 @@ export class BuscaService {
       // `ordemDaIa` cobre os seis provedores, na ordem que o admin arrumou;
       // a cadeia a filtra por capacidade. `disponivel()` logo acima ja
       // garantiu que ha ao menos um com chave.
-      yield* this.buscarPelaIa(filtros, consulta, ordemDaIa);
+      yield* this.buscarPelaIa(filtros, consulta, ordemDaIa, paginacaoAtiva);
       return;
     }
 
@@ -329,12 +396,17 @@ export class BuscaService {
     }
 
     if (urls.length === 0) {
-      yield { tipo: 'fim' };
+      yield this.fim('firecrawl', filtros, [], 0, null, paginacaoAtiva);
       return;
     }
 
     const alvo = urls.slice(0, TETO_PAGINAS);
     yield { tipo: 'inicio', total: alvo.length };
+
+    // Acumulado so para abrir a sessao no fim. O Firecrawl nao pagina — o teto
+    // e o `TETO_PAGINAS` do rate limit dele —, mas a sessao existe assim mesmo
+    // para a tela ter uma resposta uniforme em vez de um caso especial.
+    const doFirecrawl: VagaDto[] = [];
 
     // Em lotes, e nao tudo de uma vez.
     //
@@ -358,11 +430,14 @@ export class BuscaService {
         ),
       );
       for (const vaga of prontas) {
-        if (vaga) yield { tipo: 'vaga', vaga };
+        if (vaga) {
+          doFirecrawl.push(vaga);
+          yield { tipo: 'vaga', vaga };
+        }
       }
     }
 
-    yield { tipo: 'fim' };
+    yield this.fim('firecrawl', filtros, doFirecrawl, doFirecrawl.length, null, paginacaoAtiva);
   }
 
   /**
@@ -521,6 +596,9 @@ export class BuscaService {
     filtros: FiltrosDto,
     consulta: string,
     ordem: readonly IaDaBusca[],
+    // Nao muda nada para a IA (ela nao pagina), mas o `fim` exige o valor — e
+    // um default aqui esconderia o dia em que um motor novo passar a paginar.
+    paginacaoAtiva: boolean,
   ): AsyncGenerator<EventoBusca> {
     let vagas: VagaDto[];
     try {
@@ -544,7 +622,116 @@ export class BuscaService {
     }
     yield { tipo: 'inicio', total: vagas.length };
     for (const vaga of vagas) yield { tipo: 'vaga', vaga };
-    yield { tipo: 'fim' };
+    // A IA busca e le numa chamada so: o que ela achou e tudo o que ela tem.
+    yield this.fim('ia', filtros, vagas, vagas.length, null, paginacaoAtiva);
+  }
+
+  /**
+   * O evento `fim`, com a sessao de cache aberta junto (JOB-45).
+   *
+   * Uma funcao so para os quatro motores porque o que muda entre eles e UM
+   * argumento — quem pagina e quem nao pagina —, e quatro copias de tres linhas
+   * divergiriam na primeira vez que alguem mexesse numa.
+   *
+   * **A cascata e o que torna isto simples.** `buscarMotores` PARA no primeiro
+   * motor que acha algo (ha um `return` depois de cada um), entao a resposta
+   * tem exatamente uma origem: nunca ha ATS e freehire na mesma lista para
+   * conciliar. A sessao grava qual foi, e so a do freehire sabe pedir mais.
+   */
+  private fim(
+    motor: MotorDaSessao,
+    filtros: FiltrosDto,
+    vagas: VagaDto[],
+    lidasDaApi: number,
+    totalNoFiltro: number | null,
+    paginacaoAtiva: boolean,
+  ): EventoBusca {
+    const { id, temMais } = this.sessoes.abrir(
+      motor,
+      filtros,
+      vagas,
+      lidasDaApi,
+      totalNoFiltro,
+      paginacaoAtiva,
+    );
+    return { tipo: 'fim', sessao: id, temMais, totalNoFiltro };
+  }
+
+  /**
+   * A proxima pagina de uma sessao aberta (JOB-45).
+   *
+   * **Nao e SSE, e e uma decisao.** O stream da busca existe porque a primeira
+   * varredura leva de 2s (freehire) a ~60s (Firecrawl), e tela parada por um
+   * minuto parece travamento. Isto aqui e UMA requisicao ao freehire, ~1,5s:
+   * streaming so acrescentaria conexao aberta e um segundo caminho de leitura
+   * na tela, sem nada para mostrar no meio.
+   *
+   * **A repescagem** e o cuidado que o teste de filtro apertado pediu. Quando o
+   * lote inteiro e duplicata ou e cortado pelo `peneirar` (que filtra por
+   * `exclude_keywords` e `locations`, coisas que a API deles nao sabe fazer),
+   * devolver zero faria a tela concluir "acabou" com 49 mil vagas no filtro.
+   * Entao avanca o offset e tenta de novo, ate 3 vezes — depois disso e mais
+   * honesto devolver vazio do que varrer o catalogo atras de uma agulha.
+   */
+  async mais(sessaoId: string): Promise<MaisVagasDto> {
+    const filtros = this.sessoes.filtrosDe(sessaoId);
+    if (!filtros) {
+      // Sessao vencida ou de outra instancia. Nao e erro: a tela refaz a busca.
+      return {
+        vagas: [],
+        temMais: false,
+        motivo: null,
+        entregues: 0,
+        totalNoFiltro: null,
+        expirada: true,
+      };
+    }
+
+    const colhidas: VagaDto[] = [];
+    let resposta: MaisVagasDto | null = null;
+
+    for (let tentativa = 0; tentativa < 3; tentativa++) {
+      const offset = this.sessoes.proximoOffset(sessaoId);
+      // Esgotou entre uma tentativa e outra — ou ja estava esgotada quando
+      // alguem pediu (o botao nem deveria estar la, mas a API nao confia nisso).
+      if (offset === null) break;
+
+      const pagina = await this.freehire.buscarPagina(filtros, offset).catch((e) => {
+        this.log.error(`pagina ${offset} do freehire falhou: ${String(e).slice(0, 200)}`);
+        return { vagas: [] as VagaDto[], lidasDaApi: 0, totalNoFiltro: null };
+      });
+
+      const r = this.sessoes.registrar(
+        sessaoId,
+        pagina.vagas,
+        pagina.totalNoFiltro,
+        pagina.lidasDaApi,
+      );
+      if (!r) break;
+
+      resposta = { ...r, expirada: false };
+      colhidas.push(...r.vagas);
+      // Achou vaga nova, ou nao ha mais o que tentar: para de repescar.
+      if (r.vagas.length > 0 || !r.temMais) break;
+      this.log.log(
+        `pagina ${offset} nao rendeu vaga nova — repescando (tentativa ${tentativa + 1}/3)`,
+      );
+    }
+
+    // O catalogo aprende com a pagina 2 tanto quanto com a 1 (JOB-37).
+    if (colhidas.length > 0) void this.descobertas.anotar(colhidas);
+
+    if (!resposta) {
+      return {
+        vagas: [],
+        temMais: false,
+        motivo: 'fim',
+        entregues: 0,
+        totalNoFiltro: null,
+        expirada: false,
+      };
+    }
+    return { ...resposta, vagas: colhidas };
   }
 
   private async chave(): Promise<string | null> {

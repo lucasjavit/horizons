@@ -2,7 +2,8 @@ import { Body, Controller, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { BuscaService } from './busca.service';
 import { RecursosService } from '../settings/recursos.service';
-import { FiltrosDto } from './job.dto';
+import { FiltrosDto, MaisVagasPedidoDto } from './job.dto';
+import type { MaisVagasDto } from './busca.service';
 
 /**
  * A busca ao vivo, disparada pelo botao Filter.
@@ -20,6 +21,23 @@ export class BuscaController {
     private readonly busca: BuscaService,
     private readonly recursos: RecursosService,
   ) {}
+
+  /**
+   * A proxima pagina de uma busca ja aberta (JOB-45).
+   *
+   * **JSON de uma vez, e nao SSE — ao contrario do irmao logo abaixo.** O
+   * stream existe porque a primeira varredura leva de 2s a ~60s, e tela parada
+   * por um minuto parece travamento. Isto e UMA chamada ao freehire, ~1,5s:
+   * streaming so acrescentaria conexao aberta e um segundo caminho de leitura
+   * na tela, sem nada para mostrar no meio.
+   *
+   * Rota especifica ANTES da generica — `search/mais` viria depois de
+   * `search` se a ordem fosse outra, e o `@Post()` sem caminho engoliria.
+   */
+  @Post('mais')
+  mais(@Body() body: MaisVagasPedidoDto): Promise<MaisVagasDto> {
+    return this.busca.mais(body.sessao);
+  }
 
   @Post()
   async buscar(@Body() filtros: FiltrosDto, @Res() res: Response): Promise<void> {

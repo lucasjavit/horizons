@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { HintWrap } from '../Hint'
+import { BOTAO_ICONE } from './BarraDeBusca'
 import type { Vaga } from '../../types/api'
 import {
   bandeiraDe,
@@ -76,33 +78,55 @@ export function LinhaVaga({
           // A estrela fica ANTES do conteúdo na ordem do DOM, mas depois do
           // logo na visual: quem navega por teclado alcança a ação sem
           // atravessar a faixa de chips.
-          <button
-            type="button"
-            onClick={() => onAlternarSalva(vaga, !salva)}
-            aria-pressed={salva ?? false}
-            aria-label={salva ? `Remove ${vaga.title} from saved` : `Save ${vaga.title}`}
-            title={salva ? 'Saved — click to remove' : 'Save this job'}
-            className="order-last h-9 w-9 shrink-0 self-start rounded-md text-lg leading-none"
-            style={{ color: salva ? 'var(--accent-ink)' : 'var(--text-muted)' }}
+          // **`HintWrap` e `BOTAO_ICONE`, como o resto da casa** (27/08).
+          //
+          // Eram `title=` — o tooltip nativo do navegador, que demora ~1s para
+          // aparecer, não se estiliza e não existe no toque. E sem `hover`
+          // nenhum: dois glifos cinzentos parados, que não se anunciavam como
+          // botão. Agora usam o mesmo par que a barra de busca já usa.
+          <HintWrap
+            title={salva ? 'Saved' : 'Save'}
+            texto={
+              salva
+                ? 'This job is in your Saved tab — it stays there even after the posting goes offline. Click to remove.'
+                : 'Keeps this job in your Saved tab, with a snapshot of the ad — it survives the posting going offline.'
+            }
+            // `order-last` e `self-start` vão no EMBRULHO: ele é que virou o
+            // filho do flex, e no botão de dentro não valeriam mais.
+            posicao="order-last shrink-0 self-start"
           >
-            <span aria-hidden>{salva ? '★' : '☆'}</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => onAlternarSalva(vaga, !salva)}
+              aria-pressed={salva ?? false}
+              aria-label={salva ? `Remove ${vaga.title} from saved` : `Save ${vaga.title}`}
+              className={`h-9 w-9 text-lg leading-none ${BOTAO_ICONE}`}
+              style={{ color: salva ? 'var(--accent-ink)' : 'var(--text-muted)' }}
+            >
+              <span aria-hidden>{salva ? '★' : '☆'}</span>
+            </button>
+          </HintWrap>
         )}
 
         {onDescartar && (
           // Ao lado da estrela, e com o mesmo tamanho de alvo (36px > os 24px
           // mínimos). São as duas ações da linha, e ficam juntas: guardar e
           // descartar são a mesma decisão em direções opostas.
-          <button
-            type="button"
-            onClick={() => onDescartar(vaga)}
-            aria-label={`Dismiss ${vaga.title}`}
-            title="Dismiss — hide this job from your list"
-            className="order-last h-9 w-9 shrink-0 self-start rounded-md text-lg leading-none"
-            style={{ color: 'var(--text-muted)' }}
+          <HintWrap
+            title="Dismiss"
+            texto="Hides this job from your list. It goes to the Dismissed filter above, where you can restore it."
+            posicao="order-last shrink-0 self-start"
           >
-            <span aria-hidden>×</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => onDescartar(vaga)}
+              aria-label={`Dismiss ${vaga.title}`}
+              className={`h-9 w-9 text-lg leading-none ${BOTAO_ICONE}`}
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <span aria-hidden>×</span>
+            </button>
+          </HintWrap>
         )}
 
         <div className="min-w-0 flex-1">

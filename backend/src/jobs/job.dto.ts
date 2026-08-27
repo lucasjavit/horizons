@@ -810,6 +810,21 @@ export class SalvarBuscaDto {
   porTelegram?: boolean;
 }
 
+/**
+ * Pedir a proxima pagina de uma sessao de busca (JOB-45).
+ *
+ * Um campo so, e de proposito: os filtros ja estao GRAVADOS na sessao. Reenvia-
+ * los pela rede deixaria a tela mandar um conjunto e o cache guardar outro — e
+ * a pagina 2 viria de um filtro que ninguem escolheu, com vagas plausiveis
+ * demais para alguem notar.
+ */
+export class MaisVagasPedidoDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(64)
+  sessao!: string;
+}
+
 /** Ligar ou desligar os canais de alerta de uma busca salva. */
 export class CanaisDaBuscaDto {
   @IsBoolean()

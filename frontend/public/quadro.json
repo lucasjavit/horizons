@@ -769,6 +769,30 @@
       "total": 0
     },
     {
+      "id": "JOB-44",
+      "titulo": "O console de busca",
+      "estado": "feito (27/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-45",
+      "titulo": "Paginação sob demanda, com cache de 10 minutos",
+      "estado": "feito (27/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "PLT-01",
       "titulo": "Tela de configurações com tokens de API",
       "estado": "feito (13/08/2026)",

@@ -169,6 +169,19 @@ const HISTORICO = 'jobs.historico';
  */
 const DESCOBERTAS = 'jobs.descobertas';
 
+/**
+ * A paginacao sob demanda da busca (JOB-45).
+ *
+ * Default LIGADO, como o ATS, o historico e as descobertas: nao gasta credito
+ * nem chama provedor pago. Uma pagina a mais e UMA requisicao a uma API publica
+ * e gratuita, e so quando alguem clica em "Load more".
+ *
+ * Desligado, a busca volta a ser exatamente a de antes: uma chamada de 60
+ * vagas, `temMais: false`, e a tela nao mostra o botao. E o que a casa manda —
+ * desligar um motor nao derruba a feature.
+ */
+const PAGINACAO = 'jobs.paginacao';
+
 export interface RecursosDto {
   /** A leitura de curriculo esta ligada e funcionando. */
   leituraCvAtiva: boolean;
@@ -231,6 +244,13 @@ export interface RecursosDto {
    * publicas. Ausencia de linha significa LIGADO.
    */
   descobertasAtivas: boolean;
+  /**
+   * A paginacao sob demanda esta ligada (JOB-45).
+   *
+   * Sem dependencia, como o ATS: nao ha chave que possa faltar. Ausencia de
+   * linha significa LIGADO.
+   */
+  paginacaoAtiva: boolean;
   /**
    * A ordem COMPLETA da cadeia, como o admin a arrumou.
    *
@@ -306,6 +326,7 @@ export class RecursosService {
       email,
       historico,
       descobertas,
+      paginacao,
       flagCv,
     ] = await Promise.all([
       this.ordemDaIa.ordem(),
@@ -319,6 +340,7 @@ export class RecursosService {
       this.flag(EMAIL_SEMANAL),
       this.flagLigadaPorPadrao(HISTORICO),
       this.flagLigadaPorPadrao(DESCOBERTAS),
+      this.flagLigadaPorPadrao(PAGINACAO),
       this.flag(LEITURA_CV),
     ]);
 
@@ -389,6 +411,7 @@ export class RecursosService {
       temProvedorDeEmail,
       historicoAtivo: historico,
       descobertasAtivas: descobertas,
+      paginacaoAtiva: paginacao,
       ordemDaIa: ordem,
       iaDaBusca,
       iaDaExtracao,
@@ -458,6 +481,18 @@ export class RecursosService {
    */
   async definirFreehire(ativa: boolean): Promise<RecursosDto> {
     await this.gravar(FREEHIRE_ATIVO, ativa);
+    return this.obter();
+  }
+
+  /**
+   * Liga a paginacao sob demanda (JOB-45).
+   *
+   * Sem checagem de dependencia: e o mesmo motor do freehire, e ele ja tem o
+   * interruptor dele. Desligar a paginacao nao desliga a busca — devolve as 60
+   * de sempre.
+   */
+  async definirPaginacao(ativa: boolean): Promise<RecursosDto> {
+    await this.gravar(PAGINACAO, ativa);
     return this.obter();
   }
 

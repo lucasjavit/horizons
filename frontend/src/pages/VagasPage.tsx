@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 import { BotaoGoogle } from '../components/BotaoGoogle'
 import { ListaVagas } from '../components/vagas/ListaVagas'
-import { AssinaturaEmail } from '../components/vagas/AssinaturaEmail'
-import { AssinaturaTelegram } from '../components/vagas/AssinaturaTelegram'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { useSessao } from '../lib/sessao'
 import type { AuthUser } from '../types/api'
@@ -19,34 +17,33 @@ import type { AuthUser } from '../types/api'
  * a linha densa tem uma faixa de chips que precisa caber sem quebrar em cinco
  * fileiras, e é o que a captura de referência mostra.
  */
-export function VagasPage() {
-  useDocumentTitle('Jobs')
+export function VagasPage({ salvas = false }: { salvas?: boolean } = {}) {
+  useDocumentTitle(salvas ? 'Saved jobs' : 'Jobs')
   const sessao = useSessao()
 
   return (
-    <main id="conteudo" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Jobs</h1>
-        {/* Uma linha, nao quatro: no celular o paragrafo anterior ocupava
-            104px e empurrava a primeira vaga para fora da dobra. A promessa
-            ("nao precisa ficar olhando") cabe em meia frase. */}
-        <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-          Search job boards and read each listing — filter by role, stack,
-          location and more.
-        </p>
-      </header>
+    <main id="conteudo" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      {/*
+        **O título continua existindo, invisível.**
+
+        O `<h1>` visível saiu em 26/08 — a barra de busca é o que a pessoa veio
+        usar, e o cabeçalho a empurrava para baixo sem dizer nada que a aba do
+        navegador e a navegação já não digam.
+
+        Vira `sr-only` em vez de sumir: uma página sem `<h1>` deixa quem navega
+        por landmarks sem saber onde chegou, e o leitor de tela anuncia "Jobs"
+        ao entrar. O `useDocumentTitle('Jobs')` acima cuida da aba.
+
+        O respiro de cima também encolheu (py-10/14 → py-6/8): sem o
+        cabeçalho, aquele espaço era só vazio antes da barra.
+      */}
+      <h1 className="sr-only">Jobs</h1>
 
       {/* A rota exige sessão porque as vagas são de alguém: o backend não tem
           @Public() nem @SessaoOpcional() aqui. Mostrar a lista para quem não
           entrou daria 401 e um erro no lugar de uma explicação. */}
       {sessao ? (
-        <>
-          <ListaVagas />
-          <AssinaturaEmail />
-          {/* Depois do e-mail, e não antes: o Telegram é o canal adicional
-              (decisão de produto do JOB-32), e a ordem na tela diz isso. */}
-          <AssinaturaTelegram />
-        </>
+        <ListaVagas verSalvas={salvas} />
       ) : (
         <ConviteParaEntrar />
       )}

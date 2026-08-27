@@ -1,8 +1,10 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AxiosError } from 'axios'
-import { Link } from 'react-router-dom'
 import { WARN_INK } from '../blocks/BlockRenderer'
-import { BarraDeBusca } from './BarraDeBusca'
+import { AcoesDaBarra, BarraDeBusca, BOTAO_ICONE } from './BarraDeBusca'
+import { HintWrap } from '../Hint'
+import { PainelDeFiltros } from './PainelDeFiltros'
+import { VagasSalvas } from './VagasSalvas'
 
 /**
  * O modal entra por `import()` dinâmico.
@@ -16,6 +18,7 @@ const ModalFiltros = lazy(() =>
 import { CaixaUploadCV } from './CaixaUploadCV'
 import { LinhaVaga } from './LinhaVaga'
 import { POR_PAGINA, Paginacao } from './Paginacao'
+import type { MotivoDoFim } from './Paginacao'
 import { api, ehSemSessao } from '../../lib/api'
 import { buscarVagas } from '../../lib/busca-vagas'
 import type { CvLido, Historico, Vaga } from '../../types/api'
@@ -46,12 +49,79 @@ type Recorte = 'todas' | 'novas' | 'descartadas'
  * um círculo — só dava para procurar "Kotlin" se alguma vaga visível já tivesse
  * Kotlin.
  */
-export function ListaVagas() {
+/**
+ * A senioridade do currículo no vocabulário da faceta do freehire.
+ *
+ * O CV fala o vocabulário brasileiro; a faceta fala o dela. Medido em 26/08 —
+ * `pleno` e `estagio` **não existem** lá e devolvem zero, o que zera todas as
+ * 25 facetas e deixa o modal em branco (o mesmo sintoma do cargo que ia para
+ * `roles`):
+ *
+ * | valor     |   total |
+ * | --------- | ------: |
+ * | `estagio` |       0 |
+ * | `pleno`   |       0 |
+ * | `junior`  |  25.021 |
+ * | `senior`  | 244.092 |
+ */
+const NIVEL_NO_FREEHIRE: Record<string, string> = {
+  estagio: 'intern',
+  junior: 'junior',
+  pleno: 'middle',
+  senior: 'senior',
+  staff: 'staff',
+  principal: 'principal',
+}
+
+export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
+  /**
+   * Qual lista está na tela: as encontradas ou as salvas.
+   *
+   * A estrela da barra alterna. Era uma aba própria na navegação (26/08) —
+   * virou visão porque buscar e reler o que se guardou acontecem no mesmo
+   * lugar, e trocar de aba perdia a busca em andamento.
+   */
+  const [vendoSalvas, setVendoSalvas] = useState(verSalvas)
   const [vagas, setVagas] = useState<Vaga[]>([])
   const [estado, setEstado] = useState<Estado>('ocioso')
   const [erro, setErro] = useState<string | null>(null)
   const [total, setTotal] = useState<number | null>(null)
   const [pagina, setPagina] = useState(1)
+  /**
+   * A sessão de cache do servidor (JOB-45): o que permite pedir a página 2.
+   *
+   * `null` enquanto a busca não terminou, ou quando o motor que a serviu não
+   * pagina (ATS, IA, Firecrawl) — nesses casos o botão simplesmente não existe.
+   */
+  const [sessao, setSessao] = useState<string | null>(null)
+  const [temMais, setTemMais] = useState(false)
+  /**
+   * Quantas vagas existem no filtro, contra quantas já foram carregadas.
+   *
+   * A linha dizia `vagas.length` — o CARREGADO. Com a paginação sob demanda
+   * (JOB-45) isso passou a mentir por omissão: "120 jobs found" quando há
+   * 5.461 no filtro faz a pessoa achar que viu tudo e refinar um filtro que
+   * não precisava mexer.
+   *
+   * `null` quando o motor não sabe dizer — a busca por ATS e por IA não têm
+   * total, e aí a linha volta a mostrar só o que veio.
+   */
+  const [totalNoFiltro, setTotalNoFiltro] = useState<number | null>(null)
+  const [carregandoMais, setCarregandoMais] = useState(false)
+  const [motivoDoFim, setMotivoDoFim] = useState<MotivoDoFim>(null)
+  /**
+   * Erro do "Load more", separado do `erroSalva`.
+   *
+   * **Medido pelo QA em 27/08:** com a pessoa no rodapé (scrollY≈1195), a
+   * mensagem nascia em `y=-897` — 900px acima da janela. O botão sumia e o
+   * único texto que explicava por quê estava fora do campo de visão, então o
+   * clique parecia não ter feito nada.
+   *
+   * São dois gestos em lugares diferentes da página: salvar/descartar
+   * acontece na linha, e paginar acontece no rodapé. Um estado só fazia a
+   * mensagem aparecer longe de onde o gesto foi — e os dois se sobrescreviam.
+   */
+  const [erroDeMais, setErroDeMais] = useState('')
   /** URLs já salvas. `null` enquanto não se sabe — a estrela não chuta. */
   const [salvas, setSalvas] = useState<Set<string> | null>(null)
   const [avisoSalva, setAvisoSalva] = useState('')
@@ -96,6 +166,14 @@ export function ListaVagas() {
     setErro(null)
     setVagas([])
     setTotal(null)
+    // **A sessão morre com a busca antiga**, e é isso que impede a página 2 do
+    // filtro novo de vir do cache do filtro velho. O servidor tem a mesma
+    // guarda (a chave do cache inclui todos os filtros); aqui é a primeira, e
+    // ela é a que evita a chamada inútil.
+    setSessao(null)
+    setTotalNoFiltro(null)
+    setTemMais(false)
+    setMotivoDoFim(null)
     // Busca nova começa da primeira página: ficar na 4 depois de trocar o
     // filtro mostraria uma página vazia e pareceria "sem resultado".
     setPagina(1)
@@ -115,7 +193,14 @@ export function ListaVagas() {
         if (ev.tipo === 'inicio') setTotal(ev.total ?? null)
         // A vaga entra assim que chega — este é o ponto do streaming.
         else if (ev.tipo === 'vaga' && ev.vaga) setVagas((v) => [...v, ev.vaga!])
-        else if (ev.tipo === 'erro') setErro(ev.mensagem ?? 'Search failed.')
+        // O `fim` carrega a sessão de cache (JOB-45). Sem ela — motor que não
+        // pagina, ou paginação desligada — `temMais` vem `false` e o botão
+        // nem é montado.
+        else if (ev.tipo === 'fim') {
+          setSessao(ev.sessao ?? null)
+          setTemMais(ev.temMais === true)
+          setTotalNoFiltro(ev.totalNoFiltro ?? null)
+        } else if (ev.tipo === 'erro') setErro(ev.mensagem ?? 'Search failed.')
       }
       setEstado('pronto')
     } catch (e) {
@@ -126,6 +211,59 @@ export function ListaVagas() {
       }
     }
   }, [])
+
+  /**
+   * Busca a próxima página do servidor (JOB-45).
+   *
+   * **Acrescenta ao que já está na tela, e não substitui.** É o que a palavra
+   * "cache" do pedido significa na prática: a pessoa vai buscando aos poucos, e
+   * o que já veio continua ali — voltar para a página 1 depois de carregar mais
+   * mostra as mesmas vagas de antes.
+   *
+   * **Não muda a página sozinho.** Carregar 60 vagas na página 3 e saltar para
+   * a 5 tiraria a pessoa de onde ela estava lendo. A `Paginacao` passa a
+   * oferecer mais números, e ela clica se quiser.
+   */
+  const carregarMais = useCallback(async () => {
+    if (!sessao || carregandoMais) return
+    setCarregandoMais(true)
+    setErroSalva('')
+    try {
+      setErroDeMais('')
+      const r = await api.maisVagas(sessao)
+      if (r.expirada) {
+        // O cache de 10 minutos venceu (ou a requisição caiu noutra
+        // instância). **Não é erro**: a sessão simplesmente não existe mais.
+        // A tela para de oferecer o botão e diz o que fazer, em vez de
+        // disparar uma busca que a pessoa não pediu — refazer sozinho
+        // gastaria uma varredura inteira por um clique em "load more".
+        setSessao(null)
+        setTemMais(false)
+        setMotivoDoFim(null)
+        setErroDeMais(
+          'This search expired after 10 minutes. Search again to load more jobs.',
+        )
+        return
+      }
+      // O dedup de verdade é do servidor, que guarda as URLs entregues na
+      // sessão. Este `Set` é o cinto: um clique duplo no botão não pode
+      // duplicar linha na tela enquanto a primeira resposta não voltou.
+      setVagas((atuais) => {
+        const jaTem = new Set(atuais.map((v) => v.url))
+        return [...atuais, ...r.vagas.filter((v) => !jaTem.has(v.url))]
+      })
+      setTemMais(r.temMais)
+      setMotivoDoFim(r.motivo)
+      // O total pode mudar entre uma página e outra — o catálogo é vivo. E
+      // quando o servidor não sabe dizer, mantém o que já se sabia em vez de
+      // apagar o número que estava na tela.
+      if (r.totalNoFiltro !== null) setTotalNoFiltro(r.totalNoFiltro)
+    } catch {
+      setErroDeMais('Could not load more jobs. Check your connection and try again.')
+    } finally {
+      setCarregandoMais(false)
+    }
+  }, [sessao, carregandoMais])
 
   // Busca em andamento não sobrevive à saída da página: sem isto, a requisição
   // continua rodando e gastando crédito depois de a tela sumir.
@@ -229,12 +367,27 @@ export function ListaVagas() {
     setAvancadosDaBarra((atual) => {
       // **Acumula, não substitui.** É a promessa do JOB-02: quem já tinha
       // marcado algo à mão não perde por subir um currículo.
+      //
+      // O corte em 20 é o `ArrayMaxSize` do `FiltrosDto`, e ele MORDE: um
+      // currículo com 21 tecnologias devolvia **400**, e a tela mostrava
+      // "Something went wrong with this filter combination" ao abrir os
+      // filtros (26/08). Currículo com 25 stacks é comum.
+      //
+      // Cortar as últimas, e não as primeiras: a extração devolve as mais
+      // relevantes na frente.
       const juntar = (campo: string, valores: string[]): string[] =>
-        Array.from(new Set([...(atual[campo] ?? []), ...valores.filter(Boolean)]))
+        Array.from(
+          new Set([...(atual[campo] ?? []), ...valores.filter(Boolean)]),
+        ).slice(0, 20)
 
       const novo = { ...atual }
       if (stack.length > 0) novo.technologies = juntar('technologies', stack)
-      if (senioridade) novo.seniorities = juntar('seniorities', [senioridade])
+      // **A senioridade é traduzida.** O CV fala o vocabulário brasileiro
+      // (`pleno`, `estagio`) e a faceta do freehire fala o dela (`middle`,
+      // `intern`). Sem a tradução, um CV de nível pleno zerava as 25 facetas
+      // e o modal abria vazio — o mesmo sintoma do cargo que ia para `roles`.
+      const nivel = senioridade ? NIVEL_NO_FREEHIRE[senioridade] : undefined
+      if (nivel) novo.seniorities = juntar('seniorities', [nivel])
       return novo
     })
   }, [])
@@ -370,9 +523,15 @@ export function ListaVagas() {
   // A barra de busca do topo (JOB-43): texto livre + local, que viajam junto
   // dos filtros da barra e do modal na mesma chamada.
   const [textoDaBusca, setTextoDaBusca] = useState('')
-  const [formatos, setFormatos] = useState<string[]>([])
-  const [regioes, setRegioes] = useState<string[]>([])
   const [avancadosDaBarra, setAvancadosDaBarra] = useState<Record<string, string[]>>({})
+  // **`formatos` e `regioes` NÃO são estado separado** (26/08).
+  //
+  // Eram, e o QA mediu o estrago: o painel dizia "No filters yet" com a busca
+  // filtrada por local, o badge não contava, e o modal não mostrava marcado —
+  // um comentário meu afirmava o contrário. Agora vivem dentro de
+  // `avancadosDaBarra`, nos mesmos campos que o modal usa, e há uma fonte só.
+  const formatos = avancadosDaBarra.work_modes ?? []
+  const regioes = avancadosDaBarra.regions ?? []
   /**
    * O modal de filtros, montado aqui desde que a `BarraFiltros` saiu (26/08).
    *
@@ -381,6 +540,25 @@ export function ListaVagas() {
    * outra. Com um dono só, é um booleano.
    */
   const [modalAberto, setModalAberto] = useState(false)
+  // **A faixa de filtros não tem mais estado de abertura** (27/08, JOB-40).
+  //
+  // Ela era uma gaveta: `painelFixado` + `painelEmHover`, abertos por uma
+  // etiqueta de chevron pendurada sob a barra. A etiqueta media 160×24 e não
+  // tinha rótulo, e o custo real era outro — os filtros só existiam para quem
+  // descobrisse o botão. Agora a faixa é sempre visível dentro do quadro da
+  // barra, então não há o que abrir nem fechar.
+  /** Abrir o modal já no formulário de salvar — ver `onSalvar` no painel. */
+  const [salvarAoAbrir, setSalvarAoAbrir] = useState(false)
+  // `useSessao` saiu daqui em 27/08: o unico uso era esconder o "Save filter"
+  // da gaveta de filtros, que deixou de existir. O modal tem o proprio botao
+  // de salvar, e ele ja checa a sessao.
+
+  /** Quantos filtros estão ativos, contando o texto da busca. */
+  const quantosAtivos =
+    Object.values(avancadosDaBarra).reduce<number>(
+      (n, l) => n + (Array.isArray(l) ? l.length : 0),
+      0,
+    ) + (textoDaBusca.trim() ? 1 : 0)
 
   /**
    * O que a barra do topo contribui para a consulta.
@@ -395,10 +573,10 @@ export function ListaVagas() {
     // `×`, que limpa e busca no mesmo clique. Sem ele, cai no estado.
     const t = (texto ?? textoDaBusca).trim()
     if (t) f.job_titles = [t]
-    if (formatos.length > 0) f.work_modes = formatos
-    if (regioes.length > 0) f.regions = regioes
+    // O local NÃO entra aqui: ele agora vive em `avancadosDaBarra`, e
+    // repeti-lo faria o mesmo valor viajar duas vezes.
     return f
-  }, [textoDaBusca, formatos, regioes])
+  }, [textoDaBusca])
 
   /**
    * Quantos filtros o currículo marcou — o número da mensagem da caixa.
@@ -421,63 +599,140 @@ export function ListaVagas() {
     [vagas, vistas, descartadas],
   )
 
+  /**
+   * Zera a busca inteira e rebusca.
+   *
+   * Está numa constante porque tem DOIS gatilhos desde o redesenho: o botão de
+   * limpar tudo, na linha de ações, e o `Clear all` da faixa de chips. Dois
+   * corpos iguais divergiriam na primeira mudança.
+   */
+  const limparTudo = () => {
+    setTextoDaBusca('')
+    setAvancadosDaBarra({})
+    // Busca de novo já: limpar promete voltar ao catálogo inteiro, e deixar a
+    // lista filtrada na tela contradiz isso — a mesma regra do `×` do campo.
+    void buscar({}, {})
+  }
+
   return (
     <div className="flex flex-col gap-4">
+      {/*
+        As ações que NÃO executam a busca, numa linha acima do console.
+
+        Estavam dentro da barra, disputando a faixa com os controles que mudam
+        o resultado — e no celular empurravam o campo de texto para a terceira
+        linha.
+      */}
+      <AcoesDaBarra
+        temAlgumFiltro={quantosAtivos > 0}
+        onLimparTudo={limparTudo}
+        acoes={
+          <>
+            {/* O upload de CV, como ícone. O componente decide se aparece —
+                ele já sabe se a leitura de CV está ligada. */}
+            <CaixaUploadCV
+              ativa={leituraCvAtiva}
+              onLeu={aoLerCv}
+              filtrosMarcados={filtrosDoCv}
+              onSubstituir={() => {
+                setTextoDaBusca('')
+                setAvancadosDaBarra((a) => {
+                  const novo = { ...a }
+                  delete novo.technologies
+                  delete novo.seniorities
+                  return novo
+                })
+              }}
+            />
+
+            {/*
+              As vagas salvas, com a contagem no badge.
+
+              Era um link de texto embaixo da lista; virou botão na barra
+              (26/08). Continua sendo um CAMINHO para a aba, e não a lista
+              aqui: buscar e reler o que se guardou são momentos diferentes.
+            */}
+            {salvas && salvas.size > 0 && (
+              <HintWrap
+                title="Saved jobs"
+                align="left"
+                texto="Jobs you starred. They are kept for good — the 15-day rule does not apply to them."
+              >
+                <button
+                  type="button"
+                  onClick={() => setVendoSalvas((v) => !v)}
+                  aria-pressed={vendoSalvas}
+                  aria-label={
+                    vendoSalvas
+                      ? 'Back to search results'
+                      : `${salvas.size} saved ${salvas.size === 1 ? 'job' : 'jobs'}`
+                  }
+                  className={`h-9 gap-1.5 px-2 ${BOTAO_ICONE}`}
+                  style={{ color: vendoSalvas ? 'var(--brand)' : 'var(--text-muted)' }}
+                >
+                  <IconeEstrela />
+                  <span
+                    className="rounded-full px-1.5 text-xs tabular-nums"
+                    style={{ background: 'var(--brand)', color: 'var(--brand-text)' }}
+                  >
+                    {salvas.size}
+                  </span>
+                </button>
+              </HintWrap>
+            )}
+          </>
+        }
+      />
+
       <BarraDeBusca
         texto={textoDaBusca}
         onTexto={setTextoDaBusca}
         formatos={formatos}
         regioes={regioes}
-        onLocal={(f, r) => {
-          setFormatos(f)
-          setRegioes(r)
-        }}
-        quantosFiltros={
-          Object.values(avancadosDaBarra).reduce<number>(
-            (n, l) => n + (Array.isArray(l) ? l.length : 0),
-            0,
-          ) +
-          formatos.length +
-          regioes.length
-        }
-        onAbrirFiltros={() => setModalAberto(true)}
-        onBuscar={(t) => void buscar(avancadosDaBarra, doTopo(t))}
-      />
-
-      {/*
-        **A caixa de currículo sai da barra de filtros, que deixou de existir.**
-
-        Ela vivia no `cabecalho` da `BarraFiltros` porque quem sabe se a
-        leitura de CV está ligada é esta lista, não a barra (JOB-02). Com a
-        barra removida (26/08), a caixa passa a ser filha direta daqui — o
-        dono do estado nunca mudou.
-      */}
-      <CaixaUploadCV
-        ativa={leituraCvAtiva}
-        onLeu={aoLerCv}
-        filtrosMarcados={filtrosDoCv}
-        // Trocar de arquivo limpa o que o CV anterior marcou — e só isso: o
-        // que a pessoa marcou à mão no modal fica. São gestos diferentes:
-        // "adicionar" acumula, "substituir" substitui.
-        onSubstituir={() => {
-          setTextoDaBusca('')
+        onLocal={(f, r) =>
           setAvancadosDaBarra((a) => {
             const novo = { ...a }
-            delete novo.technologies
-            delete novo.seniorities
+            if (f.length > 0) novo.work_modes = f
+            else delete novo.work_modes
+            if (r.length > 0) novo.regions = r
+            else delete novo.regions
             return novo
           })
-        }}
+        }
+        quantosFiltros={quantosAtivos}
+        onAbrirFiltros={() => setModalAberto(true)}
+        onBuscar={(t) => void buscar(avancadosDaBarra, doTopo(t))}
+        /*
+          A faixa de chips, dentro do quadro da barra.
+
+          Vai por prop e nao como irmao logo abaixo: as duas faixas sao UM
+          objeto com uma borda so, e um segundo bloco empilhado leria como
+          barra + caixa.
+        */
+        faixa={
+          <PainelDeFiltros
+            texto={textoDaBusca}
+            selecao={avancadosDaBarra}
+            onTexto={(t) => {
+              setTextoDaBusca(t)
+              void buscar(avancadosDaBarra, doTopo(t))
+            }}
+            onSelecao={(sel) => {
+              setAvancadosDaBarra(sel)
+              // Remover um chip rebusca na hora: a faixa e para desfazer, e
+              // desfazer que nao muda a lista nao desfez nada.
+              void buscar(sel, doTopo())
+            }}
+            onLimparTudo={limparTudo}
+          />
+        }
       />
 
-      {/*
-        O "N jobs found" também era da barra.
-
-        `aria-live` porque, depois de buscar, esta é a única confirmação de
-        que algo aconteceu — sem ela, quem usa leitor de tela busca e não ouve
-        nada mudar. E só aparece DEPOIS de buscar: "0 jobs found" numa tela
-        que ninguém pesquisou afirma um resultado que não houve.
-      */}
+      <div className="flex flex-col gap-4">
+        {vendoSalvas ? (
+          <VagasSalvas />
+        ) : (
+          <>
       {/*
         **Uma mensagem, e não três.** Havia três blocos verdadeiros ao mesmo
         tempo, e um deles mentia: "the list below is from your previous search"
@@ -495,7 +750,19 @@ export function ListaVagas() {
           className="text-sm"
           style={{ color: 'var(--text-muted)' }}
         >
-          {vagas.length} {vagas.length === 1 ? 'job found' : 'jobs found'}
+          {/*
+            **Dois números quando eles divergem**: o que está na tela e o que
+            existe no filtro. "120 of 5,461 jobs" diz, sem precisar de mais
+            texto, que rolar adiante ainda traz coisa nova — que é justamente
+            o que o botão "Load more" oferece no rodapé.
+
+            Quando o motor não sabe o total (ATS, IA), ou quando já se
+            carregou tudo, volta a ser um número só: repetir "120 of 120"
+            gasta atenção para não dizer nada.
+          */}
+          {totalNoFiltro !== null && totalNoFiltro > vagas.length
+            ? `${vagas.length.toLocaleString('en-US')} of ${totalNoFiltro.toLocaleString('en-US')} jobs`
+            : `${vagas.length.toLocaleString('en-US')} ${vagas.length === 1 ? 'job found' : 'jobs found'}`}
         </p>
       )}
 
@@ -515,21 +782,6 @@ export function ListaVagas() {
       {erroSalva && (
         <p role="alert" className="text-sm" style={{ color: WARN_INK }}>
           {erroSalva}
-        </p>
-      )}
-
-      {salvas && salvas.size > 0 && (
-        // Um caminho para a aba, e não a lista aqui: buscar e reler o que se
-        // guardou são momentos diferentes, e a tela de busca já disputa espaço
-        // com oito filtros.
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          <Link
-            to="/salvas"
-            className="underline underline-offset-2"
-            style={{ color: 'var(--brand)' }}
-          >
-            {salvas.size} saved {salvas.size === 1 ? 'job' : 'jobs'}
-          </Link>
         </p>
       )}
 
@@ -699,10 +951,21 @@ export function ListaVagas() {
             ))}
           </ul>
 
-          {paginas > 1 && (
+          {/*
+            **`paginas > 1` sozinho não serve mais** (JOB-45). Uma busca com
+            filtro apertado devolve 12 vagas — uma página — e ainda assim pode
+            ter mais para buscar. Escondendo a navegação, o botão "Load more"
+            desapareceria justamente na busca que mais precisa dele.
+          */}
+          {(paginas > 1 || temMais || motivoDoFim) && (
             <Paginacao
               atual={atual}
               paginas={paginas}
+              temMais={temMais}
+              carregandoMais={carregandoMais}
+              motivo={motivoDoFim}
+              erro={erroDeMais}
+              onMais={() => void carregarMais()}
               // O total do rodapé é o do FILTRO, não o da busca: com 30 vagas
               // e 3 descartadas, os selos diziam "All (27)" e o rodapé "30
               // jobs" (QA, 24/08). Dois números para a mesma lista.
@@ -735,15 +998,25 @@ export function ListaVagas() {
           No jobs matched. Try fewer filters or a broader job title.
         </p>
       )}
+          </>
+        )}
+      </div>
+
       {/* Só monta depois do clique — antes disso nem o chunk é baixado. */}
       {modalAberto && (
         <Suspense fallback={null}>
           <ModalFiltros
             aberto={modalAberto}
             selecaoInicial={avancadosDaBarra}
-            onFechar={() => setModalAberto(false)}
+            salvarAoAbrir={salvarAoAbrir}
+            onFechar={() => {
+              setModalAberto(false)
+              setSalvarAoAbrir(false)
+            }}
             onAplicar={(sel) => {
               setAvancadosDaBarra(sel)
+              // Nao ha mais painel para abrir: a faixa de chips esta sempre
+              // visivel, entao o que foi escolhido aparece sozinho.
               // Aplicar no modal dispara a busca: quem clicou em "Show jobs"
               // pediu para ver as vagas, e não para fechar e clicar de novo.
               void buscar(sel, doTopo())
@@ -753,5 +1026,24 @@ export function ListaVagas() {
       )}
 
     </div>
+  )
+}
+
+
+/** Estrela cheia — a mesma marca que a linha de vaga usa para "salva". */
+function IconeEstrela() {
+  return (
+    <svg
+      aria-hidden
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    >
+      <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.4l6.1-.9z" />
+    </svg>
   )
 }

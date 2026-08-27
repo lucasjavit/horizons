@@ -56,6 +56,8 @@ _(vazio)_
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [JOB-45](cards/JOB-45-paginacao-sob-demanda.md) | **Paginação sob demanda** — a busca devolvia 60 vagas de 400 mil e parava ali. Agora `Load more jobs` traz as 60 seguintes por `offset`, num cache de 10 min no servidor (teto de 300/sessão, chave = todos os filtros normalizados). A primeira página não mudou de tempo (2,34s → 2,39s). De quebra, achou duas vagas com `public_slug` diferente e a **mesma URL** na resposta da API — deduplicado no motor | 27/08/2026 |
+| [JOB-44](cards/JOB-44-console-de-busca.md) | **O console de busca** — a barra vira duas faixas num quadro só, e todo filtro ativo aparece como chip removível. Corrige a hierarquia invertida (`All filters` tinha 38px contra 125px do `Location`; a lupa de buscar, 32px) e a ordem em 390px, onde o campo de texto era o terceiro elemento. O botão órfão de 160px sumiu | 27/08/2026 |
 | [JOB-43](cards/JOB-43-barra-de-busca-do-topo.md) | **A barra de busca do topo** — Location, texto livre, filtros com badge, sino, tema e menu. De quebra, as páginas viraram chunks: o bundle principal caiu de 438 para **412 KB** | 26/08/2026 |
 | [JOB-41](cards/JOB-41-modal-de-filtros-avancados.md) | **Modal de filtros avançados** — 11 categorias, chips de três estados com contagem ao vivo, busca por seção e buscas salvas. O QA achou **8 defeitos em duas rodadas**, todos corrigidos; o mais instrutivo foi o `.catch()` que disfarçava bug nosso de motor fora do ar | 26/08/2026 |
 | [JOB-39](cards/JOB-39-freehire-como-motor-de-busca.md) | **freehire.me vira o PRIMEIRO motor de busca** — API pública sem chave. Entrou como fallback e a medição virou a mesa: **60 vagas em 2,6s contra 1–15 em 128s** do ATS, que passou a ser a rede de segurança | 26/08/2026 |

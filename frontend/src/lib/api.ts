@@ -15,6 +15,7 @@ import type {
   MetricasEmail,
   Historico,
   HostDescoberto,
+  MaisVagas,
   Recursos,
   Facetas,
   BuscaSalva,
@@ -280,6 +281,29 @@ export const api = {
 
   async apagarBuscaSalva(id: string): Promise<void> {
     await http.delete(`/jobs/saved-searches/${id}`)
+  },
+
+  async definirPaginacao(ativa: boolean): Promise<Recursos> {
+    const { data } = await http.put<Recursos>('/settings/recursos/paginacao', {
+      ativa,
+    })
+    return data
+  },
+
+  /**
+   * A próxima página de uma busca já aberta (JOB-45).
+   *
+   * **Manda só o id da sessão.** Os filtros já estão gravados no cache do
+   * servidor; reenviá-los faria a tela mandar um conjunto e o cache guardar
+   * outro, e a página 2 viria de um filtro que ninguém escolheu.
+   */
+  async maisVagas(sessao: string, signal?: AbortSignal): Promise<MaisVagas> {
+    const { data } = await http.post<MaisVagas>(
+      '/jobs/search/mais',
+      { sessao },
+      { signal },
+    )
+    return data
   },
 
   async definirFreehire(ativa: boolean): Promise<Recursos> {

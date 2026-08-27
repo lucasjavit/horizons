@@ -13,6 +13,7 @@ import { BuscaService } from './busca.service';
 import { BuscaIaService } from './busca-ia.service';
 import { BuscaAtsService } from './busca-ats.service';
 import { BuscaFreehireService } from './busca-freehire.service';
+import { SessaoDeBuscaService } from './sessao-de-busca.service';
 import { FacetasService } from './facetas.service';
 import { FacetasController } from './facetas.controller';
 import { BuscasSalvasService } from './buscas-salvas.service';
@@ -25,6 +26,6 @@ import { VerificacaoDeAtsService } from './verificacao-de-ats.service';
 @Module({
   imports: [SettingsModule],
   controllers: [JobsController, VagasController, BuscaController, FacetasController, BuscasSalvasController, DescobertasController],
-  providers: [JobsService, CvParserService, CvExtratorService, VagasService, SalvasService, HistoricoService, BuscaService, BuscaIaService, BuscaAtsService, BuscaFreehireService, FacetasService, BuscasSalvasService, BuscaAgendadaService, DescobertasService, VerificacaoDeAtsService],
+  providers: [JobsService, CvParserService, CvExtratorService, VagasService, SalvasService, HistoricoService, BuscaService, BuscaIaService, BuscaAtsService, BuscaFreehireService, SessaoDeBuscaService, FacetasService, BuscasSalvasService, BuscaAgendadaService, DescobertasService, VerificacaoDeAtsService],
 })
 export class JobsModule {}
