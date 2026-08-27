@@ -12,6 +12,7 @@ import type {
   LessonSearchHit,
   CvLido,
   ProgressResult,
+  Prontidao,
   MetricasEmail,
   Historico,
   HostDescoberto,
@@ -167,6 +168,17 @@ export const api = {
 
   async recursos(signal?: AbortSignal): Promise<Recursos> {
     const { data } = await http.get<Recursos>('/settings/recursos', { signal })
+    return data
+  },
+
+  /**
+   * O que falta para publicar. Só admin — a resposta é o mapa do que está
+   * fraco, ainda que sem nenhum valor de segredo dentro.
+   */
+  async prontidao(signal?: AbortSignal): Promise<Prontidao> {
+    const { data } = await http.get<Prontidao>('/settings/deploy/prontidao', {
+      signal,
+    })
     return data
   },
 

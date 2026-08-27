@@ -875,6 +875,18 @@
       "bloqueio": "",
       "feitos": 8,
       "total": 8
+    },
+    {
+      "id": "PLT-08",
+      "titulo": "Prontidão para publicar, na tela",
+      "estado": "feito (27/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "O [PLT-06](PLT-06-deploy-no-coolify.md) escreveu, no próprio card, a frase que originou este: *\"o curl de verificação é a parte que importa, porque nada disso aparece na interface\"*. O material sobre publicar existia tod",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
     }
   ]
 }

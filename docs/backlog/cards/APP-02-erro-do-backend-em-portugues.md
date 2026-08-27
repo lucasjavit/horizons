@@ -56,3 +56,25 @@ fallback genérico. Cobre o que dói sem mexer no contrato.
 QA da leva de 25/08 (redesenho da caixa de CV + tradução da interface). Ele
 levantou o `/email/sair` a partir do que já se sabia, e **descobriu que a mesma
 coisa acontece na caixa de CV** — que é o caso que importa.
+
+
+## Ficou MUITO mais visível com o login ligado (27/08)
+
+Até 27/08 a aplicação rodava com `AUTH_DISABLED=true`, e nenhuma tela via a
+mensagem do guard. Com o login religado para o teste de produção, o
+`AuthGuard` passou a responder **"Entre para continuar."** em toda tela
+protegida sem sessão — e o `errorMessage` repassa o texto do servidor.
+
+Medido em `/config/deploy` sem sessão:
+
+```
+Something went wrong
+Entre para continuar.        ← português, numa interface em inglês
+Try again
+```
+
+Três frases, a do meio em outro idioma. **Isto deixa de ser canto escuro:** é o
+que qualquer pessoa vê ao abrir uma tela de admin com a sessão expirada, que é
+o caso comum depois dos 30 dias do token.
+
+`backend/src/auth/auth.guard.ts:63` é a origem. Sobe a prioridade do card.

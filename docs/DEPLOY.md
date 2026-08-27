@@ -52,6 +52,12 @@ apenas se o compose de produção pedir; as de baixo são todas de runtime.
 | `CORS_ORIGIN` | sim, na prática | O domínio público com `https://`, ex.: `https://horizons.seudominio.com` | Cai no default `http://localhost:5173`. O app em si continua funcionando (o nginx repassa `/api` no mesmo host, então não há requisição cross-origin), mas qualquer chamada de outra origem é bloqueada. Defina — custa nada e evita depuração inútil depois. |
 | `AUTH_DISABLED` | **não defina** | — | Veja o aviso abaixo. |
 
+> **A aba `Going live` em Configurações mostra o estado destas variáveis no
+> servidor que está rodando** (`/config/deploy`, só para admin). Ela diz o que
+> chegou ao contêiner e o que custa trocar cada valor depois — sem exibir
+> nenhum valor. Este guia continua sendo o passo a passo; a tela é a
+> conferência de depois. Card: [PLT-08](backlog/cards/PLT-08-prontidao-para-publicar.md).
+
 ### `AUTH_DISABLED`: não defina
 
 O default do compose de produção é `false` — login exigido. **Deixe assim.**

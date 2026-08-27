@@ -623,3 +623,42 @@ export interface MaisVagas {
   /** A sessão venceu (10 min) ou é de outra instância: a tela refaz a busca. */
   expirada: boolean
 }
+
+/**
+ * Prontidão para publicar. Espelha `ProntidaoDto` do backend.
+ *
+ * **Nenhum campo carrega valor de segredo**, e isso é contrato, não descuido:
+ * a tela mostra presente/ausente e o comprimento. Ao contrário de
+ * `ApiTokenInfo.hint`, que mostra o final da chave porque ali há várias e a
+ * pessoa precisa reconhecer qual é, aqui há um valor por ambiente — não há o
+ * que desambiguar, e cada caractere exposto seria entropia perdida de graça.
+ */
+export interface Prontidao {
+  segredos: SegredoDeDeploy[]
+  login: EstadoDoLogin
+  /** Calculado no servidor: mesma regra que o compose e o boot aplicam. */
+  pronto: boolean
+}
+
+export type EstadoDoSegredo = 'ok' | 'ausente' | 'invalido'
+
+/** Quanto custa trocar o valor depois que a aplicação está no ar. */
+export type CustoDeRotacao = 'seguro' | 'desloga' | 'destrutivo' | 'coordenado'
+
+export interface SegredoDeDeploy {
+  nome: string
+  /** O compose de produção usa `${VAR:?}` — faltando, ele recusa subir. */
+  obrigatorio: boolean
+  estado: EstadoDoSegredo
+  /** Quantos caracteres. Zero quando ausente. Comprimento não é conteúdo. */
+  tamanho: number
+  rotacao: CustoDeRotacao
+}
+
+export interface EstadoDoLogin {
+  /** `AUTH_DISABLED=true`. Em produção isto é uma emergência. */
+  authDisabled: boolean
+  googleConfigurado: boolean
+  /** Quantos e-mails em `ADMIN_EMAILS`. Zero = ninguém administra. */
+  admins: number
+}

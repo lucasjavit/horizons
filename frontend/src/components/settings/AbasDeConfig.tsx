@@ -8,7 +8,7 @@ import { Link, useLocation } from 'react-router-dom'
  * não aparece para usuário comum. Pôr "AI providers" ao lado de "Invoice"
  * ofereceria a quem não é admin um caminho que só daria 403.
  *
- * Rola na horizontal em tela estreita, como a `Abas` do `App.tsx`: quatro
+ * Rola na horizontal em tela estreita, como a `Abas` do `App.tsx`: cinco
  * rótulos não cabem em 390px, e a rolagem fica DENTRO da nav em vez de
  * empurrar a página inteira.
  */
@@ -19,6 +19,7 @@ export function AbasDeConfig() {
     { to: '/config/ia', label: 'AI providers' },
     { to: '/config/vagas', label: 'Job sources' },
     { to: '/config/notificacoes', label: 'Notifications' },
+    { to: '/config/deploy', label: 'Going live' },
     { to: '/config', label: 'Features' },
   ]
 
