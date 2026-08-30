@@ -24,6 +24,7 @@ import { BotaoGoogle } from './components/BotaoGoogle'
 import { LoadingState } from './components/States'
 import { aoPerderSessao, perdeuSessao, tokenStore } from './lib/auth'
 import { SessaoContext } from './lib/sessao'
+import { usePopover } from './lib/usePopover'
 import { api } from './lib/api'
 import type { AuthUser } from './types/api'
 import { LessonPage } from './pages/LessonPage'
@@ -49,6 +50,11 @@ const VagasPage = lazy(() =>
  * uma vez por publicacao** — e estava no bundle principal, que todo visitante
  * baixa. Medido em 30/08: tirar de la devolveu 15 KB ao carregamento inicial.
  */
+/** `lazy` como as outras: quem nunca abre o perfil nao baixa a pagina. */
+const PerfilPage = lazy(() =>
+  import('./pages/PerfilPage').then((m) => ({ default: m.PerfilPage })),
+)
+
 const ConfigDeployPage = lazy(() =>
   import('./pages/ConfigDeployPage').then((m) => ({ default: m.ConfigDeployPage })),
 )
@@ -124,40 +130,104 @@ function Conta({
 }) {
   if (!user) return <BotaoGoogle onEntrou={onEntrou} />
 
+  return <MenuDaConta user={user} podeSair={podeSair} />
+}
+
+/**
+ * A foto abre o menu da conta.
+ *
+ * **O nome saiu da barra** (30/08). Ele ocupava até 12 caracteres ao lado da
+ * foto para repetir o que a foto já diz — e quem está logado sabe quem é. O
+ * `title` na foto devolve o nome a quem passa o mouse, sem gastar a barra.
+ *
+ * **E o "Sign out" saiu de botão solto para dentro do menu.** Ele era o único
+ * item de conta visível o tempo todo, competindo com a navegação por atenção,
+ * para uma ação que se usa raramente. Continua existindo: sem ele não há como
+ * trocar de conta, e ficar preso na sessão é pior que um botão a mais.
+ */
+function MenuDaConta({ user, podeSair }: { user: AuthUser; podeSair: boolean }) {
+  const { aberto, alternar, setAberto, caixa, gatilho } = usePopover()
+  const iniciais = user.name.trim().charAt(0).toUpperCase() || '?'
+
   return (
-    <div className="flex items-center gap-2">
-      {user.avatarUrl ? (
-        <img
-          src={user.avatarUrl}
-          // Decorativo: o nome ao lado ja identifica a conta, e um alt
-          // repetindo "Foto de Fulano" so faria o leitor de tela dizer duas
-          // vezes a mesma coisa.
-          alt=""
-          aria-hidden
-          className="h-7 w-7 shrink-0 rounded-full object-cover"
-          style={{ background: 'var(--surface-sunken)' }}
-        />
-      ) : null}
-      <span
-        className="hidden max-w-[12ch] truncate text-sm sm:inline"
-        style={{ color: 'var(--text-muted)' }}
-        title={user.email}
+    <div ref={caixa} className="relative">
+      <button
+        ref={gatilho}
+        type="button"
+        onClick={alternar}
+        aria-expanded={aberto}
+        aria-haspopup="menu"
+        aria-label={`Account: ${user.name}`}
+        title={`${user.name} · ${user.email}`}
+        className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border"
+        style={{ borderColor: 'var(--border)', background: 'var(--surface-sunken)' }}
       >
-        {user.name}
-      </span>
-      {/* Com o login desligado, "Sair" levaria a uma tela de login que o
-          servidor nao aceita — sairia para lugar nenhum. */}
-      {podeSair && (
-        <button
-          type="button"
-          onClick={perdeuSessao}
-          className="shrink-0 rounded-md border px-2.5 py-1.5 text-xs font-medium"
-          style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+        {user.avatarUrl ? (
+          <img src={user.avatarUrl} alt="" aria-hidden className="h-full w-full object-cover" />
+        ) : (
+          // Sem foto, a inicial — um círculo vazio não diz que há conta ali.
+          <span aria-hidden className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+            {iniciais}
+          </span>
+        )}
+      </button>
+
+      {aberto && (
+        <div
+          role="menu"
+          aria-label="Account"
+          className="absolute right-0 top-full z-40 mt-2 w-52 overflow-hidden rounded-xl border py-1 shadow-lg"
+          style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
         >
-          Sign out
-        </button>
+          <ItemDoMenu to="/perfil" onIr={() => setAberto(false)}>
+            Profile
+          </ItemDoMenu>
+          <ItemDoMenu to="/config" onIr={() => setAberto(false)}>
+            Settings
+          </ItemDoMenu>
+
+          {/* Com o login desligado, "Sign out" levaria a uma tela de login que
+              o servidor não aceita — sairia para lugar nenhum. */}
+          {podeSair && (
+            <>
+              <hr className="my-1" style={{ borderColor: 'var(--border)' }} />
+              <button
+                type="button"
+                role="menuitem"
+                onClick={perdeuSessao}
+                className="block w-full px-4 py-2.5 text-left text-sm"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Sign out
+              </button>
+            </>
+          )}
+        </div>
       )}
     </div>
+  )
+}
+
+/** Uma linha do menu da conta. */
+function ItemDoMenu({
+  to,
+  onIr,
+  children,
+}: {
+  to: string
+  onIr: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <Link
+      to={to}
+      role="menuitem"
+      onClick={onIr}
+      className="block px-4 py-2.5 text-sm"
+      style={{ color: 'var(--text)' }}
+    >
+      {children}
+    </Link>
   )
 }
 
@@ -347,6 +417,7 @@ export default function App() {
             element={<ConfigNotificacoesPage />}
           />
           <Route path="/config/deploy" element={<ConfigDeployPage />} />
+          <Route path="/perfil" element={<PerfilPage />} />
           <Route path="/config" element={<SettingsPage />} />
           {/* Os links do e-mail caem aqui, e funcionam SEM login (JOB-24 e
               JOB-25): a credencial e o token na query, nao a sessao. */}
