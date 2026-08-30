@@ -1,6 +1,6 @@
 # PLT-08 · Prontidão para publicar, na tela
 
-**Estado:** feito (27/08/2026)
+**Estado:** feito (27/08/2026) · guia de publicar na tela (28/08/2026)
 **Tamanho:** M
 
 ## Por quê
@@ -42,8 +42,14 @@ Uma quinta aba em Configurações, `/config/deploy` — **Going live**.
 - **Os quatro segredos**, cada um com: o que é, o comando para gerar (com botão
   de copiar), o que acontece se faltar, e **quanto custa trocar depois** —
   `seguro`, `desloga`, `coordenado` ou `destrutivo`.
-- Um ponteiro para o `docs/DEPLOY.md`, que continua sendo o guia. A tela é o
-  resumo acionável, não uma segunda cópia.
+- **Os passos de publicar, numerados, na ordem de execução** (28/08/2026).
+  Antes a tela dizia só *"está em `docs/DEPLOY.md` no repositório"*, o que não
+  serve para quem está no painel do Coolify: ele teria de sair, achar o arquivo
+  no GitHub, e voltar.
+
+  Nove passos, cada um ligado ao que o servidor já verificou — `Done on this
+  server`, `Not done yet`, ou `You confirm this` quando a prova está fora do
+  processo. É a diferença entre um guia e uma lista de tarefas viva.
 
 **Não gera segredo, de propósito.** Um botão "generate" que devolvesse o valor
 na tela criaria um caminho novo de vazamento (log do servidor, HTML, histórico
@@ -84,6 +90,72 @@ compose de desenvolvimento é `horizons`, **pública no repositório**. Encontr�
 não é "senha fraca", é senha conhecida — a tela marca como `Too weak`, não
 como `Set`.
 
+## O guia na tela (28/08/2026)
+
+### O que entrou, e o que ficou no arquivo
+
+O critério: **vai para a tela o que se faz COM a tela aberta**, e o que a
+página já sabe verificar. Fica no arquivo a referência longa, o histórico e o
+diagnóstico de caso raro.
+
+| Seção do `DEPLOY.md` | Onde ficou | Por quê |
+| --- | --- | --- |
+| 1. Criar o recurso | **tela** | é o formulário do Coolify, preenchido com a tela do lado |
+| 2. Variáveis | **arquivo** | a tela **já tem** os quatro segredos, com comando e custo de rotação. Repetir daria duas verdades para divergir na primeira mudança |
+| 3. Google OAuth | **tela** | é o passo que travou o stakeholder, e o sintoma não sugere a causa |
+| 4. Verificar depois | **tela** | os `curl` viraram blocos copiáveis; é o que se roda logo após publicar |
+| 5. Se der errado | **arquivo** | diagnóstico: na maior parte desses estados **a aplicação não sobe**, e uma página que só existe com o servidor de pé não é onde se lê como consertar um servidor que não está |
+| 6. Antes do 1º deploy público | **tela** | virou o passo do backlog vazado, com o `curl /quadro.json` |
+| 7. Google aparece mas não entra | **arquivo**, menos a regra de origem | a forense de TLS (issuer do Traefik, 503, acme-challenge) é caso raro; a **regra de origem** subiu para o passo 3 da tela |
+| 8. O que já foi verificado | **arquivo** | registro histórico de 14/08, não passo de execução |
+
+`docs/DEPLOY.md` **passou a apontar para a tela** em vez de repetir os passos.
+Escolher um dos dois era obrigatório: dois guias sempre divergem.
+
+### O segundo bug que a implementação encontrou
+
+**`NODE_ENV` não distingue desenvolvimento de produção neste projeto.** A
+primeira versão do aviso *"este não é o servidor de produção"* usava
+`process.env.NODE_ENV !== 'production'` — e ficaria **apagado exatamente na
+máquina que precisa dele**.
+
+Medido no contêiner de desenvolvimento:
+
+```
+NODE_ENV=[production]
+```
+
+O Dockerfile é o mesmo nos dois compose e constrói a imagem de produção sempre.
+O sinal que de fato separa os dois é o valor **público**: o
+`docker-compose.yml` embute a senha `horizons` e `CORS_ORIGIN:
+http://localhost:5173`, enquanto o de produção exige `${VAR:?}` em ambos e
+recusa subir sem eles. Achar um valor público prova que o processo subiu pelo
+compose de desenvolvimento.
+
+### O que a tela mede, e o que ela declara não saber
+
+Dos nove passos, **cinco** são verificáveis por este processo e **quatro** são
+`You confirm this` — Coolify, TLS, `VITE_QUADRO` e a requisição vinda de fora.
+Marcá-los como pendentes sugeriria que um redeploy resolve; marcá-los como
+cumpridos seria mentira. O selo é cinza, e não verde nem vermelho.
+
+### Custo de altura, medido
+
+O recolhimento é a decisão de desenho, e o número é o argumento:
+
+| Estado | Desktop | 390px |
+| --- | --- | --- |
+| Antes do guia | 2.759px | 3.951px |
+| **Com o guia, recolhido (padrão)** | **2.894px (+4,9%)** | **4.127px (+4,5%)** |
+| Com os 9 passos abertos | 5.909px (2,1×) | 9.419px (2,4×) |
+
+Aberto por padrão, o guia **dobrava** a página e empurrava para fora da tela o
+alarme de `AUTH_DISABLED` e o veredito — que é o que alguém abre esta página
+para ver. Recolhido, custa uma linha. O alarme e o resumo continuam no topo.
+
+Vários passos podem ficar abertos ao mesmo tempo: um acordeão que fecha o
+anterior atrapalharia quem compara dois passos.
+
 ## Critérios de aceite
 
 - [x] A rota é `@AdminOnly()` — medido: sem token **401**, token inválido
@@ -98,6 +170,23 @@ como `Set`.
       (`role="status"`); alvo de 32px
 - [x] Dois temas e 390px conferidos no navegador
 - [x] `scripts/qa-rapido.py` passa inteiro
+
+Do guia (28/08/2026):
+
+- [x] Passos numerados na ordem de execução, seguíveis sem abrir outra aba
+- [x] Cada passo ligado ao que o servidor verificou — medido: 3 `cumprido`,
+      2 `pendente`, 4 `manual`, batendo com a resposta da API
+- [x] A regra de origem do Google (HTTPS obrigatório, IP cru recusado,
+      `localhost` isento) está no passo 3
+- [x] O recolhimento faz o trabalho — medido: +4,9% desktop e +4,5% em 390px,
+      contra 2,1× e 2,4× se aberto
+- [x] Alarme de `AUTH_DISABLED` e resumo continuam no topo
+- [x] Teclado: guia e cada passo abrem e fecham por Enter, com foco visível
+- [x] Nenhum valor de segredo no DOM nem na API — reconferido com o guia
+      aberto: `JWT_SECRET` e `ENCRYPTION_KEY` ausentes, e a `DATABASE_URL`
+      inteira e o par `user:senha@` também
+- [x] Dois temas e 390px, sem overflow horizontal e sem erro de console
+- [x] `docs/DEPLOY.md` aponta para a tela em vez de repetir os passos
 
 ## O que esta tela ainda não responde
 
@@ -118,7 +207,9 @@ Vale escrito, porque é o que alguém vai procurar aqui e não vai achar:
 - **Se `VITE_QUADRO` vazou para o build**, que é do frontend e não do processo
   da API. O `curl /quadro.json` do `DEPLOY.md` continua sendo o teste.
 - **O estado do servidor de produção.** A tela lê o processo em que ela mesma
-  roda: aberta em desenvolvimento, descreve o desenvolvimento.
+  roda: aberta em desenvolvimento, descreve o desenvolvimento. **Desde
+  28/08/2026 ela avisa** quando detecta valores de desenvolvimento, em vez de
+  deixar o "cumprido" verde ser lido como produção pronta.
 
 ## Onde mexeu
 
@@ -131,3 +222,13 @@ Vale escrito, porque é o que alguém vai procurar aqui e não vai achar:
   `localhost`
 - `frontend/src/components/settings/AbasDeConfig.tsx`, `App.tsx`,
   `lib/api.ts`, `types/api.ts`
+
+Do guia (28/08/2026):
+
+- `backend/src/settings/deploy.service.ts` — `passos` e
+  `ambienteDeDesenvolvimento` no DTO; só o **estado** cruza a rede, o texto é
+  interface
+- `frontend/src/pages/ConfigDeployPage.tsx` — a constante `PASSOS`, e
+  `GuiaDePublicar` / `PassoDoGuia` / `SeloDePasso` sobre o `Recolhivel` que já
+  existia
+- `frontend/src/types/api.ts`, `docs/DEPLOY.md`

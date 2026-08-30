@@ -3,6 +3,32 @@
 Guia para publicar o Horizons num [Coolify](https://coolify.io) self-hosted.
 Siga com o painel do Coolify aberto na frente.
 
+> ## Os passos agora estão na aplicação, em **Settings → Going live**
+>
+> `/config/deploy`, só para admin, em *How to publish, step by step*. **Aquela
+> tela é a fonte dos passos; este arquivo não os repete mais para conferir.**
+>
+> Não é preferência de formato, é a única forma de não haver duas verdades.
+> Um arquivo não sabe o estado do servidor: ele explica o que `JWT_SECRET` faz,
+> mas não sabe se a variável chegou ao contêiner que está rodando agora. A tela
+> sabe, e marca cada passo como cumprido, pendente, ou *"a confirmação é sua"*
+> quando a prova está fora do processo — o Google Cloud Console, o certificado
+> do proxy, o bundle do frontend.
+>
+> **O que continua valendo aqui, e não está na tela:**
+>
+> - a tabela de variáveis da seção 2, como referência de consulta;
+> - **o diagnóstico das seções 5 e 7** — container em loop de reinício, `api`
+>   eternamente *unhealthy*, migration que não rodou, o certificado padrão do
+>   Traefik. Ficou de fora da tela de propósito: na maior parte desses estados
+>   a aplicação não sobe, e uma página que só existe quando o servidor está de
+>   pé não é onde se lê como consertar um servidor que não está;
+> - a seção 8, que é registro histórico do que foi medido em 14/08/2026, e não
+>   passo de execução.
+>
+> Mexeu num passo? Mexa em `frontend/src/pages/ConfigDeployPage.tsx` (a
+> constante `PASSOS`), não aqui.
+
 O Coolify faz deploy a partir de um repositório Git com docker-compose e
 roteia o tráfego por Traefik. Quem cuida do HTTPS e do domínio é ele — o
 compose de produção não publica portas no host.
@@ -107,6 +133,14 @@ No [Google Cloud Console](https://console.cloud.google.com) → **APIs & Service
   Com `https://`, sem barra no fim, sem caminho. É a origem de onde a página é
   servida. Se você também acessa em desenvolvimento, mantenha
   `http://localhost:5173` na lista — cabem várias.
+
+  **A regra do Google, que explica por que só `localhost` aceita `http`:** as
+  origens têm de usar HTTPS, e o host não pode ser um IP cru — *localhost é
+  exceção às duas coisas*. Ou seja, `http://localhost:5173` entra;
+  `http://192.168.1.10:5173` é **recusado no próprio cadastro**; e produção
+  exige certificado antes (passo do TLS). Testar pelo IP da máquina na rede
+  local é a forma comum de esbarrar nisto, e o sintoma não sugere a causa: o
+  botão aparece normalmente e só falha no clique.
 
 - **Authorized redirect URIs** → **deixe vazio**.
 

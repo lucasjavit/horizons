@@ -18,7 +18,6 @@ const MOSTRA_QUADRO = import.meta.env.VITE_QUADRO === 'true'
 import { SettingsPage } from './pages/SettingsPage'
 import { ConfigIaPage } from './pages/ConfigIaPage'
 import { ConfigVagasPage } from './pages/ConfigVagasPage'
-import { ConfigDeployPage } from './pages/ConfigDeployPage'
 import { ConfigNotificacoesPage } from './pages/ConfigNotificacoesPage'
 import { EmailAcaoPage } from './pages/EmailAcaoPage'
 import { BotaoGoogle } from './components/BotaoGoogle'
@@ -43,6 +42,15 @@ import { TracksPage } from './pages/TracksPage'
  */
 const VagasPage = lazy(() =>
   import('./pages/VagasPage').then((m) => ({ default: m.VagasPage })),
+)
+
+/**
+ * `lazy` porque o guia de deploy sao ~450 linhas de texto que **so o dono le,
+ * uma vez por publicacao** — e estava no bundle principal, que todo visitante
+ * baixa. Medido em 30/08: tirar de la devolveu 15 KB ao carregamento inicial.
+ */
+const ConfigDeployPage = lazy(() =>
+  import('./pages/ConfigDeployPage').then((m) => ({ default: m.ConfigDeployPage })),
 )
 
 

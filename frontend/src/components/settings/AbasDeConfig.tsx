@@ -19,7 +19,7 @@ export function AbasDeConfig() {
     { to: '/config/ia', label: 'AI providers' },
     { to: '/config/vagas', label: 'Job sources' },
     { to: '/config/notificacoes', label: 'Notifications' },
-    { to: '/config/deploy', label: 'Going live' },
+    { to: '/config/deploy', label: 'Deploy Prod' },
     { to: '/config', label: 'Features' },
   ]
 

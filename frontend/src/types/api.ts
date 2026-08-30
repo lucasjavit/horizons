@@ -638,6 +638,30 @@ export interface Prontidao {
   login: EstadoDoLogin
   /** Calculado no servidor: mesma regra que o compose e o boot aplicam. */
   pronto: boolean
+  /** Os passos de publicar, na ordem em que se executam. */
+  passos: PassoDeDeploy[]
+  /**
+   * Ha sinal de que este processo não é o de produção — a tela lê o ambiente
+   * em que ela mesma roda. Não vem de `NODE_ENV`, que é `production` nos dois
+   * compose; vem de achar valor público (a senha `horizons`, `localhost` na
+   * origem) que só o compose de desenvolvimento embute.
+   */
+  ambienteDeDesenvolvimento: boolean
+}
+
+/**
+ * O que a API consegue afirmar sobre um passo do guia.
+ *
+ * `manual` é categoria permanente, não "ainda não sei": são os passos cuja
+ * prova está fora deste processo — o Google Cloud Console, o certificado do
+ * proxy, o bundle do frontend.
+ */
+export type EstadoDoPasso = 'cumprido' | 'pendente' | 'manual'
+
+/** Só o estado cruza a rede; o texto do passo é texto de interface. */
+export interface PassoDeDeploy {
+  id: string
+  estado: EstadoDoPasso
 }
 
 export type EstadoDoSegredo = 'ok' | 'ausente' | 'invalido'

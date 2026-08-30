@@ -1,5 +1,7 @@
+import { useId, useState, type ReactNode } from 'react'
 import { AbasDeConfig } from '../components/settings/AbasDeConfig'
 import { BotaoDeCopiar } from '../components/settings/BotaoDeCopiar'
+import { Recolhivel } from '../components/Recolhivel'
 import { ErrorState, LoadingState } from '../components/States'
 import { WARN_INK } from '../components/blocks/BlockRenderer'
 import { api } from '../lib/api'
@@ -7,7 +9,9 @@ import { useAsync } from '../lib/useAsync'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import type {
   CustoDeRotacao,
+  EstadoDoPasso,
   EstadoDoSegredo,
+  PassoDeDeploy,
   Prontidao,
   SegredoDeDeploy,
 } from '../types/api'
@@ -73,6 +77,241 @@ const EXPLICACAO: Record<
   },
 }
 
+/**
+ * O texto de cada passo de publicar, na ordem de execução.
+ *
+ * **Fica no front pela mesma razão que `EXPLICACAO`:** é texto de interface,
+ * igual em qualquer instalação. O backend responde só o `estado` de cada `id`,
+ * que é o que só ele pode saber. Mandar a prosa pelo DTO criaria uma segunda
+ * cópia para divergir da primeira.
+ *
+ * **O que entrou aqui, e o que ficou no `docs/DEPLOY.md`:** entra o que se faz
+ * com esta tela aberta. Fica no arquivo a referência longa e o diagnóstico de
+ * caso raro — um container em loop de reinício não é lido nesta página, porque
+ * nesse estado esta página não carrega.
+ */
+const PASSOS: Record<
+  string,
+  { titulo: string; resumo: string; detalhe: ReactNode }
+> = {
+  recurso: {
+    titulo: 'Create the resource in Coolify',
+    resumo: 'Docker Compose, pointed at docker-compose.prod.yml.',
+    detalhe: (
+      <>
+        <p>
+          <strong>+ New → Docker Compose</strong> — not Dockerfile, not Nixpacks:
+          the build is several services. Point Source at the repository and the
+          branch you want to publish.
+        </p>
+        <p>
+          <strong>Set Docker Compose Location to</strong>{' '}
+          <code>docker-compose.prod.yml</code>. The field arrives pre-filled with{' '}
+          <code>docker-compose.yml</code>, which is the development one: it
+          publishes ports 5433, 3333 and 5173 on the host, uses a fixed database
+          password, and builds the internal backlog tab into the site.
+        </p>
+        <p>
+          Point the domain at the <strong>web</strong> service, not the API. It
+          is the frontend nginx that serves the page and proxies{' '}
+          <code>/api</code> onward — the API never gets a domain of its own.
+        </p>
+        <p style={{ color: 'var(--text-muted)' }}>
+          Do not deploy yet. Set the variables first, or you will be debugging a
+          container that restarts in a loop.
+        </p>
+      </>
+    ),
+  },
+  segredos: {
+    titulo: 'Set the four secrets',
+    resumo: 'Generate each one and paste it into the deploy panel.',
+    detalhe: (
+      <p>
+        They are listed above, with the command that generates each one and what
+        it costs to change it later. The production compose declares all four as{' '}
+        <code>{'${VAR:?}'}</code>: with any one missing it refuses to start,
+        rather than booting a half-configured server.
+      </p>
+    ),
+  },
+  admins: {
+    titulo: 'Put yourself in ADMIN_EMAILS',
+    resumo: 'Empty means nobody can reach Settings — including this page.',
+    detalhe: (
+      <p>
+        Comma-separated addresses. The role is re-evaluated from this variable at
+        every login, so promoting someone directly in the database does not
+        survive their next sign-in. Get this wrong and the deploy succeeds, but
+        nobody can open Settings to fix anything — including the AI provider
+        keys.
+      </p>
+    ),
+  },
+  tls: {
+    titulo: 'Turn on HTTPS, and confirm the certificate is real',
+    resumo: 'Do this before registering the origin with Google.',
+    detalhe: (
+      <>
+        <p>
+          Enable Let's Encrypt on the <strong>web</strong> service. Then check
+          the certificate from your own machine — port 443 answering is not the
+          same as TLS working:
+        </p>
+        <CopiaDeComando
+          rotulo="certificate check"
+          comando="echo | openssl s_client -connect YOUR-DOMAIN:443 -servername YOUR-DOMAIN 2>/dev/null | grep issuer="
+        />
+        <p>
+          <code>issuer=C=US, O=Let's Encrypt</code> is what you want.{' '}
+          <code>issuer=CN=TRAEFIK DEFAULT CERT</code> means the proxy is
+          answering with its own placeholder and no real certificate was ever
+          issued — usually because the Domains field is written with{' '}
+          <code>http://</code>, which is the scheme Coolify reads to decide
+          whether to request one at all.
+        </p>
+      </>
+    ),
+  },
+  google: {
+    titulo: 'Register the origin in Google Cloud Console',
+    resumo: 'The button rendering does not mean the origin is registered.',
+    detalhe: (
+      <>
+        <p>
+          <strong>APIs &amp; Services → Credentials → your OAuth 2.0 Client
+          ID</strong> (type <em>Web application</em>). Under{' '}
+          <strong>Authorized JavaScript origins</strong>, add the public origin
+          with <code>https://</code>, no trailing slash, no path. Leave{' '}
+          <strong>Authorized redirect URIs</strong> empty: this flow returns an
+          ID token straight to the browser, so nothing redirects.
+        </p>
+        <p>
+          <strong style={{ color: 'var(--text)' }}>
+            Google rejects most non-HTTPS origins, and the error does not say
+            so.
+          </strong>{' '}
+          Origins must use HTTPS, and hosts cannot be raw IP addresses —{' '}
+          <em>localhost is the exception to both</em>. So{' '}
+          <code>http://localhost:5173</code> is accepted, while{' '}
+          <code>http://192.168.1.10:5173</code> is refused at registration time,
+          and production needs a real certificate first. Testing over your
+          machine's LAN address is the common way to hit this.
+        </p>
+        <p>
+          The symptom does not suggest the cause: the Google button{' '}
+          <strong>appears normally</strong> and only fails when someone clicks,
+          with <code>The given client ID is not found</code> or{' '}
+          <code>[GSI_LOGGER]: The given origin is not allowed</code> in the
+          browser console. Google only validates the origin at that moment.
+        </p>
+        <p style={{ color: 'var(--text-muted)' }}>
+          The Client Secret is not used anywhere. The Client ID is public by
+          design — it appears in the HTML of every site using Google Sign-In.
+        </p>
+      </>
+    ),
+  },
+  cors: {
+    titulo: 'Point CORS_ORIGIN at the public domain',
+    resumo: 'Same https:// address you registered with Google.',
+    detalhe: (
+      <p>
+        A variable changed in the panel only takes effect in a new container, so
+        redeploy after setting it. Left at the default, the app still works —
+        nginx proxies <code>/api</code> on the same host, so there is no
+        cross-origin request in normal use — but any call from elsewhere is
+        blocked, and that is a confusing thing to debug later.
+      </p>
+    ),
+  },
+  login: {
+    titulo: 'Leave AUTH_DISABLED unset',
+    resumo: 'The default is off in both compose files. Keep it that way.',
+    detalhe: (
+      <p>
+        Forgetting this variable closes access; it never opens it. Setting it to
+        true is not "skip the login screen" — it stops every route from
+        requiring a token, including{' '}
+        <code>GET /api/settings/tokens</code>, where the AI provider keys live.
+        They are encrypted against a database leak, not against a request that
+        arrives authorised.
+      </p>
+    ),
+  },
+  quadro: {
+    titulo: 'Confirm the internal backlog did not ship',
+    resumo: 'It is a frontend build flag, so this page cannot see it.',
+    detalhe: (
+      <>
+        <p>
+          The Quadro tab exposes the internal backlog — known bugs and product
+          decisions. It is excluded unless <code>VITE_QUADRO</code> is set at
+          build time, but hiding the tab is not the same as removing the data:{' '}
+          <code>quadro.json</code> is a static file, and the Dockerfile deletes
+          it separately. Check the file, not the tab:
+        </p>
+        <CopiaDeComando
+          rotulo="backlog check"
+          comando="curl -s -o /dev/null -w '%{http_code}\n' https://YOUR-DOMAIN/quadro.json"
+        />
+        <p>
+          <strong>404 is the pass.</strong> A 200 with JSON means the build went
+          out with the flag on and the backlog is public.
+        </p>
+      </>
+    ),
+  },
+  verificar: {
+    titulo: 'Verify from outside, over the real domain',
+    resumo: 'The panel saying "deployment successful" is not the criterion.',
+    detalhe: (
+      <>
+        <p>
+          Run these from your own machine, so the request crosses the proxy the
+          way a visitor's does. From inside the container they always pass,
+          which is exactly why they are worth running.
+        </p>
+        <CopiaDeComando
+          rotulo="public config check"
+          comando="curl -s https://YOUR-DOMAIN/api/auth/config"
+        />
+        <p>
+          Expect <code>"enabled":true</code> and{' '}
+          <code>"authDisabled":false</code>.{' '}
+          <code>"enabled":false</code> means <code>GOOGLE_CLIENT_ID</code> never
+          reached the container and nobody can sign in.
+        </p>
+        <CopiaDeComando
+          rotulo="private route check"
+          comando={
+            'for r in auth/me settings/tokens; do printf "%s -> " "$r"; ' +
+            'curl -s -o /dev/null -w "%{http_code}\\n" "https://YOUR-DOMAIN/api/$r"; done'
+          }
+        />
+        <p>
+          <strong style={{ color: WARN_INK }}>
+            Both must answer 401. A 200 here is a security failure, not a
+            success
+          </strong>{' '}
+          — it means login is off and the AI provider keys are readable by
+          anyone with the URL. Remove <code>AUTH_DISABLED</code>, redeploy, and
+          repeat until both give 401.
+        </p>
+        <p>
+          Reading tracks anonymously is public on purpose, so{' '}
+          <code>/api/tracks</code> answering 200 is correct. What proves login
+          is on is the 401 above, not that route.
+        </p>
+        <p style={{ color: 'var(--text-muted)' }}>
+          Then open the domain in a browser, sign in with Google, and confirm
+          that marking a lesson complete works — in both themes.
+        </p>
+      </>
+    ),
+  },
+}
+
 /** O que muda se a pessoa trocar o valor depois. */
 const ROTACAO: Record<CustoDeRotacao, { rotulo: string; texto: string; grave: boolean }> = {
   seguro: {
@@ -101,7 +340,7 @@ const ROTACAO: Record<CustoDeRotacao, { rotulo: string; texto: string; grave: bo
 }
 
 /**
- * Going live: o que precisa estar pronto antes de publicar.
+ * Deploy Prod: o que precisa estar pronto antes de publicar.
  *
  * **É uma quinta aba, e não uma seção em Features.** Features é decisão de
  * produto em tempo de execução — interruptores que o admin liga e desliga
@@ -118,7 +357,7 @@ const ROTACAO: Record<CustoDeRotacao, { rotulo: string; texto: string; grave: bo
  * cadastrada. A tela ensina o comando; quem executa é a pessoa, no servidor.
  */
 export function ConfigDeployPage() {
-  useDocumentTitle('Going live — Settings')
+  useDocumentTitle('Deploy Prod — Settings')
 
   const { data, loading, error, reload } = useAsync(
     (signal) => api.prontidao(signal),
@@ -135,7 +374,7 @@ export function ConfigDeployPage() {
 
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Going live
+          Deploy Prod
         </h1>
         <p className="mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
           What production needs before you publish, and what this server has
@@ -168,14 +407,18 @@ export function ConfigDeployPage() {
             </ul>
           </section>
 
+          <GuiaDePublicar data={data} />
+
           <div className="mt-10 border-t pt-5" style={{ borderColor: 'var(--border)' }}>
-            <h2 className="text-base font-semibold">The full deploy guide</h2>
+            <h2 className="text-base font-semibold">When something breaks</h2>
             <p className="mt-1.5 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-              This page is the checklist. The Coolify setup, the Google OAuth
-              origins, the curl commands that verify a deploy from outside, and
-              what each failure looks like are in{' '}
+              The steps above are what you do to publish. Diagnosing a deploy
+              that failed —{' '}
+              <code className="text-[13px]">api</code> stuck unhealthy, the API
+              restarting in a loop, migrations that did not run — is in{' '}
               <code className="text-[13px]">docs/DEPLOY.md</code> in the
-              repository.
+              repository, because in most of those states this page is not
+              loading either.
             </p>
           </div>
         </>
@@ -425,6 +668,194 @@ function SeloDeSegredo({
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold"
+      style={{ color: cor, borderColor: cor }}
+    >
+      <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: cor }} />
+      {rotulo}
+    </span>
+  )
+}
+
+/**
+ * Um comando copiavel dentro do texto de um passo.
+ *
+ * Wrapper fino sobre `BotaoDeCopiar` so para o espacamento vertical no meio de
+ * uma prosa — o botao nasceu encostado no rotulo dos segredos.
+ */
+function CopiaDeComando({ comando, rotulo }: { comando: string; rotulo: string }) {
+  return (
+    <span className="mt-1 block">
+      <BotaoDeCopiar texto={comando} rotulo={rotulo} />
+    </span>
+  )
+}
+
+/**
+ * O guia de publicar, em passos numerados.
+ *
+ * **Recolhido por padrão, e recolhível por passo.** A página já tinha ~2.760px
+ * antes disto; o guia inteiro aberto a dobrava, e empurrava para fora da tela
+ * justamente o alarme de AUTH_DISABLED e o veredito — que são o que alguém
+ * abre esta página para ver. Fechado, ele custa uma linha.
+ *
+ * Aberto, cada passo mostra só o título, o estado e uma linha de resumo: a
+ * sequência inteira se lê de uma vez, e o detalhe só aparece no passo em que a
+ * pessoa está. Vários podem ficar abertos ao mesmo tempo — um acordeão que
+ * fecha o anterior atrapalharia quem compara dois passos.
+ */
+function GuiaDePublicar({ data }: { data: Prontidao }) {
+  const [aberto, setAberto] = useState(false)
+  const id = useId()
+
+  const feitos = data.passos.filter((p) => p.estado === 'cumprido').length
+  const verificaveis = data.passos.filter((p) => p.estado !== 'manual').length
+
+  return (
+    <section className="mt-10">
+      <div
+        className="rounded-xl border"
+        style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
+      >
+        <button
+          type="button"
+          onClick={() => setAberto((a) => !a)}
+          aria-expanded={aberto}
+          aria-controls={id}
+          className="flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left"
+          style={{ color: 'var(--text)' }}
+        >
+          <span className="min-w-0">
+            <span className="block font-semibold">
+              How to publish, step by step
+            </span>
+            <span className="mt-0.5 block text-sm" style={{ color: 'var(--text-muted)' }}>
+              {data.passos.length} steps in the order you run them —{' '}
+              {feitos} of the {verificaveis} this server can check{' '}
+              {feitos === 1 ? 'is' : 'are'} already done.
+            </span>
+          </span>
+          <span aria-hidden className="shrink-0" style={{ color: 'var(--text-muted)' }}>
+            {aberto ? '▴' : '▾'}
+          </span>
+        </button>
+
+        <Recolhivel aberto={aberto} id={id}>
+          <div className="border-t px-4 pb-4" style={{ borderColor: 'var(--border)' }}>
+            {data.ambienteDeDesenvolvimento && (
+              <p
+                className="mt-4 rounded-lg border border-l-4 p-3 text-sm leading-relaxed"
+                style={{
+                  borderColor: 'var(--border)',
+                  borderLeftColor: WARN_INK,
+                  background: 'var(--surface-sunken)',
+                }}
+              >
+                <strong style={{ color: WARN_INK }}>
+                  This is not the production server.
+                </strong>{' '}
+                This page reads the process it is running in, and this one still
+                has development values — the public database password, or a
+                localhost origin. The states below describe this machine, so a
+                step marked done here says nothing about your deployed server.
+                Open this page on the deployed domain to check that one.
+              </p>
+            )}
+
+            <p className="mt-4 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+              Four of these end in something outside this process — the Google
+              Cloud Console, the proxy's certificate, the frontend build, a
+              request arriving from the internet. Those are marked{' '}
+              <em>you confirm this</em>: the page cannot see them, and saying
+              otherwise would be guessing.
+            </p>
+
+            <ol className="mt-4 flex flex-col gap-2.5">
+              {data.passos.map((passo, i) => (
+                <PassoDoGuia key={passo.id} passo={passo} numero={i + 1} />
+              ))}
+            </ol>
+          </div>
+        </Recolhivel>
+      </div>
+    </section>
+  )
+}
+
+/** Um passo: cabeçalho sempre visível, detalhe atrás do próprio botão. */
+function PassoDoGuia({ passo, numero }: { passo: PassoDeDeploy; numero: number }) {
+  const [aberto, setAberto] = useState(false)
+  const id = useId()
+  const texto = PASSOS[passo.id]
+
+  if (!texto) return null
+
+  return (
+    <li
+      className="rounded-lg border"
+      style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+    >
+      <button
+        type="button"
+        onClick={() => setAberto((a) => !a)}
+        aria-expanded={aberto}
+        aria-controls={id}
+        className="flex min-h-11 w-full items-start gap-3 px-3.5 py-3 text-left"
+        style={{ color: 'var(--text)' }}
+      >
+        <span
+          aria-hidden
+          className="mt-0.5 shrink-0 text-sm font-semibold tabular-nums"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          {numero}.
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="text-sm font-semibold">{texto.titulo}</span>
+            <SeloDePasso estado={passo.estado} />
+          </span>
+          <span className="mt-1 block text-sm" style={{ color: 'var(--text-muted)' }}>
+            {texto.resumo}
+          </span>
+        </span>
+        <span aria-hidden className="shrink-0" style={{ color: 'var(--text-muted)' }}>
+          {aberto ? '▴' : '▾'}
+        </span>
+      </button>
+
+      <Recolhivel aberto={aberto} id={id}>
+        {/* `[&>p]` em vez de repetir a classe em cada <p> do texto do passo:
+            o conteúdo é ReactNode escrito à mão, não uma lista de strings. */}
+        <div
+          className="border-t px-3.5 py-3 text-sm leading-relaxed [&>p]:mt-2.5 [&>p:first-child]:mt-0"
+          style={{ borderColor: 'var(--border)' }}
+        >
+          {texto.detalhe}
+        </div>
+      </Recolhivel>
+    </li>
+  )
+}
+
+/**
+ * O estado de um passo.
+ *
+ * `manual` é cinza e não verde nem vermelho de propósito: não é uma pendência
+ * que um redeploy resolve, nem algo que a página conferiu. É "a prova está do
+ * lado de fora" — e pintá-lo como qualquer um dos outros dois seria mentir em
+ * uma das duas direções.
+ */
+function SeloDePasso({ estado }: { estado: EstadoDoPasso }) {
+  const { rotulo, cor } =
+    estado === 'cumprido'
+      ? { rotulo: 'Done on this server', cor: 'var(--brand)' }
+      : estado === 'pendente'
+        ? { rotulo: 'Not done yet', cor: WARN_INK }
+        : { rotulo: 'You confirm this', cor: 'var(--text-muted)' }
+
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold"
       style={{ color: cor, borderColor: cor }}
     >
       <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ background: cor }} />

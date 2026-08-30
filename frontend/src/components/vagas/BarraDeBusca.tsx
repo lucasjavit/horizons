@@ -1,4 +1,8 @@
 import type { ReactNode } from 'react'
+// A constante mora em `components/botao-icone.ts` desde 30/08 — ver a nota la
+// sobre os 27 KB. Reexportada para quem ja importava daqui.
+import { BOTAO_ICONE } from '../botao-icone'
+export { BOTAO_ICONE }
 import { Link } from 'react-router-dom'
 import { usePopover } from '../../lib/usePopover'
 import { HintWrap } from '../Hint'
@@ -41,22 +45,6 @@ import { SinoDeAvisos } from './SinoDeAvisos'
  * exatamente o que alguém digita.
  */
 
-/**
- * O estado de interação dos botões de ícone da barra.
- *
- * **Hover e clique precisam de resposta visível.** Sem ela, um ícone cinza
- * parado não parece clicável — e no toque não há hover nenhum, então o
- * `active:` é o único retorno de que o gesto pegou.
- *
- * A cor sai de `color-mix` sobre o token, e não de um verde escrito à mão —
- * assim ela acompanha o tema sem uma segunda paleta para manter.
- */
-export const BOTAO_ICONE =
-  'inline-flex shrink-0 items-center justify-center rounded-md transition-colors ' +
-  'hover:bg-[color-mix(in_srgb,var(--brand)_14%,transparent)] ' +
-  'hover:text-[var(--brand)] ' +
-  'active:bg-[color-mix(in_srgb,var(--brand)_26%,transparent)] ' +
-  'focus-visible:text-[var(--brand)]'
 
 /**
  * Os controles de escopo da faixa de cima: `Location` e `All filters`.

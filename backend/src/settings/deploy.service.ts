@@ -58,6 +58,31 @@ export interface EstadoDoLoginDto {
   admins: number;
 }
 
+/**
+ * O que a API consegue afirmar sobre um passo do guia.
+ *
+ * `manual` nao e "desconhecido por enquanto", e uma categoria permanente: sao
+ * os passos cuja prova esta FORA deste processo (o Google Cloud Console, o
+ * certificado do proxy, o bundle do frontend). Marcar como pendente sugeriria
+ * que um redeploy resolve; marcar como cumprido seria mentira. A tela diz onde
+ * a confirmacao se faz, e nao finge saber.
+ */
+export type EstadoDoPasso = 'cumprido' | 'pendente' | 'manual';
+
+/**
+ * Um passo do guia de publicacao, com o que o servidor sabe dele.
+ *
+ * **So o estado cruza a rede.** O texto de cada passo e texto de interface: e
+ * igual em qualquer instalacao, e mandar prosa pelo DTO a cada carga da pagina
+ * so cria uma segunda copia para divergir da primeira. O backend responde o que
+ * so ele pode saber — se a variavel chegou a ESTE processo.
+ */
+export interface PassoDeDeployDto {
+  /** Casa com a chave do texto no front. */
+  id: string;
+  estado: EstadoDoPasso;
+}
+
 export interface ProntidaoDto {
   segredos: SegredoDto[];
   login: EstadoDoLoginDto;
@@ -69,6 +94,34 @@ export interface ProntidaoDto {
    * divergem na primeira mudanca.
    */
   pronto: boolean;
+  /**
+   * Os passos de publicar, na ordem em que se executam.
+   *
+   * O guia estava so no `docs/DEPLOY.md`, que exige sair do painel do Coolify,
+   * achar o arquivo no GitHub e voltar. E um arquivo nao sabe o estado do
+   * servidor: aqui um passo ja cumprido se mostra cumprido, o que e a diferenca
+   * entre um guia e uma lista de tarefas viva.
+   */
+  passos: PassoDeDeployDto[];
+  /**
+   * Ha sinal de que este processo NAO e o de producao.
+   *
+   * A tela le o ambiente em que ela mesma roda — aberta em desenvolvimento, ela
+   * descreve o desenvolvimento. Sem este aviso, um "cumprido" verde ao lado de
+   * um passo de producao seria lido como producao ja configurada.
+   *
+   * **Nao se usa `NODE_ENV` para isto**, e medir custou uma versao errada: o
+   * conteiner de DESENVOLVIMENTO tambem sobe com `NODE_ENV=production`, porque
+   * o Dockerfile e o mesmo e constroi a imagem de producao nos dois casos. O
+   * aviso teria ficado apagado exatamente na maquina que precisa dele.
+   *
+   * O sinal usado e o unico que separa os dois de fato: o `docker-compose.yml`
+   * de desenvolvimento embute valores publicos, no repositorio — a senha
+   * `horizons` e `CORS_ORIGIN: http://localhost:5173`. O de producao exige
+   * `${VAR:?}` em ambos e recusa subir sem eles. Achar um valor publico aqui e
+   * prova de que este processo subiu pelo compose de desenvolvimento.
+   */
+  ambienteDeDesenvolvimento: boolean;
 }
 
 /**
@@ -127,7 +180,87 @@ export class DeployService {
       login.googleConfigurado &&
       login.admins > 0;
 
-    return { segredos, login, pronto };
+    return {
+      segredos,
+      login,
+      pronto,
+      passos: this.passos(segredos, login),
+      ambienteDeDesenvolvimento: this.pareceDesenvolvimento(segredos),
+    };
+  }
+
+  /**
+   * Este processo subiu pelo compose de desenvolvimento?
+   *
+   * Ver a nota em `ProntidaoDto.ambienteDeDesenvolvimento`: `NODE_ENV` nao
+   * serve, porque vale `production` nos dois. Reusa o veredito de
+   * `senhaDoBanco()` em vez de comparar a senha de novo — uma segunda copia da
+   * lista de defaults divergiria da primeira.
+   */
+  private pareceDesenvolvimento(segredos: SegredoDto[]): boolean {
+    const senhaPublica =
+      segredos.find((s) => s.nome === 'POSTGRES_PASSWORD')?.estado ===
+      'invalido';
+    const origemLocal = (process.env.CORS_ORIGIN ?? '').includes('localhost');
+    return senhaPublica || origemLocal;
+  }
+
+  /**
+   * Os passos de publicar, com o que este processo consegue provar de cada um.
+   *
+   * A ordem e a de execucao, e nao a de importancia: quem publica pela primeira
+   * vez segue de cima a baixo. Os `manual` estao no meio de proposito — o
+   * cadastro da origem no Google vem DEPOIS do dominio existir e ANTES de
+   * testar o login, e tira-los da sequencia para um bloco separado quebraria
+   * justamente a ordem que faz o guia funcionar.
+   */
+  private passos(
+    segredos: SegredoDto[],
+    login: EstadoDoLoginDto,
+  ): PassoDeDeployDto[] {
+    const temSegredo = (nome: string) =>
+      segredos.find((s) => s.nome === nome)?.estado === 'ok';
+
+    return [
+      // O recurso do Coolify: fora deste processo por definicao. A API nao sabe
+      // por qual compose ela subiu — nada no ambiente distingue os dois.
+      { id: 'recurso', estado: 'manual' },
+      {
+        id: 'segredos',
+        estado: segredos.every((s) => s.estado === 'ok')
+          ? 'cumprido'
+          : 'pendente',
+      },
+      {
+        id: 'admins',
+        estado: login.admins > 0 ? 'cumprido' : 'pendente',
+      },
+      // TLS: o proxy termina o HTTPS antes da API. Um `x-forwarded-proto` seria
+      // uma alegacao do proxy, nao uma prova do certificado — e um certificado
+      // padrao do Traefik responde 443 igual a um do Let's Encrypt.
+      { id: 'tls', estado: 'manual' },
+      {
+        // A variavel existir e verificavel; a origem estar cadastrada no Google
+        // Cloud Console nao e. Cumprido aqui significa "metade que eu vejo".
+        id: 'google',
+        estado: login.googleConfigurado ? 'cumprido' : 'pendente',
+      },
+      {
+        id: 'cors',
+        estado: temSegredo('CORS_ORIGIN') ? 'cumprido' : 'pendente',
+      },
+      {
+        // O unico que se inverte: aqui `cumprido` e AUTH_DISABLED desligada.
+        id: 'login',
+        estado: login.authDisabled ? 'pendente' : 'cumprido',
+      },
+      // O backlog vazar depende de VITE_QUADRO no build do FRONTEND, que e
+      // outro conteiner e outra imagem. Esta API nao le aquele bundle.
+      { id: 'quadro', estado: 'manual' },
+      // A prova final e uma requisicao de fora, atravessando o proxy. Vista de
+      // dentro, ela sempre passa — e por isso e que ela existe.
+      { id: 'verificar', estado: 'manual' },
+    ];
   }
 
   /**

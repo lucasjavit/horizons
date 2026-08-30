@@ -879,10 +879,22 @@
     {
       "id": "PLT-08",
       "titulo": "Prontidão para publicar, na tela",
-      "estado": "feito (27/08/2026)",
+      "estado": "feito (27/08/2026) · guia de publicar na tela (28/08/2026)",
       "coluna": "feito",
       "tamanho": "M",
       "porque": "O [PLT-06](PLT-06-deploy-no-coolify.md) escreveu, no próprio card, a frase que originou este: *\"o curl de verificação é a parte que importa, porque nada disso aparece na interface\"*. O material sobre publicar existia tod",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "PLT-09",
+      "titulo": "Cadastro em dois tempos, e três papéis",
+      "estado": "decidido, não implementado (28/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "",
       "decisao": "",
       "bloqueio": "",
       "feitos": 0,
