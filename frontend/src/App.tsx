@@ -67,49 +67,6 @@ const ConfigDeployPage = lazy(() =>
  * invoice mira um publico global, enquanto as trilhas sao escritas em
  * portugues para o dev brasileiro. A mistura e consciente.
  */
-/** Atalho para as configuracoes, no canto direito do cabecalho. */
-function Engrenagem({ admin }: { admin: boolean }) {
-  const { pathname } = useLocation()
-  // Qualquer sub-rota de Configuracoes deixa a engrenagem marcada: as
-  // quatro paginas sao a mesma area.
-  const ativa = pathname === '/config' || pathname.startsWith('/config/')
-
-  // Config e area de administracao (PLT-04). Esconder o icone nao substitui a
-  // protecao da rota — o backend exige o papel —, mas evita oferecer um
-  // caminho que so daria 403.
-  if (!admin) return null
-
-  return (
-    <Link
-      to="/config"
-      // Icone sozinho precisa de nome acessivel: sem isto o leitor de tela
-      // anuncia so "link".
-      aria-label="Settings"
-      title="Settings"
-      aria-current={ativa ? 'page' : undefined}
-      // 36px de alvo, acima dos 24px minimos da WCAG 2.5.8.
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md"
-      style={{
-        background: ativa ? 'var(--surface-sunken)' : undefined,
-        color: ativa ? 'var(--text)' : 'var(--text-muted)',
-      }}
-    >
-      <svg
-        aria-hidden
-        viewBox="0 0 24 24"
-        className="h-[18px] w-[18px]"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-      </svg>
-    </Link>
-  )
-}
 
 
 /**
@@ -122,15 +79,18 @@ function Engrenagem({ admin }: { admin: boolean }) {
 function Conta({
   user,
   podeSair,
+  admin,
   onEntrou,
 }: {
   user: AuthUser | null
   podeSair: boolean
+  /** Config e area de administracao (PLT-04) — so admin ve o item. */
+  admin: boolean
   onEntrou: (u: AuthUser) => void
 }) {
   if (!user) return <BotaoGoogle onEntrou={onEntrou} />
 
-  return <MenuDaConta user={user} podeSair={podeSair} />
+  return <MenuDaConta user={user} podeSair={podeSair} admin={admin} />
 }
 
 /**
@@ -145,7 +105,15 @@ function Conta({
  * para uma ação que se usa raramente. Continua existindo: sem ele não há como
  * trocar de conta, e ficar preso na sessão é pior que um botão a mais.
  */
-function MenuDaConta({ user, podeSair }: { user: AuthUser; podeSair: boolean }) {
+function MenuDaConta({
+  user,
+  podeSair,
+  admin,
+}: {
+  user: AuthUser
+  podeSair: boolean
+  admin: boolean
+}) {
   const { aberto, alternar, setAberto, caixa, gatilho } = usePopover()
   const iniciais = user.name.trim().charAt(0).toUpperCase() || '?'
 
@@ -182,9 +150,15 @@ function MenuDaConta({ user, podeSair }: { user: AuthUser; podeSair: boolean }) 
           <ItemDoMenu to="/perfil" onIr={() => setAberto(false)}>
             Profile
           </ItemDoMenu>
-          <ItemDoMenu to="/config" onIr={() => setAberto(false)}>
-            Settings
-          </ItemDoMenu>
+          {/* **Settings so para admin**, como era na engrenagem que este menu
+              substituiu (30/08). Esconder nao substitui a protecao da rota — o
+              backend exige o papel —, mas evita oferecer um caminho que so
+              daria 403. */}
+          {admin && (
+            <ItemDoMenu to="/config" onIr={() => setAberto(false)}>
+              Settings
+            </ItemDoMenu>
+          )}
 
           {/* Com o login desligado, "Sign out" levaria a uma tela de login que
               o servidor não aceita — sairia para lugar nenhum. */}
@@ -386,8 +360,12 @@ export default function App() {
             {/* O tema veio da barra de busca (26/08): ele vale para o app
                 inteiro, e ali só existia para quem chegava à tela de Jobs. */}
             <BotaoDeTema />
-            <Engrenagem admin={semLogin || user?.role === 'ADMIN'} />
-            <Conta user={user} podeSair={!semLogin} onEntrou={setUser} />
+            <Conta
+              user={user}
+              podeSair={!semLogin}
+              admin={semLogin || user?.role === 'ADMIN'}
+              onEntrou={setUser}
+            />
             </div>
           </div>
         </header>
