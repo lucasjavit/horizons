@@ -308,7 +308,29 @@ export interface AuthConfig {
   authDisabled: boolean
 }
 
-/** Recursos que o admin liga e desliga em tempo de execução. */
+/**
+ * O que a aba Jobs precisa saber — e tudo o que uma sessão comum recebe.
+ *
+ * Espelha `RecursosDeProdutoDto` do backend, servido por
+ * `GET /settings/recursos/produto`, que é aberto a qualquer sessão.
+ *
+ * **Campo novo aqui é visível a qualquer usuário logado.** O que descreve a
+ * instalação — chave, provedor, ordem da cadeia, estado de verificação — vai
+ * em `Recursos`, que vem da rota de admin.
+ */
+export interface RecursosDeProduto {
+  /** A leitura de currículo está ligada: a caixa de upload de CV aparece. */
+  leituraCvAtiva: boolean
+  /** O histórico de vagas vistas/descartadas está ligado. */
+  historicoAtivo: boolean
+}
+
+/**
+ * Recursos que o admin liga e desliga em tempo de execução.
+ *
+ * Espelha `RecursosDto`. Vem de `GET /settings/recursos`, que é `@AdminOnly()`
+ * — só as telas de `/config` recebem isto. Campo novo aqui nasce restrito.
+ */
 export interface Recursos {
   leituraCvAtiva: boolean
   /** Sem chave de IA o recurso não pode ser ligado. */

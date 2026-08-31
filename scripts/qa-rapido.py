@@ -26,6 +26,44 @@ def ok(cond: bool, msg: str) -> bool:
     return cond
 
 
+def token_de_papel(papel: str) -> str | None:
+    """
+    Assina um token para um usuario com o papel pedido ('USER' ou 'ADMIN').
+
+    Diferente de `token_de_teste()`, que pega o primeiro usuario que aparecer:
+    aqui o papel E o objeto do teste, entao pegar qualquer um mediria outra
+    coisa. Devolve `None` se nao houver usuario daquele papel no banco — o
+    teste se pula em vez de reprovar, porque um banco sem usuario comum e um
+    banco incompleto, e nao um bug do codigo.
+    """
+    sql = f"select id, email, role from users where role = '{papel}' limit 1;"
+    try:
+        r = subprocess.run(
+            ["docker", "compose", "exec", "-T", "db", "psql", "-U", "horizons",
+             "-d", "horizons", "-tAF,", "-c", sql],
+            capture_output=True, text=True, timeout=20,
+        )
+        linhas = [l for l in r.stdout.strip().splitlines() if l.strip()]
+        if not linhas:
+            return None
+        linha = linhas[0].split(",")
+        if len(linha) < 3:
+            return None
+        js = (
+            "const jwt=require('jsonwebtoken');"
+            f"console.log(jwt.sign({{sub:'{linha[0]}',email:'{linha[1]}',"
+            f"role:'{linha[2]}'}},process.env.JWT_SECRET,{{expiresIn:'1h'}}))"
+        )
+        r = subprocess.run(
+            ["docker", "compose", "exec", "-T", "api", "node", "-e", js],
+            capture_output=True, text=True, timeout=20,
+        )
+        tok = r.stdout.strip()
+        return tok if tok.count(".") == 2 else None
+    except (subprocess.SubprocessError, IndexError, OSError):
+        return None
+
+
 def token_de_teste() -> str | None:
     """
     Assina um token com o segredo do proprio container.
@@ -195,6 +233,51 @@ else:
         obtido = str(e)
     ok(obtido == 401 or sem_login,
        f"token invalido em rota publica responde 401 (deu {obtido})")
+
+    # PLT-12: /config/* e so do admin, e a rota de produto nao vaza configuracao.
+    #
+    # Este bloco existe porque o defeito que ele cobre nasceu de um comentario
+    # que envelheceu: `GET /settings/recursos` era aberto quando so devolvia um
+    # booleano, e continuou aberto quando passou a devolver o `hint` das chaves
+    # e a ordem da cadeia de IA. Nada apontava para a frase desatualizada. Aqui
+    # aponta.
+    if sem_login:
+        print("  pulado  papeis (AUTH_DISABLED: todo mundo e admin)")
+    else:
+        tok_user = token_de_papel("USER")
+        if tok_user is None:
+            print("  pulado  papeis (nenhum usuario USER no banco)")
+        else:
+            def status_com(rota: str, tok: str):
+                req = urllib.request.Request(
+                    API + rota, headers={"Authorization": f"Bearer {tok}"})
+                try:
+                    with urllib.request.urlopen(req, timeout=10) as resp:
+                        return resp.status, json.load(resp)
+                except urllib.error.HTTPError as e:
+                    return e.code, None
+                except (urllib.error.URLError, TimeoutError, ValueError) as e:
+                    return str(e), None
+
+            # As rotas que alimentam as cinco sub-paginas de /config.
+            for rota in ["/settings/recursos", "/settings/tokens",
+                         "/settings/deploy/prontidao", "/jobs/descobertas",
+                         "/email/metricas"]:
+                obtido, _ = status_com(rota, tok_user)
+                ok(obtido == 403, f"{rota} nega usuario comum (deu {obtido})")
+
+            # A rota de produto continua aberta — a aba Jobs depende dela.
+            obtido, corpo = status_com("/settings/recursos/produto", tok_user)
+            ok(obtido == 200,
+               f"/settings/recursos/produto atende usuario comum (deu {obtido})")
+
+            # E devolve SO os dois booleanos. Este e o teste que pega o campo
+            # acrescentado sem pensar: qualquer chave a mais reprova aqui.
+            if isinstance(corpo, dict):
+                esperadas = {"leituraCvAtiva", "historicoAtivo"}
+                sobrando = set(corpo) - esperadas
+                ok(not sobrando,
+                   f"rota de produto nao vaza configuracao (sobrou: {sorted(sobrando) or 'nada'})")
 
     try:
         from playwright.sync_api import sync_playwright

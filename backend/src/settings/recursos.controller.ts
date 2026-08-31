@@ -2,7 +2,11 @@ import { Body, Controller, Get, Post, Put } from '@nestjs/common';
 import { ApiProvider } from '@prisma/client';
 import { IsBoolean, IsEnum, IsIn, IsOptional } from 'class-validator';
 import { AdminOnly } from '../auth/current-user';
-import { RecursosService, type RecursosDto } from './recursos.service';
+import {
+  RecursosService,
+  type RecursosDeProdutoDto,
+  type RecursosDto,
+} from './recursos.service';
 import type { Capacidade } from '../ia/provedores';
 
 export class DefinirFlagDto {
@@ -50,18 +54,48 @@ export class MoverProvedorDto {
 /**
  * Recursos ligaveis pelo admin.
  *
- * A LEITURA e para qualquer sessao, de proposito: a tela de vagas precisa
- * saber se pode oferecer o upload, e quem usa a tela nao e admin. So o que
- * expoe aqui e um booleano — nao ha chave nem segredo nesta resposta.
+ * **Duas leituras, e nao uma filtrada por papel** (PLT-12):
  *
- * A ESCRITA e @AdminOnly(). O decorator vai no metodo, e nao na classe, para
- * o GET nao herdar a restricao.
+ * - `GET /settings/recursos/produto` — qualquer sessao. Devolve
+ *   `RecursosDeProdutoDto`, dois booleanos, e a aba Jobs le dali.
+ * - `GET /settings/recursos` — `@AdminOnly()`. Devolve o `RecursosDto`
+ *   inteiro, que descreve a infraestrutura: chaves (com `hint`), estado de
+ *   verificacao e a ordem da cadeia de IA.
+ *
+ * A rota aberta era esta mesma, e o comentario que a justificava dizia "so o
+ * que expoe aqui e um booleano — nao ha chave nem segredo nesta resposta".
+ * Era verdade quando foi escrito. O JOB-33 e o JOB-36 acrescentaram
+ * `provedores`, `ordemDaIa` e `iaDaBusca` ao DTO, e a frase envelheceu sem que
+ * nada apontasse para ela: usuario comum passou a receber os quatro ultimos
+ * caracteres da chave do admin.
+ *
+ * Por isso a separacao e por ROTA e por TIPO, e nao um `if (admin)` que remove
+ * campos. Um filtro parte do objeto inteiro e subtrai: campo novo nasce
+ * exposto e so deixa de ser se alguem lembrar de acrescentar a lista. Com dois
+ * DTOs o campo novo nasce restrito, e chega ao usuario comum so se alguem o
+ * escrever, de proposito, em `RecursosDeProdutoDto`.
+ *
+ * A ESCRITA e @AdminOnly() por metodo, e nao na classe, para a rota de produto
+ * nao herdar a restricao.
  */
 @Controller('settings/recursos')
 export class RecursosController {
   constructor(private readonly recursos: RecursosService) {}
 
+  /**
+   * O que a aba Jobs precisa. Aberta a qualquer sessao, de proposito.
+   *
+   * Vem ANTES do `@Get()` sem caminho por clareza — nao ha `:param` aqui que
+   * pudesse engoli-la, mas a regra da casa e ler a especifica primeiro.
+   */
+  @Get('produto')
+  produto(): Promise<RecursosDeProdutoDto> {
+    return this.recursos.paraProduto();
+  }
+
+  /** A visao de administracao: tudo, inclusive o que descreve a instalacao. */
   @Get()
+  @AdminOnly()
   obter(): Promise<RecursosDto> {
     return this.recursos.obter();
   }

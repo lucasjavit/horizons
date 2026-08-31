@@ -182,6 +182,52 @@ const DESCOBERTAS = 'jobs.descobertas';
  */
 const PAGINACAO = 'jobs.paginacao';
 
+/**
+ * O que a tela de PRODUTO precisa saber, e so isso.
+ *
+ * Existe porque `RecursosDto` deixou de caber numa rota aberta. O comentario
+ * antigo do controller dizia "so o que expoe aqui e um booleano — nao ha chave
+ * nem segredo nesta resposta", e era verdade quando foi escrito; o JOB-33 e o
+ * JOB-36 acrescentaram `provedores` (com `hint`, `status`, `httpStatus`),
+ * `ordemDaIa` e as contagens, e o comentario envelheceu em silencio. Um
+ * usuario comum passou a receber a configuracao de IA da instalacao.
+ *
+ * **A regra desta interface: campo novo aqui e visivel a QUALQUER sessao.**
+ * Nao ha filtro por papel que possa esquecer de cobri-lo — o que chega a
+ * quem nao e admin e exatamente o que esta escrito abaixo, e nada mais. Se o
+ * campo descreve a infraestrutura (chave, provedor, ordem da cadeia, estado
+ * de verificacao), o lugar dele e `RecursosDto`, na rota `@AdminOnly()`.
+ *
+ * Por que duas rotas e nao uma que filtra pelo papel: uma resposta filtrada
+ * comeca com o objeto inteiro e remove o que e sensivel, entao o campo novo
+ * nasce EXPOSTO e so deixa de ser se alguem lembrar de acrescenta-lo a lista
+ * de remocao. Aqui ele nasce restrito e so aparece se alguem o escrever nesta
+ * interface, de proposito. O default do descuido troca de lado.
+ */
+export interface RecursosDeProdutoDto {
+  /**
+   * A leitura de curriculo esta ligada e funcionando — a aba Jobs mostra o
+   * upload de CV. Ver `ListaVagas.tsx` e `CaixaUploadCV.tsx`.
+   */
+  leituraCvAtiva: boolean;
+  /**
+   * O historico de vagas vistas/descartadas esta ligado — a aba Jobs busca as
+   * marcas e mostra o selo e o botao de descartar.
+   */
+  historicoAtivo: boolean;
+}
+
+/**
+ * A visao de ADMINISTRACAO: tudo o que as cinco sub-paginas de `/config`
+ * mostram, incluindo o que descreve a infraestrutura.
+ *
+ * Serve tambem de leitura interna dos servicos (`busca.service`,
+ * `email-agendado`, …), que rodam no servidor e nao tem papel.
+ *
+ * **Campo novo aqui e restrito a admin.** E o default certo: errar para o lado
+ * de esconder devolve 403 a quem devia ver, e alguem reclama; errar para o
+ * lado de expor nao devolve nada a ninguem, e ninguem descobre.
+ */
 export interface RecursosDto {
   /** A leitura de curriculo esta ligada e funcionando. */
   leituraCvAtiva: boolean;
@@ -307,6 +353,34 @@ export class RecursosService {
     private readonly ordemDaIa: OrdemDaIaService,
     private readonly saude: SaudeDaIaService,
   ) {}
+
+  /**
+   * A visao aberta a qualquer sessao.
+   *
+   * **Monta o objeto do zero, e nao a partir de `obter()`.** Fazer
+   * `const { leituraCvAtiva, historicoAtivo } = await this.obter()` daria a
+   * mesma resposta hoje e seria mais curto — e reintroduziria exatamente o
+   * risco que este card fecha: quem acrescentasse um campo a `RecursosDto`
+   * teria de lembrar que existe um segundo consumidor com regra diferente. Aqui
+   * a unica forma de um campo chegar ao usuario comum e alguem escreve-lo
+   * nestas linhas.
+   *
+   * De quebra e mais barato: 81 ms contra 549 ms de `obter()` (media de 20
+   * chamadas, 31/08), porque le tres flags em vez de montar a lista dos seis
+   * provedores com estado de verificacao. A aba Jobs chama isto a cada carga
+   * da lista.
+   */
+  async paraProduto(): Promise<RecursosDeProdutoDto> {
+    const [flagCv, temChave, historico] = await Promise.all([
+      this.flag(LEITURA_CV),
+      this.temChaveDeIa(),
+      this.flagLigadaPorPadrao(HISTORICO),
+    ]);
+    // A dependencia manda sobre a flag, igual em `obter()`: sem chave de IA a
+    // leitura de CV nao acontece, e oferecer o upload seria prometer o que
+    // falha no envio.
+    return { leituraCvAtiva: flagCv && temChave, historicoAtivo: historico };
+  }
 
   async obter(): Promise<RecursosDto> {
     const [flagFirecrawl, temFirecrawl] = await Promise.all([

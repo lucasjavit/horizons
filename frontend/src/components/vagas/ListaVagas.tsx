@@ -297,12 +297,16 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
   useEffect(() => {
     const ctrl = new AbortController()
     api
-      .recursos(ctrl.signal)
+      .recursosDeProduto(ctrl.signal)
       .then((r) => {
-        // A mesma resposta decide as duas coisas: um `GET /settings/recursos`
-        // e não dois. Com a leitura desligada a caixa nem é montada — e o
-        // servidor confere o mesmo interruptor, então esconder não é a
-        // proteção, é só a cortesia.
+        // A mesma resposta decide as duas coisas: um
+        // `GET /settings/recursos/produto` e não dois. Com a leitura desligada
+        // a caixa nem é montada — e o servidor confere o mesmo interruptor,
+        // então esconder não é a proteção, é só a cortesia.
+        //
+        // A rota é a de PRODUTO, e não `/settings/recursos`: aquela é
+        // `@AdminOnly()` desde o PLT-12, e chamá-la aqui daria 403 para todo
+        // usuário comum — que é exatamente quem usa esta tela.
         setLeituraCvAtiva(r.leituraCvAtiva)
         return r.historicoAtivo ? api.listarHistorico(ctrl.signal) : null
       })

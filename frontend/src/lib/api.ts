@@ -21,6 +21,7 @@ import type {
   HostDescoberto,
   MaisVagas,
   Recursos,
+  RecursosDeProduto,
   Facetas,
   BuscaSalva,
   ResultadoRodada,
@@ -184,6 +185,28 @@ export const api = {
     await http.delete(`/settings/tokens/${provider}`)
   },
 
+  /**
+   * A visão de PRODUTO: os dois interruptores que a aba Jobs consulta.
+   *
+   * Aberta a qualquer sessão. Separada de `recursos()` porque aquela devolve a
+   * configuração da instalação — chaves, cadeia de IA, estado de verificação —
+   * e passou a exigir admin (PLT-12).
+   */
+  async recursosDeProduto(signal?: AbortSignal): Promise<RecursosDeProduto> {
+    const { data } = await http.get<RecursosDeProduto>(
+      '/settings/recursos/produto',
+      { signal },
+    )
+    return data
+  },
+
+  /**
+   * A visão de ADMINISTRAÇÃO, para as telas de `/config`.
+   *
+   * **Dá 403 para usuário comum**, de propósito. Uma tela de produto que
+   * precise de um flag daqui está pedindo a rota errada: o lugar dela é
+   * `recursosDeProduto()`.
+   */
   async recursos(signal?: AbortSignal): Promise<Recursos> {
     const { data } = await http.get<Recursos>('/settings/recursos', { signal })
     return data

@@ -911,6 +911,30 @@
       "bloqueio": "[PLT-09](PLT-09-cadastro-em-dois-tempos.md) — a decisão de quais dados e por",
       "feitos": 0,
       "total": 0
+    },
+    {
+      "id": "PLT-11",
+      "titulo": "A tela onde o dono gerencia os usuários",
+      "estado": "aberto (31/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "O [PLT-09](PLT-09-cadastro-em-dois-tempos.md) decidiu três papéis e disse que o dono promove alguém a Manager pela tela. A tela não existe — então hoje o MANAGER é um valor que nada produz, e a decisão está no papel.",
+      "decisao": "",
+      "bloqueio": "[PLT-09](PLT-09-cadastro-em-dois-tempos.md) — a decisão dos três papéis e da",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "PLT-12",
+      "titulo": "`/config/*` é só do admin",
+      "estado": "feito (31/08/2026)",
+      "coluna": "feito",
+      "tamanho": "P",
+      "porque": "Pedido do stakeholder em 31/08: *\"separar o que é do admin e o que é dos outros usuários — o /config/* é somente do admin\"*.",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
     }
   ]
 }
