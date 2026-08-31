@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 import { ApiProvider } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { decifrar } from '../settings/crypto';
+import { decifrar, SALT_TOKENS } from '../settings/crypto';
 import {
   baseUrlDe,
   cadeia,
@@ -547,7 +547,7 @@ export class IaService {
     });
     if (!guardada?.secret) return null;
     try {
-      return decifrar(guardada.secret);
+      return decifrar(guardada.secret, SALT_TOKENS);
     } catch {
       // Chave cifrada com outra ENCRYPTION_KEY: trata como ausente, em vez de
       // derrubar a requisicao com erro de cripto.

@@ -899,6 +899,18 @@
       "bloqueio": "",
       "feitos": 0,
       "total": 0
+    },
+    {
+      "id": "PLT-10",
+      "titulo": "O perfil recebe os dados da pessoa, quando ela quiser",
+      "estado": "feito (31/08/2026)",
+      "coluna": "feito",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "[PLT-09](PLT-09-cadastro-em-dois-tempos.md) — a decisão de quais dados e por",
+      "feitos": 0,
+      "total": 0
     }
   ]
 }

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { PerfilModule } from './perfil/perfil.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProgressModule } from './progress/progress.module';
 import { JobsModule } from './jobs/jobs.module';
@@ -25,6 +26,7 @@ import { TracksModule } from './tracks/tracks.module';
     TracksModule,
     ProgressModule,
     SettingsModule,
+    PerfilModule,
     JobsModule,
     EmailModule,
   ],

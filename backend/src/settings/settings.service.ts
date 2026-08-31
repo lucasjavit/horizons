@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ApiProvider } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SaudeDaIaService } from '../ia/saude.service';
-import { cifrar } from './crypto';
+import { cifrar, SALT_TOKENS } from './crypto';
 import type { ApiTokenDto } from './settings.dto';
 
 @Injectable()
@@ -30,7 +30,7 @@ export class SettingsService {
   ): Promise<ApiTokenDto> {
     const limpo = token.trim();
     const dados = {
-      secret: cifrar(limpo),
+      secret: cifrar(limpo, SALT_TOKENS),
       // Ultimos quatro: o suficiente para reconhecer, insuficiente para usar.
       hint: limpo.slice(-4),
     };

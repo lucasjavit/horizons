@@ -11,7 +11,7 @@ import type { MotorDaSessao } from './sessao-de-busca.service';
 import { DescobertasService } from './descobertas.service';
 import { RecursosService } from '../settings/recursos.service';
 import type { IaDaBusca } from '../settings/recursos.service';
-import { decifrar } from '../settings/crypto';
+import { decifrar, SALT_TOKENS } from '../settings/crypto';
 import type { FiltrosDto, VagaDto } from './job.dto';
 
 /**
@@ -742,7 +742,7 @@ export class BuscaService {
     });
     if (guardado?.secret) {
       try {
-        return decifrar(guardado.secret);
+        return decifrar(guardado.secret, SALT_TOKENS);
       } catch {
         this.log.warn('Token do Firecrawl nao pode ser decifrado');
       }

@@ -30,6 +30,25 @@ model User {
   /// token expirar — o guard rele o usuario a cada request.
   active      Boolean    @default(true)
   lastLoginAt DateTime?
+  /// Onde a pessoa mora. ISO 3166-1 alfa-2, ou "OTHER" para quem nao esta na
+  /// lista curada (PLT-10). Nulo = nao informado, e isso e valido: perfil
+  /// vazio e perfil valido.
+  country     String?
+  /// Telefone com DDI, como a pessoa digitou. Nao e cifrado: nao identifica
+  /// sozinho como o documento, e serve para contato.
+  phone       String?
+  /// Documento (CPF, RFC, CUIT...) CIFRADO com SALT_DOCUMENTOS — salt proprio,
+  /// separado do dos tokens de API (PLT-09). NUNCA volta para a tela.
+  documentEnc String?
+  /// Os ultimos digitos do documento, em claro, so para a pessoa reconhecer o
+  /// que esta guardado — o mesmo gesto do `hint` do ApiToken.
+  documentHint String?
+  /// De qual pais era o documento quando foi gravado.
+  ///
+  /// Guardado separado de `country` de proposito: sem ele, trocar o pais faria
+  /// o documento antigo parecer validado para o pais novo, que e exatamente o
+  /// defeito que o PLT-10 existe para impedir.
+  documentCountry String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   progress    Progress[]

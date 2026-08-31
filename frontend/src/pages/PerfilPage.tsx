@@ -1,3 +1,4 @@
+import { DadosPessoais } from '../components/perfil/DadosPessoais'
 import { ErrorState, LoadingState } from '../components/States'
 import { api } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
@@ -13,14 +14,14 @@ const PAPEL: Record<string, string> = {
 /**
  * A conta de quem está logado.
  *
- * **Só leitura, por enquanto.** O que há para mostrar hoje vem do Google —
- * foto, nome e e-mail — e nada disso se edita aqui: mudar significaria mudar
+ * **Duas seções, e a diferença entre elas é o ponto.** A de cima vem do
+ * Google — foto, nome e e-mail — e não se edita aqui: mudar significaria mudar
  * na conta Google, e um campo que finge ser editável e volta ao valor antigo
- * na próxima carga é pior que campo nenhum.
+ * na próxima carga é pior que campo nenhum. A de baixo é o que é **nosso**
+ * (PLT-10), e essa sim se edita.
  *
- * A página cresce com o [PLT-09](docs/backlog/cards/PLT-09-cadastro-em-dois-tempos.md):
- * nacionalidade, documento e telefone entram aqui quando houver contratação —
- * e aí sim haverá o que editar.
+ * Sem a separação visível a página inteira pareceria um formulário, e a pessoa
+ * tentaria trocar o nome onde não dá.
  */
 export function PerfilPage() {
   useDocumentTitle('Profile')
@@ -88,6 +89,11 @@ export function PerfilPage() {
             Your name and photo come from your Google account — change them
             there and they update here on your next sign-in.
           </p>
+
+          {/* A linha que separa o que é do Google do que é nosso. */}
+          <hr className="mt-8" style={{ borderColor: 'var(--border)' }} />
+
+          <DadosPessoais />
         </>
       )}
     </main>

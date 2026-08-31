@@ -6,6 +6,9 @@ import type {
   AuthConfig,
   Cadencia,
   AuthUser,
+  Pais,
+  PerfilPessoal,
+  SalvarPerfilPessoal,
   ApiTokenInfo,
   JobProfile,
   LessonDetail,
@@ -101,6 +104,21 @@ export const api = {
 
   async me(signal?: AbortSignal): Promise<AuthUser> {
     const { data } = await http.get<AuthUser>('/auth/me', { signal })
+    return data
+  },
+
+  async meuPerfil(signal?: AbortSignal): Promise<PerfilPessoal> {
+    const { data } = await http.get<PerfilPessoal>('/perfil', { signal })
+    return data
+  },
+
+  async paises(signal?: AbortSignal): Promise<Pais[]> {
+    const { data } = await http.get<Pais[]>('/perfil/paises', { signal })
+    return data
+  },
+
+  async salvarPerfil(corpo: SalvarPerfilPessoal): Promise<PerfilPessoal> {
+    const { data } = await http.put<PerfilPessoal>('/perfil', corpo)
     return data
   },
 

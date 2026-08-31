@@ -227,6 +227,42 @@ export interface AuthUser {
   role: string
 }
 
+/**
+ * Os dados que sao NOSSOS, e nao do Google (PLT-10).
+ *
+ * Espelha `backend/src/perfil/perfil.dto.ts`. ⚠️ **Nao ha `document`**: o
+ * documento nunca volta do servidor, nem parcialmente — so `documentHint`,
+ * os ultimos digitos.
+ */
+export interface PerfilPessoal {
+  country: string | null
+  phone: string | null
+  documentHint: string | null
+  /**
+   * De qual pais era o documento guardado. Diferente de `country` significa
+   * que a pessoa mudou de pais e o documento precisa ser digitado de novo.
+   */
+  documentCountry: string | null
+}
+
+/** Corpo do PUT /perfil. Campo ausente nao muda; string vazia apaga. */
+export interface SalvarPerfilPessoal {
+  country?: string
+  phone?: string
+  document?: string
+}
+
+export interface Pais {
+  codigo: string
+  nome: string
+  ddi: string
+  /** Como o documento se chama ali — vira rótulo do campo. */
+  documento: string
+  exemplo: string
+  /** Há validação real, ou o país cai no caminho genérico? */
+  validado: boolean
+}
+
 export interface AuthConfig {
   googleClientId: string | null
   enabled: boolean
