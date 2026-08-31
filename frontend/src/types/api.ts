@@ -224,7 +224,51 @@ export interface AuthUser {
   email: string
   name: string
   avatarUrl: string | null
+  /** 'COMMON_USER' | 'MANAGER' | 'ADMIN' (PLT-09). */
   role: string
+}
+
+/**
+ * Uma linha da lista de usuarios (PLT-11).
+ *
+ * Espelha `backend/src/usuarios/usuarios.dto.ts`. ⚠️ **Nao ha documento, nem
+ * telefone, nem endereco** — o backend nem os busca no `select:`. Gerenciar
+ * papel nao precisa do CPF de ninguem.
+ */
+export interface UsuarioDaLista {
+  id: string
+  email: string
+  name: string
+  avatarUrl: string | null
+  role: string
+  active: boolean
+  createdAt: string
+  lastLoginAt: string | null
+  deactivatedAt: string | null
+  /** Quem desativou, pelo nome. Nulo quando a conta esta ativa. */
+  deactivatedByName: string | null
+  /** E a propria conta de quem esta olhando. */
+  isSelf: boolean
+  /**
+   * Quem esta olhando pode ligar/desligar esta conta?
+   *
+   * **Vem do servidor, e nao e recalculado aqui.** A mesma funcao que responde
+   * isto e a que o `PATCH` usa para recusar — repetir a regra no front e como
+   * as duas versoes divergem, e ai o botao aparece para um gesto que da 403.
+   */
+  canToggleActive: boolean
+  /** Pode mudar o papel desta conta? So o admin, e nunca na propria. */
+  canChangeRole: boolean
+}
+
+/** O que `GET /usuarios` devolve. */
+export interface ListaDeUsuarios {
+  itens: UsuarioDaLista[]
+  /** Total que casa com o filtro — nao o total da tabela. */
+  total: number
+  pagina: number
+  paginas: number
+  porPagina: number
 }
 
 /**

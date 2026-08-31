@@ -106,7 +106,7 @@ export class AuthService {
         email,
         name: email.split('@')[0],
         provider: 'DEV',
-        role: this.ehAdmin(email) ? 'ADMIN' : 'USER',
+        role: this.papelPara(email, null),
       },
       // Nao mexe em nada de quem ja existe: com o login desligado, esta conta
       // costuma ser a mesma que ja tem o progresso das trilhas.
@@ -152,6 +152,18 @@ export class AuthService {
     const nome = payload.name ?? email.split('@')[0];
     const avatar = payload.picture ?? null;
 
+    // O papel que ESTA gravado, lido antes do upsert.
+    //
+    // O `update` abaixo precisa dele para decidir se ha um MANAGER a
+    // preservar, e `upsert` nao da acesso ao registro anterior — a alternativa
+    // seria uma expressao SQL crua no `data`, que o Prisma nao oferece aqui.
+    // Custa um SELECT por login, no mesmo caminho que ja faz um SELECT dentro
+    // do upsert; nao e o gargalo de um fluxo que acabou de falar com o Google.
+    const anterior = await this.prisma.user.findUnique({
+      where: { email },
+      select: { role: true },
+    });
+
     // upsert por e-mail: se ja existe conta criada pelo guard antigo, ela e
     // adotada aqui, com o progresso das trilhas e os tokens de API (PLT-03).
     const user = await this.prisma.user.upsert({
@@ -162,7 +174,9 @@ export class AuthService {
         avatarUrl: avatar,
         provider: 'GOOGLE',
         providerId: payload.sub,
-        role: this.ehAdmin(email) ? 'ADMIN' : 'USER',
+        // Conta nova nasce COMMON_USER, a menos que o e-mail ja esteja em
+        // ADMIN_EMAILS. Nao ha papel anterior a respeitar: `null`.
+        role: this.papelPara(email, null),
         lastLoginAt: new Date(),
       },
       update: {
@@ -172,8 +186,13 @@ export class AuthService {
         // `role` tambem no update, e nao so no create: sem isto, uma conta
         // criada pelo guard antigo (ou por um login anterior) nunca ganharia
         // o papel ao entrar em ADMIN_EMAILS, e sair da lista nao tiraria o
-        // papel de ninguem. A variavel e a fonte da verdade a cada login.
-        role: this.ehAdmin(email) ? 'ADMIN' : 'USER',
+        // papel de ninguem.
+        //
+        // ⚠️ **Mas nao e mais `ehAdmin ? ADMIN : USER`** (PLT-11). Aquela
+        // forma apagava o MANAGER a cada entrada: o dono promovia pela tela, a
+        // pessoa entrava, e voltava a ser comum sem erro nenhum no log. Ver
+        // `papelPara`.
+        role: this.papelPara(email, anterior?.role ?? null),
         lastLoginAt: new Date(),
       },
       select: CAMPOS,
@@ -210,6 +229,35 @@ export class AuthService {
       throw new UnauthorizedException('Sessao invalida. Entre novamente.');
     }
     return this.toDto(user);
+  }
+
+  /**
+   * O papel que vale para esta entrada.
+   *
+   * ```
+   * esta em ADMIN_EMAILS?      -> ADMIN        (a variavel ganha sempre)
+   * senao, e MANAGER no banco?  -> MANAGER      (respeita a promocao)
+   * senao                       -> COMMON_USER
+   * ```
+   *
+   * As duas garantias que existiam antes continuam de pe:
+   *
+   * - **sair do ADMIN_EMAILS tira o papel** — e cai para `COMMON_USER`, nao
+   *   para `MANAGER`: quem tirou o admin decide se quer dar outro papel;
+   * - **ninguem vira admin promovendo-se no banco**, porque `ADMIN` gravado na
+   *   coluna sem estar na variavel nao entra em nenhum dos ramos.
+   *
+   * O que muda e so o meio: `MANAGER` vem do banco, porque o dono promove pela
+   * tela (PLT-11) e nao ha variavel de ambiente para consultar.
+   *
+   * @param papelAtual o que esta gravado hoje, ou `null` para conta nova.
+   */
+  private papelPara(email: string, papelAtual: string | null): string {
+    if (this.ehAdmin(email)) return 'ADMIN';
+    // So MANAGER e preservado. Um 'ADMIN' que sobrou na coluna de quem saiu da
+    // variavel cai aqui de proposito, e vira COMMON_USER.
+    if (papelAtual === 'MANAGER') return 'MANAGER';
+    return 'COMMON_USER';
   }
 
   /** Sem ADMIN_EMAILS, ninguem e admin. */

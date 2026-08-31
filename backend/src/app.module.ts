@@ -10,6 +10,7 @@ import { EmailModule } from './email/email.module';
 import { IaModule } from './ia/ia.module';
 import { SettingsModule } from './settings/settings.module';
 import { TracksModule } from './tracks/tracks.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { TracksModule } from './tracks/tracks.module';
     ProgressModule,
     SettingsModule,
     PerfilModule,
+    UsuariosModule,
     JobsModule,
     EmailModule,
   ],

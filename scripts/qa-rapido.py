@@ -28,7 +28,12 @@ def ok(cond: bool, msg: str) -> bool:
 
 def token_de_papel(papel: str) -> str | None:
     """
-    Assina um token para um usuario com o papel pedido ('USER' ou 'ADMIN').
+    Assina um token para um usuario com o papel pedido.
+
+    Os papeis sao 'COMMON_USER', 'MANAGER' e 'ADMIN' (PLT-09). ⚠️ Era 'USER'
+    ate 31/08; a migration `20260831210000_papeis_e_desativacao` renomeou. O
+    nome antigo aqui nao dava erro — nao achava usuario nenhum e o bloco de
+    papeis se PULAVA em silencio, que e a forma mais cara de um teste morrer.
 
     Diferente de `token_de_teste()`, que pega o primeiro usuario que aparecer:
     aqui o papel E o objeto do teste, entao pegar qualquer um mediria outra
@@ -244,9 +249,9 @@ else:
     if sem_login:
         print("  pulado  papeis (AUTH_DISABLED: todo mundo e admin)")
     else:
-        tok_user = token_de_papel("USER")
+        tok_user = token_de_papel("COMMON_USER")
         if tok_user is None:
-            print("  pulado  papeis (nenhum usuario USER no banco)")
+            print("  pulado  papeis (nenhum COMMON_USER no banco)")
         else:
             def status_com(rota: str, tok: str):
                 req = urllib.request.Request(
@@ -259,12 +264,96 @@ else:
                 except (urllib.error.URLError, TimeoutError, ValueError) as e:
                     return str(e), None
 
-            # As rotas que alimentam as cinco sub-paginas de /config.
+            def patch_com(rota: str, tok: str, corpo: dict):
+                req = urllib.request.Request(
+                    API + rota, data=json.dumps(corpo).encode(), method="PATCH",
+                    headers={"Authorization": f"Bearer {tok}",
+                             "Content-Type": "application/json"})
+                try:
+                    with urllib.request.urlopen(req, timeout=10) as resp:
+                        return resp.status
+                except urllib.error.HTTPError as e:
+                    return e.code
+                except (urllib.error.URLError, TimeoutError) as e:
+                    return str(e)
+
+            # As rotas que alimentam as sub-paginas de /config.
             for rota in ["/settings/recursos", "/settings/tokens",
                          "/settings/deploy/prontidao", "/jobs/descobertas",
                          "/email/metricas"]:
                 obtido, _ = status_com(rota, tok_user)
                 ok(obtido == 403, f"{rota} nega usuario comum (deu {obtido})")
+
+            # PLT-11: a gestao de usuarios tem TRES niveis, e nao dois.
+            #
+            # Este bloco existe porque o defeito que ele cobre e invisivel na
+            # tela: a listagem nao pode ser @AdminOnly() (o manager ve), e um
+            # decorador trocado por engano abriria a lista de todo mundo — ou
+            # deixaria o manager de fora sem ninguem notar ate ele reclamar.
+            for rota in ["/usuarios"]:
+                obtido, _ = status_com(rota, tok_user)
+                ok(obtido == 403, f"{rota} nega usuario comum (deu {obtido})")
+
+            tok_manager = token_de_papel("MANAGER")
+            if tok_manager is None:
+                print("  pulado  gestao (nenhum MANAGER no banco)")
+            else:
+                obtido, _ = status_com("/usuarios", tok_manager)
+                ok(obtido == 200, f"/usuarios atende o manager (deu {obtido})")
+
+                # Mudar papel continua @AdminOnly(). Se um dia a classe inteira
+                # virar @ManagerOrAdmin(), o manager passaria a promover
+                # managers — e o dono nao saberia.
+                alvo = None
+                obtido, corpo_lista = status_com("/usuarios", tok_manager)
+                if isinstance(corpo_lista, dict):
+                    comuns = [u for u in corpo_lista.get("itens", [])
+                              if u.get("role") == "COMMON_USER"]
+                    alvo = comuns[0]["id"] if comuns else None
+                if alvo:
+                    obtido = patch_com(f"/usuarios/{alvo}/papel", tok_manager,
+                                       {"role": "MANAGER"})
+                    ok(obtido == 403,
+                       f"manager nao muda papel de ninguem (deu {obtido})")
+
+                # A lista NAO carrega dado pessoal. O jeito mais seguro de nao
+                # vazar um campo e nunca busca-lo — este teste pega o campo
+                # acrescentado ao `select:` sem pensar.
+                if isinstance(corpo_lista, dict) and corpo_lista.get("itens"):
+                    proibidos = {"document", "documentHint", "documentEnc",
+                                 "documentCountry", "phone", "address"}
+                    vazou = proibidos & set(corpo_lista["itens"][0])
+                    ok(not vazou,
+                       f"/usuarios nao devolve dado pessoal (vazou: {sorted(vazou)})")
+
+            # Ninguem vira ADMIN pela tela: o papel de admin vem do
+            # ADMIN_EMAILS, e um caminho pela API criaria a segunda fonte de
+            # verdade que o proximo login desfaz.
+            tok_admin = token_de_papel("ADMIN")
+            if tok_admin:
+                obtido, corpo_lista = status_com("/usuarios", tok_admin)
+                alvo = None
+                if isinstance(corpo_lista, dict):
+                    outros = [u for u in corpo_lista.get("itens", [])
+                              if not u.get("isSelf") and u.get("role") != "ADMIN"]
+                    alvo = outros[0]["id"] if outros else None
+                    eu = [u for u in corpo_lista.get("itens", []) if u.get("isSelf")]
+                    if eu:
+                        # O dono nao se rebaixa nem se desativa: perderia o
+                        # acesso a tela que o devolveria.
+                        obtido = patch_com(f"/usuarios/{eu[0]['id']}/papel",
+                                           tok_admin, {"role": "COMMON_USER"})
+                        ok(obtido == 403,
+                           f"admin nao rebaixa a si mesmo (deu {obtido})")
+                        obtido = patch_com(f"/usuarios/{eu[0]['id']}/ativo",
+                                           tok_admin, {"active": False})
+                        ok(obtido == 403,
+                           f"admin nao desativa a si mesmo (deu {obtido})")
+                if alvo:
+                    obtido = patch_com(f"/usuarios/{alvo}/papel", tok_admin,
+                                       {"role": "ADMIN"})
+                    ok(obtido == 400,
+                       f"ninguem vira ADMIN pela API (deu {obtido})")
 
             # A rota de produto continua aberta — a aba Jobs depende dela.
             obtido, corpo = status_com("/settings/recursos/produto", tok_user)

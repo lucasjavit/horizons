@@ -23,12 +23,32 @@ model User {
   /// `sub` do provedor. Nulo nas contas criadas pelo guard antigo, que sao
   /// adotadas por e-mail no primeiro login (PLT-03).
   providerId  String?
-  /// "USER" ou "ADMIN". String e nao enum: o tsconfig do front proibe enum de
-  /// TS, e o padrao da casa para dois valores e uniao de string.
-  role        String     @default("USER")
+  /// "COMMON_USER", "MANAGER" ou "ADMIN" (PLT-09). String e nao enum: o
+  /// tsconfig do front proibe enum de TS, e o padrao da casa e uniao de string.
+  ///
+  /// ⚠️ **Este campo NAO e a fonte da verdade do ADMIN.** Quem manda ali e
+  /// `ADMIN_EMAILS`, reavaliada a cada login — promover-se a ADMIN direto no
+  /// banco nao sobrevive a entrada seguinte. O que a coluna guarda de proprio
+  /// e o MANAGER, que so existe aqui porque o dono promove pela tela (PLT-11).
+  role        String     @default("COMMON_USER")
   /// Desligar aqui derruba a sessao na requisicao seguinte, sem esperar o
   /// token expirar — o guard rele o usuario a cada request.
   active      Boolean    @default(true)
+  /// Quando a conta foi desativada, e por quem (PLT-11).
+  ///
+  /// Sem isto uma conta desligada e um misterio: o dono ve `active = false` e
+  /// nao sabe se foi ele, um manager, ou um engano. Nao e o log de auditoria
+  /// completo — esse e card proprio —, e o minimo que responde "quem fez".
+  ///
+  /// Limpos ao reativar: guardar o autor da ultima desativacao numa conta
+  /// ativa faria a tela mostrar "disabled by" ao lado de alguem que esta
+  /// dentro.
+  deactivatedAt DateTime?
+  /// Quem desativou. `SetNull` e nao `Cascade`: apagar o admin que desligou a
+  /// conta nao pode apagar a conta desligada junto.
+  deactivatedById String?
+  deactivatedBy   User?   @relation("DesativadoPor", fields: [deactivatedById], references: [id], onDelete: SetNull)
+  desativou       User[]  @relation("DesativadoPor")
   lastLoginAt DateTime?
   /// Onde a pessoa mora. ISO 3166-1 alfa-2, ou "OTHER" para quem nao esta na
   /// lista curada (PLT-10). Nulo = nao informado, e isso e valido: perfil

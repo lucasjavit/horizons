@@ -31,6 +31,8 @@ import type {
   TrackDetail,
   TrackSummary,
   Vaga,
+  UsuarioDaLista,
+  ListaDeUsuarios,
 } from '../types/api'
 
 const http = axios.create({
@@ -120,6 +122,40 @@ export const api = {
 
   async salvarPerfil(corpo: SalvarPerfilPessoal): Promise<PerfilPessoal> {
     const { data } = await http.put<PerfilPessoal>('/perfil', corpo)
+    return data
+  },
+
+  /**
+   * Quem se cadastrou (PLT-11). Admin e manager; usuario comum recebe 403.
+   *
+   * `q` vazio nao vai como parametro: `?q=` e `?q` ausente significam a mesma
+   * coisa para o backend, e mandar o vazio sujaria a URL da requisicao a toa.
+   */
+  async usuarios(
+    q: string,
+    pagina: number,
+    signal?: AbortSignal,
+  ): Promise<ListaDeUsuarios> {
+    const { data } = await http.get<ListaDeUsuarios>('/usuarios', {
+      params: { ...(q.trim() ? { q: q.trim() } : {}), pagina },
+      signal,
+    })
+    return data
+  },
+
+  /** Promove a MANAGER ou rebaixa a COMMON_USER. So admin — nao ha 'ADMIN'. */
+  async mudarPapel(id: string, role: string): Promise<UsuarioDaLista> {
+    const { data } = await http.patch<UsuarioDaLista>(`/usuarios/${id}/papel`, {
+      role,
+    })
+    return data
+  },
+
+  /** Liga ou desliga a conta. O efeito e imediato: a sessao cai na req seguinte. */
+  async mudarAtivo(id: string, active: boolean): Promise<UsuarioDaLista> {
+    const { data } = await http.patch<UsuarioDaLista>(`/usuarios/${id}/ativo`, {
+      active,
+    })
     return data
   },
 

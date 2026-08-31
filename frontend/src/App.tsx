@@ -59,6 +59,17 @@ const ConfigDeployPage = lazy(() =>
   import('./pages/ConfigDeployPage').then((m) => ({ default: m.ConfigDeployPage })),
 )
 
+/**
+ * `lazy` como as outras sub-paginas pesadas: a lista de usuarios e a tabela
+ * que a desenha so interessam a admin e manager, e quem chega para ler uma
+ * aula nunca a abre.
+ */
+const ConfigUsuariosPage = lazy(() =>
+  import('./pages/ConfigUsuariosPage').then((m) => ({
+    default: m.ConfigUsuariosPage,
+  })),
+)
+
 
 /**
  * Abas dos produtos sob a marca Horizons.
@@ -79,18 +90,24 @@ const ConfigDeployPage = lazy(() =>
 function Conta({
   user,
   podeSair,
-  admin,
+  gestao,
   onEntrou,
 }: {
   user: AuthUser | null
   podeSair: boolean
-  /** Config e area de administracao (PLT-04) — so admin ve o item. */
-  admin: boolean
+  /**
+   * Ve o item "Settings" (PLT-04, ampliado pelo PLT-11).
+   *
+   * Admin e manager, e nao so o admin: desde o PLT-11 ha uma sub-pagina que o
+   * manager de fato usa (Users). Usuario comum continua sem ver — nenhuma das
+   * seis rotas o atende.
+   */
+  gestao: boolean
   onEntrou: (u: AuthUser) => void
 }) {
   if (!user) return <BotaoGoogle onEntrou={onEntrou} />
 
-  return <MenuDaConta user={user} podeSair={podeSair} admin={admin} />
+  return <MenuDaConta user={user} podeSair={podeSair} gestao={gestao} />
 }
 
 /**
@@ -108,11 +125,11 @@ function Conta({
 function MenuDaConta({
   user,
   podeSair,
-  admin,
+  gestao,
 }: {
   user: AuthUser
   podeSair: boolean
-  admin: boolean
+  gestao: boolean
 }) {
   const { aberto, alternar, setAberto, caixa, gatilho } = usePopover()
   const iniciais = user.name.trim().charAt(0).toUpperCase() || '?'
@@ -150,12 +167,19 @@ function MenuDaConta({
           <ItemDoMenu to="/perfil" onIr={() => setAberto(false)}>
             Profile
           </ItemDoMenu>
-          {/* **Settings so para admin**, como era na engrenagem que este menu
-              substituiu (30/08). Esconder nao substitui a protecao da rota — o
-              backend exige o papel —, mas evita oferecer um caminho que so
-              daria 403. */}
-          {admin && (
-            <ItemDoMenu to="/config" onIr={() => setAberto(false)}>
+          {/* **Settings para admin e manager** (PLT-11; era so admin desde
+              30/08). Esconder nao substitui a protecao da rota — o backend
+              exige o papel —, mas evita oferecer um caminho que so daria 403.
+
+              **O manager entra por `/config/usuarios`, e nao por `/config`.**
+              A pagina Features e `@AdminOnly()` no backend: manda-lo para la
+              seria abrir a Configuracoes num erro, na unica area que ele tem
+              permissao de usar. */}
+          {gestao && (
+            <ItemDoMenu
+              to={user.role === 'MANAGER' ? '/config/usuarios' : '/config'}
+              onIr={() => setAberto(false)}
+            >
               Settings
             </ItemDoMenu>
           )}
@@ -363,7 +387,9 @@ export default function App() {
             <Conta
               user={user}
               podeSair={!semLogin}
-              admin={semLogin || user?.role === 'ADMIN'}
+              gestao={
+                semLogin || user?.role === 'ADMIN' || user?.role === 'MANAGER'
+              }
               onEntrou={setUser}
             />
             </div>
@@ -394,6 +420,7 @@ export default function App() {
             path="/config/notificacoes"
             element={<ConfigNotificacoesPage />}
           />
+          <Route path="/config/usuarios" element={<ConfigUsuariosPage />} />
           <Route path="/config/deploy" element={<ConfigDeployPage />} />
           <Route path="/perfil" element={<PerfilPage />} />
           <Route path="/config" element={<SettingsPage />} />

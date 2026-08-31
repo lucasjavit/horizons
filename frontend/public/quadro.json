@@ -915,8 +915,8 @@
     {
       "id": "PLT-11",
       "titulo": "A tela onde o dono gerencia os usuários",
-      "estado": "aberto (31/08/2026)",
-      "coluna": "backlog",
+      "estado": "feito (31/08/2026)",
+      "coluna": "feito",
       "tamanho": "M",
       "porque": "O [PLT-09](PLT-09-cadastro-em-dois-tempos.md) decidiu três papéis e disse que o dono promove alguém a Manager pela tela. A tela não existe — então hoje o MANAGER é um valor que nada produz, e a decisão está no papel.",
       "decisao": "",

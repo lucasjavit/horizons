@@ -9,6 +9,7 @@ import { Reflector } from '@nestjs/core';
 import { AuthService, authDesligada } from './auth.service';
 import {
   CHAVE_ADMIN,
+  CHAVE_GESTAO,
   CHAVE_OPCIONAL,
   CHAVE_PUBLICA,
   type RequestWithUser,
@@ -75,6 +76,16 @@ export class AuthGuard implements CanActivate {
     ]);
     if (soAdmin && user.role !== 'ADMIN') {
       throw new ForbiddenException('Esta acao e restrita a administradores.');
+    }
+
+    // O terceiro nivel (PLT-11). Vem DEPOIS do admin de proposito: um handler
+    // marcado com os dois decoradores exige o mais restritivo, e nao o menos.
+    const gestao = this.reflector.getAllAndOverride<boolean>(CHAVE_GESTAO, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (gestao && user.role !== 'ADMIN' && user.role !== 'MANAGER') {
+      throw new ForbiddenException('Esta acao e restrita a quem gerencia a plataforma.');
     }
 
     return true;

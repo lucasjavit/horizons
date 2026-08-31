@@ -29,6 +29,23 @@ export const CHAVE_ADMIN = 'auth:admin';
 export const AdminOnly = () => SetMetadata(CHAVE_ADMIN, true);
 
 /**
+ * Rotas que o MANAGER tambem alcanca — e mais ninguem alem dele e do ADMIN.
+ *
+ * O corte do PLT-09, em uma frase: **Manager opera, Admin configura.** Ver a
+ * lista de usuarios e desligar uma conta abusiva e operar; mudar o papel de
+ * alguem e configurar, e continua `@AdminOnly()`.
+ *
+ * **Nao substitui `@AdminOnly()`, soma-se a ele.** Um handler que marque os
+ * dois exige ADMIN, porque a checagem mais restritiva roda primeiro no guard —
+ * marcar os dois nao faz sentido, mas nao abre nada.
+ */
+export const CHAVE_GESTAO = 'auth:gestao';
+export const ManagerOrAdmin = () => SetMetadata(CHAVE_GESTAO, true);
+
+/** Os papeis que existem (PLT-09). O banco guarda a string crua. */
+export const PAPEIS = ['COMMON_USER', 'MANAGER', 'ADMIN'] as const;
+
+/**
  * Rotas que funcionam com ou sem sessao.
  *
  * Diferente de `@Public()`: aqui o token, **se vier**, ainda e verificado e o
