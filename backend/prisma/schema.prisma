@@ -49,6 +49,30 @@ model User {
   /// o documento antigo parecer validado para o pais novo, que e exatamente o
   /// defeito que o PLT-10 existe para impedir.
   documentCountry String?
+  /// Endereco de cobranca, EM CLARO — nao cifrado como o documento (PLT-10).
+  ///
+  /// ⚠️ Isto contradiz o JOB-02, que trata endereco no mesmo nivel do CPF e o
+  /// descarta do CV. E consciente: em claro da para consultar e agrupar
+  /// (quantos usuarios em Sao Paulo), o que a cifra impediria. O card explica.
+  ///
+  /// Campos separados e nao um bloco de texto: a nota fiscal le a cidade
+  /// sozinha. Todos nulos — endereco pela metade e valido.
+  addressStreet String?
+  addressNumber String?
+  /// Apto, bloco, andar. Vazio e comum e valido.
+  addressComplement String?
+  /// Bairro/colonia/barrio. So alguns paises usam; nulo nos outros.
+  addressDistrict String?
+  addressCity String?
+  /// Estado, provincia ou departamento — o nome muda por pais, o campo nao.
+  addressState String?
+  /// CEP/codigo postal. Sem validacao por pais: ver backend/src/perfil/endereco.ts.
+  addressPostalCode String?
+  /// Pais do endereco, ISO 3166-1 alfa-2. **Separado de `country`** de
+  /// proposito: `country` e "onde a pessoa mora" e decide quais vagas a
+  /// aceitam; este e "para onde vai a nota fiscal". Quem mora em Portugal e
+  /// fatura no Brasil precisa dos dois, e unificar obrigaria a mentir num.
+  addressCountry String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   progress    Progress[]

@@ -2,9 +2,74 @@ import { useEffect, useState } from 'react'
 import { WARN_INK } from '../blocks/BlockRenderer'
 import { api, errorMessage } from '../../lib/api'
 import { useAsync } from '../../lib/useAsync'
-import type { PerfilPessoal } from '../../types/api'
+import type { EnderecoAEnviar, PerfilPessoal } from '../../types/api'
+
+/** O endereço no formulário: string em todo campo, porque input controlado. */
+type FormEndereco = Record<keyof EnderecoAEnviar, string>
+
+const ENDERECO_VAZIO: FormEndereco = {
+  street: '',
+  number: '',
+  complement: '',
+  district: '',
+  city: '',
+  state: '',
+  postalCode: '',
+  country: '',
+}
 
 type Estado = 'ocioso' | 'salvando' | 'salvo' | 'erro'
+
+/**
+ * Um campo de texto do endereço.
+ *
+ * Existe porque são sete campos com a MESMA estrutura — label, input, tokens
+ * de cor. Sete cópias divergem: a próxima pessoa conserta a borda de um e não
+ * dos outros seis, e o `htmlFor` é o primeiro a se perder num copy-paste.
+ */
+function CampoDeEndereco({
+  id,
+  rotulo,
+  valor,
+  aoMudar,
+  exemplo,
+  autoComplete,
+  className,
+}: {
+  id: string
+  rotulo: string
+  valor: string
+  aoMudar: (v: string) => void
+  exemplo?: string
+  autoComplete?: string
+  className?: string
+}) {
+  return (
+    <div className={className}>
+      <label
+        htmlFor={id}
+        className="block text-sm font-medium"
+        style={{ color: 'var(--text)' }}
+      >
+        {rotulo}
+      </label>
+      <input
+        id={id}
+        type="text"
+        value={valor}
+        onChange={(e) => aoMudar(e.target.value)}
+        placeholder={exemplo}
+        autoComplete={autoComplete}
+        className="mt-1.5 w-full rounded-md border px-3 py-2 text-sm"
+        style={{
+          borderColor: 'var(--border)',
+          background: 'var(--surface)',
+          color: 'var(--text)',
+        }}
+      />
+    </div>
+  )
+}
 
 /**
  * A segunda seção do perfil: o que é **nosso**, e por isso editável (PLT-10).
@@ -26,6 +91,7 @@ export function DadosPessoais() {
   const [pais, setPais] = useState('')
   const [telefone, setTelefone] = useState('')
   const [documento, setDocumento] = useState('')
+  const [endereco, setEndereco] = useState<FormEndereco>(ENDERECO_VAZIO)
   // O que o servidor tem guardado. Só os últimos dígitos chegam aqui — o
   // documento em si nunca volta.
   const [guardado, setGuardado] = useState<PerfilPessoal | null>(null)
@@ -35,6 +101,10 @@ export function DadosPessoais() {
   const [estado, setEstado] = useState<Estado>('ocioso')
   const [erroAcao, setErroAcao] = useState('')
   const [erroCampo, setErroCampo] = useState('')
+  // O 400 do endereço é erro de campo, mas de OUTRO campo: pendurá-lo no
+  // documento poria `aria-invalid` no input errado e mandaria a pessoa
+  // corrigir o CPF por causa de uma vírgula na rua.
+  const [erroEndereco, setErroEndereco] = useState('')
 
   useEffect(() => {
     if (!data) return
@@ -42,6 +112,18 @@ export function DadosPessoais() {
     setGuardado(perfil)
     setPais(perfil.country ?? '')
     setTelefone(perfil.phone ?? '')
+    // O endereço volta inteiro do servidor (não é cifrado como o documento),
+    // então a pessoa edita em cima do que já está lá.
+    setEndereco({
+      street: perfil.address.street ?? '',
+      number: perfil.address.number ?? '',
+      complement: perfil.address.complement ?? '',
+      district: perfil.address.district ?? '',
+      city: perfil.address.city ?? '',
+      state: perfil.address.state ?? '',
+      postalCode: perfil.address.postalCode ?? '',
+      country: perfil.address.country ?? '',
+    })
   }, [data])
 
   if (loading) return null
@@ -84,6 +166,7 @@ export function DadosPessoais() {
   const salvar = async () => {
     setErroAcao('')
     setErroCampo('')
+    setErroEndereco('')
     setEstado('salvando')
     try {
       const salvo = await api.salvarPerfil({
@@ -92,6 +175,10 @@ export function DadosPessoais() {
         // Só manda o documento se a pessoa digitou algo agora. Mandar `''`
         // apagaria o que está guardado a cada Save de telefone.
         ...(documento.trim() ? { document: documento } : {}),
+        // O endereço vai SEMPRE e inteiro, ao contrário do documento: os
+        // campos estão todos na tela com o valor atual, então mandar `''` é o
+        // gesto de apagar de quem esvaziou um campo — não uma perda acidental.
+        address: endereco,
       })
       setGuardado(salvo)
       // O campo esvazia depois de salvar: o valor não volta do servidor, e
@@ -107,12 +194,26 @@ export function DadosPessoais() {
         typeof e === 'object' && e && 'response' in e
           ? (e as { response?: { status?: number } }).response?.status
           : undefined
-      if (status === 400) setErroCampo(msg)
+      // O backend valida documento e endereço no mesmo `PUT` e devolve 400
+      // para os dois. A mensagem do endereço começa pelo rótulo do campo
+      // ("Street is too long", "Postal code must be…"), e é o que separa os
+      // dois destinos — não há código de erro por campo na resposta.
+      if (status === 400 && /^(Street|Number|Complement|District|City|State|Postal code)\b/.test(msg)) {
+        setErroEndereco(msg)
+      } else if (status === 400) setErroCampo(msg)
       else setErroAcao(msg)
       setEstado('erro')
       // ⚠️ Nada é limpo aqui. Falha de rede não pode perder o que foi
       // digitado: a pessoa corrige a conexão e clica Save de novo.
     }
+  }
+
+  // Digitar limpa o erro do servidor: ele se referia ao valor antigo, e
+  // mantê-lo enquanto a pessoa corrige diz que a correção não adiantou.
+  const mudarEndereco = (campo: keyof FormEndereco, valor: string) => {
+    setEndereco((atual) => ({ ...atual, [campo]: valor }))
+    setErroEndereco('')
+    setEstado('ocioso')
   }
 
   const bordaDoc = erroCampo ? WARN_INK : 'var(--border)'
@@ -245,6 +346,143 @@ export function DadosPessoais() {
           )}
         </div>
       </div>
+
+      {/*
+        O endereço é um `fieldset` com legend, e não mais sete campos soltos
+        no meio dos outros três. São duas razões:
+
+        1. **Leitor de tela.** O `fieldset` faz "City" ser anunciado como
+           "Billing address, City" — sem ele, sete rótulos genéricos flutuam
+           sem dizer a que grupo pertencem.
+        2. **Olho.** A seção tinha 3 campos e passou a ter 11. O subtítulo
+           separa "quem é você" de "para onde vai a nota", e sem ele a página
+           vira um formulário longo e indistinto — o que apagaria a distinção
+           entre o que vem do Google e o que é nosso, que é o ponto do PLT-10.
+
+        Os campos curtos (número, CEP) dividem linha com o vizinho a partir de
+        `sm`: em 390px tudo empilha, porque um campo de 40% de largura numa
+        tela estreita não cabe o conteúdo.
+      */}
+      <fieldset className="mt-8 border-t pt-6" style={{ borderColor: 'var(--border)' }}>
+        <legend className="sr-only">Billing address</legend>
+        <h3 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+          Billing address
+        </h3>
+        <p className="mt-1 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+          Also optional. This is where an invoice would be addressed — it can be
+          a different country from where you live.
+        </p>
+
+        <div className="mt-5 space-y-5">
+          <div className="grid gap-5 sm:grid-cols-[1fr_140px]">
+            <CampoDeEndereco
+              id="perfil-end-rua"
+              rotulo="Street"
+              valor={endereco.street}
+              aoMudar={(v) => mudarEndereco('street', v)}
+              exemplo="Avenida Paulista"
+              autoComplete="address-line1"
+            />
+            <CampoDeEndereco
+              id="perfil-end-numero"
+              rotulo="Number"
+              valor={endereco.number}
+              aoMudar={(v) => mudarEndereco('number', v)}
+              exemplo="1578"
+            />
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <CampoDeEndereco
+              id="perfil-end-complemento"
+              rotulo="Complement"
+              valor={endereco.complement}
+              aoMudar={(v) => mudarEndereco('complement', v)}
+              exemplo="Apt 42"
+              autoComplete="address-line2"
+            />
+            <CampoDeEndereco
+              id="perfil-end-bairro"
+              rotulo="District"
+              valor={endereco.district}
+              aoMudar={(v) => mudarEndereco('district', v)}
+              exemplo="Bela Vista"
+            />
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-[1fr_1fr_150px]">
+            <CampoDeEndereco
+              id="perfil-end-cidade"
+              rotulo="City"
+              valor={endereco.city}
+              aoMudar={(v) => mudarEndereco('city', v)}
+              exemplo="São Paulo"
+              autoComplete="address-level2"
+            />
+            <CampoDeEndereco
+              id="perfil-end-estado"
+              rotulo="State or province"
+              valor={endereco.state}
+              aoMudar={(v) => mudarEndereco('state', v)}
+              exemplo="SP"
+              autoComplete="address-level1"
+            />
+            <CampoDeEndereco
+              id="perfil-end-cep"
+              rotulo="Postal code"
+              valor={endereco.postalCode}
+              aoMudar={(v) => mudarEndereco('postalCode', v)}
+              exemplo="01310-100"
+              autoComplete="postal-code"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="perfil-end-pais"
+              className="block text-sm font-medium"
+              style={{ color: 'var(--text)' }}
+            >
+              Country
+            </label>
+            <select
+              id="perfil-end-pais"
+              value={endereco.country}
+              onChange={(e) => mudarEndereco('country', e.target.value)}
+              autoComplete="country"
+              className="mt-1.5 w-full rounded-md border px-3 py-2 text-sm"
+              style={{
+                borderColor: 'var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text)',
+              }}
+            >
+              <option value="">Not set</option>
+              {paises.map((p) => (
+                <option key={p.codigo} value={p.codigo}>
+                  {p.nome}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+              Where the invoice goes — not necessarily where you live.
+            </p>
+          </div>
+
+          {erroEndereco && (
+            // Erro do endereço mora no endereço. A borda vermelha não vai num
+            // campo específico porque o servidor diz qual rótulo falhou no
+            // texto, e adivinhar o input erraria em metade dos casos.
+            <p
+              role="alert"
+              className="rounded-md border px-3 py-2 text-sm"
+              style={{ borderColor: WARN_INK, color: WARN_INK }}
+            >
+              {erroEndereco}
+            </p>
+          )}
+        </div>
+      </fieldset>
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <button

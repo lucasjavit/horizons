@@ -1,6 +1,6 @@
 # PLT-10 · O perfil recebe os dados da pessoa, quando ela quiser
 
-**Estado:** feito (31/08/2026)
+**Estado:** feito (31/08/2026) · endereço acrescentado na mesma data
 **Tamanho:** M
 
 ## A decisão
@@ -85,6 +85,17 @@ distinção precisa ficar visível: o que vem do Google não se edita aqui, e o 
 - [x] A tela distingue o que vem do Google do que é editável
 - [x] Erro por borda + `aria-invalid` + texto, nunca só cor
 - [x] Salvar tem retorno visível, e falha de rede não perde o que foi digitado
+
+### Endereço (segunda leva, 31/08)
+
+- [x] Endereço em claro, não cifrado — e a contradição com o JOB-02 registrada
+- [x] Nenhum campo obrigatório; endereço pela metade é válido
+- [x] Campos separados, com validação frouxa que não assume Brasil
+- [x] CEP sem validação por país — recusar um válido é pior que aceitar um estranho
+- [x] País do endereço separado do país de moradia (mora em X, fatura em Y)
+- [x] Salvar só o endereço não apaga os outros campos, e o inverso
+- [x] Erro do endereço mora no endereço, e não no campo do documento
+- [x] Os três campos do PLT-10 continuam funcionando, "Not set" incluído
 
 ## O que fica para o card da compra
 
@@ -260,3 +271,183 @@ data`.
   dois logins de verdade fica em aberto.
 - **Documentos emitidos de verdade** dos 6 países validados. Os casos vêm da
   fórmula do dígito verificador, que é a regra — mas não de um documento real.
+
+---
+
+## Segunda leva: o endereço (31/08/2026)
+
+O stakeholder pediu **endereço ao lado dos três campos**, com duas decisões
+tomadas por ele. Ambas estão implementadas; a primeira contradiz um card
+anterior e por isso está registrada em detalhe.
+
+### ⚠️ A contradição com o JOB-02, e por que ela é consciente
+
+**O endereço fica EM CLARO, como o telefone — não cifrado como o documento.**
+
+Isto contradiz o [JOB-02](JOB-02-perfil-de-busca.md), que trata endereço no
+mesmo nível do CPF em três pontos do card:
+
+> "Some o CPF, o endereço e o telefone — e isso importa porque o guard só
+> passou a ter dono agora. Token se revoga; CPF não."
+
+E o parser de CV descarta os três de propósito.
+
+**A razão de decidir diferente aqui:** em claro dá para **consultar e agrupar**
+— quantos usuários em São Paulo, quais cidades concentram o público, que
+mercado priorizar. A cifra impediria isso, porque um campo AES-GCM não entra
+num `GROUP BY`. É a mesma pergunta que o PLT-10 já dizia querer responder com
+a nacionalidade ("quem preenche por vontade própria diz de onde vem seu
+público"), agora com um grão mais fino.
+
+**Os dois casos não são o mesmo, e é isso que sustenta a diferença:**
+
+| | JOB-02 (CV) | Aqui (perfil) |
+| --- | --- | --- |
+| Origem | extraído de um arquivo, sem a pessoa pedir | **digitado por ela**, sabendo para quê |
+| Destino | **sai para um provedor de IA de terceiro** | fica no nosso banco |
+| Uso | nenhum — era resíduo da extração | nota fiscal, e agrupar mercado |
+
+O que o JOB-02 protege é o endereço **atravessando a fronteira** para um
+provedor que treina com o dado. Nada aqui muda isso: o CV continua descartando
+os três campos.
+
+**Quem reler o JOB-02 vai estranhar, e tem razão em estranhar** — daí este
+registro. Se um dia o endereço passar a sair daqui para um terceiro, esta
+decisão precisa ser reaberta.
+
+### Opcional aqui, obrigatório na compra
+
+Exatamente a regra dos outros três campos. **Este card faz a primeira metade**;
+a obrigatoriedade é do card da compra, que ainda não existe. Nenhum campo do
+endereço é obrigatório, e **endereço pela metade é válido** — quem quiser
+preencher só a cidade, preenche só a cidade.
+
+### As três decisões de modelagem
+
+**1. Campos separados, com validação frouxa** — e não um bloco de texto livre.
+
+O endereço existe para **imprimir numa nota fiscal**: cidade, estado e código
+postal viram linhas separadas no documento, e a nota de vários países exige a
+cidade sozinha para calcular imposto. Reconstituir isso de um `<textarea>` é
+adivinhação. O meio-termo é o que ficou: cada peça tem seu lugar, e nenhuma
+peça impõe formato brasileiro (só comprimento e um alfabeto largo).
+
+**2. O CEP NÃO é validado por país.** É a mesma lógica do documento, levada um
+passo além: o CEP brasileiro tem formato conhecido, mas o argentino é
+alfanumérico desde 1998 (`C1425DKE`), o peruano tem 5 dígitos, a Colômbia mal
+usa o dela e vários países da lista não têm código postal nenhum. **Recusar um
+código postal válido de um país não modelado é pior que aceitar um estranho** —
+e aqui nem os seis com regra de documento ganham regra de CEP, porque a nota
+fiscal que um dia usar isso terá a validação do próprio emissor.
+
+O único limite é 2–16 caracteres, letras, dígitos, espaço e traço. Isso barra
+colar um parágrafo no campo errado, e nada mais.
+
+**3. O endereço tem país PRÓPRIO** (`addressCountry`), separado do `country`
+que já existia.
+
+Não é duplicação: os dois campos respondem perguntas diferentes. `country` é
+**onde a pessoa mora** e decide quais vagas a aceitam — é o dado que o PLT-10
+chama de "o que mais muda o produto". `addressCountry` é **para onde vai a
+nota**. Quem mora em Portugal e fatura no Brasil precisa dos dois, e unificar
+obrigaria a mentir num deles.
+
+**Medido na tela:** morando em `PT` e faturando em `BR`, os dois valores
+sobrevivem ao reload. E trocar a moradia de `PT` para `AR` apaga o documento
+(a regra do PLT-10) **sem tocar no endereço** — que continua `São Paulo/BR`.
+
+### A tela: 3 campos viraram 11, sem virar um formulário
+
+O risco era exatamente esse. O que segurou:
+
+- Um **`fieldset` com subtítulo "Billing address"**, separado por uma linha.
+  Além do olho, é o que faz o leitor de tela anunciar "Billing address, City"
+  em vez de sete rótulos genéricos flutuando sem grupo.
+- **Os campos curtos dividem linha** a partir de `sm`: rua+número,
+  complemento+bairro, cidade+estado+CEP. Em 390px tudo empilha.
+- Um componente `CampoDeEndereco`, porque sete cópias do mesmo bloco divergem —
+  o `htmlFor` é o primeiro a se perder num copy-paste.
+
+A distinção Google/nosso, que o PLT-10 existe para proteger, continua de pé: a
+linha divisória e o texto "Your name and photo come from your Google account"
+não se mexeram.
+
+### Dois defeitos encontrados por medir
+
+**1. A mensagem de erro vazava o caminho do campo da API.** O `@MaxLength` num
+DTO **aninhado** faz o Nest prefixar o erro com o caminho:
+
+```
+address.city must be shorter than or equal to 80 characters
+```
+
+E o prefixo **sobrevive até a um `message:` próprio** — sai `address.City is
+too long`. Duas consequências: a pessoa que só queria encurtar o nome da cidade
+lê o nome do campo da API, e o erro deixa de começar pelo rótulo, que é como a
+tela decide se ele pertence ao endereço ou ao documento.
+
+Consertado tirando o `@MaxLength` do DTO aninhado e deixando o comprimento com
+`validarTextoDeEndereco`, no serviço. **Mexer no `exceptionFactory` do
+`ValidationPipe` global resolveria também, e foi descartado:** ele é de todos os
+módulos, e mudar o formato de erro da API inteira por causa de sete campos é
+desproporcional. Agora sai `City is too long (max 80)`.
+
+**2. O erro do endereço ia parar no campo do documento.** Os dois são validados
+no mesmo `PUT` e voltam como 400; o roteador da tela mandava todo 400 para o
+`erroCampo`, que põe `aria-invalid` no input do documento. Alguém erraria uma
+vírgula na rua e a tela mandaria corrigir o CPF. Agora há um `erroEndereco`
+separado, e o roteamento lê o rótulo no início da mensagem — que é a razão de o
+defeito 1 importar.
+
+**Medido depois:** com CEP inválido, o alerta aparece dentro do endereço e
+`#perfil-documento` fica **sem** `aria-invalid`.
+
+### O que foi verificado, e como
+
+**Validadores (43 casos, 43 passando)** — aceitando `C1425DKE` (AR
+alfanumérico), `Ñuñoa`, `Bogotá`, `Calle 26 #13-19` (o `#` colombiano),
+`Avenida O'Higgins`, `Île-de-France`, `SW1A 1AA`; recusando `<script>`, quebra
+de linha, tab, CEP de 1 caractere e parágrafo colado no campo de CEP.
+
+**API (38 casos, 38 passando)**, incluindo as regressões do PLT-10:
+
+| Gesto | Resultado |
+| --- | --- |
+| `PUT {}` (perfil vazio) | **200** — o critério do PLT-10 não regrediu |
+| salvar só o telefone | endereço **preservado** |
+| salvar só o endereço | telefone **preservado** |
+| campo do endereço com `''` | **apagado**, `NULL` no banco |
+| campo desconhecido dentro de `address` | **400** (`forbidNonWhitelisted` vale aninhado) |
+| trocar de país (BR→AR) | documento **apagado**, no banco |
+| escolher "Not set" | documento **apagado** ← o bug de ontem, ainda corrigido |
+| salvar endereço | documento **preservado** |
+
+O documento continua sem voltar para a tela, e `SELECT` no banco confirma que
+o CPF em claro não está lá.
+
+**Navegador (29 checagens)** — os 8 campos com `<label htmlFor>` correto e ≥24px
+de altura; preencher/salvar/recarregar traz tudo de volta, acentos inclusive
+(`São Paulo` e `Ñuñoa` sobrevivem ao Postgres); **Tab alcança os 11 campos na
+ordem visual**; sem rolagem horizontal em 390px (`scrollWidth=390`); claro e
+escuro; sem erro de console.
+
+**Falha de rede não perde o que foi digitado** — abortando o `PUT`, o alerta
+aparece, os três campos preenchidos continuam preenchidos, e clicar Save de
+novo com a rede de volta salva e persiste.
+
+`scripts/qa-rapido.py`: tudo certo.
+
+### O que NÃO foi verificado
+
+- **Login real com dois usuários** — continua em aberto pelo mesmo motivo de
+  ontem: `AUTH_DISABLED=true` nesta máquina. O endereço é lido e gravado pelo
+  mesmo `userId` do resto do serviço, mas o caminho token→usuário→endereço com
+  dois logins de verdade não foi exercitado.
+- **A nota fiscal.** Os campos foram modelados *para* a nota, mas nada emite
+  nota ainda — que os sete campos bastem para um documento fiscal real é
+  hipótese, não medição. O card da compra vai descobrir.
+- **O agrupamento que justificou o dado em claro.** Não há nenhuma consulta
+  "quantos usuários em São Paulo" escrita; o que se verificou é que o dado está
+  em claro e portanto *permite* a consulta.
+- **Endereço real de país fora da América Latina.** Os casos vêm de formatos
+  conhecidos, não de endereços emitidos.

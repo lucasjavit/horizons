@@ -243,6 +243,27 @@ export interface PerfilPessoal {
    * que a pessoa mudou de pais e o documento precisa ser digitado de novo.
    */
   documentCountry: string | null
+  /**
+   * O endereco de cobranca. **Volta inteiro**, ao contrario do documento: ele
+   * e guardado em claro (decisao de 31/08), entao nao ha o que esconder.
+   */
+  address: EnderecoSalvo
+}
+
+/** O endereco como ele volta do servidor. Todo campo pode ser nulo. */
+export interface EnderecoSalvo {
+  street: string | null
+  number: string | null
+  complement: string | null
+  district: string | null
+  city: string | null
+  state: string | null
+  postalCode: string | null
+  /**
+   * Pais do endereco. **Separado de `country`**: aquele e onde a pessoa mora
+   * (decide quais vagas a aceitam), este e para onde vai a nota fiscal.
+   */
+  country: string | null
 }
 
 /** Corpo do PUT /perfil. Campo ausente nao muda; string vazia apaga. */
@@ -250,6 +271,23 @@ export interface SalvarPerfilPessoal {
   country?: string
   phone?: string
   document?: string
+  /**
+   * Objeto aninhado, e nao campos soltos: e o que distingue "nao mexi no
+   * endereco" (ausente) de "quero apagar" (presente e vazio).
+   */
+  address?: EnderecoAEnviar
+}
+
+/** O endereco no corpo do PUT. Todos opcionais; string vazia apaga o campo. */
+export interface EnderecoAEnviar {
+  street?: string
+  number?: string
+  complement?: string
+  district?: string
+  city?: string
+  state?: string
+  postalCode?: string
+  country?: string
 }
 
 export interface Pais {
