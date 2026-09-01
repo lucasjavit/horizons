@@ -255,8 +255,8 @@
     {
       "id": "INV-17",
       "titulo": "Registro corrompido no histórico derruba o download",
-      "estado": "aberto",
-      "coluna": "backlog",
+      "estado": "feito (01/09/2026)",
+      "coluna": "feito",
       "tamanho": "P",
       "porque": "O download é o gesto que não pode falhar. É o único desfecho da tela de Invoice: a pessoa preencheu tudo e clica em baixar. Um registro velho e malformado no localStorage faz recordDownload() lançar TypeError antes de o ",
       "decisao": "",
@@ -963,8 +963,8 @@
     {
       "id": "QA-02",
       "titulo": "O placeholder do RUT chileno e um RUT valido",
-      "estado": "aberto (01/09/2026)",
-      "coluna": "backlog",
+      "estado": "feito (01/09/2026)",
+      "coluna": "feito",
       "tamanho": "P",
       "porque": "",
       "decisao": "",

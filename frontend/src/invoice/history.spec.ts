@@ -298,38 +298,40 @@ describe('historico local', () => {
     })
 
     /**
-     * ⚠️ BUG ABERTO — `docs/backlog/cards/INV-17-historico-corrompido-derruba-o-download.md`
+     * Um registro velho e malformado nao pode derrubar o download.
      *
-     * O teste entra ANTES da correcao, como o QA-02 fez com o
-     * `documentos.spec.ts`. Aquele usou `it.failing`; **o Vitest 4 removeu o
-     * `it.failing`** (`TypeError: it.failing is not a function` — medido em
-     * 01/09), entao aqui o mesmo efeito e escrito a mao.
+     * Era o INV-17, achado pela suite do QA-04 e corrigido em 01/09: o filtro
+     * do `ler()` so exigia `typeof draft === 'object'`, entao `{}` passava, e
+     * a `assinatura()` fazia `d.invoiceNumber.trim()` — `TypeError`.
      *
-     * A propriedade que importa e a do `.failing`, e ela esta preservada:
-     * afirmar o comportamento ERRADO deixa a suite verde hoje **e a quebra no
-     * dia em que alguem corrigir sem apagar este bloco** — que e o lembrete de
-     * apagar. Um `skip` nao teria isso: sumiria em silencio, e teste que se
-     * pula sozinho e o que o CLAUDE.md proibe.
+     * O estrago era desproporcional: como o `recordDownload()` assina TODO
+     * registro guardado para achar a duplicata, **um registro velho impedia o
+     * download de uma invoice nova e valida** — e o download e o unico
+     * desfecho desta tela. O historico e conveniencia; derrubar o gesto
+     * principal por causa dele inverte a prioridade.
      *
-     * O defeito: o filtro do `ler()` so exige `typeof draft === 'object'`, e
-     * `{}` passa; a `assinatura()` entao faz `d.invoiceNumber.trim()` e lanca
-     * `TypeError`. Como `recordDownload()` assina TODO registro guardado para
-     * achar a duplicata, um registro velho e ruim derruba o download de uma
-     * invoice nova e valida — o unico gesto que a tela existe para fazer.
-     *
-     * Ao corrigir: trocar este bloco pelo `expect(...).not.toThrow()` que o
-     * card descreve.
+     * Este teste nasceu afirmando o comportamento ERRADO (`.toThrow`), para
+     * quebrar no dia da correcao em vez de sumir num `skip`. Foi o que
+     * aconteceu — e agora afirma o certo.
      */
-    it('BUG INV-17 · registro corrompido AINDA derruba o download', () => {
+    it('registro corrompido no historico nao derruba o download (INV-17)', () => {
       localStorage.setItem(
         CHAVE,
         JSON.stringify([{ id: 'velho', savedAt: new Date().toISOString(), draft: {} }]),
       )
 
-      // O comportamento correto seria `.not.toThrow()`. Enquanto o bug existe,
-      // e o `toThrow` que descreve a realidade — e e ele que vai falhar quando
-      // a realidade mudar.
-      expect(() => recordDownload(draft())).toThrow(TypeError)
+      expect(() => recordDownload(draft())).not.toThrow()
+    })
+
+    it('e o registro corrompido some da lista, em vez de ficar guardado', () => {
+      localStorage.setItem(
+        CHAVE,
+        JSON.stringify([{ id: 'velho', savedAt: new Date().toISOString(), draft: {} }]),
+      )
+      recordDownload(draft())
+
+      const guardados = loadHistory()
+      expect(guardados.some((e) => e.id === 'velho')).toBe(false)
     })
   })
 })

@@ -1,6 +1,6 @@
 # INV-17 · Registro corrompido no histórico derruba o download
 
-**Estado:** aberto
+**Estado:** feito (01/09/2026)
 **Tamanho:** P
 **Achado pelo QA-04 (01/09/2026)**, escrevendo os testes de `invoice/history.ts`.
 
@@ -98,3 +98,28 @@ Duas opções, e a segunda parece melhor:
    `storage.ts` já faz. Um registro que não serve para assinar não serve para
    nada — descartá-lo na leitura mantém uma fronteira só, em vez de espalhar
    `?? ''` por todo lado.
+
+
+## Corrigido (01/09/2026)
+
+O filtro do `ler()` passou a exigir **o que a `assinatura()` de fato usa**:
+
+```ts
+typeof d === 'object' && d !== null && typeof d.invoiceNumber === 'string'
+```
+
+`typeof draft === 'object'` sozinho deixava `{}` passar — e `{}` é o formato de
+um registro velho de outra versão.
+
+**A causa de fundo era a assimetria** entre os dois módulos que leem o mesmo
+`localStorage`: o `storage.ts` descarta o que não é da versão atual, o
+`history.ts` não checava nada. Corrigir o filtro fecha o caso concreto; a
+assimetria continua registrada aqui para quem acrescentar campo ao `draft`.
+
+**O teste virou dois**, e o segundo é o que faltava: além de não derrubar o
+download, o registro corrompido **some da lista** em vez de ficar guardado
+esperando a próxima chance.
+
+E o mecanismo funcionou: o teste nasceu afirmando o comportamento errado
+(`.toThrow`), ficou verde enquanto o bug existia, e **falhou no dia da
+correção** — que era o lembrete de reescrevê-lo.

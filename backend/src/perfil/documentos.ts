@@ -54,7 +54,7 @@ export const PAISES: Pais[] = [
   { codigo: 'MX', nome: 'Mexico', ddi: '52', documento: 'RFC', exemplo: 'AAAA000000AAA' },
   { codigo: 'AR', nome: 'Argentina', ddi: '54', documento: 'CUIT/CUIL', exemplo: '20-00000000-0' },
   { codigo: 'CO', nome: 'Colombia', ddi: '57', documento: 'Cedula de ciudadania', exemplo: '1234567890' },
-  { codigo: 'CL', nome: 'Chile', ddi: '56', documento: 'RUT', exemplo: '00.000.000-0' },
+  { codigo: 'CL', nome: 'Chile', ddi: '56', documento: 'RUT', exemplo: '00.000.000-1' },
   { codigo: 'PE', nome: 'Peru', ddi: '51', documento: 'DNI', exemplo: '12345678' },
   { codigo: 'BO', nome: 'Bolivia', ddi: '591', documento: 'National ID', exemplo: '1234567' },
   { codigo: 'CR', nome: 'Costa Rica', ddi: '506', documento: 'Cedula', exemplo: '123456789' },

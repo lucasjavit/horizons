@@ -329,11 +329,13 @@ describe('o catalogo de paises', () => {
    * vazamento do documento salvo na verificacao de 31/08.
    *
    * A promessa so e exigivel onde ha **digito verificador**: BR, AR, CL e MX.
+   * O CL entrou aqui em 01/09, quando o QA-02 foi corrigido — ate entao ele
+   * era a excecao, e a excecao era o proprio bug.
    * CO e PE validam por comprimento, e o resto cai no caminho generico — ali
    * qualquer placeholder com cara de formato real passa por construcao, e
    * exigir o contrario obrigaria a um exemplo que nao ensina o formato.
    */
-  it.each(['BR', 'AR', 'MX'])(
+  it.each(['BR', 'AR', 'CL', 'MX'])(
     'o exemplo de %s nao e um documento valido',
     (codigo) => {
       const pais = paisPorCodigo(codigo)!;
@@ -341,22 +343,6 @@ describe('o catalogo de paises', () => {
     },
   );
 
-  /**
-   * ⚠️ BUG CONHECIDO — QA-02.
-   *
-   * `00.000.000-0` e um RUT VALIDO pela especificacao: corpo `00000000` soma
-   * zero, `11 - 0 % 11` da 11, e o resto 11 mapeia para o DV `'0'`. E o mesmo
-   * defeito corrigido no Brasil em 31/08, sobrevivendo no Chile.
-   *
-   * `it.failing` e nao `skip`: se alguem corrigir o exemplo, ESTE TESTE FALHA
-   * avisando que passou a passar, em vez de continuar pulando em silencio.
-   *
-   * Ver docs/backlog/cards/QA-02-placeholder-do-rut-e-valido.md
-   */
-  it.failing('o exemplo de CL nao e um documento valido (QA-02)', () => {
-    const cl = paisPorCodigo('CL')!;
-    expect(aceita('CL', cl.exemplo)).toBe(false);
-  });
 
   it('OTHER fecha a lista, para quem nao esta nela', () => {
     expect(PAISES[PAISES.length - 1].codigo).toBe('OTHER');

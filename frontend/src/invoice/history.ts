@@ -35,13 +35,25 @@ function ler(): HistoryEntry[] {
   try {
     const lista = JSON.parse(bruto) as unknown
     if (!Array.isArray(lista)) return []
-    return lista.filter(
-      (e): e is HistoryEntry =>
-        typeof e === 'object' &&
-        e !== null &&
-        typeof (e as HistoryEntry).id === 'string' &&
-        typeof (e as HistoryEntry).draft === 'object',
-    )
+    return lista.filter((e): e is HistoryEntry => {
+      if (typeof e !== 'object' || e === null) return false
+      const c = e as HistoryEntry
+      if (typeof c.id !== 'string') return false
+      // **`draft` tem de ser objeto E ter o que a `assinatura()` le.**
+      //
+      // Exigir so `typeof draft === 'object'` deixava `{}` passar, e a
+      // `assinatura()` faz `d.invoiceNumber.trim()` na primeira linha —
+      // `TypeError` (INV-17). E como o `recordDownload()` assina TODO registro
+      // guardado para achar a duplicata, um registro velho e ruim impedia o
+      // download de uma invoice nova e valida. O historico e conveniencia; o
+      // download e o unico desfecho da tela.
+      //
+      // O `storage.ts` ja se protegia disso descartando o que nao e da versao
+      // atual. Este modulo le a mesma chave `.v1` fixa e nao tinha checagem
+      // nenhuma — a assimetria era a causa de fundo.
+      const d = c.draft as unknown as Record<string, unknown> | null
+      return typeof d === 'object' && d !== null && typeof d.invoiceNumber === 'string'
+    })
   } catch {
     return []
   }

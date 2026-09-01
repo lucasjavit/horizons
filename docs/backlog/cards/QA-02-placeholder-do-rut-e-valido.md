@@ -1,6 +1,6 @@
 # QA-02 · O placeholder do RUT chileno e um RUT valido
 
-**Estado:** aberto (01/09/2026)
+**Estado:** feito (01/09/2026)
 **Tamanho:** P — troca de uma string
 **Achado por:** a suite do QA-01, em `backend/src/perfil/documentos.spec.ts`
 
@@ -73,3 +73,26 @@ atuais.
 - [ ] O novo exemplo continua ensinando o formato (pontos e traco no lugar)
 - [ ] O teste volta a `it.each` e passa para BR, AR, CL e MX
 - [ ] A tela do perfil com Chile escolhido mostra o novo placeholder
+
+
+## Corrigido (01/09/2026)
+
+`00.000.000-0` virou **`00.000.000-1`**. O corpo `00000000` tem DV `0` pela
+especificação — qualquer outro dígito torna o exemplo inválido, e o `1` mantém
+a forma visual que ensina o formato.
+
+**E o `it.failing` fez exatamente o que prometia:**
+
+```
+● o exemplo de CL nao e um documento valido (QA-02)
+  Failing test passed even though it was supposed to fail.
+  Remove `.failing` to remove error.
+```
+
+Ele não passou em silêncio: acusou que o comportamento mudou e pediu para ser
+promovido.
+
+**O teste isolado foi apagado, e o `CL` entrou na lista parametrizada** que já
+cobria BR, AR e MX. Ele estava de fora **por causa do bug** — a exceção era o
+próprio defeito. Agora os quatro países com dígito verificador são conferidos
+pela mesma regra.
