@@ -959,6 +959,18 @@
       "bloqueio": "",
       "feitos": 0,
       "total": 0
+    },
+    {
+      "id": "QA-03",
+      "titulo": "Testes das camadas 2, 3 e 4",
+      "estado": "aberto (01/09/2026)",
+      "coluna": "backlog",
+      "tamanho": "G",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "[QA-01](QA-01-suite-de-testes.md) — a camada 1, o runner e o padrão de",
+      "feitos": 0,
+      "total": 0
     }
   ]
 }
