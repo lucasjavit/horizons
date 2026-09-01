@@ -180,3 +180,102 @@ com nota explicando a mudança. O que define se o login está ligado é o
 Dívida herdada do PLT-02 que continua de pé e passa a valer na internet, não
 mais só na rede local: token de 30 dias em `localStorage` sem refresh (um XSS
 lê o token), e `POST /auth/google` sem rate limiting.
+
+---
+
+## O deploy falhou no `npm ci` (31/08 → 01/09)
+
+O Coolify parou no build, com `exit code: 1` na linha 35 do `backend/Dockerfile`
+— o `RUN npm ci` do estágio de build.
+
+### O que foi descartado, medindo
+
+**Não é o `package-lock.json` fora de sincronia.** Comparado dependência por
+dependência contra o `package.json`: nada falta, nada sobra, nenhuma versão
+diverge.
+
+**Não é o código.** O mesmo Dockerfile e o mesmo lock constroem aqui:
+
+```
+build    npm ci              916 pacotes em 35s
+runtime  npm ci --omit=dev   350 pacotes em 27s
+```
+
+E `docker compose build api` completa sem erro.
+
+### O que sobra, e como distinguir
+
+`exit code: 1` sozinho **não diz qual foi**. As três causas plausíveis, e o que
+cada uma escreve no log — que é a informação que falta:
+
+| Causa | O que aparece no log do `RUN npm ci` |
+| --- | --- |
+| **Memória** | `Killed`, `ENOMEM`, ou parada no meio de *"Reifying dependencies"* |
+| Rede do servidor | `ETIMEDOUT`, `ECONNRESET`, `ERR_SOCKET_TIMEOUT` |
+| Disco cheio | `ENOSPC` |
+
+**A memória é a hipótese principal.** Instalar 916 pacotes é o passo mais pesado
+do build; esta máquina tem 4 GB e passa. Um servidor menor, ou com outros
+containers subindo ao mesmo tempo, mata o processo — e o Docker reporta só
+`exit code: 1`, sem dizer que foi o OOM killer.
+
+### O que fazer, na ordem
+
+1. **Ler o log completo do passo `RUN npm ci`** no Coolify — as linhas acima do
+   `--------------------`. É o que fecha o diagnóstico.
+2. **Tentar o deploy de novo.** Se for memória ou rede transitória, o segundo
+   passa — e isso já é informação.
+3. Se for memória e o servidor não puder crescer, o caminho é reduzir o pico do
+   build: `npm ci --omit=dev` também no estágio de build (350 em vez de 916), e
+   instalar as de desenvolvimento só para compilar. Custa uma camada a mais no
+   Dockerfile.
+
+### Um detalhe que vale conferir junto
+
+O Coolify tentou o commit `d01327a`. Há commits depois — vale apontar para o
+`main` atual antes de repetir.
+
+---
+
+## O segundo erro: "Failed to read the Docker Compose file" (01/09)
+
+Erro **diferente** do `npm ci`, e mais cedo — o deploy nem chegou ao build.
+
+### A causa: `${VAR:?}` dentro de COMENTÁRIO
+
+O `docker-compose.prod.yml` explicava a própria convenção usando a sintaxe de
+verdade:
+
+```yaml
+# - **Nenhum segredo com default.** Toda variavel usa `${VAR:?mensagem}`: se
+```
+
+**O Docker Compose ignora comentários. O Coolify interpola o arquivo antes de
+entregá-lo ao compose** — e aí `VAR` é uma variável inexistente cujo `:?` manda
+falhar. O arquivo inteiro deixa de ser legível, e a mensagem que sai
+(*"Failed to read the Docker Compose file"*) não aponta para a linha.
+
+Eram **quatro ocorrências**, todas em comentário, todas explicando a convenção.
+
+### A correção
+
+As crases passaram a citar `VAR:?mensagem` sem o `${...}` — o texto continua
+explicando a mesma coisa, sem oferecer nada para interpolar.
+
+Conferido nos dois sentidos:
+
+```
+com os segredos preenchidos   → compose VALIDO
+sem eles                      → recusa, como deve
+```
+
+A proteção do `:?` continua valendo nas variáveis de verdade: faltando
+`POSTGRES_PASSWORD`, `JWT_SECRET`, `ENCRYPTION_KEY` ou `CORS_ORIGIN`, o compose
+recusa subir.
+
+### A lição, para o próximo arquivo
+
+**Comentário em arquivo que passa por interpolador não é inerte.** Qualquer
+`${...}` ali dentro é tratado como variável — e o `:?` transforma o exemplo
+didático numa falha de deploy. Documentar a sintaxe exige escapá-la ou citá-la
+sem o cifrão.

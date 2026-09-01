@@ -7,7 +7,7 @@
 #   fora dele, sem TLS. So o `web` recebe trafego, e por `expose`.
 # - **Sem `container_name`.** Nome fixo impede o Coolify de gerenciar o ciclo
 #   de vida e quebra se houver mais de um deploy no mesmo host.
-# - **Nenhum segredo com default.** Toda variavel usa `${VAR:?mensagem}`: se
+# - **Nenhum segredo com default.** Toda variavel usa `VAR:?mensagem` (a forma estrita do compose): se
 #   faltar, o `docker compose` **recusa subir** com a mensagem. Default de
 #   conveniencia e o que faz um servidor subir aberto sem ninguem notar.
 # - **`AUTH_DISABLED` nao existe aqui.** Em producao o login e obrigatorio. A
@@ -79,7 +79,7 @@ services:
       # Vazio = ninguem e admin. Reavaliado a cada login.
       ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       # Provedores de IA. Como SMTP_HOST e o Telegram, e ao contrario dos
-      # segredos acima, NAO usam `${VAR:?}`: vazio e um estado valido — a chave
+      # segredos acima, NAO usam `VAR:?` (a forma estrita): vazio e um estado valido — a chave
       # normalmente vem do banco, cifrada, cadastrada em Configuracoes
       # (PLT-01), e estas variaveis sao a alternativa por ambiente. Recusar o
       # boot por falta delas impediria de subir uma aplicacao que funciona.
@@ -101,7 +101,7 @@ services:
       # AUTH_DISABLED de proposito ausente: em producao o login e obrigatorio,
       # e o codigo so desliga quando a variavel vale exatamente 'true'.
       #
-      # SMTP_HOST NAO usa `${VAR:?}` como os segredos acima: vazio e um estado
+      # SMTP_HOST NAO usa `VAR:?` (a forma estrita) como os segredos acima: vazio e um estado
       # valido e desejado — sem ele o e-mail semanal e registrado no log em vez
       # de enviado, que e exatamente como o JOB-24 nasceu. Recusar o boot por
       # falta dele impediria de subir uma aplicacao que funciona.
@@ -111,7 +111,7 @@ services:
       # e-mail de outra pessoa, entao o certo e cair no dominio publico.
       APP_URL: ${APP_URL:-${CORS_ORIGIN}}
       # Telegram (JOB-32). Como SMTP_HOST, e ao contrario dos segredos acima,
-      # NAO usa `${VAR:?}`: vazio e um estado valido e desejado — sem o token o
+      # NAO usa `VAR:?` (a forma estrita): vazio e um estado valido e desejado — sem o token o
       # canal fica inerte, a opcao nao aparece na tela e o webhook nao fica de
       # pe. Recusar o boot por falta dele impediria de subir uma aplicacao que
       # funciona.
