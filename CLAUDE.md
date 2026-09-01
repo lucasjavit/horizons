@@ -243,8 +243,45 @@ O que isso significa na prática:
 
 O markdown é a verdade; o HTML e o JSON são só apresentação.
 
+## O ciclo, e ele não tem atalho (01/09/2026)
+
+**Card → desenvolvimento → teste → commit.** Nesta ordem, sem pular etapa.
+
+1. **Não se desenvolve sem card.** O card vem antes do código, com o problema
+   e o critério de aceite. Se o pedido chegou sem card, o primeiro passo é
+   escrever um.
+2. **O tech-lead desenvolve**, seguindo o card.
+3. **Teste automatizado, e ele roda.** Não é "verifiquei no navegador" — é
+   teste que fica no repositório e roda de novo amanhã.
+4. **Só então commita.** Sem teste, não commita. Sem card, não commita.
+5. **Card só fecha com teste passando.**
+
+Isso vale para tudo: feature, correção, refatoração. **Uma linha de código sem
+card e sem teste não entra.**
+
+### Por que a regra existe
+
+Em 31/08 o `qa-rapido.py` estava com **8 checagens de papel se pulando em
+silêncio** — o usuário de teste sumiu numa migration, o bloco caía no `skip`, e
+nada falhava. Um teste que se pula sem avisar é pior que teste nenhum, porque
+produz confiança sem cobertura.
+
+E os bugs desta semana — `digitos()` apagando letras, o RFC aceitando 31 de
+fevereiro, o papel recalculado apagando a promoção — foram todos achados
+**medindo**, não relendo. O que se mede uma vez e não vira teste volta.
+
+### O que conta como teste
+
+Teste automatizado no repositório, que roda no `npm test` (backend) ou no
+equivalente do front. **Verificação manual no navegador continua obrigatória** —
+ela é o critério final —, mas não substitui: o navegador prova hoje, o teste
+prova amanhã.
+
 ## Verificar antes de dizer pronto
 
 O critério é o navegador, não o build. Suba os containers, abra a página,
 clique. Para PDF, abra o arquivo gerado. Confira os dois temas. Confirme que
 as trilhas continuam funcionando depois de mexer em algo compartilhado.
+
+E rode a suíte. `scripts/qa-rapido.py` cobre fumaça e papéis; o resto é teste
+de verdade, e sem ele o card não fecha.

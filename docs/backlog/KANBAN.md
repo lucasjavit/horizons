@@ -5,7 +5,11 @@ card é mover a linha de coluna, e atualizar o campo **Estado** dentro do
 arquivo dele.
 
 Prefixos: `INV` invoice · `LRN` trilhas · `PLT` plataforma (login, infra,
-umbrella).
+umbrella) · `JOB` busca de vagas · `APP` interface · `QA` testes.
+
+**O ciclo não tem atalho** (01/09): card → desenvolvimento → teste → commit.
+Não se desenvolve sem card, não se commita sem teste, e card só fecha com teste
+passando. Está no CLAUDE.md.
 
 ---
 
@@ -33,6 +37,16 @@ destrava o resto.
 | [JOB-17](cards/JOB-17-catalogo-de-ats.md) | Catálogo de 1.953 empresas do look4job + API de ATS grátis | M | medido (18/08) — 199 vagas numa chamada, mas só 4 de 771 eram BR/LATAM |
 | [JOB-12](cards/JOB-12-url-de-vaga-nao-se-valida-por-status.md) | URL de vaga não se valida por status HTTP | P | preventivo — conferido em 25/08: nenhum ponto trata `200` como "vaga existe", e `applicationUrl` continua sem ser exibido. **Aberto de propósito**, como aviso para quem for implementar |
 
+## Bugs
+
+**A raia dos defeitos encontrados por teste** (01/09/2026). Bug achado vira
+card aqui, com o teste que o pegou — e o teste entra no repositório mesmo antes
+da correção, marcado como conhecido. Um defeito medido e não registrado volta.
+
+| Card | Título | Tam. | Onde |
+| --- | --- | --- | --- |
+| [QA-02](cards/QA-02-placeholder-do-rut-e-valido.md) | **O placeholder do RUT chileno é um RUT válido** — `00.000.000-0` passa na própria validação | P | `backend/src/perfil/documentos.ts`. Achado pela suíte do QA-01 (01/09). É o mesmo defeito corrigido no Brasil em 31/08, sobrevivendo em outro país: o exemplo do campo não pode passar na validação, senão parece documento já preenchido. O corpo `00000000` soma zero, `11 - 0 % 11` dá 11, e o resto 11 mapeia para o DV `0` — confirmado por implementação de referência independente. **O teste já está no repositório**, como `it.failing` com o link deste card: se alguém corrigir o exemplo sem mexer no teste, ele falha avisando que passou a passar |
+
 ## Pronto para fazer
 
 **A ordem é de dependência, não de preferência.** O motor de ATS vem primeiro
@@ -51,7 +65,9 @@ quando poderia entregar 27.725 de graça.
 
 ## Fazendo
 
-_(vazio)_
+| Card | Título | Tam. | Nota |
+| --- | --- | --- | --- |
+| [QA-01](cards/QA-01-suite-de-testes.md) | **Uma suíte de testes de verdade** — camada 1 entregue; faltam as camadas 2, 3 e 4 | G | 01/09 — **camada 1 feita: 319 testes** (209 backend + 110 frontend), 19 mutações vistas matando teste, 1 bug achado (QA-02). A camada 2 (serviços com banco) é o próximo card, e exige decidir como isolar o Postgres entre testes |
 
 ## Feito
 

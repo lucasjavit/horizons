@@ -935,6 +935,30 @@
       "bloqueio": "",
       "feitos": 0,
       "total": 0
+    },
+    {
+      "id": "QA-01",
+      "titulo": "Uma suíte de testes de verdade, para o que já existe",
+      "estado": "camada 1 feita (01/09/2026) — camadas 2, 3 e 4 seguem abertas",
+      "coluna": "backlog",
+      "tamanho": "G",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "QA-02",
+      "titulo": "O placeholder do RUT chileno e um RUT valido",
+      "estado": "aberto (01/09/2026)",
+      "coluna": "backlog",
+      "tamanho": "P",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
     }
   ]
 }
