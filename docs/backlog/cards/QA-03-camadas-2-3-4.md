@@ -1,6 +1,6 @@
 # QA-03 · Testes das camadas 2, 3 e 4
 
-**Estado:** aberto (01/09/2026)
+**Estado:** camada 2 feita (01/09/2026) — camadas 3 e 4 seguem abertas
 **Tamanho:** G
 
 Continua o [QA-01](QA-01-suite-de-testes.md), que entregou a camada 1 — **319
@@ -119,3 +119,53 @@ falha avisando.
 
 - [QA-01](QA-01-suite-de-testes.md) — a camada 1, o runner e o padrão de
   mutação
+
+
+---
+
+## Camada 2 entregue (01/09/2026)
+
+**319 testes no backend, contra 209 antes** — seis specs de serviço novos, mais
+a infraestrutura em `backend/test/`.
+
+| Arquivo | O que cobre |
+| --- | --- |
+| `perfil.service.spec.ts` | trocar de país apaga o documento; "Not set" também |
+| `usuarios.service.spec.ts` | as quatro proteções do PLT-11 |
+| `salvas.service.spec.ts` | o `DELETE` sem parâmetro dá 400, não apaga tudo |
+| `historico.service.spec.ts` | idem, e a precedência descartado/visto |
+| `recursos.service.spec.ts` | a separação produto/admin do PLT-12 |
+| `auth.service.banco.spec.ts` | o `upsert` por e-mail e a gravação do papel |
+
+### A decisão: schema por suíte
+
+Das três opções do card, a medição escolheu a **A**:
+
+| Caminho | Custo | Veredito |
+| --- | --- | --- |
+| **schema por suíte** | 2,35 s de `migrate deploy` | **escolhido** |
+| transação com rollback | — | exigiria o client transacional dentro do serviço, e o `PrismaService` é singleton `@Global()`. Mudaria código de produção, que este card proíbe |
+| truncar entre testes | — | serializa tudo e **mira a mesma tabela dos dados reais**: um erro de configuração apaga o banco de desenvolvimento em vez de dar erro |
+
+Um quarto caminho foi medido e descartado: clonar o schema com
+`CREATE TABLE (LIKE ... INCLUDING ALL)` custa **157 ms** em vez de 2,35 s, mas
+**perde as 13 foreign keys** — e FK é justamente o que um teste de
+`onDelete: Cascade` precisa exercitar.
+
+### A proteção é por construção, e foi provada
+
+O critério não era *"nenhum teste escreveu no banco de desenvolvimento"* — era
+**"nenhum teste consegue escrever"**.
+
+`urlDeTeste()` **recusa qualquer schema que não comece com `qa03_test_`**, e
+recusa **antes de abrir conexão**. Conferido: `urlDeTeste('public')` e
+`urlDeTeste('horizons')` lançam.
+
+Medido depois de rodar a suíte inteira: **4 usuários e 5 chaves de IA intactos**
+no banco real, e 7 schemas `qa03_*` criados à parte.
+
+## O que falta
+
+**Camadas 3 e 4 não começaram.** O agente que fez a camada 2 foi interrompido
+entre uma e outra — o `supertest` não está instalado, e não há spec de
+componente.

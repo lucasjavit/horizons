@@ -963,7 +963,7 @@
     {
       "id": "QA-03",
       "titulo": "Testes das camadas 2, 3 e 4",
-      "estado": "aberto (01/09/2026)",
+      "estado": "camada 2 feita (01/09/2026) — camadas 3 e 4 seguem abertas",
       "coluna": "backlog",
       "tamanho": "G",
       "porque": "",
