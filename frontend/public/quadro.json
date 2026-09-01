@@ -710,18 +710,6 @@
     },
     {
       "id": "JOB-39",
-      "titulo": "O currículo não preenche mais os filtros",
-      "estado": "aberto (26/08/2026)",
-      "coluna": "backlog",
-      "tamanho": "P",
-      "porque": "",
-      "decisao": "",
-      "bloqueio": "",
-      "feitos": 0,
-      "total": 0
-    },
-    {
-      "id": "JOB-39",
       "titulo": "freehire.me como primeiro motor de busca",
       "estado": "feito (26/08/2026)",
       "coluna": "feito",
@@ -798,6 +786,18 @@
       "estado": "feito (27/08/2026)",
       "coluna": "feito",
       "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "JOB-46",
+      "titulo": "O currículo não preenche mais os filtros",
+      "estado": "aberto (26/08/2026)",
+      "coluna": "backlog",
+      "tamanho": "P",
       "porque": "",
       "decisao": "",
       "bloqueio": "",

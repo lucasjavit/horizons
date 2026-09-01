@@ -1,6 +1,9 @@
-# JOB-39 · O currículo não preenche mais os filtros
+# JOB-46 · O currículo não preenche mais os filtros
 
 **Estado:** aberto (26/08/2026)
+
+> Renumerado de JOB-39 para JOB-46 em 01/09: o número colidia com
+> `JOB-39-freehire-como-motor-de-busca.md`, que já estava feito.
 **Tamanho:** P
 
 ## O defeito
