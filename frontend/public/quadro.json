@@ -253,6 +253,18 @@
       "total": 7
     },
     {
+      "id": "INV-17",
+      "titulo": "Registro corrompido no histórico derruba o download",
+      "estado": "aberto",
+      "coluna": "backlog",
+      "tamanho": "P",
+      "porque": "O download é o gesto que não pode falhar. É o único desfecho da tela de Invoice: a pessoa preencheu tudo e clica em baixar. Um registro velho e malformado no localStorage faz recordDownload() lançar TypeError antes de o ",
+      "decisao": "",
+      "bloqueio": "",
+      "feitos": 0,
+      "total": 0
+    },
+    {
       "id": "JOB-01",
       "titulo": "Provar o Firecrawl antes de construir tela",
       "estado": "feito (13/08/2026)",
@@ -975,8 +987,8 @@
     {
       "id": "QA-04",
       "titulo": "Testes de componente para `ListaVagas`",
-      "estado": "aberto",
-      "coluna": "backlog",
+      "estado": "feito (01/09/2026)",
+      "coluna": "feito",
       "tamanho": "M",
       "porque": "",
       "decisao": "",
