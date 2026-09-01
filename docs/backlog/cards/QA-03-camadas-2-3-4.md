@@ -1,6 +1,6 @@
 # QA-03 · Testes das camadas 2, 3 e 4
 
-**Estado:** camada 2 feita (01/09/2026) — camadas 3 e 4 seguem abertas
+**Estado:** feito (01/09/2026) — camadas 2, 3 e 4 entregues
 **Tamanho:** G
 
 Continua o [QA-01](QA-01-suite-de-testes.md), que entregou a camada 1 — **319
@@ -104,16 +104,17 @@ falha avisando.
 
 ## Critérios de aceite
 
-- [ ] `npm test` roda as três camadas e passa
-- [ ] Cada teste **visto falhar** com o código quebrado — com a tabela de
+- [x] `npm test` roda as três camadas e passa
+- [x] Cada teste **visto falhar** com o código quebrado — com a tabela de
       mutações, como o QA-01 fez
-- [ ] **Nenhum teste escreve no banco de desenvolvimento**, e isso é
+- [x] **Nenhum teste escreve no banco de desenvolvimento**, e isso é
       impossível por construção
-- [ ] Um teste que não pode rodar **falha**, não se pula
-- [ ] Nenhum teste depende de dado que outro criou
-- [ ] Os testes de papel **falham** se `AUTH_DISABLED=true`
-- [ ] O `qa-rapido.py` continua passando
-- [ ] Todo bug tem card na raia `Bugs`, com o teste junto
+- [x] Um teste que não pode rodar **falha**, não se pula
+- [x] Nenhum teste depende de dado que outro criou
+- [x] Os testes de papel **falham** se `AUTH_DISABLED=true`
+- [x] O `qa-rapido.py` continua passando
+- [x] Todo bug tem card na raia `Bugs`, com o teste junto — **nenhum bug novo
+      nesta leva** (ver "O que a suíte encontrou")
 
 ## Depende de
 
@@ -164,8 +165,124 @@ recusa **antes de abrir conexão**. Conferido: `urlDeTeste('public')` e
 Medido depois de rodar a suíte inteira: **4 usuários e 5 chaves de IA intactos**
 no banco real, e 7 schemas `qa03_*` criados à parte.
 
-## O que falta
+---
 
-**Camadas 3 e 4 não começaram.** O agente que fez a camada 2 foi interrompido
-entre uma e outra — o `supertest` não está instalado, e não há spec de
-componente.
+## Camadas 3 e 4 entregues (01/09/2026)
+
+| | Antes | Depois |
+| --- | --- | --- |
+| backend | 319 (12 suítes) | **383** (15 suítes), 26,1s |
+| frontend | 110 (2 arquivos) | **139** (4 arquivos), 3,5s |
+
+### Camada 3 — 64 testes em três suítes
+
+| Arquivo | Testes | O que cobre |
+| --- | --- | --- |
+| `src/auth/fail-closed.e2e.spec.ts` | 14 | nenhuma rota nasce aberta |
+| `src/auth/papeis.e2e.spec.ts` | 35 | a matriz inteira de papéis |
+| `src/settings/contratos.e2e.spec.ts` | 15 | `forbidNonWhitelisted` e o não-vazamento |
+
+**O teste de rota aberta faz duas perguntas diferentes**, e é por isso que ele
+vale: a lista de rotas públicas é conferida por **metadado** (pega a rota nova
+que nasceu `@Public()`), e toda rota protegida é conferida por **requisição de
+verdade** (pega o `AuthGuard` quebrado, que o metadado não veria). As rotas são
+levantadas pela `DiscoveryService`, então **controller novo entra sozinho** — a
+proteção vale para o código que ainda não existe.
+
+**A superfície pública são SETE rotas, e não seis.** O card listava seis; a
+sétima é `GET /perfil/paises`, pública desde sempre e legitimamente (lista
+estática de países, não diz nada sobre ninguém). A lista está escrita à mão no
+teste de propósito: derivá-la do código faria um teste que concorda com
+qualquer coisa que o código diga.
+
+### Camada 4 — 29 testes em dois arquivos
+
+| Arquivo | Testes | O que cobre |
+| --- | --- | --- |
+| `src/components/vagas/Paginacao.spec.tsx` | 15 | o "Load more" e o erro **junto ao botão** |
+| `src/components/perfil/DadosPessoais.spec.tsx` | 14 | trocar de país revalida; falha de rede não perde |
+
+O erro do "Load more" é verificado por **quem é o pai do elemento**
+(`within(nav)`), e não por "a mensagem aparece": o bug de 27/08 era a mensagem
+nascendo 900px acima, e um teste de presença teria passado com o bug presente.
+
+**A infraestrutura da camada 4 não existia.** O card dizia que Vitest e Testing
+Library já estavam no projeto — o Vitest estava, a Testing Library não. Foram
+instalados `@testing-library/react`, `/dom`, `/user-event`, `/jest-dom` e
+`jsdom`, e o `vite.config.ts` passou de `environment: 'node'` para `'jsdom'`,
+com `*.spec.tsx` no `include` e um `setupFiles`.
+
+### `AUTH_DISABLED=true` derruba a camada 3 inteira, como devia
+
+Rodado com a variável ligada pela linha de comando (**sem tocar no `.env`**):
+**63 de 63 testes falharam**, cada um com a razão escrita — *"com o login
+desligado o guard retorna antes de olhar papel: TODA rota responderia 200 e o
+teste passaria sem medir nada"*.
+
+A guarda é `exigirLoginLigado()`, chamada no `beforeAll` das três suítes. Não
+se resolveu fixando `AUTH_DISABLED=false` no `ambiente.ts`: isso esconderia a
+configuração real da máquina e a suíte passaria a atestar o fail closed num
+modo em que a aplicação não roda.
+
+### A tabela de mutações — 15 mutações, 13 mataram teste
+
+| # | Mutação | Testes que falharam |
+| --- | --- | --- |
+| 1 | o guard deixa passar quem não tem token (*fail open*) | 2 |
+| 2 | conta desativada volta a ser aceita | 1 |
+| 3 | `GET /perfil` marcado `@Public()` por engano | 1 (nomeando a rota) |
+| 4 | `forbidNonWhitelisted: false` | 3 |
+| 5 | a rota de produto devolve o DTO de admin | 2 |
+| 6 | `@AdminOnly()` sai de `PATCH :id/papel` | **0 → 1** (ver abaixo) |
+| 7 | o guard deixa de checar `@ManagerOrAdmin()` | 1 |
+| 8 | `GET /perfil` passa a devolver `documentEnc` | 1 |
+| 9 | o `select:` de `/usuarios` carrega telefone e documento | **0** (ver abaixo) |
+| 9b | o **mapper** de `/usuarios` espalha a linha do banco | 2 |
+| 10 | o erro do "Load more" volta a nascer fora do `<nav>` | 2 |
+| 11 | "Load more" passa a aparecer em qualquer página | 1 |
+| 12 | "teto" e "fim" passam a dizer a mesma frase | 1 |
+| 13 | trocar de país não limpa o documento digitado | 1 |
+| 14 | o `catch` do Save limpa o formulário | 2 |
+| 15 | manda `document: ''` mesmo com o campo vazio | 1 |
+
+**Duas mutações sobreviveram, e as duas ensinaram algo — nenhuma foi
+"consertada" mudando o teste para passar.**
+
+**A #6 revelou proteção em profundidade.** Tirar o `@AdminOnly()` da rota de
+papel **não quebrou nada**: `UsuariosService.mudarPapel` recusa o manager por
+conta própria, e a resposta continuava 403. Duas barreiras é bom; o risco é o
+decorador ser removido num refactor sem que nada aponte. O teste novo separa as
+camadas **pela mensagem** — a frase do `AuthGuard` (`"Esta acao e restrita a
+administradores."`) é a única evidência observável de qual barreira atendeu.
+Com o teste novo, a #6 mata.
+
+**A #9 não era vazamento.** Carregar colunas a mais do banco não as leva à
+resposta: o `paraDto` de `usuarios.service.ts` monta o DTO campo a campo e
+descarta o resto. O teste estava certo em não falhar — a segunda barreira
+segurou. A #9b mutou o **mapper**, que é onde o vazamento de verdade
+aconteceria, e a varredura recursiva o pegou em `itens[0].documentHint`.
+
+### O banco de desenvolvimento, antes e depois
+
+**4 usuários e 5 chaves de IA, sem alteração** — conferido antes da primeira
+suíte e depois da última. Os 12 schemas `qa03_test_*` vivem à parte, e o
+`urlDeTeste()` continua recusando qualquer schema fora do prefixo.
+
+### O que a suíte encontrou
+
+**Nenhum bug novo.** As camadas 3 e 4 confirmaram o comportamento esperado em
+todos os 93 testes escritos — o que é um resultado, e não a ausência de um:
+as proteções que o PLT-11 e o PLT-12 construíram estão de pé, e agora há teste
+que avisa no dia em que deixarem de estar.
+
+### O que NÃO foi feito
+
+**`ListaVagas` ficou de fora.** O card a listava primeiro na camada 4, com três
+bugs medidos (perda de escolha durante o upload do CV, o selo `CV` mentindo
+depois de "Clear filters", a contagem divergindo dos selos). São **1.053
+linhas** com muitas dependências de rede, e testá-la bem custaria mais do que
+coube nesta leva. `Paginacao` e `DadosPessoais` foram escolhidas por serem
+onde o card apontava bug medido **e** o componente ser isolável.
+
+O card sai como feito porque a camada 3 — a prioridade declarada, onde estão
+as proteções de segurança — está inteira. `ListaVagas` merece card próprio.

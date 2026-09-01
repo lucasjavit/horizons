@@ -963,12 +963,24 @@
     {
       "id": "QA-03",
       "titulo": "Testes das camadas 2, 3 e 4",
-      "estado": "camada 2 feita (01/09/2026) — camadas 3 e 4 seguem abertas",
-      "coluna": "backlog",
+      "estado": "feito (01/09/2026) — camadas 2, 3 e 4 entregues",
+      "coluna": "feito",
       "tamanho": "G",
       "porque": "",
       "decisao": "",
       "bloqueio": "[QA-01](QA-01-suite-de-testes.md) — a camada 1, o runner e o padrão de",
+      "feitos": 0,
+      "total": 0
+    },
+    {
+      "id": "QA-04",
+      "titulo": "Testes de componente para `ListaVagas`",
+      "estado": "aberto",
+      "coluna": "backlog",
+      "tamanho": "M",
+      "porque": "",
+      "decisao": "",
+      "bloqueio": "[QA-03](QA-03-camadas-2-3-4.md) — a infraestrutura de teste de componente",
       "feitos": 0,
       "total": 0
     }
