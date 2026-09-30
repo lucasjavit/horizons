@@ -795,8 +795,8 @@
     {
       "id": "JOB-46",
       "titulo": "O currículo não preenche mais os filtros",
-      "estado": "aberto (26/08/2026)",
-      "coluna": "backlog",
+      "estado": "feito (30/09/2026) — corrigido junto com o QA-04 em 01/09; o selo de origem foi **cortado com razao registrada** (ver o final do card)",
+      "coluna": "feito",
       "tamanho": "P",
       "porque": "",
       "decisao": "",
