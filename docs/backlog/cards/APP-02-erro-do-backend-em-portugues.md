@@ -81,8 +81,9 @@ veio. Uma frase em português numa interface inglesa é ruim; trocá-la por
 (e quem abre o ticket) tem. O mapa pode ficar incompleto sem virar perda de
 informação — ele degrada para o estado de hoje, nunca para pior.
 
-**O mapa não envelhece em silêncio.** `erros-do-servidor.spec.ts` lê
-`backend/src/` do disco e falha se uma mensagem mapeada sumir de lá — os dois
+**O mapa não envelhece em silêncio, nas DUAS direções** (a segunda entrou em
+01/10 — ver "A brecha foi fechada" no fim do card). `erros-do-servidor.spec.ts`
+lê `backend/src/` do disco e falha se uma mensagem mapeada sumir de lá — os dois
 lados moram no mesmo repositório, então o acoplamento existe só no teste, e
 nada do módulo conhece o backend em tempo de execução (o bundle não mudou:
 `npm run build` limpo, sem `node:fs`). **Limitação registrada:** ele não pega
@@ -150,3 +151,71 @@ da mensagem), e quebra quando as duas caem. A outra: o teste que lê o backend
 assertava a contagem de arquivos no corpo do `describe`, então o caminho
 quebrado saía como "no tests" em vez de falha nomeada — virou teste de
 verdade (`leu o backend inteiro, e nao uma pasta so`).
+
+---
+
+## A brecha foi fechada (01/10/2026)
+
+O card tinha sido entregue com uma degradacao conhecida: o teste pegava
+mensagem mapeada que **sumiu** do backend, nao mensagem nova que **apareceu**.
+Essa cairia no fallback, em portugues.
+
+Decisao do stakeholder no mesmo dia: *"vamos mexer, pois precisamos disso em
+ingles"*.
+
+### A medicao que escolheu o caminho
+
+A opcao obvia era a 2 deste card — codigos de erro no backend. Medido antes de
+decidir:
+
+| | numero |
+| --- | --- |
+| mensagens de excecao unicas no backend | **24** |
+| arquivos que lancam excecao | **20** |
+| mensagens **em portugues sem traducao**, hoje | **zero** |
+
+As duas que o mapa nao cobre (`Cannot POST /api/telegram/webhook`, do proprio
+Nest, e `This account is not connected to Telegram.`) **ja estao em ingles** —
+nao sao defeito.
+
+Ou seja: o problema nao era o presente, era o futuro. Trocar o contrato de 20
+arquivos resolveria o futuro **e** quebraria o contrato de toda rota, sem
+consertar nada que estivesse quebrado hoje.
+
+### A trava, em vez da refatoracao
+
+Um segundo bloco no spec varre o backend e **falha se achar mensagem em
+portugues sem traducao**. Mensagem nova nao escapa porque a suite nao passa, e
+o commit nao passa — ninguem precisa lembrar.
+
+**Como decide o que e portugues:** procura marcas que so o portugues tem no
+vocabulario deste backend (`nao`, `voce`, `esta`, `foi`, `pela`, `informe`,
+`invalido`...). **Acento nao serve de marca** — o CLAUDE.md manda mensagem sem
+acento, e e exatamente por isso que "curriculo" e "nao" parecem texto quebrado
+em vez de outro idioma, que foi o que originou este card.
+
+Limite aceito: frase curta sem nenhuma marca passaria (falso negativo). A trava
+cobre a forma como **este** backend escreve; o bloco anterior garante que o que
+ja esta mapeado nao se perde.
+
+E a mensagem de falha **diz o que fazer** — nomeia a frase e manda acrescentar
+no mapa, em vez de um `false !== true`.
+
+### Visto falhar, nas duas mutacoes
+
+| Mutacao | Resultado |
+| --- | --- |
+| mensagem nova em portugues no `auth.guard.ts` (`'Sua sessao foi encerrada pelo administrador.'`) | **falhou nomeada**, listando a frase |
+| varredura restrita a `backend/src/tracks/` (le pouco) | **falhou no guard** `achou as mensagens do backend, e nao uma lista vazia` — nao passou vazia |
+
+O backend foi restaurado nas duas; `git status` limpo depois.
+
+**Frontend 346 -> 348 testes.** Backend 383 intacto.
+
+### O que nao foi feito, e por que
+
+Os **codigos de erro** continuam nao existindo, e o contrato da API segue
+devolvendo `message` em portugues. Isso e deliberado: o CLAUDE.md quer a
+mensagem em portugues no log e para quem depura, e a trava entrega o ingles na
+tela sem tirar isso. Quando houver outra razao para mexer no contrato, o mapa
+vira a tabela de codigos sem retrabalho.

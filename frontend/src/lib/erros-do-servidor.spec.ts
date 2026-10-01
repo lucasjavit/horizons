@@ -344,3 +344,89 @@ function chavesMapeadas(): string[] {
   if (chaves.length === 0) throw new Error('nao consegui ler as chaves do mapa')
   return chaves
 }
+
+/**
+ * **A trava: mensagem NOVA do backend nao escapa em portugues.**
+ *
+ * O bloco acima pega a chave que SUMIU do backend. Este pega o contrario — a
+ * mensagem que APARECEU e ninguem mapeou —, que era a brecha registrada no
+ * APP-02 como degradacao conhecida.
+ *
+ * Decisao do stakeholder em 01/10: *"vamos mexer, pois precisamos disso em
+ * ingles"*. A alternativa era trocar o contrato da API por codigos de erro —
+ * o desenho certo a longo prazo, mas 24 mensagens em 15 modulos, e nao compra
+ * nada que esta trava nao compre: aqui a mensagem nao traduzida **nao
+ * compila** a suite, e o commit nao passa.
+ *
+ * ## Como decide o que e portugues
+ *
+ * Nao da para perguntar o idioma de uma frase sem biblioteca. O que da, e
+ * basta, e procurar **marcas que so o portugues tem** no vocabulario que este
+ * backend usa: artigo, preposicao e conjugacao que nao existem em ingles
+ * (`nao`, `voce`, `esta`, `foi`, `pela`...). O CLAUDE.md manda mensagem **sem
+ * acento**, entao acento nao serve de marca — e e justamente por isso que
+ * "curriculo" e "nao" parecem texto quebrado em vez de outro idioma, que foi o
+ * que originou este card.
+ *
+ * Falso negativo e possivel (uma frase curta sem nenhuma marca passaria). Esse
+ * e o limite aceito: a trava cobre a forma como ESTE backend escreve, e o
+ * teste acima garante que o que ja esta mapeado nao se perde.
+ */
+describe('nenhuma mensagem nova do backend escapa sem traducao', () => {
+  /** Palavras que so aparecem em portugues, no vocabulario deste backend. */
+  const MARCAS_DE_PORTUGUES = [
+    'nao', 'voce', 'esta', 'este', 'esse', 'sua', 'seu', 'foi', 'pela', 'pelo',
+    'uma', 'dos', 'das', 'com', 'sem', 'para', 'informe', 'escolha', 'entre',
+    'antes', 'ainda', 'conta', 'usuario', 'vaga', 'busca', 'perfil', 'aula',
+    'trilha', 'chave', 'token do', 'nenhum', 'desconhecido', 'invalido',
+    'expirado', 'restrita', 'desativada', 'configurado', 'encontrado',
+    'encontrada', 'suportado', 'possivel', 'desligada', 'arquivo', 'canal',
+  ]
+
+  /**
+   * As mensagens de excecao do backend, como o Nest as manda.
+   *
+   * Pega o literal do primeiro argumento de `*Exception(...)`, juntando as
+   * concatenadas com `' +` — e assim que as mensagens longas de CV sao
+   * escritas, e sem isso elas nem apareceriam.
+   */
+  const mensagensDoBackend = (() => {
+    const fonte = listarTs(join(__dirname, '../../../backend/src'))
+      .map((f) => readFileSync(f, 'utf8'))
+      .join('\n')
+      .replace(/'\s*\+\s*\n?\s*'/g, '')
+      .replace(/\s*\n\s*/g, ' ')
+    return [...fonte.matchAll(/Exception\(\s*'((?:[^'\\]|\\.)+)'/g)].map((m) =>
+      m[1].replace(/\\'/g, "'"),
+    )
+  })()
+
+  /** Mesmo guard do bloco acima: teste que le pouco nao se pula em silencio. */
+  it('achou as mensagens do backend, e nao uma lista vazia', () => {
+    expect(new Set(mensagensDoBackend).size).toBeGreaterThanOrEqual(20)
+  })
+
+  it('toda mensagem em portugues tem traducao', () => {
+    const semTraducao = [...new Set(mensagensDoBackend)]
+      .filter((msg) => {
+        const palavras = msg.toLowerCase()
+        return MARCAS_DE_PORTUGUES.some((marca) =>
+          new RegExp(`\\b${marca}\\b`).test(palavras),
+        )
+      })
+      // Traduzida e a que SAI diferente de como entrou. Comparar com o mapa
+      // por chave deixaria de fora o que os PADROES resolvem (as mensagens com
+      // valor interpolado, como o slug da trilha).
+      .filter((msg) => traduzirErroDoServidor(msg) === msg)
+
+    // A mensagem do erro lista o que falta: quem adicionar uma mensagem no
+    // backend tem de ler aqui o que fazer, nao um `false !== true`.
+    expect(
+      semTraducao,
+      `Mensagem(ns) em portugues sem traducao em erros-do-servidor.ts.\n` +
+        `Acrescente a traducao no mapa TRADUCOES (ou em PADROES, se tiver\n` +
+        `valor interpolado):\n` +
+        semTraducao.map((m) => `  - ${m}`).join('\n'),
+    ).toEqual([])
+  })
+})
