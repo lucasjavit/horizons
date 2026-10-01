@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { PrismaService } from '../prisma/prisma.service';
 import { lerElegibilidade } from './elegibilidade';
 import type { FiltrosDto, VagaDto } from './job.dto';
 
@@ -32,7 +33,7 @@ import type { FiltrosDto, VagaDto } from './job.dto';
  */
 
 /** Uma empresa do catalogo, como `empresas.json` guarda. */
-interface Empresa {
+export interface Empresa {
   nome: string;
   ats: string;
   slug: string;
@@ -103,18 +104,46 @@ const TETO_POR_EMPRESA = 4;
 /** Uma empresa que demora mais que isso nao vale segurar a busca inteira. */
 const TIMEOUT_MS = 12_000;
 
+/**
+ * Por quanto tempo as confirmadas lidas do banco ficam guardadas (JOB-40).
+ *
+ * Os arquivos sao guardados para sempre — sao imutaveis dentro da imagem. A
+ * tabela nao: o cron das 3h confirma empresa nova e desmente a que morreu.
+ * Cinco minutos faz o acrescimo valer na busca seguinte depois de uma rodada
+ * do cron, e ainda assim poupa 1 SELECT por busca num horario de pico.
+ */
+const APRENDIDAS_TTL_MS = 5 * 60 * 1000;
+
+/**
+ * Teto de confirmadas que entram no catalogo em memoria.
+ *
+ * Sao 453 hoje. O teto nao e sobre tempo de busca — `TETO_EMPRESAS` ja limita
+ * quantas sao CONSULTADAS —, e sim sobre o tamanho do SELECT e do `Map` do
+ * `juntar`: a fila cresce sozinha, e sem teto uma tabela de cem mil linhas
+ * entraria inteira na memoria de cada processo. Com `orderBy: vagas desc`, o
+ * corte derruba as menos produtivas, que sao as que o `escolher` ja nao
+ * alcancava.
+ */
+const APRENDIDAS_TETO = 2_000;
+
 @Injectable()
 export class BuscaAtsService {
   private readonly log = new Logger(BuscaAtsService.name);
   private catalogo: Empresa[] | null = null;
   private startups: Empresa[] | null = null;
   private sedes: Sede[] | null = null;
+  /** As confirmadas do banco, com a hora em que foram lidas. Ver `aprendidas`. */
+  private aprendidasCache: { em: number; lista: Empresa[] } | null = null;
+
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * O motor existe se o catalogo existe.
+   * O motor existe se ha empresa a consultar — de qualquer uma das fontes.
    *
-   * Nao ha chave a checar — estas APIs sao abertas. O unico jeito de este
-   * motor nao funcionar e o arquivo faltar na imagem.
+   * Nao ha chave a checar: estas APIs sao abertas. Antes do JOB-40 o unico
+   * jeito de este motor nao funcionar era o arquivo faltar na imagem; hoje o
+   * arquivo faltar e o banco ter confirmadas **ainda e um motor que busca**, e
+   * responder `false` ali seria desligar uma busca que funciona.
    */
   async disponivel(): Promise<boolean> {
     return (await this.empresas()).length > 0;
@@ -199,6 +228,23 @@ export class BuscaAtsService {
       if (daquele.length > 0) return daquele.slice(0, TETO_EMPRESAS);
     }
 
+    // **O filtro LATAM nao ganha nada com as confirmadas, e e medido (JOB-40).**
+    //
+    // O `sort` abaixo ordena por `contrataEm.length`, e a confirmada chega com
+    // `contrataEm: []` — a colheita nao sabe em que paises a empresa contrata.
+    // Entao ela fica atras das 933 do arquivo e nunca entra nas 200
+    // consultadas. Medido em 01/10: `regions: ['latam']` deu 95 vagas antes e
+    // 96 depois, contra 447 → 682 na busca ampla.
+    //
+    // **Preencher `contrataEm` por adivinhacao seria pior que a lacuna.** Esse
+    // campo e o que faz o filtro LATAM significar algo: o JOB-20 mediu 1 vaga
+    // elegivel em 1.961 na curadoria de grandes contra 144 em 1.229 nas
+    // startups remote-first, e a diferenca esta justamente em quem contrata
+    // por pais. Chutar "latam" em 453 empresas encheria o filtro de vaga que
+    // nao aceita quem mora aqui — o resultado parece melhor e e pior.
+    //
+    // O caminho certo e a verificacao passar a gravar os paises que a vaga diz
+    // aceitar, e isso e card proprio.
     const querLatam = regioesPedidas(filtros).includes('latam');
     const ordenadas = querLatam
       ? [...todas].sort((a, b) => b.contrataEm.length - a.contrataEm.length)
@@ -251,12 +297,31 @@ export class BuscaAtsService {
    * Os pares `ats:slug` que o catalogo ja conhece, em minusculo.
    *
    * E contra este conjunto que a captura decide se uma vaga traz novidade.
-   * Um `Set` e nao uma busca linear: a captura roda por vaga, e o catalogo tem
-   * 926 empresas.
+   * Um `Set` e nao uma busca linear: a captura roda por vaga, e os arquivos
+   * tem 933 linhas.
+   *
+   * **So os ARQUIVOS, de proposito — nao as confirmadas (JOB-40).** Seria
+   * natural reusar `empresas()`, que agora junta as duas fontes, e seria um
+   * bug em dois lugares:
+   *
+   * - na VERIFICACAO, uma confirmada reexaminada depois de 7 dias passaria a
+   *   casar com o "catalogo" e viraria `ja_no_catalogo` — estado que o
+   *   `aprendidas()` nao le. O motor perderia a empresa em silencio, uma
+   *   semana depois de a ter ganhado, e a tela diria "already in the catalog"
+   *   sobre uma empresa que nao esta em arquivo nenhum.
+   * - na CAPTURA, a vaga de uma confirmada deixaria de contar aparicao, e o
+   *   contador e o que distingue achado de acaso.
+   *
+   * "Conhecido" aqui significa **curado e versionado em git**, que e o que
+   * `scripts/exportar-descobertas.py` promove. A confirmada e emprestada: vale
+   * para buscar, nao para encerrar a descoberta.
    */
   async paresConhecidos(): Promise<Set<string>> {
-    const todas = await this.empresas();
-    return new Set(todas.map((e) => `${e.ats}:${e.slug.toLowerCase()}`));
+    const grandes = await this.ler('empresas.json', 'catalogo');
+    const startups = await this.ler('empresas-startup.json', 'startups');
+    return new Set(
+      [...startups, ...grandes].map((e) => `${e.ats}:${e.slug.toLowerCase()}`),
+    );
   }
 
   private async daEmpresa(e: Empresa): Promise<VagaDto[]> {
@@ -548,16 +613,109 @@ export class BuscaAtsService {
   }
 
   /**
-   * O catalogo do porte pedido, lido do disco uma vez e guardado.
+   * O catalogo do porte pedido: os arquivos curados MAIS o que a colheita
+   * confirmou (JOB-40).
    *
-   * Sem porte escolhido, os dois entram — quem nao escolheu quer ver tudo.
+   * **As duas fontes, e o arquivo ganha o empate.** O par (ats, slug) e a
+   * chave de identidade do catalogo (licao do JOB-37), e a linha do arquivo
+   * carrega o que o banco nao tem — `contrataEm`, `sede`, `porte`, e um `nome`
+   * curado. Deixar a descoberta sobrescrever trocaria dado curado por dado
+   * adivinhado da URL ("cscgeneration-2" como nome de empresa).
+   *
+   * **Com porte escolhido as confirmadas NAO entram.** `porte` nao e um filtro
+   * de peneira, e sim de intencao: quem pede `startup` quer o conjunto curado
+   * de startups remote-first (o JOB-20 mediu 144 elegiveis em 1.229 ali,
+   * contra 1 em 1.961 na curadoria de grandes). A descoberta nao sabe de que
+   * lado do mercado a empresa esta — chuta-la em um dos dois lados diluiria
+   * justamente a distincao que faz esse filtro valer.
    */
+  /**
+   * O catalogo que a busca de fato consulta, para teste e inspecao (JOB-40).
+   *
+   * Existe porque **o que este card entrega e o CONTEUDO desta lista**, e o
+   * unico outro jeito de observa-la seria por `buscar()`, que sai para a rede
+   * de tres ATS — um teste assim mediria o humor do Greenhouse, nao o codigo.
+   */
+  async catalogoDaBusca(porte?: string): Promise<Empresa[]> {
+    return this.empresas(porte);
+  }
+
   private async empresas(porte?: string): Promise<Empresa[]> {
     const grandes = await this.ler('empresas.json', 'catalogo');
     const startups = await this.ler('empresas-startup.json', 'startups');
     if (porte === 'grande') return grandes;
     if (porte === 'startup') return startups;
-    return [...startups, ...grandes];
+    return juntar([...startups, ...grandes], await this.aprendidas());
+  }
+
+  /**
+   * As empresas que a colheita do JOB-37 confirmou, do mais produtivo ao menos.
+   *
+   * **Ordenadas por `vagas` medido, e isso e o ponto do JOB-40.** O motor
+   * consulta no maximo `TETO_EMPRESAS` (200) de 1.386, escolhidas por POSICAO
+   * na lista — entao acrescentar 453 empresas no fim da fila nao as faria
+   * serem consultadas nunca. Medido em 01/10 com a variante no ar: anexadas no
+   * fim, a busca ampla deu **451** vagas contra 447 do baseline; na frente,
+   * **682**. O `escolher` nao chega na posicao 68 de cada fila de ATS.
+   *
+   * O arquivo nao tem numero nenhum para ordenar por — e alfabetico, e o
+   * proprio codigo registra que "slug morto e o caso NORMAL". A confirmada
+   * tem: `vagas` foi medido contra a API real, e `checkedAt` diz quando. E o
+   * unico sinal de vivacidade que o catalogo possui.
+   *
+   * **So `confirmada` entra.** `nova` nunca foi verificada, `morta` respondeu
+   * com zero vaga, `desconhecida` nao respondeu (ou e host que nao sabemos
+   * ler) e `ja_no_catalogo` ja esta no arquivo. Consultar qualquer um dos
+   * outros e gastar uma das 200 vagas da rodada num slug que mediu 404.
+   */
+  private async aprendidas(): Promise<Empresa[]> {
+    const agora = Date.now();
+    if (this.aprendidasCache && agora - this.aprendidasCache.em < APRENDIDAS_TTL_MS) {
+      return this.aprendidasCache.lista;
+    }
+    let lista: Empresa[] = [];
+    try {
+      const linhas = await this.prisma.atsDiscovery.findMany({
+        where: {
+          estado: 'confirmada',
+          // `slugTestado` e o slug que de fato respondeu — pode ser o da URL
+          // ou um palpite tirado do host. E ele que vai para a consulta, nunca
+          // o `slug` cru, que vem vazio no caso do dominio proprio.
+          slugTestado: { not: null },
+          ats: { not: null },
+          vagas: { gt: 0 },
+        },
+        select: { ats: true, slugTestado: true, empresa: true, vagas: true },
+        orderBy: { vagas: 'desc' },
+        take: APRENDIDAS_TETO,
+      });
+      lista = linhas
+        // **String vazia passa pelo `not: null` do Prisma.** Nao acontece hoje
+        // (a verificacao so grava `slugTestado` que respondeu de verdade; 0
+        // linhas vazias em 1.297 em 01/10), e a guarda fica porque o custo de
+        // errar e mudo: o slug vazio montaria
+        // `boards-api.greenhouse.io/v1/boards//jobs`, que nao e 404 obvio — e
+        // uma consulta gasta de um jeito que nenhum log denunciaria.
+        .filter((l) => (l.slugTestado ?? '').trim() !== '')
+        .map((l) => ({
+          nome: l.empresa || (l.slugTestado as string),
+          ats: l.ats as string,
+          slug: (l.slugTestado as string).trim(),
+          // **Vazio, e nao um palpite.** `contrataEm` sai de curadoria humana;
+          // a colheita nao sabe em que paises a empresa contrata, e preencher
+          // por adivinhacao estragaria o `escolher` do filtro LATAM, que
+          // ordena por esse tamanho.
+          contrataEm: [],
+        }));
+      this.log.log(`${lista.length} empresas confirmadas pela colheita (JOB-40)`);
+    } catch (e) {
+      // **Banco fora nao derruba o motor.** O catalogo em arquivo e a base, e
+      // perder o acrescimo e perder alcance, nao a busca. `warn` e nao
+      // `error`: a busca segue e entrega.
+      this.log.warn(`nao consegui ler as confirmadas: ${String(e).slice(0, 140)}`);
+    }
+    this.aprendidasCache = { em: agora, lista };
+    return lista;
   }
 
   /** As sedes conhecidas, lidas do disco uma vez. */
@@ -630,6 +788,55 @@ interface LeverVaga {
 }
 
 // --- ajudantes ------------------------------------------------------------
+
+/**
+ * O catalogo curado mais as confirmadas, sem duplicar (ats, slug) (JOB-40).
+ *
+ * **A chave e (ats, slug), nunca o nome.** E a licao que o JOB-37 pagou para
+ * aprender: medir por nome de empresa produziu tres "descobertas" que ja
+ * estavam no catalogo, porque a mesma empresa aparece como "Fever Up",
+ * "FeverUp" e `feverup`. O par e unico; o nome nao.
+ *
+ * **O arquivo ganha o empate**, e a ordem dos argumentos diz isso: quem chega
+ * depois nao sobrescreve. A linha curada tem `contrataEm`, `sede`, `porte` e
+ * um nome escrito por gente — a descoberta tem o que deu para tirar da URL.
+ *
+ * **As confirmadas entram ANTES das curadas, nao depois.** `escolher` corta em
+ * `TETO_EMPRESAS` por POSICAO na fila de cada ATS, e as duas listas sao
+ * ordenadas por coisas diferentes: o arquivo e alfabetico (o proprio
+ * `escolher` registra que isso "nao diz nada") e a confirmada vem por `vagas`
+ * MEDIDO contra a API real nas ultimas semanas. Entre `ashby:0g` e
+ * `greenhouse:spacex` com 2.564 vagas vivas, consultar o segundo primeiro nao
+ * e preferencia — e o unico dos dois que tem numero a favor.
+ *
+ * Medido em 01/10, rodando as duas variantes contra a aplicacao de pe (busca
+ * ampla, so o motor de ATS): anexadas no FIM, **451 vagas** — o baseline sem
+ * elas era 447. Na frente, **682**. A ordem nao e detalhe: e o card inteiro.
+ */
+export function juntar(
+  doArquivo: readonly Empresa[],
+  confirmadas: readonly Empresa[],
+): Empresa[] {
+  if (confirmadas.length === 0) return [...doArquivo];
+  const vistos = new Set(doArquivo.map((e) => chaveDaEmpresa(e)));
+  const novas: Empresa[] = [];
+  for (const e of confirmadas) {
+    const k = chaveDaEmpresa(e);
+    // Duas confirmadas podem apontar para o mesmo par por hosts diferentes —
+    // medido: 4 pares repetidos entre as 457 linhas (`greenhouse:earnin` veio
+    // de `job-boards.greenhouse.io` e do dominio proprio). Sem este `Set`, a
+    // mesma empresa seria consultada duas vezes na mesma busca.
+    if (vistos.has(k)) continue;
+    vistos.add(k);
+    novas.push(e);
+  }
+  return [...novas, ...doArquivo];
+}
+
+/** O par (ats, slug) em minusculo — a identidade de uma empresa no catalogo. */
+function chaveDaEmpresa(e: Empresa): string {
+  return `${e.ats.toLowerCase()}:${e.slug.toLowerCase()}`;
+}
 
 /**
  * O molde de uma vaga sem nada preenchido.
