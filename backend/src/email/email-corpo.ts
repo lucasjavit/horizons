@@ -3,9 +3,9 @@ import type { VagaDto } from '../jobs/job.dto';
 /**
  * O corpo do e-mail semanal.
  *
- * **Em ingles, como o resto da aba Jobs.** O idioma misto e deliberado no
- * Horizons: trilhas em portugues, vagas e invoice em ingles porque miram o
- * mercado global. Quem recebe este e-mail esta procurando vaga la fora.
+ * **Em ingles, como a interface inteira.** A regra do Horizons nao tem mais
+ * excecao: o conteudo em portugues era das trilhas, que sairam no PLT-13
+ * (01/10). Quem recebe este e-mail esta procurando vaga la fora.
  *
  * Funcao pura, separada do servico de envio, porque e a parte que se confere
  * sem SMTP: da para gerar o corpo, abrir no navegador e ler. Com o provedor

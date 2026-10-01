@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 import { api, errorMessage } from '../../lib/api'
 import type { ApiProvider, ApiTokenInfo } from '../../types/api'
 

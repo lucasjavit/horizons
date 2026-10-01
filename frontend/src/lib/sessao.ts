@@ -4,10 +4,10 @@ import type { AuthUser } from '../types/api'
 /**
  * Quem esta logado, para as paginas que precisam mudar o texto.
  *
- * Existe porque a leitura passou a ser anonima: "Suas trilhas" e um titulo
- * errado para quem nunca entrou, e o progresso so e "seu" depois da sessao.
- * E contexto, e nao props, para nao atravessar App -> Routes -> pagina so
- * para trocar uma palavra.
+ * Existe porque a busca e anonima: quem nunca entrou ve a lista, mas salvar
+ * vaga e guardar filtro so fazem sentido com sessao — e oferecer o botao a
+ * quem nao pode usar e pior que nao oferecer. E contexto, e nao props, para
+ * nao atravessar App -> Routes -> pagina so para trocar uma palavra.
  *
  * `null` significa anonimo, e e um estado legitimo — nao um carregamento.
  */

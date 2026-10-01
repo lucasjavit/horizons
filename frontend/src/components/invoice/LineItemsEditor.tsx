@@ -7,7 +7,7 @@ import {
   somenteNumero,
 } from '../../invoice/money'
 import type { CurrencyCode, LineItem } from '../../invoice/types'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 
 type CampoItem = 'description' | 'quantity' | 'rate'
 

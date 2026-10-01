@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from 'react'
 import { AbasDeConfig } from '../components/settings/AbasDeConfig'
 import { EmptyState, ErrorState, LoadingState } from '../components/States'
-import { WARN_INK } from '../components/blocks/BlockRenderer'
+import { WARN_INK } from '../components/cores'
 import { Paginacao } from '../components/vagas/Paginacao'
 import { api, errorMessage } from '../lib/api'
 import { useAsync } from '../lib/useAsync'

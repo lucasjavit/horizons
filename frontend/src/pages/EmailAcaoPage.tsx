@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { WARN_INK } from '../components/blocks/BlockRenderer'
+import { WARN_INK } from '../components/cores'
 import { api, errorMessage } from '../lib/api'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import type { Assinatura } from '../types/api'

@@ -59,14 +59,15 @@ export class AuthGuard implements CanActivate {
     const token = header.startsWith('Bearer ') ? header.slice(7) : '';
     if (!token) {
       // Sem token numa rota de sessao opcional: segue como anonimo. O handler
-      // recebe `null` em @CurrentUser() e devolve a versao sem progresso.
+      // recebe `null` em @CurrentUser() e devolve a versao sem o dado de quem
+      // entrou.
       if (opcional) return true;
       throw new UnauthorizedException('Entre para continuar.');
     }
 
     // Token presente e sempre verificado, inclusive em rota opcional: aceitar
-    // um token invalido em silencio faria a sessao expirada parecer trilha
-    // zerada, e a pessoa acharia que perdeu o progresso.
+    // um token invalido em silencio faria a sessao expirada parecer catalogo
+    // vazio, e a pessoa acharia que o produto nao tem nada a mostrar.
     const user = await this.auth.verificar(token);
     request.user = user;
 

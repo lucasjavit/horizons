@@ -4,7 +4,7 @@ import { useSessao } from '../../lib/sessao'
 /**
  * A barra de abas de Configurações.
  *
- * **Não é aba da navegação principal.** Tracks, Jobs, Saved e Invoice são
+ * **Não é aba da navegação principal.** Jobs e Invoice são
  * produto, para todo mundo; isto é administração atrás da engrenagem, que já
  * não aparece para usuário comum. Pôr "AI providers" ao lado de "Invoice"
  * ofereceria a quem não é admin um caminho que só daria 403.

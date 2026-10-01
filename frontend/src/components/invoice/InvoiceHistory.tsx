@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { HistoryEntry } from '../../invoice/history'
 import { formatCents } from '../../invoice/money'
 import { invoiceTotalCents } from '../../invoice/pdf'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 
 interface InvoiceHistoryProps {
   entries: HistoryEntry[]

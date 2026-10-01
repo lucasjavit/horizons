@@ -26,8 +26,8 @@
  *
  * ## Sobre as mensagens com valor interpolado
  *
- * Parte do backend monta a mensagem com template (`Trilha "x" nao
- * encontrada`). Elas entram em `PADROES`, com regex, porque chave fixa nunca
+ * Parte do backend monta a mensagem com template (`Nenhum token guardado
+ * para openai`). Elas entram em `PADROES`, com regex, porque chave fixa nunca
  * casaria. Regex e mais fragil que string exata, entao fica reservado a esses
  * casos — e `erros-do-servidor.spec.ts` prova cada padrao contra a string que
  * o backend monta hoje.
@@ -131,15 +131,6 @@ const TRADUCOES: Record<string, string> = {
  * envelhece pior que string exata, e so entra aqui o que nao tem chave fixa.
  */
 const PADROES: ReadonlyArray<[RegExp, (m: RegExpMatchArray) => string]> = [
-  // tracks.service.ts: `Trilha "${slug}" nao encontrada`
-  [/^Trilha "(.+)" nao encontrada$/, (m) => `Track "${m[1]}" not found`],
-  // tracks.service.ts: `Aula "${lessonSlug}" nao encontrada na trilha "${trackSlug}"`
-  [
-    /^Aula "(.+)" nao encontrada na trilha "(.+)"$/,
-    (m) => `Lesson "${m[1]}" not found in track "${m[2]}"`,
-  ],
-  // progress.service.ts: `Aula "${lessonId}" nao encontrada`
-  [/^Aula "(.+)" nao encontrada$/, (m) => `Lesson "${m[1]}" not found`],
   // settings.service.ts: `Nenhum token guardado para ${provider}`
   [/^Nenhum token guardado para (.+)$/, (m) => `No token stored for ${m[1]}`],
   // buscas-salvas.service.ts: `Voce ja tem ${TETO} buscas salvas. Apague uma para guardar outra.`

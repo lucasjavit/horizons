@@ -89,19 +89,18 @@ const PUBLICAS_ESPERADAS = [
  *
  * Nao sao publicas — a diferenca importa e esta em CLAUDE.md. Um token invalido
  * aqui continua dando 401, em vez de virar anonimo em silencio, porque isso
- * faria sessao expirada parecer trilha zerada e a pessoa acharia que perdeu o
- * progresso.
+ * faria sessao expirada parecer catalogo vazio e a pessoa acharia que o
+ * produto nao tem nada a mostrar.
  *
- * As de `tracks` sao a vitrine (o conteudo e o produto); `jobs/facets` filtra,
- * e filtrar e anonimo como ler uma aula.
+ * **Sobrou UMA, e isso e novo** (PLT-13, 01/10). Eram cinco: as quatro de
+ * `tracks` — a vitrine, quando o conteudo era o produto — e esta. Com as
+ * trilhas removidas, so `jobs/facets` continua: filtrar e anonimo, e a
+ * contagem do modal nao diz nada sobre ninguem.
+ *
+ * Uma lista de um item ainda e uma lista fechada, e o teste vale o mesmo: uma
+ * rota nova que nascer `@SessaoOpcional()` por engano quebra aqui.
  */
-const OPCIONAIS_ESPERADAS = [
-  'GET /tracks',
-  'GET /tracks/:slug',
-  'GET /tracks/:slug/search',
-  'GET /tracks/:trackSlug/lessons/:lessonSlug',
-  'POST /jobs/facets',
-].sort();
+const OPCIONAIS_ESPERADAS = ['POST /jobs/facets'].sort();
 
 /** Os verbos do Nest, que guarda o metodo como numero do enum `RequestMethod`. */
 const VERBOS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'ALL', 'OPTIONS', 'HEAD'];
@@ -159,7 +158,7 @@ function levantarRotas(app: INestApplication): Rota[] {
   return rotas;
 }
 
-/** `GET /tracks/:slug` vira `/tracks/x` — o caminho precisa existir para bater. */
+/** `GET /usuarios/:id` vira `/usuarios/x` — o caminho precisa existir para bater. */
 function comParametros(caminho: string): string {
   return caminho.replace(/:[^/]+/g, 'x');
 }
@@ -212,6 +211,11 @@ describe('fail closed — nenhuma rota nasce aberta (camada 3)', () => {
     // Sem isto, uma mudanca no Nest que quebrasse a descoberta deixaria todos
     // os testes abaixo passando sobre uma lista vazia. Um `for` sobre nada
     // passa sempre, e essa e a forma mais silenciosa de uma suite morrer.
+    //
+    // Medido em 01/10, depois do PLT-13: 59 rotas (eram 63 — as quatro de
+    // `tracks` sairam). O piso de 50 continua o mesmo de proposito: afrouxa-lo
+    // junto com a remocao transformaria um numero que protege num numero que
+    // acompanha, e ele deixaria de pegar a descoberta meio-quebrada.
     expect(rotas.length).toBeGreaterThan(50);
     // E toda rota tem verbo reconhecido: um numero cru aqui seria descoberta
     // funcionando pela metade.
@@ -233,7 +237,7 @@ describe('fail closed — nenhuma rota nasce aberta (camada 3)', () => {
       expect(publicas).toEqual(PUBLICAS_ESPERADAS);
     });
 
-    it('nenhuma rota de sessao opcional alem das cinco decididas', () => {
+    it('nenhuma rota de sessao opcional alem da decidida', () => {
       const opcionais = rotas
         .filter((r) => r.opcional)
         .map((r) => `${r.verbo} ${r.caminho}`)
@@ -273,6 +277,8 @@ describe('fail closed — nenhuma rota nasce aberta (camada 3)', () => {
      */
     it('TODA rota protegida responde 401 ao anonimo', async () => {
       const protegidas = rotas.filter((r) => !r.publica && !r.opcional);
+      // 51 em 01/10 (eram 55 antes do PLT-13). Piso inalterado, pelo mesmo
+      // motivo do guard de descoberta acima.
       expect(protegidas.length).toBeGreaterThan(40);
 
       const vazaram: string[] = [];
@@ -286,7 +292,7 @@ describe('fail closed — nenhuma rota nasce aberta (camada 3)', () => {
       }
 
       // Uma lista e nao um `expect` por rota: se o guard quebrar, quero ver as
-      // 48 de uma vez, e nao a primeira.
+      // 51 de uma vez, e nao a primeira.
       expect(vazaram).toEqual([]);
     }, 60_000);
 
@@ -330,10 +336,23 @@ describe('fail closed — nenhuma rota nasce aberta (camada 3)', () => {
     it('token INVALIDO em rota opcional da 401, e nao vira anonimo', async () => {
       // A regra de CLAUDE.md que o `@SessaoOpcional()` existe para respeitar.
       // Aceitar o token podre em silencio faria a sessao expirada parecer
-      // trilha zerada — e a pessoa acharia que perdeu o progresso.
-      const resp = await request(ctx.servidor as Parameters<typeof request>[0])
-        .get('/api/tracks')
-        .set('Authorization', 'Bearer abc.def.ghi');
+      // catalogo vazio — e a pessoa acharia que o produto nao tem vaga.
+      //
+      // Batia em `/api/tracks` ate 01/10; com as trilhas fora (PLT-13), a
+      // unica rota opcional e esta. **A rota sai da lista, e nao esta escrita
+      // a mao**: assim o teste segue o `OPCIONAIS_ESPERADAS` acima em vez de
+      // apontar para um caminho que pode deixar de ser opcional sem avisar.
+      const opcional = rotas.find((r) => r.opcional);
+      // Sem isto o teste passaria vacuamente no dia em que a ultima rota
+      // opcional sumir — e o `@SessaoOpcional()` deixaria de ser testado em
+      // silencio, que e o defeito que este arquivo existe para nao cometer.
+      expect(opcional).toBeDefined();
+
+      const resp = await pedir(
+        opcional!.verbo,
+        `/api${comParametros(opcional!.caminho)}`,
+        ctx.servidor,
+      ).set('Authorization', 'Bearer abc.def.ghi');
 
       expect(resp.status).toBe(401);
     });

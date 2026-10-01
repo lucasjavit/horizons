@@ -1,4 +1,4 @@
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 
 /**
  * Quantas linhas por página.

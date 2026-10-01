@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 import { api, errorMessage } from '../../lib/api'
 import { useAsync } from '../../lib/useAsync'
 import type { EnderecoAEnviar, PerfilPessoal } from '../../types/api'
@@ -79,7 +79,7 @@ function CampoDeEndereco({
  * pessoa tenta trocar o nome.
  *
  * **Os três campos são opcionais.** Um perfil vazio é um perfil válido: o
- * produto deixa ler as trilhas sem login, e um formulário obrigatório depois
+ * produto deixa buscar vagas sem login, e um formulário obrigatório depois
  * do login inverteria isso. Nada aqui bloqueia quem não quer preencher.
  */
 export function DadosPessoais() {

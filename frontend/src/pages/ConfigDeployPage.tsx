@@ -3,7 +3,7 @@ import { AbasDeConfig } from '../components/settings/AbasDeConfig'
 import { BotaoDeCopiar } from '../components/settings/BotaoDeCopiar'
 import { Recolhivel } from '../components/Recolhivel'
 import { ErrorState, LoadingState } from '../components/States'
-import { WARN_INK } from '../components/blocks/BlockRenderer'
+import { WARN_INK } from '../components/cores'
 import { api } from '../lib/api'
 import { useAsync } from '../lib/useAsync'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
@@ -299,13 +299,13 @@ const PASSOS: Record<
           repeat until both give 401.
         </p>
         <p>
-          Reading tracks anonymously is public on purpose, so{' '}
-          <code>/api/tracks</code> answering 200 is correct. What proves login
-          is on is the 401 above, not that route.
+          <code>/api/auth/config</code> answering 200 is correct — it is public
+          on purpose, and the container healthcheck depends on it. What proves
+          login is on is the 401 above, not that route.
         </p>
         <p style={{ color: 'var(--text-muted)' }}>
           Then open the domain in a browser, sign in with Google, and confirm
-          that marking a lesson complete works — in both themes.
+          that saving a job works — in both themes.
         </p>
       </>
     ),

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AxiosError } from 'axios'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 import { AcoesDaBarra, BarraDeBusca, BOTAO_ICONE } from './BarraDeBusca'
 import { HintWrap } from '../Hint'
 import { PainelDeFiltros } from './PainelDeFiltros'
@@ -448,9 +448,11 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
   /**
    * Salva ou remove, com atualização otimista.
    *
-   * A estrela muda na hora e volta atrás se a chamada falhar. É o padrão que
-   * a aula concluída já usa: um clique reversível e barato não deve esperar
-   * a rede para dar retorno.
+   * A estrela muda na hora e volta atrás se a chamada falhar: um clique
+   * reversível e barato não deve esperar a rede para dar retorno.
+   *
+   * (Era "o padrão que a aula concluída já usa" — as trilhas saíram no
+   * PLT-13, e este virou o exemplo canônico do padrão no repositório.)
    */
   const alternarSalva = useCallback(async (vaga: Vaga, salvar: boolean) => {
     setSalvas((atual) => {

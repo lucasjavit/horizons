@@ -194,21 +194,20 @@ Os dois devem responder `401`. **`200` aqui é falha de segurança, não sucesso
 quem abrir a URL. Corrija na hora: confira `AUTH_DISABLED` no painel, remova,
 redeploy, e repita até dar 401.
 
-**A leitura, que é pública de propósito (PLT-07):**
+**A rota pública, que o healthcheck usa:**
 
 ```bash
-curl -s https://horizons.seudominio.com/api/tracks
+curl -s https://horizons.seudominio.com/api/auth/config
 ```
 
-Deve responder **200**, e `completedLessons` deve vir **0** em todas as
-trilhas. Um número diferente de zero sem token significaria que o progresso de
-quem entrou está aparecendo para qualquer visitante — aí sim é vazamento.
+Deve responder **200**. Ela é pública de propósito — o front pergunta se há
+login antes de desenhar o botão, e o healthcheck do compose bate aqui. Se
+passar a exigir sessão, o container fica eternamente *unhealthy*.
 
-> Se você seguiu uma versão anterior deste guia, ela mandava exigir 401 em
-> `/api/tracks`. Isso mudou em 14/08/2026: a leitura de trilha e aula passou a
-> ser anônima de propósito, para a pessoa poder ler antes de criar conta. O que
-> define se o login está ligado é `authDisabled` no `/api/auth/config` e o 401
-> nas rotas privadas acima — não o status de `/api/tracks`.
+> Se você seguiu uma versão anterior deste guia, ela mandava conferir
+> `/api/tracks`. As trilhas saíram no PLT-13 (01/10/2026) e essa rota agora
+> responde **404**. O que define se o login está ligado é `authDisabled` no
+> `/api/auth/config` e o 401 nas rotas privadas acima.
 
 **O backlog interno não pode estar no ar:**
 
@@ -219,11 +218,10 @@ curl -s -o /dev/null -w '%{http_code}\n' https://horizons.seudominio.com/quadro.
 Esperado: **404**. Um `200` com JSON significa que o build saiu com
 `VITE_QUADRO` ligado e o backlog está público.
 
-**Por fim, no navegador:** abra o domínio. Desde o PLT-07 a home mostra as
-trilhas direto, com o botão do Google no canto da barra — não há mais tela de
-login inicial. Entre com o Google e confirme que o seu nome aparece na barra e
-que marcar uma aula como concluída passa a funcionar. Confira nos dois temas, claro e
-escuro.
+**Por fim, no navegador:** abra o domínio. Desde o PLT-13 a home é a busca de
+vagas, com o botão do Google no canto da barra — não há tela de login inicial.
+Entre com o Google e confirme que o seu nome aparece na barra e que salvar uma
+vaga passa a funcionar. Confira nos dois temas, claro e escuro.
 
 ---
 
@@ -354,8 +352,8 @@ A ordem que funciona:
    origins". Redirect URIs continua vazio.
 4. Trocar `CORS_ORIGIN` para o mesmo `https://…` e redeploy.
 
-Enquanto o TLS não estiver de pé, o resto do site funciona — trilhas, aulas e
-invoice não exigem login.
+Enquanto o TLS não estiver de pé, o resto do site funciona — o invoice roda
+inteiro no navegador e não exige login.
 
 ## O que já foi verificado localmente (14/08/2026)
 

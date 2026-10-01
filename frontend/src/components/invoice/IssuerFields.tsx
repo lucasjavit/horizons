@@ -5,7 +5,7 @@ import type { Issuer } from '../../invoice/types'
 import { lerLogo } from '../../invoice/logo'
 import { TextAreaField, TextField } from './Field'
 import { Modal } from './Modal'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 
 interface IssuerFieldsProps {
   from: Issuer

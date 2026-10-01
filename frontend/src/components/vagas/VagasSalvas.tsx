@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { AxiosError } from 'axios'
 import { EmptyState, ErrorState, LoadingState } from '../States'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 import { LinhaVaga } from '../vagas/LinhaVaga'
 import { POR_PAGINA, Paginacao } from '../vagas/Paginacao'
 import { api } from '../../lib/api'

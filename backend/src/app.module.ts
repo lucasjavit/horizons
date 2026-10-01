@@ -4,12 +4,10 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { PerfilModule } from './perfil/perfil.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { ProgressModule } from './progress/progress.module';
 import { JobsModule } from './jobs/jobs.module';
 import { EmailModule } from './email/email.module';
 import { IaModule } from './ia/ia.module';
 import { SettingsModule } from './settings/settings.module';
-import { TracksModule } from './tracks/tracks.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 
 @Module({
@@ -24,8 +22,6 @@ import { UsuariosModule } from './usuarios/usuarios.module';
     // que `jobs` e `settings` usam sem se importarem com qual provedor atende.
     IaModule,
     AuthModule,
-    TracksModule,
-    ProgressModule,
     SettingsModule,
     PerfilModule,
     UsuariosModule,

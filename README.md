@@ -1,25 +1,22 @@
 # Horizons
 
-Umbrella de produtos para o desenvolvedor brasileiro que quer trabalhar fora.
-Hoje tem duas abas:
+Umbrella de produtos para o desenvolvedor de pais emergente que quer trabalhar
+fora e ganhar em moeda forte. Hoje tem duas abas:
 
-- **Trilhas** — estudo estruturado, em portugues. A primeira e **System
-  Design**, com 13 modulos e 75 aulas autorais.
-- **Invoice** — gerador de invoice em ingles, que roda inteiro no navegador.
-  Sem backend, sem cadastro: o PDF sai da propria pagina.
+- **Jobs** — busca de vagas remotas, por ATS e por IA. E a home: `/` mostra a
+  busca, e `/vagas` continua valendo como atalho.
+- **Invoice** — gerador de invoice que roda inteiro no navegador. Sem backend,
+  sem cadastro: o PDF sai da propria pagina.
 
-O idioma misto e deliberado. A invoice mira um publico global; as trilhas sao
-escritas para quem le em portugues.
-
-O conteudo das aulas e autoral — escrito do zero, com tradeoffs, erros comuns
-e exercicios de auto-teste. Links para as fontes originais aparecem como
-leitura complementar, nunca como substituto do conteudo.
+A interface e **toda em ingles**. Havia uma terceira aba, **Trilhas** — estudo
+de System Design com 75 aulas autorais em portugues —, removida no PLT-13
+(01/10/2026) por decisao do stakeholder. O conteudo continua recuperavel pelo
+historico do git.
 
 > **Estado:** em construcao, e **no ar**:
 > [ojxqz4v8x7jda764e6p3k419.169.58.152.158.sslip.io](https://ojxqz4v8x7jda764e6p3k419.169.58.152.158.sslip.io)
-> — publicado com [Coolify](docs/DEPLOY.md). O login com Google funciona; ler
-> trilha e aula **nao exige conta**, e entrar guarda o progresso e as
-> anotacoes.
+> — publicado com [Coolify](docs/DEPLOY.md). O login com Google funciona; as
+> vagas encontradas sao da conta de quem entrou.
 
 ## Stack
 
@@ -124,11 +121,9 @@ token e uma alegacao; o banco decide.
 | GET    | `/auth/config`                              | Se o login esta disponivel (**publica**)   |
 | POST   | `/auth/google`                              | Troca o ID token do Google por sessao (**publica**) |
 | GET    | `/auth/me`                                  | Confirma a sessao                          |
-| GET    | `/tracks`                                   | Trilhas publicadas, com contagem de progresso |
-| GET    | `/tracks/:slug`                             | Trilha com modulos e aulas (sem `content`) |
-| GET    | `/tracks/:trackSlug/lessons/:lessonSlug`    | Aula completa, com `content` e vizinhos    |
-| PUT    | `/progress/:lessonId`                       | Marca concluida/nao concluida (upsert)     |
-| PUT    | `/progress/:lessonId/note`                  | Salva a anotacao da aula                   |
+| POST   | `/jobs/facets`                              | Contagens do modal de filtros (**sessao opcional**) |
+| GET    | `/jobs/salvas`                              | Vagas que a pessoa guardou                 |
+| GET    | `/perfil`                                   | Perfil de busca de quem entrou             |
 | GET    | `/settings/tokens`                          | Chaves de IA guardadas (**admin**)         |
 
 ### Configuracao
@@ -148,77 +143,36 @@ token e uma alegacao; o banco decide.
 horizons/
 ├── frontend/
 │   └── src/
-│       ├── components/    blocos, sidebar, quiz, progresso, estados
+│       ├── components/    vagas, invoice, perfil, settings, estados
 │       ├── lib/           cliente axios e hook de carregamento
 │       ├── invoice/       calculo em centavo inteiro e geracao do PDF
-│       ├── pages/         trilhas, trilha, aula, invoice, login, config
+│       ├── pages/         vagas, invoice, perfil, config
 │       └── types/         espelho manual dos DTOs do backend
 ├── backend/
 │   ├── prisma/
 │   │   ├── schema.prisma
-│   │   ├── seed.ts        runner do seed
-│   │   └── seed/modules/  conteudo autoral, um arquivo por modulo
+│   │   └── seed.ts        cria o usuario padrao (DEFAULT_USER_EMAIL)
 │   └── src/
 │       ├── auth/          Google Sign-In, guard global, decorators
 │       ├── prisma/        PrismaService global (adapter PrismaPg)
-│       ├── progress/      conclusao e anotacoes
-│       └── tracks/        trilhas e aulas
+│       ├── jobs/          busca, vagas salvas, historico, facetas
+│       ├── ia/            a cadeia de provedores de IA
+│       └── perfil/        perfil de busca e dados pessoais
 └── docker-compose.yml
 ```
 
-Os tipos sao **duplicados conscientemente** entre `backend/src/tracks/track.dto.ts`
-e `frontend/src/types/api.ts` — nao ha workspace compartilhado. Ao mudar um
+Os tipos sao **duplicados conscientemente** entre os `*.dto.ts` do backend e
+`frontend/src/types/api.ts` — nao ha workspace compartilhado. Ao mudar um
 lado, mude o outro.
 
 ## Modelo de dados
 
-`Track` (trilha) → `Module` → `Lesson`, com `Progress` por usuario e licao.
-O conteudo da aula fica em `Lesson.content` como blocos estruturados (JSON),
-o que permite renderizar paragrafos, listas, tabelas de tradeoff, blocos de
-codigo e destaques sem acoplar o front a HTML solto.
+`User` e o centro: tudo que e de alguem pende dele com `onDelete: Cascade` —
+`JobProfile` (o que a pessoa procura), `SavedJob` (o que ela guardou),
+`JobHistory` (o que ja viu ou descartou), `EmailSubscription` e
+`TelegramLink` (por onde recebe aviso).
 
-```ts
-type Block =
-  | { type: 'p'; text: string }
-  | { type: 'h'; text: string }
-  | { type: 'list'; items: string[] }
-  | { type: 'code'; lang?: string; code: string }
-  | { type: 'key'; text: string }     // ideia central
-  | { type: 'warn'; title?: string; text: string }  // erro comum
-  | { type: 'table'; head: string[]; rows: string[][] }
-```
+`FoundJob` e cache de rodada e expira em 15 dias; `SavedJob` guarda um
+**retrato** da vaga e fica para sempre, porque o anuncio sai do ar em semanas
+e e justamente o que a pessoa vai querer reler.
 
-## Estado do conteudo
-
-A trilha de System Design tem **13 modulos e 75 aulas**, todas com conteudo
-autoral escrito.
-
-| #  | Modulo                 | Aulas |
-| -- | ---------------------- | ----- |
-| 1  | Conceitos fundamentais | 6     |
-| 2  | Fundamentos de rede    | 5     |
-| 3  | APIs                   | 5     |
-| 4  | Bancos de dados        | 5     |
-| 5  | Cache                  | 5     |
-| 6  | Comunicacao assincrona | 4     |
-| 7  | Sistemas distribuidos  | 8     |
-| 8  | Padroes de arquitetura | 5     |
-| 9  | Tradeoffs              | 8     |
-| 10 | Entrevistas            | 8     |
-| 11 | Engenharia real        | 4     |
-| 12 | Papers classicos       | 8     |
-| 13 | Para continuar         | 4     |
-
-Cada aula tem entre 600 e 990 palavras (mediana 773), ao menos um bloco `key`
-(a ideia central), um bloco `warn` (o erro classico), tabelas de tradeoff onde
-faz sentido, e de 2 a 3 perguntas de auto-teste. Todas apontam uma leitura
-complementar externa.
-
-A interface ainda suporta aulas sem conteudo: elas aparecem marcadas como
-"em breve" e abrem uma pagina que diz que o texto ainda nao foi escrito. Isso
-vale para trilhas futuras.
-
-Para editar uma aula, altere o arquivo do modulo em
-`backend/prisma/seed/modules/` e rode `npx prisma db seed` — o seed e
-idempotente (upsert por slug) e remove aulas e modulos que sairam do codigo,
-entao pode ser reexecutado quantas vezes for preciso sem sujar o banco.

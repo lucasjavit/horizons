@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 import { Hint, HintWrap } from '../Hint'
 import { api, errorMessage } from '../../lib/api'
 import type { CvLido } from '../../types/api'

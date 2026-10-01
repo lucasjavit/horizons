@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Recolhivel } from '../components/Recolhivel'
-import { WARN_INK } from '../components/blocks/BlockRenderer'
+import { WARN_INK } from '../components/cores'
 import { SelectField, TextAreaField, TextField } from '../components/invoice/Field'
 import { Hint } from '../components/Hint'
 import { InvoiceHistory } from '../components/invoice/InvoiceHistory'
@@ -735,8 +735,7 @@ export function InvoicePage() {
               style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
             >
               <p>
-                Horizons also has free, in-depth System Design study tracks (in
-                Portuguese).{' '}
+                Horizons also finds remote jobs that pay in hard currency.{' '}
                 <Link
                   to="/"
                   className="font-medium underline"

@@ -12,10 +12,7 @@ import type {
   SalvarPerfilPessoal,
   ApiTokenInfo,
   JobProfile,
-  LessonDetail,
-  LessonSearchHit,
   CvLido,
-  ProgressResult,
   Prontidao,
   MetricasEmail,
   Historico,
@@ -29,8 +26,6 @@ import type {
   SalvarPerfil,
   TelegramStatus,
   TelegramVinculo,
-  TrackDetail,
-  TrackSummary,
   Vaga,
   UsuarioDaLista,
   ListaDeUsuarios,
@@ -168,51 +163,6 @@ export const api = {
   async mudarAtivo(id: string, active: boolean): Promise<UsuarioDaLista> {
     const { data } = await http.patch<UsuarioDaLista>(`/usuarios/${id}/ativo`, {
       active,
-    })
-    return data
-  },
-
-  async listTracks(signal?: AbortSignal): Promise<TrackSummary[]> {
-    const { data } = await http.get<TrackSummary[]>('/tracks', { signal })
-    return data
-  },
-
-  async getTrack(slug: string, signal?: AbortSignal): Promise<TrackDetail> {
-    const { data } = await http.get<TrackDetail>(`/tracks/${slug}`, { signal })
-    return data
-  },
-
-  async getLesson(
-    trackSlug: string,
-    lessonSlug: string,
-    signal?: AbortSignal,
-  ): Promise<LessonDetail> {
-    const { data } = await http.get<LessonDetail>(
-      `/tracks/${trackSlug}/lessons/${lessonSlug}`,
-      { signal },
-    )
-    return data
-  },
-
-  /** Busca no corpo das aulas; título e resumo já são filtrados no cliente. */
-  async searchLessons(
-    trackSlug: string,
-    q: string,
-    signal?: AbortSignal,
-  ): Promise<LessonSearchHit[]> {
-    const { data } = await http.get<LessonSearchHit[]>(
-      `/tracks/${trackSlug}/search`,
-      { params: { q }, signal },
-    )
-    return data
-  },
-
-  async setCompleted(
-    lessonId: string,
-    completed: boolean,
-  ): Promise<ProgressResult> {
-    const { data } = await http.put<ProgressResult>(`/progress/${lessonId}`, {
-      completed,
     })
     return data
   },
@@ -675,14 +625,6 @@ export const api = {
     const { data } = await http.delete<Historico>('/jobs/history', {
       params: { url },
     })
-    return data
-  },
-
-  async setNote(lessonId: string, note: string): Promise<ProgressResult> {
-    const { data } = await http.put<ProgressResult>(
-      `/progress/${lessonId}/note`,
-      { note },
-    )
     return data
   },
 }

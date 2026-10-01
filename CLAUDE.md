@@ -1,18 +1,20 @@
 # Horizons — convenções do projeto
 
 Umbrella de produtos para o desenvolvedor que quer trabalhar fora do Brasil.
-Hoje tem três abas: **Trilhas** (estudo), **Jobs** (busca de vagas) e
-**Invoice** (gerador).
+Hoje tem duas abas: **Jobs** (busca de vagas) e **Invoice** (gerador). Jobs é
+a home: `/` mostra a busca, e `/vagas` continua valendo como atalho.
 
-**A interface é em inglês. A exceção é o conteúdo das trilhas** — as aulas, os
-títulos das trilhas e o que as descreve. O produto mira o dev de país
-emergente que quer ganhar em moeda forte, e esse público não é só brasileiro;
-as aulas continuam em português porque foram escritas para quem lê em
-português (25/08/2026).
+**A interface é em inglês, sem exceção.** O produto mira o dev de país
+emergente que quer ganhar em moeda forte, e esse público não é só brasileiro.
 
-Isso vale para tudo o mais: navegação, Configurações, e-mail, mensagem de
-erro na tela, estado vazio. Texto novo nasce em inglês a não ser que seja
-aula.
+Havia uma exceção — o conteúdo das trilhas, escrito em português — e ela
+**acabou junto com as trilhas** (PLT-13, 01/10/2026). Não há mais texto de
+produto em português: navegação, Configurações, e-mail, mensagem de erro na
+tela, estado vazio, tudo em inglês. Texto novo nasce em inglês.
+
+(O código continua comentado em português, e as mensagens de exceção do
+backend também — elas são traduzidas na borda, em
+`frontend/src/lib/erros-do-servidor.ts`. Isso não mudou.)
 
 Stack: NestJS 11 + Prisma 7 + Postgres 16 · React 19 + Vite 8 + Tailwind v4 ·
 tudo em Docker.
@@ -73,7 +75,7 @@ sobrou em `public/`, não só o que sumiu do bundle.
 ## Backend
 
 Um módulo por pasta, sem barrel: `x.module.ts`, `x.controller.ts`,
-`x.service.ts`, `x.dto.ts`. Copie `src/tracks/` ou `src/progress/`.
+`x.service.ts`, `x.dto.ts`. Copie `src/perfil/` ou `src/usuarios/`.
 
 - **`PrismaModule` é `@Global()`** — não importe nos módulos; só injete
   `PrismaService`.
@@ -95,10 +97,11 @@ Um módulo por pasta, sem barrel: `x.module.ts`, `x.controller.ts`,
   Vazio = ninguém. Promover direto no banco não sobrevive ao próximo login.
 - **`@SessaoOpcional()` não é `@Public()`.** Numa rota opcional o token, *se
   vier*, ainda é verificado — e token inválido continua dando 401, em vez de
-  virar anônimo em silêncio (isso faria sessão expirada parecer trilha
-  zerada). É o que permite a mesma rota servir leitura anônima e, para quem
-  entrou, devolver o progresso. `@CurrentUser()` pode ser `null` ali: o
-  handler trata. Hoje só `tracks` usa.
+  virar anônimo em silêncio (isso faria sessão expirada parecer catálogo
+  vazio). É o que permite a mesma rota servir leitura anônima e, para quem
+  entrou, devolver o que é dela. `@CurrentUser()` pode ser `null` ali: o
+  handler trata. Hoje só `POST /jobs/facets` usa — eram cinco rotas até o
+  PLT-13, e as outras quatro eram de `tracks`.
 - **`where: { userId: null }` no Prisma não devolve vazio** — casa com as
   linhas de `userId` nulo, que são de outra pessoa. Para "sem dono", faça
   curto-circuito antes da consulta (`if (!userId) return ...`) ou `take: 0`.
@@ -174,7 +177,10 @@ precisa da relação inversa em `User`.
   são branco, então não espere elevação visível.)
 - **Dourado (`--accent`) não é cor de texto sobre fundo claro** — dá ~2,2:1 e
   reprova em AA. Para texto existe `--accent-ink`. Para erro, `WARN_INK`
-  (exportado de `components/blocks/BlockRenderer.tsx`).
+  (exportado de `components/cores.ts`). Ele morava em
+  `components/blocks/BlockRenderer.tsx` até o PLT-13 (01/10/2026), e saiu de
+  lá porque aquele arquivo era das trilhas — 26 arquivos de Invoice, Jobs,
+  Perfil e Configurações importavam uma cor de dentro da feature de estudo.
 - **Toda página começa com `<main id="conteudo" tabIndex={-1}>`** — é o
   contrato do skip link do `App.tsx`.
 - Páginas são export nomeado; só `App` é default. Rota nova entra antes do
@@ -183,8 +189,10 @@ precisa da relação inversa em `User`.
   `useDocumentTitle(...)`.
 - Estados: `LoadingState` / `ErrorState` / `EmptyState` de `components/States.tsx`.
 - Erro de mutação mora num `useState` separado do erro do `useAsync`. Há dois
-  padrões: otimista com rollback (marcar aula concluída) e máquina de estados
-  `ocioso/salvando/salvo/erro` (autosave da anotação). Copie o que couber.
+  padrões: otimista com rollback (salvar vaga, em
+  `components/vagas/ListaVagas.tsx`) e máquina de estados
+  `ocioso/salvando/salvo/erro` (gravar chave, em
+  `components/settings/CartaoProvedor.tsx`). Copie o que couber.
 - **`frontend/src/types/api.ts` espelha os DTOs do backend à mão.** Mudou um
   lado, mude o outro.
 - `tsconfig.app.json` proíbe enum de TS (`erasableSyntaxOnly`) e exige
@@ -206,21 +214,14 @@ lógica, `src/components/invoice/` os componentes.
 - Arredonda por linha e soma inteiros, para o total impresso bater com a soma
   das linhas impressas.
 - **jsPDF entra só por `import()` dinâmico.** São 400 KB; importação estática
-  dobraria o bundle de quem só quer ler uma aula. Confira os chunks no `dist/`
-  depois de mexer.
+  dobraria o bundle de quem só abriu a busca de vagas. Confira os chunks no
+  `dist/` depois de mexer.
 - O PDF é sempre tinta sobre papel branco — usa hex cru, não lê os tokens CSS.
 - Campo numérico das linhas é `type="text" inputMode="decimal"` e guarda
   **string**, não número: um input controlado por número não representa `""`,
   `"3."` nem `"0."`.
 - Rótulo de campo de linha carrega a descrição da linha ("Rate for Logo
   design"), senão o leitor de tela anuncia "Rate, Rate, Rate".
-
-## Conteúdo das trilhas
-
-**As aulas são autorais.** Escritas do zero em português, 600–900 palavras de
-corpo (75 aulas hoje, mediana 765).
-Nunca copie de algomaster.io nem do awesome-system-design-resources — esses
-entram só como `sourceUrl`, leitura complementar.
 
 ## O quadro acompanha o trabalho
 
@@ -280,8 +281,10 @@ prova amanhã.
 ## Verificar antes de dizer pronto
 
 O critério é o navegador, não o build. Suba os containers, abra a página,
-clique. Para PDF, abra o arquivo gerado. Confira os dois temas. Confirme que
-as trilhas continuam funcionando depois de mexer em algo compartilhado.
+clique. Para PDF, abra o arquivo gerado. Confira os dois temas. Depois de
+mexer em algo compartilhado, confirme que **o invoice continua funcionando** —
+ele é o que mais depende de peça comum (`WARN_INK`, `Recolhivel`, `Hint`) e o
+único que não tem backend para denunciar a quebra.
 
 E rode a suíte. `scripts/qa-rapido.py` cobre fumaça e papéis; o resto é teste
 de verdade, e sem ele o card não fecha.

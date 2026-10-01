@@ -109,7 +109,7 @@ export class AuthService {
         role: this.papelPara(email, null),
       },
       // Nao mexe em nada de quem ja existe: com o login desligado, esta conta
-      // costuma ser a mesma que ja tem o progresso das trilhas.
+      // costuma ser a mesma que ja tem as vagas salvas e os tokens.
       update: {},
       select: CAMPOS,
     });
@@ -165,7 +165,7 @@ export class AuthService {
     });
 
     // upsert por e-mail: se ja existe conta criada pelo guard antigo, ela e
-    // adotada aqui, com o progresso das trilhas e os tokens de API (PLT-03).
+    // adotada aqui, com as vagas salvas e os tokens de API (PLT-03).
     const user = await this.prisma.user.upsert({
       where: { email },
       create: {

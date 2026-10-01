@@ -221,12 +221,6 @@ describe('os erros que nao vem do backend continuam com o texto que tinham', () 
 
 describe('mensagens com valor interpolado', () => {
   it.each([
-    ['Trilha "system-design" nao encontrada', 'Track "system-design" not found'],
-    [
-      'Aula "cap-theorem" nao encontrada na trilha "system-design"',
-      'Lesson "cap-theorem" not found in track "system-design"',
-    ],
-    ['Aula "abc-123" nao encontrada', 'Lesson "abc-123" not found'],
     ['Nenhum token guardado para openai', 'No token stored for openai'],
     [
       'Voce ja tem 20 buscas salvas. Apague uma para guardar outra.',
@@ -234,24 +228,6 @@ describe('mensagens com valor interpolado', () => {
     ],
   ])('%s', (pt, en) => {
     expect(traduzirErroDoServidor(pt)).toBe(en)
-  })
-
-  /**
-   * A mensagem longa da aula nao pode sair pela metade.
-   *
-   * Ha DUAS protecoes independentes para isto no modulo: o padrao longo vem
-   * antes na lista, e o padrao curto e ancorado em `$`. Tentei quebrar cada
-   * uma isolada (mutacoes M6 e M6b) e nenhuma falhou — justamente porque a
-   * outra segura. Entao o teste nao afirma a ordem nem a ancora, que sao
-   * implementacao: afirma o resultado, e que ele nao perdeu a trilha no
-   * caminho. Quebra quando as DUAS cairem, que e quando o defeito aparece.
-   */
-  it('a mensagem longa da aula nao sai pela metade', () => {
-    const saida = traduzirErroDoServidor('Aula "x" nao encontrada na trilha "y"')
-    expect(saida).toBe('Lesson "x" not found in track "y"')
-    // O jeito de errar: casar com o padrao curto e engolir a trilha dentro do
-    // grupo, imprimindo `Lesson "x" nao encontrada na trilha "y" not found`.
-    expect(saida).not.toMatch(/nao encontrada/)
   })
 })
 
@@ -377,8 +353,8 @@ describe('nenhuma mensagem nova do backend escapa sem traducao', () => {
   const MARCAS_DE_PORTUGUES = [
     'nao', 'voce', 'esta', 'este', 'esse', 'sua', 'seu', 'foi', 'pela', 'pelo',
     'uma', 'dos', 'das', 'com', 'sem', 'para', 'informe', 'escolha', 'entre',
-    'antes', 'ainda', 'conta', 'usuario', 'vaga', 'busca', 'perfil', 'aula',
-    'trilha', 'chave', 'token do', 'nenhum', 'desconhecido', 'invalido',
+    'antes', 'ainda', 'conta', 'usuario', 'vaga', 'busca', 'perfil',
+    'chave', 'token do', 'nenhum', 'desconhecido', 'invalido',
     'expirado', 'restrita', 'desativada', 'configurado', 'encontrado',
     'encontrada', 'suportado', 'possivel', 'desligada', 'arquivo', 'canal',
   ]
@@ -416,7 +392,7 @@ describe('nenhuma mensagem nova do backend escapa sem traducao', () => {
       })
       // Traduzida e a que SAI diferente de como entrou. Comparar com o mapa
       // por chave deixaria de fora o que os PADROES resolvem (as mensagens com
-      // valor interpolado, como o slug da trilha).
+      // valor interpolado, como o nome do provedor).
       .filter((msg) => traduzirErroDoServidor(msg) === msg)
 
     // A mensagem do erro lista o que falta: quem adicionar uma mensagem no

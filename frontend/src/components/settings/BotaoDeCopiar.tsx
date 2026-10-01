@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 
 /**
  * Um comando em bloco, com botão de copiar.

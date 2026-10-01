@@ -5,7 +5,7 @@ import { useTema } from '../lib/tema'
  *
  * Ficava na barra de busca da tela de Jobs (26/08), onde só existia para quem
  * chegava naquela tela — e o tema vale para o app inteiro, inclusive nas
- * trilhas e no invoice. No cabeçalho ele acompanha a navegação, que é onde as
+ * vagas e no invoice. No cabeçalho ele acompanha a navegação, que é onde as
  * escolhas de aplicação já moram.
  *
  * Cicla `sistema → claro → escuro`. O rótulo diz o estado ATUAL **e** o

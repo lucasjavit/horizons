@@ -59,7 +59,7 @@ export class TelegramWebhookService implements OnModuleInit {
    * Registra o webhook no Telegram, uma vez, no boot.
    *
    * Nao derruba a aplicacao se falhar: um Telegram fora do ar, ou uma URL que
-   * ainda nao esta publica, nao pode impedir as trilhas e o e-mail de subirem.
+   * ainda nao esta publica, nao pode impedir as vagas e o e-mail de subirem.
    * O que ele faz e **dizer alto no log** — falha silenciosa aqui viraria "o
    * bot nao responde e ninguem sabe por que".
    */

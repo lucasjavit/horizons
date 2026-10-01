@@ -6,9 +6,9 @@
  * por e-mail, que e onde as duas regras de papel viram gravacao.
  *
  * - **PLT-03: a conta antiga e ADOTADA, e nao duplicada.** O upsert e por
- *   e-mail, entao quem ja tinha progresso das trilhas (criado pelo guard
- *   antigo, sem `providerId`) entra na mesma linha — com o progresso e os
- *   tokens junto. Uma linha nova deixaria a pessoa olhando uma trilha zerada.
+ *   e-mail, entao quem ja tinha conta (criada pelo guard antigo, sem
+ *   `providerId`) entra na mesma linha — com as vagas salvas e os tokens
+ *   junto. Uma linha nova deixaria a pessoa olhando um produto zerado.
  * - **PLT-11: o MANAGER sobrevive ao login.** A regra antiga era
  *   `ehAdmin ? ADMIN : COMMON_USER`, e ela apagava a promocao a cada entrada:
  *   o dono promovia pela tela, a pessoa entrava, e voltava a ser comum **sem
@@ -91,35 +91,35 @@ describe('AuthService (banco)', () => {
       expect(await prisma.user.count()).toBe(1);
     });
 
-    it('ADOTA a conta que ja existia, com o progresso junto (PLT-03)', async () => {
-      // A conta do guard antigo: sem provider do Google, com progresso.
+    it('ADOTA a conta que ja existia, com o que pendia dela (PLT-03)', async () => {
+      // A conta do guard antigo: sem provider do Google, com dado pendurado.
+      //
+      // **Era o progresso das trilhas que provava isto** — elas sairam no
+      // PLT-13 (01/10). O que o teste afirma nao mudou: adotar e reusar a
+      // MESMA linha de `users`, e por isso tudo que tem `userId` continua
+      // ligado. A vaga salva serve de testemunha igualmente bem, e e uma
+      // relacao que o produto ainda tem.
       const antiga = await prisma.user.create({
         data: { email: 'dev@teste.local', name: 'Conta antiga', provider: 'DEV' },
         select: { id: true },
       });
-      const trilha = await prisma.track.create({
-        data: { slug: 't', title: 'Trilha', description: 'd', icon: '📘' },
-        select: { id: true },
-      });
-      const modulo = await prisma.module.create({
-        data: { trackId: trilha.id, slug: 'm', title: 'Modulo', goal: 'Aprender' },
-        select: { id: true },
-      });
-      const aula = await prisma.lesson.create({
-        data: { moduleId: modulo.id, slug: 'a', title: 'Aula', kind: 'ARTICLE' },
-        select: { id: true },
-      });
-      await prisma.progress.create({
-        data: { userId: antiga.id, lessonId: aula.id, completed: true },
+      await prisma.savedJob.create({
+        data: {
+          userId: antiga.id,
+          title: 'Backend Engineer',
+          company: 'Acme',
+          url: 'https://acme.example/jobs/1',
+          foundAt: new Date(),
+        },
       });
 
       const auth = servico({ DEFAULT_USER_EMAIL: 'dev@teste.local', ADMIN_EMAILS: '' });
       const u = await auth.usuarioDeDesenvolvimento();
 
-      // A MESMA linha: o id nao mudou, entao o progresso continua ligado.
+      // A MESMA linha: o id nao mudou, entao a vaga salva continua ligada.
       expect(u.id).toBe(antiga.id);
       expect(await prisma.user.count()).toBe(1);
-      expect(await prisma.progress.count({ where: { userId: u.id } })).toBe(1);
+      expect(await prisma.savedJob.count({ where: { userId: u.id } })).toBe(1);
     });
 
     it('NAO mexe no nome de quem ja existe', async () => {
@@ -131,7 +131,7 @@ describe('AuthService (banco)', () => {
       const u = await auth.usuarioDeDesenvolvimento();
 
       // O `update: {}` e de proposito: esta conta costuma ser a que ja tem o
-      // progresso, e sobrescrever o nome seria mexer no que ninguem pediu.
+      // dados, e sobrescrever o nome seria mexer no que ninguem pediu.
       expect(u.name).toBe('Nome escolhido');
     });
 
@@ -140,7 +140,7 @@ describe('AuthService (banco)', () => {
 
       const u = await auth.usuarioDeDesenvolvimento();
 
-      // Sem isto, 'DEV@x' e 'dev@x' viram duas contas e o progresso se parte.
+      // Sem isto, 'DEV@x' e 'dev@x' viram duas contas e os dados se partem.
       expect(u.email).toBe('dev@teste.local');
     });
 

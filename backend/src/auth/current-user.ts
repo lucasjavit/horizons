@@ -50,10 +50,14 @@ export const PAPEIS = ['COMMON_USER', 'MANAGER', 'ADMIN'] as const;
  *
  * Diferente de `@Public()`: aqui o token, **se vier**, ainda e verificado e o
  * usuario resolvido. E o que permite a mesma rota servir a leitura anonima e,
- * para quem entrou, devolver o progresso junto — sem duplicar endpoint.
+ * para quem entrou, devolver o que e dela junto — sem duplicar endpoint.
  *
  * Token invalido continua sendo erro. Aceitar em silencio esconderia sessao
- * expirada: a pessoa veria a trilha zerada achando que perdeu o progresso.
+ * expirada: a pessoa veria a tela vazia achando que perdeu o que guardou.
+ *
+ * Depois do PLT-13 (01/10) sobrou **uma** rota assim, `POST /jobs/facets` —
+ * as quatro de `tracks` sairam com as trilhas. O decorador continua valendo
+ * para a proxima.
  */
 export const CHAVE_OPCIONAL = 'auth:opcional';
 export const SessaoOpcional = () => SetMetadata(CHAVE_OPCIONAL, true);

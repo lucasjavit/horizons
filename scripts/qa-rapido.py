@@ -155,7 +155,10 @@ if not containers_no_ar():
     print("  pulado  horizons-web nao esta no ar; so o build foi verificado")
 else:
     print("rotas")
-    for rota in ["/", "/invoice", "/t/system-design"]:
+    # `/` e a busca de vagas desde o PLT-13 (01/10); `/t/system-design` saiu
+    # com as trilhas. `/vagas` entra na lista porque o atalho continua valendo
+    # e um 404 ali quebraria os links antigos sem ninguem notar.
+    for rota in ["/", "/vagas", "/invoice"]:
         try:
             with urllib.request.urlopen(BASE + rota, timeout=10) as resp:
                 ok(resp.status == 200, f"{rota} responde 200")
@@ -201,34 +204,20 @@ else:
         ok(obtido == esperado,
            f"{rota} sem token responde {esperado} (deu {obtido})")
 
-    # Leitura de trilha e aula e publica de proposito — o conteudo e a vitrine.
-    # O que nao pode e vazar progresso: anonimo tem de ver zero concluidas,
-    # senao o dado de quem entrou estaria aparecendo para qualquer um.
-    for rota in ["/tracks", "/tracks/system-design/lessons/escalabilidade"]:
-        obtido = status_sem_token(rota)
-        ok(obtido == 200, f"{rota} e publica (deu {obtido})")
-
-    # Com AUTH_DISABLED nao existe anonimo: toda requisicao E a conta de
-    # desenvolvimento, entao ver o progresso dela e o comportamento correto.
-    # Cobrar isolamento aqui seria falha permanente enquanto o login estiver
-    # desligado — e falha que sempre falha para de ser lida.
-    if sem_login:
-        print("  pulado  isolamento de progresso (AUTH_DISABLED: nao ha anonimo)")
-    else:
-        try:
-            with urllib.request.urlopen(API + "/tracks", timeout=10) as resp:
-                trilhas = json.load(resp)
-            concluidas = sum(t.get("completedLessons", 0) for t in trilhas)
-            ok(concluidas == 0,
-               f"anonimo nao ve progresso de ninguem (viu {concluidas} concluidas)")
-        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError,
-                ValueError) as e:
-            ok(False, f"anonimo nao ve progresso de ninguem ({e})")
-
-    # Token invalido nao pode virar anonimo em silencio: isso faria sessao
-    # expirada parecer trilha zerada, e a pessoa acharia que perdeu tudo.
-    req = urllib.request.Request(API + "/tracks",
-                                 headers={"Authorization": "Bearer abc.def.ghi"})
+    # As rotas de trilha sairam no PLT-13 (01/10), e com elas tres checagens
+    # que mediam o progresso: a leitura publica de `/tracks`, o isolamento
+    # ("anonimo ve zero concluidas") e o token invalido contra `/tracks`.
+    #
+    # **A ultima nao se perdeu, mudou de rota.** `POST /jobs/facets` e a unica
+    # `@SessaoOpcional()` que sobrou, e e nela que a regra vale agora: token
+    # podre em rota opcional da 401 em vez de virar anonimo em silencio. O
+    # `fail-closed.e2e.spec.ts` cobre o mesmo por metadado; aqui e pela porta.
+    req = urllib.request.Request(
+        API + "/jobs/facets",
+        data=b"{}",
+        headers={"Authorization": "Bearer abc.def.ghi",
+                 "Content-Type": "application/json"},
+        method="POST")
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             obtido = resp.status
@@ -237,7 +226,7 @@ else:
     except (urllib.error.URLError, TimeoutError) as e:
         obtido = str(e)
     ok(obtido == 401 or sem_login,
-       f"token invalido em rota publica responde 401 (deu {obtido})")
+       f"token invalido em rota opcional responde 401 (deu {obtido})")
 
     # PLT-12: /config/* e so do admin, e a rota de produto nao vaza configuracao.
     #
@@ -447,16 +436,18 @@ else:
             previa = pg.locator('[aria-labelledby="preview-heading"]').inner_text()
             ok("$99.99" in previa, "previa mostra o mesmo valor da linha")
 
-            # As trilhas nao podem quebrar por causa de mexida na invoice.
-            # Confere "lessons" (o rotulo da barra de progresso), e nao o
-            # titulo da pagina: o <h1> e estatico e aparece mesmo com a API
-            # fora do ar, entao afirmar sobre ele passaria numa tela quebrada.
-            # "lessons" so existe depois que as trilhas chegam do backend.
-            # A interface e em ingles desde 25/08/2026; o titulo de cada trilha
-            # continua em portugues, por isso o texto conferido e o cromo.
+            # A home nao pode quebrar por causa de mexida na invoice. Era a
+            # pagina de trilhas ate 01/10; desde o PLT-13 e a busca de vagas.
+            #
+            # Confere o `main#conteudo` E um elemento que so existe depois que
+            # a pagina monta de verdade (o campo de busca), e nao o <h1>: um
+            # titulo estatico aparece mesmo com a API fora do ar, entao
+            # afirmar sobre ele passaria numa tela quebrada.
             pg.goto(f"{BASE}/", wait_until="networkidle")
-            ok("lessons" in pg.locator("main").inner_text().lower(),
-               "pagina de trilhas continua carregando")
+            ok(pg.locator("main#conteudo").count() == 1,
+               "home tem main#conteudo (contrato do skip link)")
+            ok(pg.locator('input[type="search"], input[role="combobox"]').count() > 0,
+               "home mostra a busca de vagas")
 
             reais = [e for e in erros if "favicon" not in e.lower()]
             ok(len(reais) == 0, f"sem erro de console ({reais[:1]})")

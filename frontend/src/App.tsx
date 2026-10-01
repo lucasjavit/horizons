@@ -27,19 +27,19 @@ import { SessaoContext } from './lib/sessao'
 import { usePopover } from './lib/usePopover'
 import { api } from './lib/api'
 import type { AuthUser } from './types/api'
-import { LessonPage } from './pages/LessonPage'
-import { TrackPage } from './pages/TrackPage'
-import { TracksPage } from './pages/TracksPage'
 /**
- * A tela de vagas entra por `import()` dinâmico.
+ * A tela de vagas entra por `import()` dinâmico — **e continua assim mesmo
+ * sendo a home** (PLT-13).
  *
- * É a maior do app — barra de busca, filtros, lista, caixa de currículo — e
- * **quem chega para ler uma aula nunca a abre**. Importada estaticamente ela
- * empurrou o bundle principal para 448 KB, acima do teto de 440 que o
- * `scripts/qa-rapido.py` mede (26/08).
+ * A razão original era que "quem chega para ler uma aula nunca a abre", e as
+ * trilhas saíram. O que sustenta o `lazy` hoje é o outro lado da medição: é a
+ * maior tela do app — barra de busca, filtros, lista, caixa de currículo — e
+ * importada estaticamente ela empurrou o bundle principal para 448 KB, acima
+ * do teto de 440 que o `scripts/qa-rapido.py` mede (26/08).
  *
- * Mesma decisão do jsPDF no Invoice e do modal de filtros: o custo fica com
- * quem usa a feature.
+ * Como `/` agora cai aqui, o chunk é buscado na primeira visita de todo mundo
+ * — mas em paralelo e cacheado à parte, em vez de inflar o bundle que também
+ * serve `/invoice`, que roda inteiro no navegador e não precisa de nada disto.
  */
 const VagasPage = lazy(() =>
   import('./pages/VagasPage').then((m) => ({ default: m.VagasPage })),
@@ -61,8 +61,8 @@ const ConfigDeployPage = lazy(() =>
 
 /**
  * `lazy` como as outras sub-paginas pesadas: a lista de usuarios e a tabela
- * que a desenha so interessam a admin e manager, e quem chega para ler uma
- * aula nunca a abre.
+ * que a desenha so interessam a admin e manager, e quem chega para buscar
+ * vaga nunca a abre.
  */
 const ConfigUsuariosPage = lazy(() =>
   import('./pages/ConfigUsuariosPage').then((m) => ({
@@ -72,20 +72,19 @@ const ConfigUsuariosPage = lazy(() =>
 
 
 /**
- * Abas dos produtos sob a marca Horizons.
+ * Abas dos produtos sob a marca Horizons: Jobs e Invoice.
  *
- * "Trilhas" em portugues e "Invoice" em ingles de proposito: o gerador de
- * invoice mira um publico global, enquanto as trilhas sao escritas em
- * portugues para o dev brasileiro. A mistura e consciente.
+ * Eram tres ate 01/10, quando as trilhas sairam (PLT-13). A interface e
+ * inteira em ingles — nao ha mais a excecao do conteudo das aulas.
  */
 
 
 /**
  * Quem esta logado — ou o convite para entrar.
  *
- * Entrar deixou de ser porta e virou canto da barra: a pessoa le a trilha
- * primeiro e decide depois. O progresso e a razao de entrar, e so faz sentido
- * oferecer depois que ela viu o que ha para acompanhar.
+ * Entrar deixou de ser porta e virou canto da barra: a pessoa busca vagas
+ * primeiro e decide depois. Salvar vaga e receber aviso sao a razao de entrar,
+ * e so faz sentido oferecer depois que ela viu o que ha para acompanhar.
  */
 function Conta({
   user,
@@ -232,8 +231,10 @@ function ItemDoMenu({
 function Abas() {
   const { pathname } = useLocation()
   const abas = [
-    { to: '/', label: 'Tracks', ativa: pathname === '/' || pathname.startsWith('/t/') },
-    { to: '/vagas', label: 'Jobs', ativa: pathname === '/vagas' },
+    // **Jobs aponta para `/`, e nao para `/vagas`** (PLT-13): com as trilhas
+    // fora, a busca de vagas virou a home. `/vagas` continua valendo como
+    // atalho e marca a aba, para link antigo nao parecer fora do produto.
+    { to: '/', label: 'Jobs', ativa: pathname === '/' || pathname === '/vagas' },
     { to: '/invoice', label: 'Invoice', ativa: pathname === '/invoice' },
   ]
 
@@ -247,7 +248,7 @@ function Abas() {
   return (
     // `min-w-0` + `overflow-x-auto`: sem os dois a nav empurra a barra e a
     // pagina inteira ganha rolagem horizontal em telas estreitas (medido:
-    // 525px de conteudo numa viewport de 390, em Trilhas, Invoice e Vagas).
+    // 525px de conteudo numa viewport de 390, em Invoice e Vagas).
     // A rolagem fica DENTRO da nav, que e o conteudo que de fato nao cabe.
     <nav
       aria-label="Products"
@@ -286,7 +287,7 @@ function NotFound() {
         className="mt-4 inline-block font-medium underline"
         style={{ color: 'var(--accent-ink)' }}
       >
-        Back to tracks
+        Back to jobs
       </Link>
     </main>
   )
@@ -344,15 +345,16 @@ export default function App() {
     )
   }
 
-  // Sem portao: a aplicacao renderiza com ou sem sessao. Ler a trilha e o que
+  // Sem portao: a aplicacao renderiza com ou sem sessao. Ver as vagas e o que
   // convence alguem a criar conta, entao pedir a conta antes de mostrar a
-  // trilha inverte a ordem — e e o que faz a pessoa fechar a aba.
+  // busca inverte a ordem — e e o que faz a pessoa fechar a aba.
   return (
     <SessaoContext.Provider value={user}>
     <BrowserRouter>
       <div className="min-h-dvh">
-        {/* Primeiro elemento focável da página: sem ele, a sidebar da aula
-            impõe 78 tabulações antes do conteúdo. Só aparece com foco. */}
+        {/* Primeiro elemento focável da página: sem ele, a barra de busca e os
+            filtros impõem dezenas de tabulações antes dos resultados. Só
+            aparece com foco. */}
         <a
           href="#conteudo"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-20 focus:rounded-md focus:px-4 focus:py-2 focus:font-semibold"
@@ -374,7 +376,7 @@ export default function App() {
             <Abas />
 
             {/* Config e conta ficam na ponta direita, separadas das abas:
-                nao sao produtos como Trilhas e Invoice. O ml-auto vive aqui,
+                nao sao produtos como Jobs e Invoice. O ml-auto vive aqui,
                 e nao na engrenagem, porque ela some para quem nao e admin. */}
             <div className="ml-auto flex items-center gap-2">
             {/* Com o login desligado o backend nao checa papel, e ADMIN_EMAILS
@@ -401,9 +403,14 @@ export default function App() {
             têm seus próprios estados de carregamento para os DADOS. */}
         <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<TracksPage />} />
-          <Route path="/t/:trackSlug" element={<TrackPage />} />
-          <Route path="/t/:trackSlug/:lessonSlug" element={<LessonPage />} />
+          {/* **`/` e a busca de vagas** (PLT-13). Era a listagem de trilhas
+              ate 01/10; com elas fora, Jobs virou a home.
+
+              **`/vagas` continua registrada, e nao redireciona.** Renderizar
+              o mesmo elemento e mais simples que um `<Navigate>` e nao custa
+              um salto a mais no historico — e os links antigos (e-mail,
+              Telegram, favorito de quem usava) continuam abrindo a tela. */}
+          <Route path="/" element={<VagasPage />} />
           <Route path="/vagas" element={<VagasPage />} />
           {/* **`/salvas` continua existindo, e renderiza a tela de Jobs já
               na visão de salvas** (26/08). A aba própria saiu da navegação —

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ErrorState, LoadingState } from '../States'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 import { api, errorMessage } from '../../lib/api'
 import { useAsync } from '../../lib/useAsync'
 import type { HostDescoberto } from '../../types/api'

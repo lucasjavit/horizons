@@ -458,7 +458,7 @@ export class IaService {
    * **Decisao deliberada:** o `@google/genai` sao ~400 KB de dependencia para
    * uma unica chamada POST. O repositorio ja fala HTTP cru com o Telegram
    * (`telegram.provider.ts`) e com os ATS (`busca-ats.service.ts`), entao este
-   * e o caminho chato e ja trilhado. Se um dia o Gemini for usado para
+   * e o caminho chato e ja conhecido. Se um dia o Gemini for usado para
    * streaming ou multimodal, o SDK passa a pagar o proprio peso.
    *
    * Duas particularidades da API que nao sao opcionais:

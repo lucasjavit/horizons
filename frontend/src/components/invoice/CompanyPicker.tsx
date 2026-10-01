@@ -3,7 +3,7 @@ import type { Company } from '../../invoice/companies'
 import { emptyCompany } from '../../invoice/companies'
 import { TextAreaField, TextField } from './Field'
 import { Modal } from './Modal'
-import { WARN_INK } from '../blocks/BlockRenderer'
+import { WARN_INK } from '../cores'
 
 interface CompanyPickerProps {
   companies: Company[]
