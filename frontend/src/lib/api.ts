@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { perdeuSessao, tokenStore } from './auth'
+import { traduzirMensagemDaApi } from './erros-do-servidor'
 import type {
   ApiProvider,
   Assinatura,
@@ -77,13 +78,25 @@ export function ehSemSessao(error: unknown): boolean {
   return error instanceof AxiosError && error.response?.status === 401
 }
 
-/** Mensagem de erro legível — a API devolve `message` do Nest quando falha. */
+/**
+ * Mensagem de erro legível — a API devolve `message` do Nest quando falha.
+ *
+ * **É o único ponto do frontend que exibe `message` do servidor**, e por isso é
+ * onde a tradução entra (APP-02): o backend continua em português sem acento,
+ * para o log e para quem depura, e a tela recebe inglês. Mensagem fora do mapa
+ * passa como veio — ver `erros-do-servidor.ts` para o porquê.
+ */
 export function errorMessage(error: unknown): string {
   if (error instanceof AxiosError) {
     const data = error.response?.data as { message?: string | string[] } | undefined
     const message = data?.message
-    if (Array.isArray(message)) return message.join(', ')
-    if (message) return message
+    // O `traduzido` pode sair vazio de um array sem nenhum item util — e aí
+    // cai nos genéricos abaixo em vez de devolver string vazia, que apagaria o
+    // erro da tela e deixaria a caixa vermelha sem texto nenhum.
+    if (message) {
+      const traduzido = traduzirMensagemDaApi(message)
+      if (traduzido) return traduzido
+    }
     if (error.code === 'ECONNABORTED') return 'The request took too long.'
     if (!error.response) return 'Could not reach the API. Is it running?'
     return `Error ${error.response.status}`
