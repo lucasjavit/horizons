@@ -86,6 +86,7 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
+    "maxWorkers": 1,
     "setupFiles": [
       "<rootDir>/../test/ambiente.ts"
     ]

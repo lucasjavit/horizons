@@ -278,6 +278,27 @@ equivalente do front. **Verificação manual no navegador continua obrigatória*
 ela é o critério final —, mas não substitui: o navegador prova hoje, o teste
 prova amanhã.
 
+**`maxWorkers: 1` no Jest do backend não é enfeite — não suba.** Cada suíte que
+toca o banco prepara o próprio schema com `npx prisma migrate deploy`, um
+subprocesso caro, e cinco delas também sobem o `AppModule` inteiro. Com os
+workers livres, as migrations disputam os 4 núcleos e as suítes de timeout mais
+curto (120s: `perfil`, `auth.service.banco`, `recursos`) estouram o `beforeAll`
+— **e quais estouram muda a cada rodada**, o que faz a falha acusar sempre o
+código errado. As mesmas suítes passam sozinhas em 7s.
+
+Medido em 01/10, na máquina de 4 núcleos, depois que o JOB-47 trouxe a quinta
+suíte e2e:
+
+| workers | resultado |
+| --- | --- |
+| livre | 2–3 suítes falhando, 28–58 testes, 284–484s |
+| 2 | instável: passou em 38s uma vez, falhou em 284s depois |
+| **1** | **18 suítes, 429 testes, 47s** |
+
+Serial é mais RÁPIDO que paralelo aqui, e é o que resolve de verdade: o gargalo
+é I/O de migration disputado, não CPU de teste. Paralelizar trabalho serial por
+natureza só adiciona contenção.
+
 ## Verificar antes de dizer pronto
 
 O critério é o navegador, não o build. Suba os containers, abra a página,

@@ -122,6 +122,11 @@ vi.mock('./ModalFiltros', () => ({
   ),
 }))
 
+// O contexto de sessao e REAL, e nao dublado: o default dele (`null`) e
+// exatamente o estado anonimo que o JOB-47 introduziu na tela, e dubla-lo
+// faria o teste medir o duble em vez da regra.
+import { SessaoContext } from '../../lib/sessao'
+
 const { ListaVagas } = await import('./ListaVagas')
 
 function vaga(over: Partial<Vaga> = {}): Vaga {
@@ -730,6 +735,149 @@ describe('ListaVagas', () => {
       await renderizar({ comCv: false })
 
       expect(screen.queryByRole('button', { name: 'Upload CV' })).toBeNull()
+    })
+  })
+
+  /**
+   * JOB-47 — a lista atende quem nao entrou.
+   *
+   * O `SessaoContext` tem `null` como default (ver `lib/sessao.ts`), entao
+   * renderizar sem Provider JA e o caso anonimo — e e o caso que todos os
+   * outros testes deste arquivo exercitam sem dizer. Aqui ele e nomeado, e o
+   * caso COM sessao entra por Provider.
+   */
+  describe('JOB-47 — o convite do anonimo no fim da lista', () => {
+    beforeEach(() => {
+      mockApi.recursosDeProduto.mockResolvedValue({
+        leituraCvAtiva: false,
+        historicoAtivo: false,
+      })
+    })
+
+    it('anonimo com vaga na tela ve o convite, e ele explica o que se ganha', async () => {
+      vagasDaBusca = [vaga()]
+      await renderizar({ comCv: false })
+      await userEvent.type(screen.getByRole('searchbox'), 'engineer{Enter}')
+      expect(await screen.findByText('1 job found')).toBeTruthy()
+
+      // O titulo diz o ESTADO ("vagas de duas semanas atras"), e o corpo diz o
+      // ganho. "Unauthorized" seria o oposto do que o card pede.
+      const convite = await screen.findByRole('region', {
+        name: /Seeing jobs from two weeks ago/i,
+      })
+      expect(convite).toBeTruthy()
+      expect(within(convite).getByText(/14 days ago or more/i)).toBeTruthy()
+      expect(within(convite).getByText(/newest postings/i)).toBeTruthy()
+    })
+
+    it('com sessao, o convite NAO aparece', async () => {
+      // O contrapositivo: sem ele, um convite que aparecesse para todo mundo
+      // passaria no teste de cima. Quem entrou nao pode ser convidado a entrar.
+      vagasDaBusca = [vaga()]
+      render(
+        <SessaoContext.Provider
+          value={{
+            id: 'u1',
+            email: 'quem@entrou.com',
+            name: 'Quem Entrou',
+            avatarUrl: null,
+            role: 'COMMON_USER',
+          }}
+        >
+          <ListaVagas />
+        </SessaoContext.Provider>,
+      )
+      await screen.findByText(/No filters yet/i)
+      await userEvent.type(screen.getByRole('searchbox'), 'engineer{Enter}')
+      expect(await screen.findByText('1 job found')).toBeTruthy()
+
+      expect(
+        screen.queryByRole('region', { name: /Seeing jobs from two weeks ago/i }),
+      ).toBeNull()
+    })
+
+    it('busca sem resultado nenhum nao mostra o convite — nao e consolo', async () => {
+      // Num resultado vazio ele viraria explicacao para quem nao achou nada, e
+      // a tela ja tem a frase certa ("No jobs matched") para esse caso.
+      //
+      // ⚠️ Este teste passa por DOIS motivos somados: o convite esta dentro do
+      // bloco `vagas.length > 0`. Quem prova o `filtradas.length > 0` e o
+      // teste seguinte — descobri isso por mutacao, e foi ele que nasceu da
+      // mutacao sobrevivente.
+      vagasDaBusca = []
+      await renderizar({ comCv: false })
+      await userEvent.type(screen.getByRole('searchbox'), 'engineer{Enter}')
+      expect(await screen.findByText(/No jobs matched/i)).toBeTruthy()
+
+      expect(
+        screen.queryByRole('region', { name: /Seeing jobs from two weeks ago/i }),
+      ).toBeNull()
+    })
+
+    /**
+     * O caso que o `filtradas.length > 0` existe para cobrir.
+     *
+     * A busca ACHOU vagas, mas o recorte ativo esconde todas: a tela mostra
+     * "No new jobs here" e nenhuma linha. O convite ali embaixo ficaria solto
+     * sob uma lista vazia, dizendo "estas vagas sao de duas semanas atras"
+     * sobre nenhuma vaga.
+     *
+     * Nasceu de uma mutacao SOBREVIVENTE: trocar a condicao por `!usuario`
+     * sozinho nao quebrava teste nenhum, porque o unico caso de lista vazia
+     * que eu testava ja era impossivel pelo bloco de fora.
+     */
+    it('lista esvaziada pelo recorte tambem nao mostra o convite', async () => {
+      // Historico ligado, e a unica vaga da busca ja foi vista: no recorte
+      // "New" ela desaparece, e `filtradas` fica vazia com `vagas` cheia.
+      mockApi.recursosDeProduto.mockResolvedValue({
+        leituraCvAtiva: false,
+        historicoAtivo: true,
+      })
+      mockApi.listarHistorico.mockResolvedValue({
+        vistas: ['https://acme.example/jobs/1'],
+        descartadas: [],
+      })
+      vagasDaBusca = [vaga()]
+
+      await renderizar({ comCv: false })
+      await userEvent.type(screen.getByRole('searchbox'), 'engineer{Enter}')
+      expect(await screen.findByText('1 job found')).toBeTruthy()
+      // Com a vaga na tela, o convite esta la — o estado de partida.
+      expect(
+        await screen.findByRole('region', { name: /Seeing jobs from two weeks ago/i }),
+      ).toBeTruthy()
+
+      // Troca para "New": a unica vaga e conhecida, entao a lista esvazia.
+      // `radio` e nao `button`: os tres recortes sao um `radiogroup`, porque
+      // sao opcoes exclusivas sobre a mesma lista.
+      await userEvent.click(screen.getByRole('radio', { name: /^New/ }))
+      expect(await screen.findByText(/No new jobs here/i)).toBeTruthy()
+
+      expect(
+        screen.queryByRole('region', { name: /Seeing jobs from two weeks ago/i }),
+      ).toBeNull()
+    })
+
+    it('e o convite vem DEPOIS da lista, nao antes', async () => {
+      // "No fim da lista, nao num banner permanente" e o criterio 4 do card. A
+      // ordem no DOM e o que se pode medir disso: um banner no topo apareceria
+      // antes da lista.
+      vagasDaBusca = [vaga()]
+      await renderizar({ comCv: false })
+      await userEvent.type(screen.getByRole('searchbox'), 'engineer{Enter}')
+      expect(await screen.findByText('1 job found')).toBeTruthy()
+
+      // A ancora e o LINK DA VAGA, e nao o `<ul>`: a tela tem varias listas
+      // (a faixa de chips, os recortes), e `getByRole('list')` acha mais de
+      // uma. O link do anuncio e inequivocamente o conteudo da lista.
+      const vagaNaTela = screen.getByRole('link', { name: /Backend Engineer/i })
+      const convite = screen.getByRole('region', {
+        name: /Seeing jobs from two weeks ago/i,
+      })
+      // `DOCUMENT_POSITION_FOLLOWING` = o convite vem depois da vaga.
+      expect(
+        vagaNaTela.compareDocumentPosition(convite) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy()
     })
   })
 })

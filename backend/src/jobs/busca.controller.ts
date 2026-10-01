@@ -2,8 +2,11 @@ import { Body, Controller, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { BuscaService } from './busca.service';
 import { RecursosService } from '../settings/recursos.service';
+import { CurrentUser, SessaoOpcional } from '../auth/current-user';
+import type { AuthUser } from '../auth/current-user';
 import { FiltrosDto, MaisVagasPedidoDto } from './job.dto';
 import type { MaisVagasDto } from './busca.service';
+import { limitesDe } from './limites-anonimos';
 
 /**
  * A busca ao vivo, disparada pelo botao Filter.
@@ -14,6 +17,19 @@ import type { MaisVagasDto } from './busca.service';
  *
  * POST porque os filtros vao no corpo — e o EventSource do navegador so faz
  * GET, entao a tela le com fetch + ReadableStream.
+ *
+ * ## As duas rotas sao `@SessaoOpcional()`, e nao `@Public()` (JOB-47)
+ *
+ * A busca funciona sem login desde 01/10/2026 — decisao do stakeholder: *"nao
+ * precisa de login para fazer buscas"*. O que o anonimo alcanca e menos, e o
+ * `limites-anonimos.ts` diz exatamente o que.
+ *
+ * **A escolha do decorador e o coracao do card, e `@Public()` seria errado.**
+ * Numa rota opcional o token, *se vier*, ainda e verificado: token invalido
+ * continua dando 401 em vez de virar anonimo em silencio. A diferenca aparece
+ * na sessao expirada — com `@Public()` ela viraria uma busca que devolve a
+ * amostra de 14 dias, e a pessoa concluiria que o produto perdeu metade do
+ * acervo em vez de que ela precisa entrar de novo. Ver CLAUDE.md.
  */
 @Controller('jobs/search')
 export class BuscaController {
@@ -34,13 +50,33 @@ export class BuscaController {
    * Rota especifica ANTES da generica — `search/mais` viria depois de
    * `search` se a ordem fosse outra, e o `@Post()` sem caminho engoliria.
    */
+  /**
+   * **Sem `@CurrentUser()` aqui, e e de proposito** (JOB-47).
+   *
+   * Os limites da pagina 2 saem da SESSAO, que os gravou na pagina 1 — nao de
+   * quem esta pedindo agora. Ler o usuario aqui seria pior do que inutil:
+   * daria a impressao de que a restricao e reavaliada, quando o que protege e
+   * justamente ela nao ser (o corpo manda so o id, entao nao ha o que
+   * falsificar).
+   *
+   * O `@SessaoOpcional()` continua necessario: sem ele o guard fecha a rota, e
+   * o anonimo que buscou na pagina 1 levaria 401 ao clicar em "Load more".
+   */
   @Post('mais')
+  @SessaoOpcional()
   mais(@Body() body: MaisVagasPedidoDto): Promise<MaisVagasDto> {
     return this.busca.mais(body.sessao);
   }
 
   @Post()
-  async buscar(@Body() filtros: FiltrosDto, @Res() res: Response): Promise<void> {
+  @SessaoOpcional()
+  async buscar(
+    @Body() filtros: FiltrosDto,
+    @Res() res: Response,
+    // `null` quando ninguem entrou — e o que `@SessaoOpcional()` permite. O
+    // handler trata, como manda o CLAUDE.md.
+    @CurrentUser() usuario: AuthUser | null,
+  ): Promise<void> {
     // Checado AQUI, e nao so na tela: recurso desligado que a API ainda aceita
     // nao esta desligado, esta escondido — e cada busca gasta credito.
     //
@@ -81,7 +117,10 @@ export class BuscaController {
     });
 
     try {
-      for await (const evento of this.busca.buscar(filtros)) {
+      // **A traducao de "quem e" para "o que pode" acontece AQUI**, no unico
+      // lugar que sabe se ha sessao. O servico recebe a politica pronta e nao
+      // reimplementa nada a partir do usuario — ver `limites-anonimos.ts`.
+      for await (const evento of this.busca.buscar(filtros, limitesDe(usuario))) {
         if (abortado) break;
         enviar(evento);
       }

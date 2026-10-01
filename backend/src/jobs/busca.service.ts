@@ -13,6 +13,10 @@ import { RecursosService } from '../settings/recursos.service';
 import type { IaDaBusca } from '../settings/recursos.service';
 import { decifrar, SALT_TOKENS } from '../settings/crypto';
 import type { FiltrosDto, VagaDto } from './job.dto';
+import {
+  LIMITES_COM_SESSAO,
+  type LimitesDaBusca,
+} from './limites-anonimos';
 
 /**
  * O que a IA extrai de cada anuncio.
@@ -220,7 +224,17 @@ export class BuscaService {
     private readonly cadeiaDeIa: IaService,
   ) {}
 
-  async *buscar(filtros: FiltrosDto): AsyncGenerator<EventoBusca> {
+  async *buscar(
+    filtros: FiltrosDto,
+    /**
+     * O que quem pediu pode alcancar (JOB-47).
+     *
+     * Default = sessao, porque os chamadores internos (busca agendada, alerta
+     * de busca salva) rodam no servidor em nome de alguem que ja entrou. So o
+     * controller, que e quem sabe se ha `@CurrentUser()`, passa o restrito.
+     */
+    limites: LimitesDaBusca = LIMITES_COM_SESSAO,
+  ): AsyncGenerator<EventoBusca> {
     // **A captura de descobertas envolve a busca inteira, e nao um motor.**
     //
     // Toda vaga que sai por aqui passa por `anotar` (JOB-37), venha do ATS, do
@@ -232,7 +246,7 @@ export class BuscaService {
     // lugar onde os tres motores se encontram.
     const colhidas: VagaDto[] = [];
     try {
-      for await (const ev of this.buscarMotores(filtros)) {
+      for await (const ev of this.buscarMotores(filtros, limites)) {
         if (ev.tipo === 'vaga' && ev.vaga) colhidas.push(ev.vaga);
         yield ev;
       }
@@ -245,7 +259,10 @@ export class BuscaService {
     }
   }
 
-  private async *buscarMotores(filtros: FiltrosDto): AsyncGenerator<EventoBusca> {
+  private async *buscarMotores(
+    filtros: FiltrosDto,
+    limites: LimitesDaBusca,
+  ): AsyncGenerator<EventoBusca> {
     const consulta = montarConsulta(filtros);
     // O interruptor decide o motor, e nao so a existencia da chave: com o
     // Firecrawl desligado a chave continua cadastrada, e usa-la assim mesmo
@@ -273,7 +290,7 @@ export class BuscaService {
     // porque este aqui e servico de terceiro que pode sumir — no dia em que
     // sumir, o de baixo assume sem que ninguem mexa em nada.
     if (freehireAtivo) {
-      const pagina = await this.freehire.buscarPagina(filtros, 0).catch((e) => {
+      const pagina = await this.freehire.buscarPagina(filtros, 0, limites).catch((e) => {
         this.log.error(`motor freehire falhou: ${String(e).slice(0, 200)}`);
         return { vagas: [] as VagaDto[], lidasDaApi: 0, totalNoFiltro: null };
       });
@@ -291,12 +308,37 @@ export class BuscaService {
           pagina.lidasDaApi,
           pagina.totalNoFiltro,
           paginacaoAtiva,
+          limites,
         );
         return;
       }
       // Zero vaga nao e falha do motor — pode ser filtro apertado demais, ou o
       // servico fora do ar (que o `buscar` ja registrou). Cai para o ATS.
       this.log.log('freehire nao achou nada — tentando o ATS');
+    }
+
+    // **A BARREIRA DO ANONIMO (JOB-47), e ela fica AQUI de proposito.**
+    //
+    // Depois do freehire e antes de todo o resto: e o unico ponto do arquivo
+    // por onde a cascata passa a caminho de um motor que custa. O ATS gasta
+    // 128s de CPU nossa em 526 boards; o Firecrawl gasta credito; a IA gasta
+    // token. O projeto **nao tem rate limiting**, entao rota aberta que
+    // alcance qualquer um dos tres e um script contra a conta de quem paga.
+    //
+    // **Para com `fim` e nao com `erro`.** Zero vaga aqui nao e falha — e o
+    // filtro do anonimo nao ter casado nada na faixa envelhecida. Um `erro`
+    // faria a tela mostrar "Search failed" para uma busca que funcionou e
+    // devolveu vazio, e a pessoa tentaria de novo achando que foi azar.
+    //
+    // Nao ha `if (freehireAtivo)` em volta: se o admin desligou o freehire, o
+    // anonimo nao tem motor nenhum, e o certo e lista vazia — nao a cascata
+    // caindo no pago justamente quando o motor gratuito esta fora.
+    if (limites.somenteFreehire) {
+      this.log.log(
+        'busca anonima: a cascata para no freehire — ATS, Firecrawl e IA nao sao tentados',
+      );
+      yield this.fim('freehire', filtros, [], 0, null, paginacaoAtiva, limites);
+      return;
     }
 
     // **Um motor nao responde pedido que nao sabe honrar** (26/08).
@@ -335,7 +377,7 @@ export class BuscaService {
         for (const vaga of doAts) yield { tipo: 'vaga', vaga };
         // Sessao esgotada na abertura: o ATS varre os 526 boards e entrega
         // tudo de uma vez, entao nao ha proxima pagina para pedir.
-        yield this.fim('ats', filtros, doAts, doAts.length, null, paginacaoAtiva);
+        yield this.fim('ats', filtros, doAts, doAts.length, null, paginacaoAtiva, limites);
         return;
       }
       // Zero vaga nao e falha do motor — pode ser filtro apertado demais. Cai
@@ -368,7 +410,7 @@ export class BuscaService {
       // `ordemDaIa` cobre os seis provedores, na ordem que o admin arrumou;
       // a cadeia a filtra por capacidade. `disponivel()` logo acima ja
       // garantiu que ha ao menos um com chave.
-      yield* this.buscarPelaIa(filtros, consulta, ordemDaIa, paginacaoAtiva);
+      yield* this.buscarPelaIa(filtros, consulta, ordemDaIa, paginacaoAtiva, limites);
       return;
     }
 
@@ -396,7 +438,7 @@ export class BuscaService {
     }
 
     if (urls.length === 0) {
-      yield this.fim('firecrawl', filtros, [], 0, null, paginacaoAtiva);
+      yield this.fim('firecrawl', filtros, [], 0, null, paginacaoAtiva, limites);
       return;
     }
 
@@ -437,7 +479,7 @@ export class BuscaService {
       }
     }
 
-    yield this.fim('firecrawl', filtros, doFirecrawl, doFirecrawl.length, null, paginacaoAtiva);
+    yield this.fim('firecrawl', filtros, doFirecrawl, doFirecrawl.length, null, paginacaoAtiva, limites);
   }
 
   /**
@@ -599,6 +641,12 @@ export class BuscaService {
     // Nao muda nada para a IA (ela nao pagina), mas o `fim` exige o valor — e
     // um default aqui esconderia o dia em que um motor novo passar a paginar.
     paginacaoAtiva: boolean,
+    /**
+     * Pelo mesmo motivo do `paginacaoAtiva`: a sessao grava os limites, e a IA
+     * so e alcancada COM sessao (a barreira do anonimo fica antes dela). Sem
+     * default de proposito — quem chamar tem de dizer qual e o caso.
+     */
+    limites: LimitesDaBusca,
   ): AsyncGenerator<EventoBusca> {
     let vagas: VagaDto[];
     try {
@@ -623,7 +671,7 @@ export class BuscaService {
     yield { tipo: 'inicio', total: vagas.length };
     for (const vaga of vagas) yield { tipo: 'vaga', vaga };
     // A IA busca e le numa chamada so: o que ela achou e tudo o que ela tem.
-    yield this.fim('ia', filtros, vagas, vagas.length, null, paginacaoAtiva);
+    yield this.fim('ia', filtros, vagas, vagas.length, null, paginacaoAtiva, limites);
   }
 
   /**
@@ -645,6 +693,14 @@ export class BuscaService {
     lidasDaApi: number,
     totalNoFiltro: number | null,
     paginacaoAtiva: boolean,
+    /**
+     * Os limites de quem pediu (JOB-47), **gravados na sessao**.
+     *
+     * E o que faz a pagina 2 herdar a restricao da pagina 1: o
+     * `MaisVagasPedidoDto` manda so o id, entao nao ha como um cliente anonimo
+     * pedir a proxima pagina sem o corte. Ver `limites-anonimos.ts`.
+     */
+    limites: LimitesDaBusca,
   ): EventoBusca {
     const { id, temMais } = this.sessoes.abrir(
       motor,
@@ -653,6 +709,7 @@ export class BuscaService {
       lidasDaApi,
       totalNoFiltro,
       paginacaoAtiva,
+      limites,
     );
     return { tipo: 'fim', sessao: id, temMais, totalNoFiltro };
   }
@@ -675,7 +732,8 @@ export class BuscaService {
    */
   async mais(sessaoId: string): Promise<MaisVagasDto> {
     const filtros = this.sessoes.filtrosDe(sessaoId);
-    if (!filtros) {
+    const limites = this.sessoes.limitesDe(sessaoId);
+    if (!filtros || !limites) {
       // Sessao vencida ou de outra instancia. Nao e erro: a tela refaz a busca.
       return {
         vagas: [],
@@ -696,7 +754,11 @@ export class BuscaService {
       // alguem pediu (o botao nem deveria estar la, mas a API nao confia nisso).
       if (offset === null) break;
 
-      const pagina = await this.freehire.buscarPagina(filtros, offset).catch((e) => {
+      // **Os limites vem da SESSAO, e nao do pedido** (JOB-47). O corpo de
+      // `POST /jobs/search/mais` manda so o id, entao a pagina 2 herda a
+      // restricao com que a pagina 1 foi aberta — um cliente anonimo nao tem
+      // onde dizer que deixou de ser anonimo.
+      const pagina = await this.freehire.buscarPagina(filtros, offset, limites).catch((e) => {
         this.log.error(`pagina ${offset} do freehire falhou: ${String(e).slice(0, 200)}`);
         return { vagas: [] as VagaDto[], lidasDaApi: 0, totalNoFiltro: null };
       });

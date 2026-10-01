@@ -28,11 +28,28 @@ import { render, screen } from '@testing-library/react'
 
 // O mock vem ANTES do import do App: ele monta a sessao no `useEffect`, e um
 // `api` real tentaria rede no primeiro render.
+//
+// **As duas chamadas da lista entraram com o JOB-47** (01/10). Antes deste
+// card, `/` sem sessao mostrava so o convite para entrar, e a `ListaVagas` nem
+// era montada — o mock de dois metodos bastava. Agora a busca atende o
+// anonimo, a lista monta, e ela pergunta por salvas e pelos recursos no
+// `useEffect`: sem estes dois, o render estourava
+// `api.listarSalvas is not a function` e o `<main>` sumia inteiro, o que
+// aparecia como "heading nao encontrado" em tres testes de ROTA.
+//
+// As duas rejeitam como o servidor rejeita para quem nao entrou (401), que e o
+// caminho que a tela ja trata: `salvas` fica `null` e a estrela nao aparece.
 vi.mock('./lib/api', () => ({
   api: {
     authConfig: vi.fn().mockResolvedValue({ googleClientId: null, authDisabled: false }),
     me: vi.fn().mockRejectedValue(new Error('anonimo')),
+    listarSalvas: vi.fn().mockRejectedValue(new Error('sem sessao')),
+    recursosDeProduto: vi.fn().mockRejectedValue(new Error('sem sessao')),
   },
+  // A lista importa `ehSemSessao` junto com o `api`: um mock de modulo
+  // substitui o modulo INTEIRO, entao o que nao for declarado aqui chega
+  // `undefined` e quebra na chamada.
+  ehSemSessao: vi.fn().mockReturnValue(true),
 }))
 
 import App from './App'

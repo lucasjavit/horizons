@@ -1,4 +1,5 @@
 import type { FiltrosDto } from './job.dto';
+import { LIMITES_COM_SESSAO, type LimitesDaBusca } from './limites-anonimos';
 
 /**
  * A traducao dos nossos filtros para a consulta do freehire.
@@ -137,7 +138,19 @@ const EXCLUSOES: Array<[keyof FiltrosDto, string]> = [
  * devolveu 1.358.310). Por isso todo nome aqui saiu do `openapi.yaml` deles, e
  * quem consome confere `meta.ignored_params`.
  */
-export function paraConsultaFreehire(f: FiltrosDto): string {
+export function paraConsultaFreehire(
+  f: FiltrosDto,
+  /**
+   * O que quem pediu pode alcancar (JOB-47).
+   *
+   * Default = sessao, e o default importa: as duas chamadas que ja existiam
+   * (o motor e as facetas) continuam identicas sem tocar em nada, e quem
+   * quiser restringir precisa dizer. O contrario — default restrito — faria
+   * um chamador esquecido entregar menos vaga a quem entrou, que e um bug
+   * silencioso de produto.
+   */
+  limites: LimitesDaBusca = LIMITES_COM_SESSAO,
+): string {
   const p = new URLSearchParams();
 
   // Cargo e palavra-chave no mesmo `q`, que e full-text.
@@ -195,6 +208,39 @@ export function paraConsultaFreehire(f: FiltrosDto): string {
   if (f.currency && !f.currencies?.length) p.set('salary_currency', f.currency);
   if (typeof f.posted_within_days === 'number') {
     p.set('posted_within_days', String(f.posted_within_days));
+  }
+
+  // **O corte de idade do anonimo (JOB-47), e e aqui que ele vira consulta.**
+  //
+  // A API nao tem "mais velha que N dias" — medido, e documentado em
+  // `limites-anonimos.ts`. O que ela tem e uma janela de novidade e uma
+  // ordenacao, e a combinacao dos dois entrega a ponta velha do catalogo:
+  // `posted_within_days=90` recorta os ultimos 3 meses, e
+  // `sort=posted_at&order=asc` traz os mais VELHOS desses 3 meses primeiro.
+  // As 14+ dias saem no topo; as de ontem ficam no fim, onde o teto de 300 da
+  // sessao nunca chega.
+  //
+  // **O corte final e do `peneirar`, no motor.** Isto aqui e o que faz o
+  // volume chegar certo — sem o `asc`, a primeira pagina do anonimo era
+  // ZERO de 60 (medido), porque o padrao da API e o mais novo primeiro.
+  if (limites.idadeMinimaEmDias !== null && limites.janelaMaximaEmDias !== null) {
+    // **Vence a janela mais ESTREITA das duas**, quando a pessoa tambem pediu
+    // recencia. Um `set` cru deixaria o anonimo que pediu "ultimos 7 dias"
+    // receber 90 dias — mais do que ele pediu, e justamente a faixa que o
+    // filtro dele excluiu. Com o `min`, o pedido dela continua valendo; a
+    // lista fica vazia, que e a resposta honesta para "vaga de 7 dias, mas
+    // so as de 14+".
+    const pedido = f.posted_within_days;
+    const janela =
+      typeof pedido === 'number'
+        ? Math.min(pedido, limites.janelaMaximaEmDias)
+        : limites.janelaMaximaEmDias;
+    p.set('posted_within_days', String(janela));
+    // Os nomes saem do `openapi.yaml` deles, e o `ignored_params` denuncia se
+    // mudarem — e e por isso que o `sort` vai com o `order` explicito: o
+    // default do `order` e `desc`, que aqui seria o oposto do que se quer.
+    p.set('sort', 'posted_at');
+    p.set('order', 'asc');
   }
   if (typeof f.experience_years_min === 'number') {
     p.set('experience_years_min', String(f.experience_years_min));

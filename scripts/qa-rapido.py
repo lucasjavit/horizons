@@ -228,6 +228,96 @@ else:
     ok(obtido == 401 or sem_login,
        f"token invalido em rota opcional responde 401 (deu {obtido})")
 
+    # ------------------------------------------------------------------
+    # JOB-47 — a busca funciona sem login, e o anonimo nao alcanca o pago.
+    #
+    # Pela PORTA, e nao por metadado: o `busca-anonima.e2e.spec.ts` prova a
+    # mesma coisa com a aplicacao montada em teste, e aqui se confere o
+    # servidor que esta NO AR — que e onde um decorador revertido num deploy
+    # apareceria.
+    # ------------------------------------------------------------------
+    def post_json(rota: str, corpo: dict, tok: str | None = None):
+        """Faz o POST e devolve (status, texto). Texto vazio se nao houver."""
+        cabecalhos = {"Content-Type": "application/json"}
+        if tok:
+            cabecalhos["Authorization"] = f"Bearer {tok}"
+        req = urllib.request.Request(
+            API + rota,
+            data=json.dumps(corpo).encode(),
+            headers=cabecalhos,
+            method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=90) as resp:
+                return resp.status, resp.read().decode("utf-8", "replace")
+        except urllib.error.HTTPError as e:
+            return e.code, e.read().decode("utf-8", "replace")
+        except (urllib.error.URLError, TimeoutError) as e:
+            return str(e), ""
+
+    # 1. Sem token nenhum, a busca ATENDE. 401 aqui e o card desfeito.
+    status, corpo = post_json("/jobs/search", {"job_titles": ["Backend Engineer"]})
+    ok(status == 201,
+       f"busca anonima responde 201 (deu {status})")
+
+    # 2. E o que ela devolve nao tem vaga com menos de 14 dias.
+    #
+    # Le o stream SSE ja completo (o urlopen esperou o fim) e olha o
+    # `postedAt` de cada vaga. **Vaga sem data conta como violacao**: o
+    # servidor nao deve entregar ao anonimo o que nao sabe datar.
+    if status == 201:
+        import datetime as _dt
+        agora = _dt.datetime.now(_dt.timezone.utc)
+        novas, total_vagas, sem_data = [], 0, 0
+        for bloco in corpo.split("\n\n"):
+            linha = bloco.strip()
+            if not linha.startswith("data: "):
+                continue
+            try:
+                ev = json.loads(linha[6:])
+            except json.JSONDecodeError:
+                continue
+            if ev.get("tipo") != "vaga":
+                continue
+            total_vagas += 1
+            posted = (ev.get("vaga") or {}).get("postedAt")
+            if not posted:
+                sem_data += 1
+                continue
+            try:
+                quando = _dt.datetime.fromisoformat(posted.replace("Z", "+00:00"))
+            except ValueError:
+                sem_data += 1
+                continue
+            if (agora - quando).days < 14:
+                novas.append(posted)
+
+        if total_vagas == 0:
+            # Nao e falha: o filtro pode nao ter casado nada na faixa
+            # envelhecida, e o freehire e servico de terceiro. Mas precisa
+            # APARECER — uma checagem que se pula em silencio e o defeito que
+            # o QA-03 documenta.
+            print("  aviso   busca anonima devolveu 0 vagas "
+                  "(filtro apertado ou freehire fora do ar) — corte nao medido")
+        else:
+            ok(not novas,
+               f"anonimo recebe so vaga com 14+ dias "
+               f"({len(novas)} de {total_vagas} violaram: {novas[:2]})")
+            ok(sem_data == 0,
+               f"toda vaga do anonimo tem data ({sem_data} de {total_vagas} sem)")
+
+    # 3. Token invalido na BUSCA continua dando 401 — a armadilha do card.
+    #    Com `@Public()` isto responderia 201, e sessao expirada passaria a
+    #    parecer busca com metade do acervo.
+    status_podre, _ = post_json(
+        "/jobs/search", {"job_titles": ["Backend"]}, tok="abc.def.ghi")
+    ok(status_podre == 401 or sem_login,
+       f"token invalido na busca responde 401 (deu {status_podre})")
+
+    # 4. Salvar continua exigindo sessao.
+    status_salvar, _ = post_json("/jobs/saved", {"url": "https://exemplo.com/vaga"})
+    ok(status_salvar == esperado,
+       f"salvar vaga sem token responde {esperado} (deu {status_salvar})")
+
     # PLT-12: /config/* e so do admin, e a rota de produto nao vaza configuracao.
     #
     # Este bloco existe porque o defeito que ele cobre nasceu de um comentario

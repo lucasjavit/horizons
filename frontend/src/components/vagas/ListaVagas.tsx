@@ -21,6 +21,11 @@ import { POR_PAGINA, Paginacao } from './Paginacao'
 import type { MotivoDoFim } from './Paginacao'
 import { api, ehSemSessao } from '../../lib/api'
 import { buscarVagas } from '../../lib/busca-vagas'
+import { BotaoGoogle } from '../BotaoGoogle'
+// O `useSessao` voltou com o JOB-47: a lista agora atende quem não entrou, e
+// precisa saber disso para esconder a estrela e mostrar o convite no fim.
+// (Ele tinha saído em 27/08, quando o único uso virou obsoleto.)
+import { useSessao } from '../../lib/sessao'
 import type { CvLido, Historico, Vaga } from '../../types/api'
 
 type Estado = 'ocioso' | 'buscando' | 'pronto'
@@ -130,6 +135,18 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
   /** O histórico. `null` = desligado ou ainda carregando — sem selo, sem ×. */
   const [historico, setHistorico] = useState<Historico | null>(null)
   const [recorte, setRecorte] = useState<Recorte>('todas')
+  /**
+   * Quem está olhando, ou `null` (JOB-47).
+   *
+   * A lista inteira funciona sem sessão desde este card. O que muda sem ela é
+   * o que depende de conta: a estrela (que já sumia sozinha, porque
+   * `listarSalvas` dá 401 e o `catch` deixa `salvas` em `null`) e o convite
+   * no fim da lista.
+   */
+  // **`usuario` e não `sessao`**: `sessao` já é o id do cache de paginação
+  // (JOB-45) neste mesmo componente, e reusar o nome faria duas coisas
+  // diferentes se chamarem igual a dez linhas de distância.
+  const usuario = useSessao()
   /**
    * A última vaga descartada, para o desfazer imediato.
    *
@@ -984,6 +1001,21 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
               }}
             />
           )}
+
+          {/*
+            **O convite do anônimo, no fim da lista** (JOB-47, critério 4).
+
+            Aqui e não num banner no topo, e a razão está no card: *"ao chegar
+            ao fim da lista anônima, não num banner permanente que vira
+            ruído"*. Quem rolou até aqui já viu o produto funcionar — é o
+            momento em que "o que mais eu ganho entrando?" é uma pergunta de
+            verdade, e não uma interrupção antes do valor.
+
+            Só aparece com vaga na tela (`filtradas.length > 0`): num resultado
+            vazio ele viraria consolo para quem não achou nada, e a tela já tem
+            a frase certa para esse caso logo abaixo.
+          */}
+          {!usuario && filtradas.length > 0 && <ConviteNoFimDaLista />}
         </>
       )}
 
@@ -1051,5 +1083,46 @@ function IconeEstrela() {
     >
       <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.4l6.1-.9z" />
     </svg>
+  )
+}
+
+/**
+ * O convite que fecha a lista do anônimo (JOB-47).
+ *
+ * **Diz o que o cadastro acrescenta, e não que falta permissão.** A decisão de
+ * produto que ele comunica: o anônimo vê o acervo com 14 dias ou mais, e a
+ * vaga recém-publicada é de quem entra. O valor da conta é *chegar primeiro*,
+ * então é isso que o texto promete — não "acesso completo", que não diria nada.
+ *
+ * Fica no fim da lista de propósito (ver onde é montado): quem chegou até aqui
+ * já usou a busca, e o convite é a resposta a uma pergunta que a pessoa acabou
+ * de formular sozinha.
+ */
+function ConviteNoFimDaLista() {
+  // Entrar recarrega: o App guarda a sessão no contexto, e recarregar evita
+  // duplicar o estado de sessão em dois lugares. É o mesmo gesto do
+  // `ConviteParaVerSalvas` na `VagasPage`.
+  const aoEntrar = useCallback(() => {
+    window.location.reload()
+  }, [])
+
+  return (
+    <section
+      className="mt-8 rounded-xl border p-6"
+      style={{ borderColor: 'var(--border)', background: 'var(--surface-raised)' }}
+      aria-labelledby="convite-fim-titulo"
+    >
+      <h2 id="convite-fim-titulo" className="text-base font-semibold">
+        Seeing jobs from two weeks ago
+      </h2>
+      <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+        These results are jobs posted 14 days ago or more. Sign in to search the
+        newest postings as they land, save the ones worth keeping, and skip the
+        ones you have already seen.
+      </p>
+      <div className="mt-4">
+        <BotaoGoogle onEntrou={aoEntrar} tamanho="normal" />
+      </div>
+    </section>
   )
 }

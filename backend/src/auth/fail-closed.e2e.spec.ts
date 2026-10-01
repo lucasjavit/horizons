@@ -92,15 +92,33 @@ const PUBLICAS_ESPERADAS = [
  * faria sessao expirada parecer catalogo vazio e a pessoa acharia que o
  * produto nao tem nada a mostrar.
  *
- * **Sobrou UMA, e isso e novo** (PLT-13, 01/10). Eram cinco: as quatro de
- * `tracks` — a vitrine, quando o conteudo era o produto — e esta. Com as
- * trilhas removidas, so `jobs/facets` continua: filtrar e anonimo, e a
- * contagem do modal nao diz nada sobre ninguem.
+ * **Sao TRES desde o JOB-47 (01/10)**, e a historia da contagem conta a do
+ * produto: eram cinco antes do PLT-13 (quatro de `tracks`, a vitrine de quando
+ * o conteudo era o produto), caiu para uma com a remocao das trilhas, e voltou
+ * a tres quando a BUSCA passou a funcionar sem login — *"nao precisa de login
+ * para fazer buscas"*, stakeholder, 01/10.
  *
- * Uma lista de um item ainda e uma lista fechada, e o teste vale o mesmo: uma
- * rota nova que nascer `@SessaoOpcional()` por engano quebra aqui.
+ * - `POST /jobs/facets` — filtrar e anonimo; a contagem do modal nao diz nada
+ *   sobre ninguem.
+ * - `POST /jobs/search` — a busca em si. O anonimo alcanca so o motor gratuito
+ *   e so a vaga com 14+ dias; ver `jobs/limites-anonimos.ts`.
+ * - `POST /jobs/search/mais` — o "Load more" da mesma busca. Precisa ser
+ *   opcional pelo mesmo motivo: sem isto, o anonimo que buscou levaria 401 no
+ *   segundo clique.
+ *
+ * **Nenhuma das tres e `@Public()`, e e proposital.** As tres leem o token
+ * quando ele vem, entao sessao expirada da 401 em vez de virar anonimo — o que
+ * faria a busca de quem estava logado devolver a amostra de 14 dias e parecer
+ * que o acervo encolheu.
+ *
+ * Acrescentar uma linha aqui e uma decisao de produto: significa que a rota
+ * passa a responder a quem nao entrou.
  */
-const OPCIONAIS_ESPERADAS = ['POST /jobs/facets'].sort();
+const OPCIONAIS_ESPERADAS = [
+  'POST /jobs/facets',
+  'POST /jobs/search',
+  'POST /jobs/search/mais',
+].sort();
 
 /** Os verbos do Nest, que guarda o metodo como numero do enum `RequestMethod`. */
 const VERBOS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'ALL', 'OPTIONS', 'HEAD'];
@@ -213,9 +231,12 @@ describe('fail closed — nenhuma rota nasce aberta (camada 3)', () => {
     // passa sempre, e essa e a forma mais silenciosa de uma suite morrer.
     //
     // Medido em 01/10, depois do PLT-13: 59 rotas (eram 63 — as quatro de
-    // `tracks` sairam). O piso de 50 continua o mesmo de proposito: afrouxa-lo
-    // junto com a remocao transformaria um numero que protege num numero que
-    // acompanha, e ele deixaria de pegar a descoberta meio-quebrada.
+    // `tracks` sairam). O JOB-47 nao muda este numero: as duas rotas de busca
+    // ja existiam e so trocaram de decorador — 59 continua.
+    //
+    // O piso de 50 continua o mesmo de proposito: afrouxa-lo junto com a
+    // remocao transformaria um numero que protege num numero que acompanha, e
+    // ele deixaria de pegar a descoberta meio-quebrada.
     expect(rotas.length).toBeGreaterThan(50);
     // E toda rota tem verbo reconhecido: um numero cru aqui seria descoberta
     // funcionando pela metade.
@@ -244,6 +265,26 @@ describe('fail closed — nenhuma rota nasce aberta (camada 3)', () => {
         .sort();
 
       expect(opcionais).toEqual(OPCIONAIS_ESPERADAS);
+    });
+
+    /**
+     * A busca e opcional, e **nao publica** (JOB-47).
+     *
+     * Nominalmente, e nao por contagem: um teste que so contasse passaria se
+     * alguem trocasse uma rota opcional por outra. O que este card decidiu foi
+     * sobre ESTAS duas rotas.
+     */
+    it('as rotas de busca sao opcionais, e nenhuma delas e publica', () => {
+      const porCaminho = new Map(rotas.map((r) => [`${r.verbo} ${r.caminho}`, r]));
+
+      for (const caminho of ['POST /jobs/search', 'POST /jobs/search/mais']) {
+        const r = porCaminho.get(caminho);
+        expect(r).toBeDefined();
+        expect(r?.opcional).toBe(true);
+        // A armadilha numero um do card: com `@Public()` o guard retorna antes
+        // de verificar o token, e sessao expirada viraria anonimo em silencio.
+        expect(r?.publica).toBe(false);
+      }
     });
 
     it('publica e opcional sao exclusivas — marcar as duas e engano', () => {
@@ -277,8 +318,13 @@ describe('fail closed — nenhuma rota nasce aberta (camada 3)', () => {
      */
     it('TODA rota protegida responde 401 ao anonimo', async () => {
       const protegidas = rotas.filter((r) => !r.publica && !r.opcional);
-      // 51 em 01/10 (eram 55 antes do PLT-13). Piso inalterado, pelo mesmo
-      // motivo do guard de descoberta acima.
+      // 49 em 01/10, depois do JOB-47: eram 51 (e 55 antes do PLT-13), e as
+      // duas que sairam da conta sao `POST /jobs/search` e
+      // `POST /jobs/search/mais`, que viraram `@SessaoOpcional()`. Elas nao
+      // ficaram ABERTAS — mudaram de lista, e o bloco de opcionais acima as
+      // cobre nominalmente.
+      //
+      // Piso inalterado em 40, pelo mesmo motivo do guard de descoberta acima.
       expect(protegidas.length).toBeGreaterThan(40);
 
       const vazaram: string[] = [];

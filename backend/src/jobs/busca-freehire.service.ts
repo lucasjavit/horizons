@@ -6,6 +6,11 @@ import {
   paraConsultaFreehire,
 } from './freehire-consulta';
 import type { FiltrosDto, VagaDto } from './job.dto';
+import {
+  LIMITES_COM_SESSAO,
+  velhaOBastante,
+  type LimitesDaBusca,
+} from './limites-anonimos';
 
 /**
  * A busca no agregador: a API publica do freehire.me.
@@ -140,8 +145,17 @@ export class BuscaFreehireService {
    * descartadas para descarta-las outra vez, e a paginacao nunca sairia do
    * lugar.
    */
-  async buscarPagina(filtros: FiltrosDto, offset: number): Promise<PaginaFreehire> {
-    const params = this.montar(filtros, offset);
+  async buscarPagina(
+    filtros: FiltrosDto,
+    offset: number,
+    /**
+     * O que quem pediu pode alcancar (JOB-47). Default = sessao, entao os
+     * chamadores que nao paginam (busca agendada, alerta de busca salva)
+     * continuam recebendo o acervo inteiro sem saber que isto existe.
+     */
+    limites: LimitesDaBusca = LIMITES_COM_SESSAO,
+  ): Promise<PaginaFreehire> {
+    const params = this.montar(filtros, offset, limites);
 
     // `/agent/jobs/search` e nao `/jobs/search`: o primeiro hidrata a
     // descricao INTEIRA de cada resultado, o segundo devolve o preview
@@ -161,7 +175,7 @@ export class BuscaFreehireService {
 
     const vagas = linhas.map((l) => this.converter(l)).filter((v): v is VagaDto => v !== null);
     return {
-      vagas: semRepetirUrl(this.peneirar(vagas, filtros)).map(comElegibilidade),
+      vagas: semRepetirUrl(this.peneirar(vagas, filtros, limites)).map(comElegibilidade),
       lidasDaApi: linhas.length,
       totalNoFiltro: total,
     };
@@ -175,8 +189,8 @@ export class BuscaFreehireService {
    * divergissem num parametro, o botao `Show 699 jobs` prometeria um numero
    * que esta lista nao entrega, e nenhum dos dois pareceria errado sozinho.
    */
-  private montar(f: FiltrosDto, offset: number): string {
-    const p = new URLSearchParams(paraConsultaFreehire(f));
+  private montar(f: FiltrosDto, offset: number, limites: LimitesDaBusca): string {
+    const p = new URLSearchParams(paraConsultaFreehire(f, limites));
     p.set('limit', String(LIMITE));
     // **O `offset` vai SEMPRE, inclusive zero.**
     //
@@ -375,7 +389,11 @@ export class BuscaFreehireService {
    * `exclude_keywords` e `locations` nao tem equivalente na consulta deles, e
    * mandar um nome parecido cairia na armadilha do `ignored_params`.
    */
-  private peneirar(vagas: VagaDto[], f: FiltrosDto): VagaDto[] {
+  private peneirar(
+    vagas: VagaDto[],
+    f: FiltrosDto,
+    limites: LimitesDaBusca = LIMITES_COM_SESSAO,
+  ): VagaDto[] {
     const excluir = (f.exclude_keywords ?? [])
       .map((k) => k.trim().toLowerCase())
       .filter((k) => k.length > 0);
@@ -383,7 +401,22 @@ export class BuscaFreehireService {
       .map((l) => l.trim().toLowerCase())
       .filter((l) => l.length > 0);
 
+    const idadeMinima = limites.idadeMinimaEmDias;
+    // A idade de referencia e UMA para o lote inteiro: um `new Date()` por
+    // vaga faria duas linhas da mesma resposta serem julgadas por relogios
+    // diferentes, e a vaga exatamente na fronteira entraria ou nao por
+    // milissegundo.
+    const agora = new Date();
+
     return vagas.filter((v) => {
+      // **O corte de idade vem PRIMEIRO, e e o unico que nao e filtro de
+      // busca: e permissao** (JOB-47). A API ja recortou a janela, mas uma
+      // fonte que reescreve `posted_at` a cada crawl pode empurrar vaga nova
+      // para dentro dela — a spec deles avisa. Esta linha e o que garante que
+      // o anonimo nunca ve a vaga de hoje, venha o que vier da API.
+      if (idadeMinima !== null && !velhaOBastante(v.postedAt, idadeMinima, agora)) {
+        return false;
+      }
       if (excluir.length > 0) {
         const texto = `${v.title} ${v.company} ${v.skills.join(' ')}`.toLowerCase();
         if (excluir.some((k) => texto.includes(k))) return false;

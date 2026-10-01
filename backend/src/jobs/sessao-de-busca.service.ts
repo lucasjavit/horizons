@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { chaveDoCache } from './cache-de-busca';
 import type { FiltrosDto, VagaDto } from './job.dto';
+import type { LimitesDaBusca } from './limites-anonimos';
 
 /**
  * O cache de 10 minutos que sustenta a paginacao sob demanda (JOB-45).
@@ -61,6 +62,16 @@ interface Sessao {
   chave: string;
   motor: MotorDaSessao;
   filtros: FiltrosDto;
+  /**
+   * O que quem abriu a sessao podia alcancar (JOB-47).
+   *
+   * **Guardado aqui e nao reenviado pela tela**, pela mesma razao que os
+   * filtros: o corpo de `POST /jobs/search/mais` manda so o id. Se o limite
+   * viajasse na requisicao, um cliente anonimo mandaria o do usuario logado e
+   * receberia o acervo inteiro na pagina 2 — a restricao valeria so na
+   * primeira, que e o mesmo que nao valer.
+   */
+  limites: LimitesDaBusca;
   /** Onde a proxima chamada a API comeca. */
   offset: number;
   /**
@@ -152,6 +163,8 @@ export class SessaoDeBuscaService {
      * log de depuracao acreditaria nela.
      */
     paginacaoAtiva: boolean,
+    /** O que quem pediu pode alcancar (JOB-47). Herdado pelas paginas 2+. */
+    limites: LimitesDaBusca,
   ): SessaoAberta {
     this.limpar();
 
@@ -167,6 +180,7 @@ export class SessaoDeBuscaService {
       chave: chaveDoCache(filtros),
       motor,
       filtros,
+      limites,
       offset: lidasDaApi,
       entregues: new Set(vagas.map((v) => v.url)),
       quantas: vagas.length,
@@ -184,6 +198,18 @@ export class SessaoDeBuscaService {
   /** Os filtros com que a sessao foi aberta, ou `null` se ela venceu. */
   filtrosDe(id: string): FiltrosDto | null {
     return this.viva(id)?.filtros ?? null;
+  }
+
+  /**
+   * Os limites com que a sessao foi aberta, ou `null` se ela venceu (JOB-47).
+   *
+   * Separado de `filtrosDe` porque sao coisas diferentes: filtro e o que a
+   * pessoa pediu, limite e o que ela pode receber. Juntar os dois num objeto
+   * convidaria alguem a tratar o limite como mais um filtro — e filtro, ao
+   * contrario de limite, a tela pode mudar.
+   */
+  limitesDe(id: string): LimitesDaBusca | null {
+    return this.viva(id)?.limites ?? null;
   }
 
   /**

@@ -1,7 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { SessaoOpcional } from '../auth/current-user';
+import { CurrentUser, SessaoOpcional } from '../auth/current-user';
+import type { AuthUser } from '../auth/current-user';
 import { FacetasService, type FacetasDto } from './facetas.service';
 import { FiltrosDto } from './job.dto';
+import { limitesDe } from './limites-anonimos';
 
 /**
  * As contagens do modal de filtros (JOB-41).
@@ -22,9 +24,19 @@ import { FiltrosDto } from './job.dto';
 export class FacetasController {
   constructor(private readonly facetas: FacetasService) {}
 
+  /**
+   * **A contagem segue os limites de quem pergunta** (JOB-47).
+   *
+   * Sem isto o modal do anonimo prometeria o catalogo inteiro e a lista
+   * entregaria a faixa de 14+ dias — o botao `Show N jobs` diria um numero que
+   * a busca nao alcanca. Ver `limites-anonimos.ts`.
+   */
   @Post()
   @SessaoOpcional()
-  obter(@Body() filtros: FiltrosDto): Promise<FacetasDto> {
-    return this.facetas.obter(filtros);
+  obter(
+    @Body() filtros: FiltrosDto,
+    @CurrentUser() usuario: AuthUser | null,
+  ): Promise<FacetasDto> {
+    return this.facetas.obter(filtros, limitesDe(usuario));
   }
 }

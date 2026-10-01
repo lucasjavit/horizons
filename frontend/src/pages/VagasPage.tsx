@@ -39,20 +39,30 @@ export function VagasPage({ salvas = false }: { salvas?: boolean } = {}) {
       */}
       <h1 className="sr-only">Jobs</h1>
 
-      {/* A rota exige sessão porque as vagas são de alguém: o backend não tem
-          @Public() nem @SessaoOpcional() aqui. Mostrar a lista para quem não
-          entrou daria 401 e um erro no lugar de uma explicação. */}
-      {sessao ? (
-        <ListaVagas verSalvas={salvas} />
-      ) : (
-        <ConviteParaEntrar />
-      )}
+      {/*
+        **A busca aparece para todo mundo desde o JOB-47** (01/10/2026):
+        *"não precisa de login para fazer buscas"*. `POST /jobs/search` é
+        `@SessaoOpcional()`, e o anônimo recebe o motor gratuito e a vaga com
+        14+ dias — ver `backend/src/jobs/limites-anonimos.ts`.
+
+        **A aba "Saved" continua exigindo sessão**, e é a única exceção aqui: a
+        lista de salvas é de alguém por definição, e `GET /jobs/saved` é rota
+        protegida. Mostrá-la ao anônimo daria 401 e um erro no lugar de uma
+        explicação — que é exatamente o que o convite abaixo evita.
+      */}
+      {salvas && !sessao ? <ConviteParaVerSalvas /> : <ListaVagas verSalvas={salvas} />}
     </main>
   )
 }
 
-/** Sem sessão não há lista — há um convite que explica o porquê. */
-function ConviteParaEntrar() {
+/**
+ * A aba "Saved" sem sessão: um convite que explica o que se ganha.
+ *
+ * **"Sign in to save jobs", e não "Unauthorized"** — é o critério 6 do JOB-47.
+ * O texto diz o que a conta acrescenta, porque é essa a pergunta de quem
+ * chegou aqui sem ter entrado.
+ */
+function ConviteParaVerSalvas() {
   // O App guarda a sessão; entrar aqui recarrega para o contexto reabrir com o
   // usuário. É uma tela só, e recarregar evita duplicar o estado de sessão.
   const aoEntrar = useCallback((_u: AuthUser) => {
@@ -66,11 +76,11 @@ function ConviteParaEntrar() {
       aria-labelledby="entrar-titulo"
     >
       <h2 id="entrar-titulo" className="text-lg font-semibold">
-        Sign in to see your jobs
+        Sign in to save jobs
       </h2>
       <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-        The jobs we find are yours: they are stored in your account, and the
-        search runs with your profile. Sign in with Google to see them.
+        Saved jobs live in your account, so they are here on your next visit and
+        on your other devices. Searching needs no account — only saving does.
       </p>
       <div className="mt-4">
         <BotaoGoogle onEntrou={aoEntrar} tamanho="normal" />

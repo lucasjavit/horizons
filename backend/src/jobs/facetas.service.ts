@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { FiltrosDto } from './job.dto';
 import { paraConsultaFreehire, BASE_FREEHIRE, UA_FREEHIRE } from './freehire-consulta';
+import { LIMITES_COM_SESSAO, type LimitesDaBusca } from './limites-anonimos';
 
 /**
  * As contagens que alimentam o modal de filtros (JOB-41).
@@ -74,8 +75,21 @@ const TETO_POR_FACETA = 40;
 export class FacetasService {
   private readonly log = new Logger(FacetasService.name);
 
-  async obter(filtros: FiltrosDto): Promise<FacetasDto> {
-    const params = paraConsultaFreehire(filtros);
+  async obter(
+    filtros: FiltrosDto,
+    /**
+     * O que quem pediu pode alcancar (JOB-47).
+     *
+     * **A contagem tem de usar os MESMOS limites da lista.** Sem isto, o
+     * anonimo veria `Show 58.782 jobs` no botao do modal e receberia a faixa
+     * envelhecida na lista — e `countries.br 16.780` ao lado de um filtro que
+     * entrega uma fracao disso. E exatamente a classe de defeito que o JOB-45
+     * corrigiu na paginacao: um numero na tela que promete o que a lista nao
+     * entrega, plausivel demais para alguem notar que esta errado.
+     */
+    limites: LimitesDaBusca = LIMITES_COM_SESSAO,
+  ): Promise<FacetasDto> {
+    const params = paraConsultaFreehire(filtros, limites);
 
     // **O que a tela pediu, no log.**
     //
