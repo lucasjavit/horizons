@@ -747,7 +747,7 @@
     {
       "id": "JOB-42",
       "titulo": "A busca salva dispara alerta",
-      "estado": "aberto (26/08/2026)",
+      "estado": "aberto — **adiado por decisao do stakeholder (01/10/2026)**: \"enviar o email vai ficar mais para frente\"",
       "coluna": "backlog",
       "tamanho": "M",
       "porque": "O [JOB-41](JOB-41-modal-de-filtros-avancados.md) entregou as buscas salvas: dá para montar um filtro no modal, nomeá-lo e guardá-lo. O modelo SavedSearch já tem porEmail, porTelegram e avisadoEm, e a tela liga e desliga ",
