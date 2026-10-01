@@ -1,6 +1,13 @@
 # JOB-27 · Os três níveis de busca
 
-**Estado:** esperando decisão
+**Estado:** **duplicata do [JOB-18](JOB-18-niveis-de-busca.md)** — fechado em
+01/10/2026, sem perda de conteudo
+
+> Os dois cards nascem da MESMA frase do stakeholder (*"busca ruim gratuita /
+> média / boost que seria uma power"*, 18/08). O JOB-18 e o que ficou, porque
+> tem a arquitetura escrita em `docs/design/` e as tres decisoes pendentes
+> nomeadas. Este fica como registro — o conteudo abaixo continua valendo como
+> analise, e o "eixo que NAO funciona" e a parte que vale ler.
 **Tamanho:** G
 
 ## O pedido

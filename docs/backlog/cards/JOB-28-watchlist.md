@@ -1,6 +1,11 @@
 # JOB-28 · Medir a watchlist antes de decidir
 
-**Estado:** esperando medição
+**Estado:** esperando medicao — **e e a medicao que destrava o
+[JOB-18](JOB-18-niveis-de-busca.md)** (ligado em 01/10/2026)
+
+> O JOB-18 tem tres decisoes travadas, e a segunda e *"O Boost se sustenta?"* —
+> que e exatamente o que este card mede. Nenhuma das duas sai do lugar sem
+> esta medicao.
 **Tamanho:** P (a medição) — ? (o resto)
 
 ## Por quê

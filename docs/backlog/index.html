@@ -153,7 +153,7 @@ body {
 
 <header class="topo">
   <h1><span>Horizons</span> · quadro</h1>
-  <p class="resumo">84 cards · 67 feitos</p>
+  <p class="resumo">89 cards · 67 feitos</p>
 </header>
 
   <aside class="sprint">
@@ -163,7 +163,7 @@ body {
   </aside>
 <main class="quadro">
     <section class="coluna col-backlog" aria-labelledby="col-backlog">
-      <h2 id="col-backlog">Backlog <span class="n">16</span></h2>
+      <h2 id="col-backlog">Backlog <span class="n">21</span></h2>
       <ul>
       <li class="cartao">
         <a href="cards/APP-03-revisar-motion-effects.md">
@@ -315,6 +315,61 @@ body {
           </div>
           <h3>Host multiempresa colapsa todas as empresas numa linha</h3>
           <p class="porque"></p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-49-rastreador-de-vagas-arquitetura.md">
+          <div class="cabeca">
+            <span class="ident">JOB-49</span>
+            <span class="tam" title="Tamanho">G</span>
+          </div>
+          <h3>Rastreador de vagas: a arquitetura</h3>
+          <p class="porque">Stakeholder, 01/10: *&quot;dá para fazer o mesmo que o freehire faz, para não ficarmos dependentes dele no futuro?&quot;*</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-50-ingestao-de-vagas-rastreadas.md">
+          <div class="cabeca">
+            <span class="ident">JOB-50</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>O Horizons recebe vagas rastreadas</h3>
+          <p class="porque">O rastreador envia; alguém precisa receber. Este card é o lado do Horizons do contrato, e vem primeiro porque dá para construir e testar sem o rastreador existir: um curl</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-51-rastreador-rastreio-e-fila-de-envio.md">
+          <div class="cabeca">
+            <span class="ident">JOB-51</span>
+            <span class="tam" title="Tamanho">G</span>
+          </div>
+          <h3>O rastreador: rastreio por agenda e fila de envio</h3>
+          <p class="porque">É a aplicação nova: rastreia os ATS antes da busca, em vez de durante. Ver o pai para a decisão e o desenho.</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-52-busca-le-da-copia-local.md">
+          <div class="cabeca">
+            <span class="ident">JOB-52</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>A busca lê da cópia local</h3>
+          <p class="porque">Com a tabela cheia, a busca pode parar de sair de casa. É aqui que os dois buracos do pai fecham: o tempo (128s do ATS ao vivo) e o anônimo com 0 vaga sem o freehire.</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-53-colheita-muda-para-o-rastreador.md">
+          <div class="cabeca">
+            <span class="ident">JOB-53</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>A colheita muda para o rastreador</h3>
+          <p class="porque">Hoje quem aprende empresa nova é o Horizons: a captura do JOB-37 anota as URLs de toda busca (anotar() no finally de busca.service.ts), e o cron das 3h verifica os slugs.</p>
           
         </a>
       </li>
