@@ -98,10 +98,20 @@ export function todayIso(): string {
   return `${agora.getFullYear()}-${mes}-${dia}`
 }
 
+/**
+ * Numero que a invoice ganha ao nascer: `INV-AAAA-MM`, do mes corrente.
+ *
+ * E so o valor inicial de um campo de texto comum — a pessoa troca pelo que
+ * quiser. Fuso local, pelo mesmo motivo do `todayIso()`.
+ */
+export function defaultInvoiceNumber(): string {
+  return `INV-${todayIso().slice(0, 7)}`
+}
+
 export function emptyDraft(): InvoiceDraft {
   return {
     version: DRAFT_VERSION,
-    invoiceNumber: '',
+    invoiceNumber: defaultInvoiceNumber(),
     issueDate: todayIso(),
     dueDate: '',
     currency: 'USD',

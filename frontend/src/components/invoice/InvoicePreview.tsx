@@ -59,7 +59,16 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
       // Sem isto, quem usa leitor de tela ouviria tudo duas vezes.
       aria-hidden
       className="mx-auto w-full max-w-[38rem] rounded-lg p-8 shadow-lg sm:p-10"
-      style={{ background: '#ffffff', color: TINTA, fontSize: '0.8rem' }}
+      // `overflowWrap: anywhere` e o que o PDF faz com palavra sem espaco
+      // (INV-18): e-mail, IBAN ou link maior que a coluna e partido no meio.
+      // Sem isto o e-mail do FROM invadia o BILL TO e um link de pagamento
+      // esticava a tabela para fora da folha — medido, 2246px numa folha de 616.
+      style={{
+        background: '#ffffff',
+        color: TINTA,
+        fontSize: '0.8rem',
+        overflowWrap: 'anywhere',
+      }}
     >
       <div style={{ height: 3, background: VERDE, marginBottom: '1.75rem' }} />
 
@@ -75,20 +84,25 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
           />
         ) : (
           <h3
-            className="text-2xl font-bold tracking-tight"
+            // Nao encolhe nem quebra: com um `Invoice #` comprido ao lado, a
+            // palavra virava "INVOI / CE".
+            className="shrink-0 whitespace-nowrap text-2xl font-bold tracking-tight"
             style={{ color: VERDE, margin: 0 }}
           >
             INVOICE
           </h3>
         )}
-        <dl className="text-right" style={{ margin: 0 }}>
+        <dl className="min-w-0 text-right" style={{ margin: 0 }}>
           {[
             ['Invoice #', draft.invoiceNumber.trim() || '—'],
             ['Issued', formatarData(draft.issueDate)],
             ['Due', formatarData(draft.dueDate)],
           ].map(([rotulo, valor]) => (
             <div key={rotulo} className="flex justify-end gap-3">
-              <dt style={{ color: APAGADO }}>{rotulo}</dt>
+              {/* O rotulo fica inteiro; quem quebra e o valor, como no PDF. */}
+              <dt className="whitespace-nowrap" style={{ color: APAGADO }}>
+                {rotulo}
+              </dt>
               <dd className="font-semibold tabular-nums" style={{ margin: 0 }}>
                 {valor}
               </dd>
@@ -155,7 +169,12 @@ export function InvoicePreview({ draft }: { draft: InvoiceDraft }) {
                   >
                     {c.label.trim() || '—'}
                   </td>
-                  <td className="px-2.5 py-1 text-right font-medium">{c.value}</td>
+                  <td
+                    className="px-2.5 py-1 text-right font-medium"
+                    style={{ verticalAlign: 'top' }}
+                  >
+                    {c.value}
+                  </td>
                 </tr>
               ))}
             </tbody>

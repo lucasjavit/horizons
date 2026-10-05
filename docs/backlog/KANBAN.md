@@ -49,7 +49,10 @@ coisas diferentes dentro dele:
 
 ## Bugs
 
-_(vazio — os dois achados pela suíte foram corrigidos em 01/09)_
+| Card | Título | Tam. | Nota |
+| --- | --- | --- | --- |
+| [INV-19](cards/INV-19-total-sai-da-folha.md) | **O TOTAL DUE sai da folha** — com 16 itens a caixa do total é desenhada em y=302mm numa folha de 297, e o PDF sai sem total; com 14 e 15 ela cobre o rodapé | P | achado medindo o INV-18; `it.fails` em `pdf.spec.ts` |
+| [INV-20](cards/INV-20-rolagem-horizontal-no-celular.md) | **`/invoice` rola de lado no celular** — a 390px a página mede 447px com endereço longo e 704px com `Invoice #` e link compridos | P | achado medindo o INV-18; causa não isolada |
 
 **A raia dos defeitos encontrados por teste** (01/09/2026). Bug achado vira
 card aqui, com o teste que o pegou — e o teste entra no repositório mesmo antes
@@ -86,6 +89,8 @@ registrou, e os dois têm a mesma causa: **rastreamos na hora da busca**.
 
 | Card | Título | Quando |
 | --- | --- | --- |
+| [INV-21](cards/INV-21-numero-padrao-da-invoice.md) | **O número da invoice nasce `INV-ANO-MÊS`** — o campo obrigatório deixa de nascer vazio; segue editável, e rascunho guardado em branco também ganha o padrão | 05/10/2026 |
+| [INV-18](cards/INV-18-campo-longo-atropela-o-pdf.md) | **Campo longo atropelava o PDF** — relatado em produção: endereço comprido num payment field saía pela margem esquerda. Rótulo e valor agora têm coluna e **quebram** (a zebra cresce junto); `Invoice #` longo recua a coluna e, no limite, empurra o resto; rodapé corta com reticências; payment details mais alto que a folha troca de página. Teste gera o PDF de verdade e confere posição: **11 falhando → 38 passando**. A prévia tinha o mesmo defeito com palavra sem espaço, corrigida junto. Dois defeitos antigos achados no caminho viraram [INV-19](cards/INV-19-total-sai-da-folha.md) e [INV-20](cards/INV-20-rolagem-horizontal-no-celular.md) | 05/10/2026 |
 | [JOB-27](cards/JOB-27-tres-niveis.md) | **Os três níveis** — fechado como **duplicata do [JOB-18](cards/JOB-18-niveis-de-busca.md)**: os dois nascem da mesma frase do stakeholder (*"busca ruim gratuita / média / boost"*, 18/08). O JOB-18 ficou porque tem a arquitetura em `docs/design/` e as três decisões nomeadas. O conteúdo do JOB-27 continua valendo como análise — a parte do "eixo que não funciona" é a que vale ler | 01/10/2026 |
 | [JOB-23](cards/JOB-23-filtro-moeda-forte.md) | **Filtro "paga em moeda forte"** — **descartado** (21/08): resolvido por outros meios, e estava fora do quadro desde então | 21/08/2026 |
 | [JOB-29](cards/JOB-29-lado-b-empresas.md) | **Lado B — a empresa contrata do catálogo** — **fora de escopo por ora**; o lado que vale hoje é o do candidato. Mora no [JOB-19](cards/JOB-19-produto-dois-lados.md), que decidiu os dois lados em 18/08 | 01/10/2026 |

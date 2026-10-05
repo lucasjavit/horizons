@@ -21,6 +21,54 @@ const BRANCO: [number, number, number] = [255, 255, 255]
 
 const MARGEM = 15
 
+/** Distancia entre linhas de um mesmo campo quebrado (9pt). E o passo que
+ *  FROM / BILL TO ja usavam. */
+const PASSO = 4.6
+
+/**
+ * Ultima linha de base em que ainda se escreve conteudo, contada do fim da
+ * folha. O fio do rodape fica a 16mm do fim; os 20 deixam a faixa da zebra
+ * (que desce 1,8mm abaixo da linha de base) terminar antes dele.
+ */
+const RESERVA_DO_RODAPE = 20
+
+/** A maior largura, em mm, entre os textos — na fonte que estiver ativa. */
+function maiorLargura(doc: Doc, textos: string[]): number {
+  return textos.reduce((maior, t) => Math.max(maior, doc.getTextWidth(t)), 0)
+}
+
+/**
+ * Quebra o texto em linhas de ate `max` mm, na fonte ativa. Palavra sem
+ * espaco maior que `max` (e-mail, IBAN, URL) e partida no meio.
+ *
+ * Mede ANTES de quebrar, e isso nao e otimizacao: o `splitTextToSize` nao usa
+ * a mesma conta do `getTextWidth` (um aplica kerning, o outro nao), entao ele
+ * quebra texto que cabe. Com a coluna na largura exata do maior rotulo,
+ * "Bank address 10" saia como "Bank address" / "10"; meio milimetro de folga
+ * ainda quebrava "Co-Fsmy VTLSTto0 TdFhJsLd". Medido nos dois casos.
+ */
+function quebrar(doc: Doc, texto: string, max: number): string[] {
+  if (!texto.includes('\n') && doc.getTextWidth(texto) <= max) return [texto]
+  // O trecho partido as vezes volta com o espaco da quebra no fim, e num texto
+  // alinhado a direita esse espaco empurra a linha 0,9mm para dentro.
+  return (doc.splitTextToSize(texto, max) as string[]).map((l) => l.trimEnd())
+}
+
+/**
+ * Corta o texto para caber em `max`, com reticencias. Mede na fonte ativa.
+ *
+ * Tres pontos ASCII, e nao o caractere de reticencias: ele esta fora do
+ * Latin-1, e as fontes padrao do PDF (helvetica) nao tem como desenha-lo.
+ */
+function encurtar(doc: Doc, texto: string, max: number): string {
+  if (doc.getTextWidth(texto) <= max) return texto
+  let corte = texto.length
+  while (corte > 0 && doc.getTextWidth(`${texto.slice(0, corte).trimEnd()}...`) > max) {
+    corte -= 1
+  }
+  return `${texto.slice(0, corte).trimEnd()}...`
+}
+
 /**
  * A logo da empresa, ou a palavra INVOICE quando nao houver.
  *
@@ -183,24 +231,42 @@ export async function generateInvoicePdf(draft: InvoiceDraft): Promise<Blob> {
     ['Due date', formatarData(draft.dueDate)],
   ]
   doc.setFontSize(9)
+  // O valor e medido antes de desenhar (INV-18): um `Invoice #` de 43
+  // caracteres era escrito por cima do proprio rotulo. A coluna do rotulo
+  // fica onde sempre esteve (34mm da margem) enquanto o valor couber, e so
+  // entao recua para a esquerda — ate o limite da marca, que ocupa no maximo
+  // 60mm. Passou disso, o valor quebra e empurra o resto da folha para baixo.
+  // A medida vem com a fonte de cada coluna ativa: negrito e ~8% mais largo.
+  const VAO_META = 3
+  doc.setFont('helvetica', 'normal')
+  const larguraRotulos = maiorLargura(doc, meta.map(([rotulo]) => rotulo))
+  doc.setFont('helvetica', 'bold')
+  const tetoValor = direita - (MARGEM + 60 + 5) - larguraRotulos - VAO_META
+  const valoresMeta = meta.map(([, valor]) => quebrar(doc, valor, tetoValor))
+  const xRotulo = direita - Math.max(34, maiorLargura(doc, valoresMeta.flat()) + VAO_META)
+
   let y = 20
-  for (const [rotulo, valor] of meta) {
+  meta.forEach(([rotulo], i) => {
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...MUTED)
-    doc.text(rotulo, direita - 34, y, { align: 'right' })
+    doc.text(rotulo, xRotulo, y, { align: 'right' })
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(...INK)
-    doc.text(valor, direita, y, { align: 'right' })
-    y += 5.5
-  }
+    valoresMeta[i].forEach((parte, k) => {
+      doc.text(parte, direita, y + k * PASSO, { align: 'right' })
+    })
+    y += 5.5 + (valoresMeta[i].length - 1) * PASSO
+  })
+  // Zero quando nenhum valor quebrou — o fio e FROM ficam onde sempre ficaram.
+  const desceu = y - (20 + 5.5 * meta.length)
 
   // Fio dourado: o acento entra como linha fina, nunca preenchimento nem
   // texto — dourado sobre branco da ~2,2:1 e reprova em AA.
   doc.setDrawColor(...GOLD)
   doc.setLineWidth(0.4)
-  doc.line(MARGEM, 38, direita, 38)
+  doc.line(MARGEM, 38 + desceu, direita, 38 + desceu)
 
-  const yPartes = desenharPartes(doc, draft, 48, largura)
+  const yPartes = desenharPartes(doc, draft, 48 + desceu, largura)
   const yPagamento = desenharPagamento(doc, draft, yPartes + 6, largura)
 
   const linhas = linhasValidas(draft)
@@ -360,6 +426,10 @@ function desenharTotais(
  * Fica antes dos itens de proposito: quem recebe a fatura precisa saber para
  * onde pagar, e essa informacao nao deve estar depois de uma tabela que pode
  * ocupar a pagina inteira.
+ *
+ * Rotulo e valor tem cada um a sua coluna, e os dois quebram (INV-18). Antes
+ * o valor era um `doc.text` so, alinhado a direita: um endereco de 170
+ * caracteres passava por cima do rotulo e saia da folha pela esquerda.
  */
 function desenharPagamento(
   doc: Doc,
@@ -372,6 +442,25 @@ function desenharPagamento(
   if (linhas.length === 0 && !livre) return yInicial
 
   const direita = largura - MARGEM
+  const altura = doc.internal.pageSize.getHeight()
+  const fimUtil = altura - RESERVA_DO_RODAPE
+
+  // O rodape da folha que fica para tras e desenhado aqui: o autotable so
+  // chama `didDrawPage` nas paginas em que ELE desenha, e a tabela comeca
+  // depois deste bloco.
+  const novaPagina = (): number => {
+    rodape(doc, draft, largura, altura)
+    doc.addPage()
+    // O rodape escreve em 8pt, e o tamanho da fonte e estado do documento:
+    // sem isto, o que vem depois da troca de pagina sairia menor.
+    doc.setFontSize(9)
+    // A faixa da zebra sobe 3,6mm da linha de base: assim ela comeca na margem.
+    return MARGEM + 3.6
+  }
+
+  // Titulo sozinho no pe da folha, com as linhas na seguinte, seria pior que
+  // o bloco inteiro na seguinte.
+  if (yInicial + 11 > fimUtil) yInicial = novaPagina() - 3.6
 
   // Mesmo fio dourado do cabecalho, separando as partes do pagamento.
   doc.setDrawColor(...GOLD)
@@ -387,29 +476,68 @@ function desenharPagamento(
   let y = yTitulo + 5
   doc.setFontSize(9)
   const ALTURA = 5.4
+  const RECUO = 2.5
+  const VAO = 6
+  const rotulos = linhas.map((c) => c.label.trim() || '—')
+
+  // A coluna do rotulo tem a largura do maior rotulo, ate o teto de 38% —
+  // rotulo curto (o caso comum: "IBAN", "SWIFT Code") deixa quase a linha
+  // toda para o valor, e um rotulo de 75 caracteres nao espreme o endereco.
+  // As medidas saem na fonte ATIVA: a fonte e trocada antes de cada uma,
+  // senao o negrito estoura a coluna.
+  const interna = direita - MARGEM - RECUO * 2
+  doc.setFont('helvetica', 'normal')
+  const larguraRotulo = Math.min(interna * 0.38, maiorLargura(doc, rotulos))
+  const larguraValor = interna - larguraRotulo - VAO
+
   linhas.forEach((c, i) => {
-    // Mesma zebra da tabela de itens. A faixa e desenhada antes do texto,
-    // senao cobriria o que ja foi escrito.
-    if (i % 2 === 0) {
-      doc.setFillColor(...ZEBRA)
-      doc.rect(MARGEM, y - 3.6, direita - MARGEM, ALTURA, 'F')
-    }
     doc.setFont('helvetica', 'normal')
-    doc.setTextColor(...MUTED)
-    doc.text(c.label.trim() || '—', MARGEM + 2.5, y)
+    const rotulo = quebrar(doc, rotulos[i], larguraRotulo)
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...INK)
-    // Valor a direita: alinhar os dois lados faz a lista ser lida como
-    // tabela, nao como paragrafo.
-    doc.text(c.value.trim(), direita - 2.5, y, { align: 'right' })
-    y += ALTURA
+    const valor = quebrar(doc, c.value.trim(), larguraValor)
+    const total = Math.max(rotulo.length, valor.length)
+
+    // Um campo pode ser mais alto que o resto da folha (ou que a folha
+    // inteira), entao ele e desenhado em trechos: o que cabe aqui, e o resto
+    // na pagina seguinte. Campo de uma linha da uma volta so, com a mesma
+    // altura de 5,4mm de sempre.
+    let feitas = 0
+    while (feitas < total) {
+      if (y > fimUtil) y = novaPagina()
+      const cabem = Math.floor((fimUtil - y) / PASSO) + 1
+      const n = Math.min(cabem, total - feitas)
+      const alturaDoTrecho = ALTURA + (n - 1) * PASSO
+
+      // Mesma zebra da tabela de itens. A faixa e desenhada antes do texto,
+      // senao cobriria o que ja foi escrito.
+      if (i % 2 === 0) {
+        doc.setFillColor(...ZEBRA)
+        doc.rect(MARGEM, y - 3.6, direita - MARGEM, alturaDoTrecho, 'F')
+      }
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...MUTED)
+      rotulo.slice(feitas, feitas + n).forEach((parte, k) => {
+        doc.text(parte, MARGEM + RECUO, y + k * PASSO)
+      })
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...INK)
+      // Valor a direita: alinhar os dois lados faz a lista ser lida como
+      // tabela, nao como paragrafo.
+      valor.slice(feitas, feitas + n).forEach((parte, k) => {
+        doc.text(parte, direita - RECUO, y + k * PASSO, { align: 'right' })
+      })
+      y += alturaDoTrecho
+      feitas += n
+    }
   })
 
   if (livre) {
     doc.setFont('helvetica', 'normal')
-    doc.setTextColor(...INK)
     for (const linha of livre.split('\n')) {
       for (const parte of doc.splitTextToSize(linha, largura - MARGEM * 2)) {
+        if (y > fimUtil) y = novaPagina()
+        // Dentro do laco porque o rodape, na troca de pagina, deixa a cor dele.
+        doc.setTextColor(...INK)
         doc.text(parte, MARGEM, y)
         y += 4.6
       }
@@ -437,8 +565,12 @@ function rodape(
   const esquerda = [draft.from.name.trim(), draft.from.email.trim()]
     .filter(Boolean)
     .join(' · ')
-  if (esquerda) doc.text(esquerda, MARGEM, y)
+  const pagina = `Page ${doc.getCurrentPageInfo().pageNumber}`
+  // Rodape e uma linha so, por definicao: nome e e-mail compridos sao
+  // cortados com reticencias em vez de quebrar (INV-18). Os dois ja aparecem
+  // inteiros no bloco FROM; aqui eles so identificam a folha.
+  const cabe = largura - MARGEM * 2 - doc.getTextWidth(pagina) - 6
+  if (esquerda) doc.text(encurtar(doc, esquerda, cabe), MARGEM, y)
 
-  const pagina = doc.getCurrentPageInfo().pageNumber
-  doc.text(`Page ${pagina}`, largura - MARGEM, y, { align: 'right' })
+  doc.text(pagina, largura - MARGEM, y, { align: 'right' })
 }

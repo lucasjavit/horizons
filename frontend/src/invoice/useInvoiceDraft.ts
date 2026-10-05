@@ -8,7 +8,7 @@ import type {
   Party,
   PaymentField,
 } from './types'
-import { emptyDraft, emptyItem, newItemId } from './types'
+import { defaultInvoiceNumber, emptyDraft, emptyItem, newItemId } from './types'
 
 // Mesmo intervalo do NoteBox das aulas, para o app ter um comportamento so.
 const DEBOUNCE_MS = 800
@@ -36,9 +36,24 @@ export interface UseInvoiceDraft {
   load: (novo: InvoiceDraft) => void
 }
 
+/**
+ * O rascunho com que a tela abre.
+ *
+ * Rascunho guardado com o numero em branco ganha o padrao (INV-21): o campo e
+ * obrigatorio, entao branco nunca e um estado final — e sem isto quem ja tinha
+ * rascunho so veria o padrao depois de `Start over`. So na abertura: enquanto
+ * a pessoa digita, apagar o campo nao traz o padrao de volta.
+ */
+export function rascunhoInicial(): InvoiceDraft {
+  const guardado = loadDraft()
+  if (!guardado) return emptyDraft()
+  if (guardado.invoiceNumber.trim()) return guardado
+  return { ...guardado, invoiceNumber: defaultInvoiceNumber() }
+}
+
 export function useInvoiceDraft(): UseInvoiceDraft {
   // Le o rascunho uma vez, na primeira renderizacao.
-  const [draft, setDraft] = useState<InvoiceDraft>(() => loadDraft() ?? emptyDraft())
+  const [draft, setDraft] = useState<InvoiceDraft>(rascunhoInicial)
   const [salvo, setSalvo] = useState(true)
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
