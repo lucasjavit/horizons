@@ -140,6 +140,20 @@ export function SettingsPage() {
               ajudaDesligada="Turned off, the search always shows every job, with no badge and no dismiss button. What was already marked stays stored and comes back if the feature is turned on again."
               ajudaSemChave=""
             />
+
+            <Interruptor
+              id="verificacao-remoto"
+              titulo="Check with AI whether each job is remote for the person’s country"
+              ligado={data.verificacaoRemotoAtiva}
+              temDependencia={data.temChaveDeIa}
+              salvando={salvando}
+              onAlternar={() =>
+                void alternar(api.definirVerificacaoRemoto, data.verificacaoRemotoAtiva)
+              }
+              ajudaLigada="Signed-in people with a country in their profile get a badge on each job — remote from their country, not, or not stated — with the sentence of the ad it came from. Each job is read once per country and the answer is reused for everyone. Only the public ad is sent to the AI provider."
+              ajudaDesligada="Turned off, no ad is sent to any AI provider and the list shows only what the job’s own fields say. Answers already stored are kept."
+              ajudaSemChave="Add a key for any AI provider under AI providers to be able to turn this on."
+            />
           </div>
 
           {erroAcao && (

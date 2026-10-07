@@ -63,6 +63,38 @@ export const CHAVE_OPCIONAL = 'auth:opcional';
 export const SessaoOpcional = () => SetMetadata(CHAVE_OPCIONAL, true);
 
 /**
+ * Rotas que **outra aplicacao** chama, com segredo proprio (`INGEST_TOKEN`).
+ *
+ * Hoje so a ingestao de vagas rastreadas (JOB-50): o rastreador e um processo,
+ * nao uma pessoa, e nao tem sessao do Google para trocar por um JWT.
+ *
+ * ## Por que nao `@Public()` + checagem no handler
+ *
+ * Duas razoes, e as duas foram o que decidiu o desenho:
+ *
+ * 1. **`@AUTH_DISABLED=true` desliga o `@Public()` junto.** O guard retorna
+ *    antes de olhar qualquer coisa, entao a checagem no handler seria a unica
+ *    protecao de uma rota que ESCREVE no banco — e com o login desligado nao
+ *    sobraria nenhuma camada antes dela. Aqui a checagem roda DENTRO do guard,
+ *    e **antes** do desvio de `AUTH_DISABLED`, que e o que faz o 401 valer
+ *    tambem no modo aberto.
+ * 2. **O `ValidationPipe` roda depois do guard, nunca antes.** No handler, um
+ *    corpo invalido sem token responderia 400 — e o `fail-closed.e2e.spec.ts`
+ *    percorre as rotas registradas exigindo 401 do anonimo. Um 400 ali e
+ *    indistinguivel de "o pipe correu antes do guard", que e vazamento.
+ *
+ * ## E por que nao e `@Public()` nem `@SessaoOpcional()`
+ *
+ * As duas listas do `fail-closed.e2e.spec.ts` significam "responde a quem nao
+ * entrou". Esta rota **nao** responde a quem nao entrou: ela responde a quem
+ * tem o segredo. Entao ela fica fora das duas e cai no piso — *toda rota
+ * protegida responde 401 ao anonimo* —, que e exatamente a garantia que se
+ * quer. Nao ha excecao nomeada a manter.
+ */
+export const CHAVE_INGESTAO = 'auth:ingestao';
+export const TokenDeIngestao = () => SetMetadata(CHAVE_INGESTAO, true);
+
+/**
  * Injeta o usuario da sessao no parametro do handler.
  *
  * Em rota `@SessaoOpcional()` pode ser `null` — o handler precisa tratar. Em

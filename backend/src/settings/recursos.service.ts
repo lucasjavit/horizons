@@ -156,6 +156,16 @@ const EMAIL_SEMANAL = 'jobs.emailSemanal';
 const HISTORICO = 'jobs.historico';
 
 /**
+ * A IA verifica se a vaga e remota para o pais da pessoa (JOB-55).
+ *
+ * Default DESLIGADO, como a leitura de CV: cada vaga vista pela primeira vez
+ * e uma chamada de IA, e o que gasta so liga por decisao explicita. Desligado,
+ * nada some da tela — a lista fica com a resposta por campo
+ * (`elegibilidade.ts`), que e a de antes do card.
+ */
+const VERIFICACAO_REMOTO = 'jobs.verificacaoRemoto';
+
+/**
  * A colheita do catalogo de ATS (JOB-37).
  *
  * Default LIGADO, como o ATS e o historico: nao gasta credito, nao chama
@@ -298,6 +308,13 @@ export interface RecursosDto {
    */
   paginacaoAtiva: boolean;
   /**
+   * A verificacao de remoto por IA esta ligada E ha chave para ela (JOB-55).
+   *
+   * **A dependencia manda sobre a flag**, como na leitura de CV: sem chave de
+   * IA isto e `false` mesmo com o interruptor ligado.
+   */
+  verificacaoRemotoAtiva: boolean;
+  /**
    * A ordem COMPLETA da cadeia, como o admin a arrumou.
    *
    * **Substitui `iaPreferida`**, que era um provedor promovido ao topo. Com
@@ -425,6 +442,7 @@ export class RecursosService {
     const temChave = comChaveExtracao.length > 0;
 
     const porId = new Map(estados.map((e) => [e.provider, e]));
+    const flagRemoto = await this.flag(VERIFICACAO_REMOTO);
 
     // Na ORDEM da cadeia, e nao na ordem do registro: a lista da tela e a
     // cadeia, e mostra-la fora de ordem faria as setas mentirem.
@@ -486,6 +504,7 @@ export class RecursosService {
       historicoAtivo: historico,
       descobertasAtivas: descobertas,
       paginacaoAtiva: paginacao,
+      verificacaoRemotoAtiva: flagRemoto && temChave,
       ordemDaIa: ordem,
       iaDaBusca,
       iaDaExtracao,
@@ -567,6 +586,18 @@ export class RecursosService {
    */
   async definirPaginacao(ativa: boolean): Promise<RecursosDto> {
     await this.gravar(PAGINACAO, ativa);
+    return this.obter();
+  }
+
+  /**
+   * Liga a verificacao de remoto por IA (JOB-55).
+   *
+   * Nao recusa ligar sem chave: a flag fica gravada e `obter()` devolve
+   * `false` enquanto a chave nao existir — a tela mostra o interruptor
+   * travado com a explicacao, igual ao da leitura de CV.
+   */
+  async definirVerificacaoRemoto(ativa: boolean): Promise<RecursosDto> {
+    await this.gravar(VERIFICACAO_REMOTO, ativa);
     return this.obter();
   }
 

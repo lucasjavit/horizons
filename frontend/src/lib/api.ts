@@ -3,6 +3,7 @@ import { perdeuSessao, tokenStore } from './auth'
 import { traduzirMensagemDaApi } from './erros-do-servidor'
 import type {
   ApiProvider,
+  RemotoDoPaisResposta,
   Assinatura,
   AuthConfig,
   Cadencia,
@@ -191,6 +192,29 @@ export const api = {
    * configuração da instalação — chaves, cadeia de IA, estado de verificação —
    * e passou a exigir admin (PLT-12).
    */
+  /**
+   * A IA verifica as vagas visíveis (JOB-55). Só os ids vão: quem lê o anúncio
+   * é o servidor. Exige sessão.
+   */
+  async verificarRemoto(ids: string[], signal?: AbortSignal): Promise<RemotoDoPaisResposta> {
+    const { data } = await http.post<RemotoDoPaisResposta>(
+      '/jobs/remote-check',
+      { ids },
+      // Bem acima dos 10 s padrão: cada vaga é uma chamada de IA, e a cadeia
+      // pode percorrer provedores recusando antes de um responder (medido em
+      // 05/10: ~2,6 s por vaga com três recusas na frente).
+      { signal, timeout: 60_000 },
+    )
+    return data
+  },
+
+  async definirVerificacaoRemoto(ativa: boolean): Promise<Recursos> {
+    const { data } = await http.put<Recursos>('/settings/recursos/verificacao-remoto', {
+      ativa,
+    })
+    return data
+  },
+
   async recursosDeProduto(signal?: AbortSignal): Promise<RecursosDeProduto> {
     const { data } = await http.get<RecursosDeProduto>(
       '/settings/recursos/produto',

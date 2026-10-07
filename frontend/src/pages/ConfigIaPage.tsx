@@ -556,6 +556,8 @@ function LinhaDoProvedor({
   const [valor, setValor] = useState('')
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const [editando, setEditando] = useState(false)
+  const [removendo, setRemovendo] = useState(false)
 
   // As duas chaves de foco identificam O BOTÃO, e não a posição: depois de
   // mover, é o mesmo provedor que tem de continuar focado.
@@ -575,6 +577,7 @@ function LinhaDoProvedor({
       // A chave some do campo assim que sai daqui, e a página recarrega para
       // trazer o resultado da verificação que o backend fez ao salvar.
       setValor('')
+      setEditando(false)
       onRecarregar(await api.recursos())
     } catch (e) {
       setErro(errorMessage(e))
@@ -588,6 +591,8 @@ function LinhaDoProvedor({
     setSalvando(true)
     try {
       await api.removeToken(provedor.id)
+      setEditando(false)
+      setRemovendo(false)
       onRecarregar(await api.recursos())
     } catch (e) {
       setErro(errorMessage(e))
@@ -598,22 +603,21 @@ function LinhaDoProvedor({
 
   const semChave = provedor.status === 'sem_chave'
   /**
-   * O formulário aparece onde ele resolve algo: sem chave (cadastrar) ou com
+   * O campo nasce aberto onde ele resolve algo: sem chave (cadastrar) ou com
    * chave que o provedor recusou (trocar). Com a chave funcionando, um campo
-   * aberto só convida a mexer no que está certo.
+   * aberto só convida a mexer no que está certo — aí ele fica atrás do
+   * `Update key`.
    *
-   * **`comFormulario` diz em QUAL cadeia ele aparece, e não se aparece.**
-   * Cada provedor está nas duas listas quando faz busca na web, e repetir o
-   * campo nas duas daria dois inputs para a mesma chave — com dois estados
-   * locais divergentes. Então: quem faz busca na web mostra o campo na cadeia
-   * de busca; quem não faz só existe na de leitura, e é lá que ele aparece.
-   * Sem esta segunda metade, Groq, Cerebras e Mistral ficavam sem NENHUMA
-   * forma de cadastrar chave — encontrado ao olhar a tela renderizada.
+   * **Toda linha com chave tem `Update key` e `Remove`, nas DUAS cadeias**
+   * (JOB-57). Antes o formulário aparecia numa cadeia só, para não haver dois
+   * inputs da mesma chave; o resultado na tela era parecer que só alguns
+   * provedores podiam ser trocados ou removidos — foi como o dono leu. Dois
+   * campos da mesma chave não divergem no que importa: o rascunho é local e
+   * descartável, e salvar em qualquer um recarrega a página inteira.
    */
-  const cadeiaDoFormulario = provedor.buscaWeb ? 'buscaWeb' : 'estruturada'
-  const mostraFormulario =
-    capacidade === cadeiaDoFormulario &&
-    (semChave || provedor.status === 'chave_recusada')
+  const pedeChave = semChave || provedor.status === 'chave_recusada'
+  const podeAbrir = !pedeChave
+  const mostraFormulario = pedeChave || editando
 
   return (
     <li
@@ -691,8 +695,65 @@ function LinhaDoProvedor({
           </p>
         )}
 
+        {!semChave && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {podeAbrir && (
+              <button
+                type="button"
+                aria-expanded={editando}
+                aria-controls={`${idCampo}-form`}
+                onClick={() => {
+                  setEditando((e) => !e)
+                  setValor('')
+                  setErro(null)
+                }}
+                className="min-h-8 rounded-md border px-3 py-1.5 text-xs font-semibold"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+              >
+                {editando ? 'Cancel' : 'Update key'}
+                <span className="sr-only"> for {provedor.nome}</span>
+              </button>
+            )}
+            {/* Dois cliques de propósito: a chave removida não volta pela
+                tela, e o botão fica ao lado do de atualizar. */}
+            {removendo ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => void removerChave()}
+                  disabled={salvando}
+                  className="min-h-8 rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
+                  style={{ borderColor: WARN_INK, color: WARN_INK }}
+                >
+                  {salvando ? 'Removing…' : 'Confirm removal'}
+                  <span className="sr-only"> of the {provedor.nome} key</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRemovendo(false)}
+                  disabled={salvando}
+                  className="min-h-8 rounded-md border px-3 py-1.5 text-xs font-medium disabled:opacity-60"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                >
+                  Keep key
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setRemovendo(true)}
+                className="min-h-8 rounded-md border px-3 py-1.5 text-xs font-medium"
+                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+              >
+                Remove key
+                <span className="sr-only"> for {provedor.nome}</span>
+              </button>
+            )}
+          </div>
+        )}
+
         {mostraFormulario && (
-          <div className="mt-2.5 border-t pt-2.5" style={{ borderColor: 'var(--border)' }}>
+          <div id={`${idCampo}-form`} className="mt-2.5 border-t pt-2.5" style={{ borderColor: 'var(--border)' }}>
             <label htmlFor={idCampo} className="mb-1.5 block text-[12.5px] font-semibold">
               {semChave ? 'Key' : 'Replace key'}
             </label>
@@ -727,17 +788,6 @@ function LinhaDoProvedor({
               >
                 {salvando ? 'Saving…' : 'Save and test'}
               </button>
-              {!semChave && (
-                <button
-                  type="button"
-                  onClick={() => void removerChave()}
-                  disabled={salvando}
-                  className="min-h-9 rounded-md border px-3.5 py-1.5 text-[13.5px] font-medium disabled:opacity-60"
-                  style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-                >
-                  Remove
-                </button>
-              )}
             </div>
             {erro && (
               <p

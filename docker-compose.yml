@@ -102,6 +102,22 @@ services:
       # localmente escreve AUTH_DISABLED=true no `.env`, que nao vai para o
       # git — assim a escolha e explicita e fica na maquina de quem a fez.
       AUTH_DISABLED: ${AUTH_DISABLED:-false}
+      # O segredo do rastreador de vagas (JOB-50). Quem chama
+      # POST /api/ingest/jobs e OUTRA APLICACAO, que nao tem sessao do Google
+      # para trocar por um JWT — entao a rota tem segredo proprio, conferido no
+      # guard ANTES do desvio de AUTH_DISABLED.
+      #
+      # VAZIO e estado valido, e o resultado dele e 503: "este servidor nao tem
+      # ingestao configurada". **Nao e "aceita tudo"** — e a mesma filosofia do
+      # JWT_SECRET, porque erro de configuracao nao vira porta aberta numa rota
+      # que ESCREVE no banco. Minimo 32 caracteres.
+      #
+      # Em desenvolvimento ha um default, como o do JWT_SECRET, so para o
+      # `curl` do card funcionar sem ninguem preencher nada.
+      INGEST_TOKEN: ${INGEST_TOKEN:-horizons dev ingest token trocar antes de publicar}
+      # Depois de quantos dias sem confirmacao a vaga rastreada e apagada.
+      # Vazia usa 7 — sugestao do JOB-49, ainda nao medida.
+      INGEST_DIAS_SEM_CONFIRMACAO: ${INGEST_DIAS_SEM_CONFIRMACAO:-}
       # Servidor de e-mail do envio semanal (JOB-24). VAZIO e estado valido: o
       # provedor entao REGISTRA NO LOG em vez de enviar, e a tela mostra isso.
       SMTP_HOST: ${SMTP_HOST:-}

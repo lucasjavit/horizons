@@ -92,14 +92,19 @@ export interface Pedido {
  * tem a mesma chance de falhar. A distincao vive no log, que e onde alguem vai
  * procurar quando a feature parar.
  */
-function ehChaveMorta(e: unknown): boolean {
+export function ehChaveMorta(e: unknown): boolean {
   const status =
     e instanceof Anthropic.APIError || e instanceof OpenAI.APIError
       ? e.status
       : e instanceof ErroHttp
         ? e.status
         : undefined;
-  return status === 401 || status === 402 || status === 403 || status === 429;
+  if (status === 401 || status === 402 || status === 403 || status === 429) return true;
+  // A Anthropic avisa de conta sem saldo com **400**, e nao 402 (medido em
+  // 06/10: "Your credit balance is too low to access the Anthropic API"). Pelo
+  // status seria pedido invalido, e a tela mandava "tente de novo" para uma
+  // conta a pagar (JOB-56). So esta frase: outro 400 continua sendo erro.
+  return status === 400 && /credit balance is too low/i.test(String(e));
 }
 
 /**

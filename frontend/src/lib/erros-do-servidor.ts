@@ -94,6 +94,8 @@ const TRADUCOES: Record<string, string> = {
     'We could not read the resume right now. Try again in a moment, or fill in the filters by hand.',
   'A leitura de curriculo precisa da chave de algum provedor de IA. Peca ao administrador para cadastrar em Configuracoes, ou preencha os filtros a mao.':
     'Resume reading needs an API key for at least one AI provider. Ask an administrator to add one in Settings, or fill in the filters by hand.',
+  'Nenhum provedor de IA conseguiu ler o curriculo: ha chave recusada ou sem credito. Peca ao administrador para conferir em Configuracoes, ou preencha os filtros a mao.':
+    'No AI provider could read the resume: at least one API key was refused or is out of credit. Ask the administrator to check the keys in Settings, or fill in the filters by hand.',
   'A leitura de curriculo esta desligada. Preencha os filtros a mao.':
     'Resume reading is turned off. Fill in the filters by hand.',
   'Nenhum arquivo enviado.': 'No file was uploaded.',
@@ -122,6 +124,23 @@ const TRADUCOES: Record<string, string> = {
 
   // ---- Perfil ----
   'Escolha o pais antes de informar o documento': 'Pick a country before entering the document',
+
+  // ---- Ingestao de vagas rastreadas (JOB-50) ----
+  //
+  // **Nenhuma tela mostra estas duas.** Quem chama `POST /api/ingest/jobs` e o
+  // rastreador, que e outra aplicacao — a pessoa nunca ve a resposta. Entram
+  // aqui por tres razoes, e nao por cerimonia:
+  //
+  // 1. a regra de APP-02 e "nenhuma mensagem em portugues escapa", e excecao
+  //    por julgamento ("esta nao aparece na tela") e o que faz a trava parar de
+  //    pegar a proxima;
+  // 2. o dia em que alguem construir uma tela de diagnostico da ingestao, a
+  //    traducao ja esta aqui, em vez de o portugues aparecer em producao;
+  // 3. a mensagem e lida por quem opera o rastreador, no log dele. A API e em
+  //    ingles para o mesmo publico do resto do produto.
+  'A ingestao de vagas nao esta configurada neste servidor.':
+    'Job ingestion is not configured on this server.',
+  'Token de ingestao invalido.': 'Invalid ingestion token.',
 }
 
 /**

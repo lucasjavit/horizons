@@ -31,7 +31,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { CvLido, Historico, Vaga, VagaMarcada } from '../../types/api'
+import type { AuthUser, CvLido, Historico, OrdemAplicada, Vaga, VagaMarcada } from '../../types/api'
 
 /**
  * O mock precisa existir ANTES do import do componente, porque ele captura
@@ -48,6 +48,7 @@ const mockApi = {
   removerSalva: vi.fn(),
   marcarVaga: vi.fn(),
   desmarcarVaga: vi.fn(),
+  verificarRemoto: vi.fn(),
 }
 
 vi.mock('../../lib/api', () => ({
@@ -70,13 +71,20 @@ vi.mock('../../lib/api', () => ({
  */
 const filtrosRecebidos: Record<string, unknown>[] = []
 let vagasDaBusca: Vaga[] = []
+/**
+ * A ordem que o servidor diz ter aplicado, no `fim` (JOB-54).
+ *
+ * `undefined` = o `fim` nao traz o campo, como um servidor antigo. Os testes
+ * de ordem trocam para simular a fonte que nao sabe ordenar.
+ */
+let ordemDoFim: OrdemAplicada | undefined
 
 vi.mock('../../lib/busca-vagas', () => ({
   async *buscarVagas(filtros: Record<string, unknown>) {
     filtrosRecebidos.push(filtros)
     yield { tipo: 'inicio', total: vagasDaBusca.length }
     for (const vaga of vagasDaBusca) yield { tipo: 'vaga', vaga }
-    yield { tipo: 'fim', sessao: null, temMais: false, totalNoFiltro: null }
+    yield { tipo: 'fim', sessao: null, temMais: false, totalNoFiltro: null, ordem: ordemDoFim }
   },
 }))
 
@@ -117,6 +125,20 @@ vi.mock('./ModalFiltros', () => ({
         onClick={() => onAplicar({ ...selecaoInicial, technologies: ['Go', 'Rust', 'Kotlin'] })}
       >
         Apply three techs
+      </button>
+      {/* Uma busca salva ANTIGA aberta pelo modal: traz a janela de 20 dias
+          que a tela nao oferece mais (JOB-54). O cast e o do proprio modal,
+          que faz `b.filtros as SelecaoModal`. */}
+      <button
+        type="button"
+        onClick={() =>
+          onAplicar({ roles: ['backend'], posted_within_days: 20 } as unknown as Record<
+            string,
+            string[]
+          >)
+        }
+      >
+        Apply old saved search
       </button>
     </div>
   ),
@@ -231,10 +253,14 @@ describe('ListaVagas', () => {
     vi.clearAllMocks()
     filtrosRecebidos.length = 0
     vagasDaBusca = []
+    ordemDoFim = undefined
     mockApi.recursosDeProduto.mockResolvedValue({ leituraCvAtiva: true, historicoAtivo: false })
     mockApi.listarHistorico.mockResolvedValue(SEM_HISTORICO)
     mockApi.listarSalvas.mockResolvedValue([])
     mockApi.lerCurriculo.mockResolvedValue(cvLido())
+    // JOB-55: desligado por padrao, para os testes dos outros cards verem a
+    // tela de antes — sem selo e sem filtro.
+    mockApi.verificarRemoto.mockResolvedValue({ estado: 'desligado', pais: null, vereditos: [] })
   })
 
   /**
@@ -373,7 +399,9 @@ describe('ListaVagas', () => {
 
       await waitFor(() => expect(filtrosRecebidos.length).toBeGreaterThan(0))
       const ultimo = filtrosRecebidos[filtrosRecebidos.length - 1]
-      expect(ultimo).toEqual({})
+      // So a ordem padrao sobra (JOB-54): ela viaja em toda busca, e nao e
+      // filtro — nenhum valor do CV, que e o que este teste guarda.
+      expect(ultimo).toEqual({ sort: 'newest' })
     })
 
     it('"Replace CV" esquece o curriculo anterior', async () => {
@@ -516,7 +544,11 @@ describe('ListaVagas', () => {
       await userEvent.type(screen.getByRole('searchbox'), 'golang{Enter}')
 
       await waitFor(() => expect(filtrosRecebidos.length).toBeGreaterThan(0))
-      expect(filtrosRecebidos[filtrosRecebidos.length - 1]).toEqual({ job_titles: ['golang'] })
+      // `sort: 'newest'` vai junto desde o JOB-54 — o padrao e explicito.
+      expect(filtrosRecebidos[filtrosRecebidos.length - 1]).toEqual({
+        job_titles: ['golang'],
+        sort: 'newest',
+      })
     })
 
     it('o CV manda a senioridade TRADUZIDA para o vocabulario da faceta', async () => {
@@ -878,6 +910,453 @@ describe('ListaVagas', () => {
       expect(
         vagaNaTela.compareDocumentPosition(convite) & Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy()
+    })
+  })
+
+  /**
+   * JOB-54 — `Posted` e `Sort`.
+   *
+   * O que se prova e o que VIAJA: a ordem e a janela so existem para o
+   * servidor, entao um seletor que muda na tela e nao muda o pedido e o
+   * "filtro que nao filtra" deste card. Toda espera e pelo pedido que chegou
+   * (`filtrosRecebidos`), nunca pelo no do seletor — ele existe desde o
+   * primeiro render.
+   */
+  describe('JOB-54 — Posted e Sort', () => {
+    const QUEM_ENTROU: AuthUser = {
+      id: 'u1',
+      email: 'quem@entrou.com',
+      name: 'Quem Entrou',
+      avatarUrl: null,
+      role: 'COMMON_USER',
+    }
+
+    /** Com sessao: sem ela o `Sort` fica desabilitado (regra do JOB-47). */
+    async function renderizarLogado() {
+      render(
+        <SessaoContext.Provider value={QUEM_ENTROU}>
+          <ListaVagas />
+        </SessaoContext.Provider>,
+      )
+      await screen.findByRole('button', { name: 'Upload CV' })
+    }
+
+    beforeEach(() => {
+      // O jsdom nao implementa `scrollTo`, e trocar de pagina o chama.
+      vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    })
+
+    const ultimo = () => filtrosRecebidos[filtrosRecebidos.length - 1]
+    const sort = () => screen.getByLabelText('Sort') as HTMLSelectElement
+    const posted = () => screen.getByLabelText('Posted') as HTMLSelectElement
+    const opcoes = (s: HTMLSelectElement) => [...s.options].map((o) => o.textContent)
+
+    it('os dois controles tem label, e oferecem as opcoes do card', async () => {
+      await renderizarLogado()
+
+      expect(opcoes(sort())).toEqual(['Newest', 'Relevance', 'Most viewed', 'Best match'])
+      expect(opcoes(posted())).toEqual([
+        'Any time',
+        'Today',
+        'Last 3 days',
+        'Last 7 days',
+        'Last 14 days',
+        'Last 30 days',
+      ])
+      // Os padroes: mais recente primeiro, sem janela.
+      expect(sort().value).toBe('newest')
+      expect(posted().value).toBe('')
+    })
+
+    it('o padrao Newest viaja no pedido, sem janela', async () => {
+      await renderizarLogado()
+      await userEvent.type(screen.getByRole('searchbox'), 'backend{Enter}')
+
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(1))
+      expect(ultimo()).toEqual({ job_titles: ['backend'], sort: 'newest' })
+    })
+
+    it.each([
+      ['Relevance', 'relevance'],
+      ['Most viewed', 'views'],
+    ])('trocar o Sort para %s refaz a busca com sort=%s', async (rotulo, valor) => {
+      await renderizarLogado()
+      await userEvent.type(screen.getByRole('searchbox'), 'backend{Enter}')
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(1))
+
+      await userEvent.selectOptions(sort(), rotulo)
+
+      // Uma busca NOVA, com o valor novo e o resto do pedido intacto.
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(2))
+      expect(ultimo()).toEqual({ job_titles: ['backend'], sort: valor })
+    })
+
+    it.each([
+      ['Today', 1],
+      ['Last 3 days', 3],
+      ['Last 7 days', 7],
+      ['Last 14 days', 14],
+      ['Last 30 days', 30],
+    ])('Posted = %s refaz a busca com posted_within_days=%i', async (rotulo, dias) => {
+      await renderizarLogado()
+
+      await userEvent.selectOptions(posted(), rotulo)
+
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(1))
+      expect(ultimo()).toEqual({ sort: 'newest', posted_within_days: dias })
+    })
+
+    it('Posted e escolha UNICA: a segunda substitui a primeira, e Any time tira o campo', async () => {
+      await renderizarLogado()
+
+      await userEvent.selectOptions(posted(), 'Last 7 days')
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(1))
+      await userEvent.selectOptions(posted(), 'Today')
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(2))
+
+      // Um numero, e o ULTIMO escolhido — o filtro antigo mandava o maior.
+      expect(posted().multiple).toBe(false)
+      expect(ultimo().posted_within_days).toBe(1)
+
+      await userEvent.selectOptions(posted(), 'Any time')
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(3))
+      expect(ultimo()).toEqual({ sort: 'newest' })
+    })
+
+    it('a ordem e a janela continuam no pedido quando OUTRO gesto busca', async () => {
+      // O risco que a ref cobre: seis gatilhos de busca, e um que esquecesse a
+      // ordem devolveria a lista por relevancia com o seletor em Most viewed.
+      await renderizarLogado()
+      await userEvent.selectOptions(sort(), 'Most viewed')
+      await userEvent.selectOptions(posted(), 'Last 3 days')
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(2))
+
+      await userEvent.click(screen.getByRole('button', { name: /all filters/i }))
+      await userEvent.click(await screen.findByRole('button', { name: 'Apply backend' }))
+
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(3))
+      expect(ultimo()).toEqual({ roles: ['backend'], sort: 'views', posted_within_days: 3 })
+    })
+
+    it('trocar o Sort volta para a pagina 1', async () => {
+      // 30 vagas = duas paginas de 25.
+      vagasDaBusca = Array.from({ length: 30 }, (_, i) =>
+        vaga({ id: `v${i}`, title: `Vaga ${i}`, url: `https://acme.example/jobs/${i}` }),
+      )
+      await renderizarLogado()
+      await userEvent.type(screen.getByRole('searchbox'), 'backend{Enter}')
+      await screen.findByText('30 jobs found')
+
+      const paginas = () => screen.getByRole('navigation', { name: 'Job list pages' })
+      await userEvent.click(within(paginas()).getByRole('button', { name: /2/ }))
+      await waitFor(() =>
+        expect(within(paginas()).getByRole('button', { current: 'page' }).textContent).toBe('2'),
+      )
+
+      await userEvent.selectOptions(sort(), 'Most viewed')
+
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(2))
+      await waitFor(() =>
+        expect(within(paginas()).getByRole('button', { current: 'page' }).textContent).toBe('1'),
+      )
+    })
+
+    it('trocar o Posted tambem volta para a pagina 1', async () => {
+      vagasDaBusca = Array.from({ length: 30 }, (_, i) =>
+        vaga({ id: `v${i}`, title: `Vaga ${i}`, url: `https://acme.example/jobs/${i}` }),
+      )
+      await renderizarLogado()
+      await userEvent.type(screen.getByRole('searchbox'), 'backend{Enter}')
+      await screen.findByText('30 jobs found')
+
+      const paginas = () => screen.getByRole('navigation', { name: 'Job list pages' })
+      await userEvent.click(within(paginas()).getByRole('button', { name: /2/ }))
+      await waitFor(() =>
+        expect(within(paginas()).getByRole('button', { current: 'page' }).textContent).toBe('2'),
+      )
+
+      await userEvent.selectOptions(posted(), 'Last 3 days')
+
+      await waitFor(() => expect(filtrosRecebidos).toHaveLength(2))
+      await waitFor(() =>
+        expect(within(paginas()).getByRole('button', { current: 'page' }).textContent).toBe('1'),
+      )
+    })
+
+    it('a janela vira chip, e "Clear all" a tira — mas NAO desfaz o Sort', async () => {
+      await renderizarLogado()
+      await userEvent.selectOptions(sort(), 'Relevance')
+      await userEvent.selectOptions(posted(), 'Last 7 days')
+      await waitFor(() => expect(chips()).toEqual(['Posted: Last 7 days']))
+
+      await userEvent.click(within(faixa()).getByRole('button', { name: 'Clear all' }))
+
+      await waitFor(() => expect(posted().value).toBe(''))
+      expect(ultimo()).toEqual({ sort: 'relevance' })
+      expect(sort().value).toBe('relevance')
+    })
+
+    describe('Best match', () => {
+      const melhor = () =>
+        [...sort().options].find((o) => o.textContent === 'Best match') as HTMLOptionElement
+
+      it('sem tecnologia marcada fica desabilitado, e a tela diz como habilitar', async () => {
+        await renderizarLogado()
+
+        expect(melhor().disabled).toBe(true)
+        expect(screen.getByText(/Best match needs skills/i)).toBeTruthy()
+      })
+
+      it('com tecnologia habilita, viaja como sort=match, e avisa que ordena so o carregado', async () => {
+        await renderizarLogado()
+        await userEvent.click(screen.getByRole('button', { name: /all filters/i }))
+        await userEvent.click(await screen.findByRole('button', { name: 'Apply technologies' }))
+        await waitFor(() => expect(melhor().disabled).toBe(false))
+
+        await userEvent.selectOptions(sort(), 'Best match')
+
+        await waitFor(() => expect(ultimo().sort).toBe('match'))
+        expect(ultimo().technologies).toEqual(['Rust'])
+        expect(screen.getByText(/jobs already loaded/i)).toBeTruthy()
+      })
+
+      it('tirar a ultima tecnologia devolve o Sort ao padrao, na tela e no pedido', async () => {
+        await renderizarLogado()
+        await userEvent.click(screen.getByRole('button', { name: /all filters/i }))
+        await userEvent.click(await screen.findByRole('button', { name: 'Apply technologies' }))
+        await waitFor(() => expect(melhor().disabled).toBe(false))
+        await userEvent.selectOptions(sort(), 'Best match')
+        await waitFor(() => expect(ultimo().sort).toBe('match'))
+
+        await userEvent.click(within(faixa()).getByRole('button', { name: 'Remove Rust' }))
+
+        await waitFor(() => expect(ultimo()).toEqual({ sort: 'newest' }))
+        await waitFor(() => expect(sort().value).toBe('newest'))
+      })
+    })
+
+    describe('quando a fonte que respondeu nao honra a ordem', () => {
+      it('avisa que a lista veio em outra ordem, nomeando as duas', async () => {
+        vagasDaBusca = [vaga()]
+        await renderizarLogado()
+        await userEvent.type(screen.getByRole('searchbox'), 'backend{Enter}')
+        await screen.findByText('1 job found')
+
+        // O ATS responde: ele so ordena por data.
+        ordemDoFim = 'newest'
+        await userEvent.selectOptions(sort(), 'Most viewed')
+
+        expect(
+          await screen.findByText(/cannot sort by "Most viewed"\. Showing newest first/i),
+        ).toBeTruthy()
+      })
+
+      it('nao avisa quando a ordem aplicada e a pedida', async () => {
+        vagasDaBusca = [vaga()]
+        ordemDoFim = 'newest'
+        await renderizarLogado()
+        await userEvent.type(screen.getByRole('searchbox'), 'backend{Enter}')
+        await screen.findByText('1 job found')
+
+        expect(screen.queryByText(/cannot sort/i)).toBeNull()
+      })
+    })
+
+    it('busca salva antiga com 20 dias continua valendo, e aparece no Posted', async () => {
+      await renderizarLogado()
+      await userEvent.click(screen.getByRole('button', { name: /all filters/i }))
+      await userEvent.click(await screen.findByRole('button', { name: 'Apply old saved search' }))
+
+      await waitFor(() =>
+        expect(ultimo()).toEqual({ roles: ['backend'], sort: 'newest', posted_within_days: 20 }),
+      )
+      // O seletor mostra o que esta valendo, em vez de fingir Any time.
+      expect(posted().value).toBe('20')
+      expect(posted().selectedOptions[0].textContent).toBe('Last 20 days')
+    })
+
+    describe('sem sessao (JOB-47)', () => {
+      it('o Sort fica desabilitado e a tela diz por que', async () => {
+        await renderizar()
+
+        expect(sort().disabled).toBe(true)
+        expect(screen.getByText(/Sign in to sort results/i)).toBeTruthy()
+      })
+
+      it('as janelas que so dariam lista vazia ficam desabilitadas; 30 dias nao', async () => {
+        await renderizar()
+
+        const desabilitadas = [...posted().options].filter((o) => o.disabled).map((o) => o.textContent)
+        expect(desabilitadas).toEqual(['Today', 'Last 3 days', 'Last 7 days', 'Last 14 days'])
+      })
+    })
+  })
+
+  /**
+   * JOB-55 — a IA verifica se a vaga e remota para o pais da pessoa.
+   *
+   * A verificacao e um acrescimo sobre a lista: o que se mede e que ela nunca
+   * a atrasa nem a quebra, e que o veredito chega como TEXTO.
+   */
+  describe('JOB-55 — remoto do meu pais', () => {
+    const QUEM_ENTROU: AuthUser = {
+      id: 'u1',
+      email: 'quem@entrou.com',
+      name: 'Quem Entrou',
+      avatarUrl: null,
+      role: 'COMMON_USER',
+    }
+    const TRES = [
+      vaga({ id: 'a', title: 'Aceita Brasil', url: 'https://x.example/a' }),
+      vaga({ id: 'b', title: 'So Estados Unidos', url: 'https://x.example/b' }),
+      vaga({ id: 'c', title: 'Nao Diz Nada', url: 'https://x.example/c' }),
+      vaga({ id: 'd', title: 'IA Fora Do Ar', url: 'https://x.example/d' }),
+    ]
+    const RESPOSTA = {
+      estado: 'ok',
+      pais: 'Brazil',
+      vereditos: [
+        { id: 'a', veredito: 'sim', trecho: 'Open to candidates anywhere in Latin America.' },
+        { id: 'b', veredito: 'nao', trecho: 'Remote (US only).' },
+        { id: 'c', veredito: 'nao_diz', trecho: null },
+        // 'd' nao vem: o servidor nao conseguiu ler.
+      ],
+    }
+
+    async function buscarLogado(logado = true) {
+      vagasDaBusca = TRES
+      render(
+        <SessaoContext.Provider value={logado ? QUEM_ENTROU : null}>
+          <ListaVagas />
+        </SessaoContext.Provider>,
+      )
+      await screen.findByRole('button', { name: 'Upload CV' })
+      await userEvent.click(screen.getByRole('button', { name: 'Search' }))
+      await screen.findByRole('link', { name: 'Aceita Brasil' })
+    }
+
+    it('a lista aparece ANTES do veredito, com "Checking…" em cada vaga', async () => {
+      let responder: (r: unknown) => void = () => {}
+      mockApi.verificarRemoto.mockReturnValue(new Promise((ok) => (responder = ok)))
+
+      await buscarLogado()
+
+      // As quatro vagas estao na tela e a resposta ainda nao chegou.
+      expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(4)
+      await waitFor(() => expect(screen.getAllByText(/^Checking/)).toHaveLength(4))
+      // So os ids vao — a descricao e lida pelo servidor.
+      expect(mockApi.verificarRemoto.mock.calls[0][0]).toEqual(['a', 'b', 'c', 'd'])
+
+      responder(RESPOSTA)
+      expect(await screen.findByText('Remote from Brazil')).toBeInTheDocument()
+      expect(screen.queryByText(/^Checking/)).not.toBeInTheDocument()
+    })
+
+    it('os tres vereditos sao texto, e o trecho do anuncio fica a um clique', async () => {
+      mockApi.verificarRemoto.mockResolvedValue(RESPOSTA)
+
+      await buscarLogado()
+
+      expect(await screen.findByText('Remote from Brazil')).toBeInTheDocument()
+      expect(screen.getByText('Not from Brazil')).toBeInTheDocument()
+      expect(screen.getByText('Remote from Brazil: not stated')).toBeInTheDocument()
+
+      await userEvent.click(screen.getByRole('button', { name: /Why: remote from Brazil/ }))
+      expect(screen.getByText('Open to candidates anywhere in Latin America.')).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: /Why: not from Brazil/ }))
+      expect(screen.getByText('Remote (US only).')).toBeInTheDocument()
+    })
+
+    it('o filtro mostra so as de veredito sim, e diz quantas ficaram sem resposta', async () => {
+      mockApi.verificarRemoto.mockResolvedValue(RESPOSTA)
+      await buscarLogado()
+      await screen.findByText('Remote from Brazil')
+
+      await userEvent.click(screen.getByLabelText('Only jobs I can do from Brazil'))
+
+      expect(screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent)).toEqual([
+        'Aceita Brasil',
+      ])
+      // "Nao diz" e "nao foi possivel ler" somam 2 — e a tela diz isso.
+      expect(
+        screen.getByText(/Showing 1 on this page\. Hidden: 1 not open to Brazil, and 2 with no answer/),
+      ).toBeInTheDocument()
+
+      await userEvent.click(screen.getByLabelText('Only jobs I can do from Brazil'))
+      expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(4)
+    })
+
+    it('sem pais no perfil: a tela mostra o caminho para configurar, e nenhum selo', async () => {
+      mockApi.verificarRemoto.mockResolvedValue({ estado: 'sem_pais', pais: null, vereditos: [] })
+
+      await buscarLogado()
+
+      const link = await screen.findByRole('link', { name: 'Set your country in your profile' })
+      expect(link).toHaveAttribute('href', '/perfil')
+      expect(screen.queryByLabelText(/Only jobs I can do from/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/^Checking/)).not.toBeInTheDocument()
+    })
+
+    it('interruptor desligado: a tela e a de antes — sem selo, sem filtro, sem erro', async () => {
+      await buscarLogado()
+
+      await waitFor(() => expect(mockApi.verificarRemoto).toHaveBeenCalled())
+      await waitFor(() => expect(screen.queryByText(/^Checking/)).not.toBeInTheDocument())
+      expect(screen.queryByLabelText(/Only jobs I can do from/)).not.toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(4)
+    })
+
+    it('a verificacao falhar nao quebra a lista nem mostra erro', async () => {
+      mockApi.verificarRemoto.mockRejectedValue(new Error('500'))
+
+      await buscarLogado()
+
+      await waitFor(() => expect(mockApi.verificarRemoto).toHaveBeenCalled())
+      await waitFor(() => expect(screen.queryByText(/^Checking/)).not.toBeInTheDocument())
+      expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(4)
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('pagina cheia vai em lotes de 5, e os selos do primeiro lote nao esperam o segundo', async () => {
+      vagasDaBusca = Array.from({ length: 7 }, (_, i) =>
+        vaga({ id: `v${i}`, title: `Vaga ${i}`, url: `https://x.example/${i}` }),
+      )
+      let soltarSegundo: (r: unknown) => void = () => {}
+      mockApi.verificarRemoto
+        .mockResolvedValueOnce({
+          estado: 'ok',
+          pais: 'Brazil',
+          vereditos: [{ id: 'v0', veredito: 'sim', trecho: 'Work from anywhere.' }],
+        })
+        .mockReturnValueOnce(new Promise((ok) => (soltarSegundo = ok)))
+      render(
+        <SessaoContext.Provider value={QUEM_ENTROU}>
+          <ListaVagas />
+        </SessaoContext.Provider>,
+      )
+      await screen.findByRole('button', { name: 'Upload CV' })
+      await userEvent.click(screen.getByRole('button', { name: 'Search' }))
+
+      expect(await screen.findByText('Remote from Brazil')).toBeInTheDocument()
+      await waitFor(() => expect(mockApi.verificarRemoto).toHaveBeenCalledTimes(2))
+      expect(mockApi.verificarRemoto.mock.calls.map((c) => c[0])).toEqual([
+        ['v0', 'v1', 'v2', 'v3', 'v4'],
+        ['v5', 'v6'],
+      ])
+      // O segundo lote ainda esta no ar: so as duas dele dizem "Checking".
+      expect(screen.getAllByText(/^Checking/)).toHaveLength(2)
+
+      soltarSegundo({ estado: 'ok', pais: 'Brazil', vereditos: [] })
+      await waitFor(() => expect(screen.queryByText(/^Checking/)).not.toBeInTheDocument())
+    })
+
+    it('sem sessao a verificacao nem e pedida', async () => {
+      await buscarLogado(false)
+
+      // Mais que a espera do hook: se fosse pedir, ja teria pedido.
+      await new Promise((r) => setTimeout(r, 600))
+      expect(mockApi.verificarRemoto).not.toHaveBeenCalled()
     })
   })
 })

@@ -154,6 +154,12 @@ export class RecursosController {
     return this.recursos.definirHistorico(body.ativa);
   }
 
+  @Put('verificacao-remoto')
+  @AdminOnly()
+  definirVerificacaoRemoto(@Body() body: DefinirFlagDto): Promise<RecursosDto> {
+    return this.recursos.definirVerificacaoRemoto(body.ativa);
+  }
+
   @Put('ordem-da-ia')
   @AdminOnly()
   moverProvedor(@Body() body: MoverProvedorDto): Promise<RecursosDto> {

@@ -311,6 +311,11 @@ export interface Recursos {
   descobertasAtivas: boolean
   /** A paginacao sob demanda da busca (JOB-45). Default ligado. */
   paginacaoAtiva: boolean
+  /**
+   * A verificação de remoto por IA (JOB-55) está ligada E há chave de IA.
+   * Default desligado: cada vaga vista pela primeira vez é uma chamada.
+   */
+  verificacaoRemotoAtiva: boolean
   /** O Firecrawl está ligado e utilizável. Desligado = busca pela IA. */
   firecrawlAtivo: boolean
   /** Há ao menos um motor de busca utilizável. */
@@ -646,6 +651,20 @@ export interface BuscaSalva {
 }
 
 /**
+ * As ordens da busca (JOB-54). Espelha `ORDENS` em `job.dto.ts`.
+ *
+ * União de string, e não enum: o `tsconfig` proíbe enum de TS.
+ */
+export type OrdemDaBusca = 'newest' | 'relevance' | 'views' | 'match'
+
+/**
+ * A ordem que a lista de fato tem. Espelha `OrdemAplicada` em `ordenacao.ts`.
+ *
+ * `oldest` é a regra do anônimo (JOB-47); `null` é motor que não garante ordem.
+ */
+export type OrdemAplicada = OrdemDaBusca | 'oldest' | null
+
+/**
  * A resposta de `POST /jobs/search/mais` (JOB-45).
  *
  * Espelha `MaisVagasDto` do backend — `busca.service.ts`. Mudou um lado, mude
@@ -724,4 +743,22 @@ export interface EstadoDoLogin {
   googleConfigurado: boolean
   /** Quantos e-mails em `ADMIN_EMAILS`. Zero = ninguém administra. */
   admins: number
+}
+
+/**
+ * O veredito da IA sobre uma vaga (JOB-55). Espelha `VereditoDto` de
+ * `backend/src/jobs/remoto-do-pais.dto.ts`.
+ */
+export interface VereditoRemoto {
+  id: string
+  veredito: 'sim' | 'nao' | 'nao_diz'
+  /** O trecho literal do anúncio. `null` em `nao_diz`. */
+  trecho: string | null
+}
+
+/** Espelha `RemotoDoPaisDto`. Vaga ausente de `vereditos` não foi verificada. */
+export interface RemotoDoPaisResposta {
+  estado: 'ok' | 'desligado' | 'sem_pais'
+  pais: string | null
+  vereditos: VereditoRemoto[]
 }

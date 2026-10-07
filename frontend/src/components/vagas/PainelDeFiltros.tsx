@@ -41,6 +41,7 @@ export function PainelDeFiltros({
   onTexto,
   onSelecao,
   onLimparTudo,
+  janela,
 }: {
   /** O texto da barra de busca — vira o primeiro chip. */
   texto: string
@@ -48,8 +49,24 @@ export function PainelDeFiltros({
   onTexto: (t: string) => void
   onSelecao: (s: SelecaoModal) => void
   onLimparTudo: () => void
+  /**
+   * A janela `Posted`, quando não é `Any time` (JOB-54).
+   *
+   * Vem pronta de fora porque não é campo do modal: mora no seletor ao lado
+   * do `Sort`. Mas É filtro — sem o chip, a faixa diria "searching the whole
+   * catalogue" com a lista cortada em três dias.
+   */
+  janela?: { rotulo: string; remover: () => void }
 }) {
   const valores = montarValores(texto, selecao, onTexto, onSelecao)
+  if (janela) {
+    valores.push({
+      chave: 'posted_within_days',
+      rotulo: `Posted: ${janela.rotulo}`,
+      excluido: false,
+      remover: janela.remover,
+    })
+  }
 
   return (
     <div

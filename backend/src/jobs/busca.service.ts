@@ -17,6 +17,7 @@ import {
   LIMITES_COM_SESSAO,
   type LimitesDaBusca,
 } from './limites-anonimos';
+import { ordemAplicada, ordenarLote, type OrdemAplicada } from './ordenacao';
 
 /**
  * O que a IA extrai de cada anuncio.
@@ -171,6 +172,14 @@ export interface EventoBusca {
   temMais?: boolean;
   /** Em `fim`: quantas vagas o filtro tem no catalogo, quando se sabe. */
   totalNoFiltro?: number | null;
+  /**
+   * Em `fim`: a ordem que a lista DE FATO tem (JOB-54).
+   *
+   * Pode diferir da pedida — o ATS so ordena por data, a IA nao garante ordem,
+   * e o anonimo recebe a mais antiga primeiro. A tela compara e avisa, em vez
+   * de anunciar `Most viewed` sobre uma lista que nao e.
+   */
+  ordem?: OrdemAplicada;
 }
 
 /** A resposta de `POST /jobs/search/mais` (JOB-45). */
@@ -294,7 +303,8 @@ export class BuscaService {
         this.log.error(`motor freehire falhou: ${String(e).slice(0, 200)}`);
         return { vagas: [] as VagaDto[], lidasDaApi: 0, totalNoFiltro: null };
       });
-      const doFreehire = pagina.vagas;
+      // `Best match` reordena o lote aqui; as outras ordens ja vem da API.
+      const doFreehire = ordenarLote(pagina.vagas, filtros, limites);
       if (doFreehire.length > 0) {
         this.log.log(`freehire devolveu ${doFreehire.length} vagas`);
         yield { tipo: 'inicio', total: doFreehire.length };
@@ -367,10 +377,15 @@ export class BuscaService {
     // 7 do Firecrawl por 42 creditos (medido em 18/08). So faz sentido gastar
     // credito no que nenhuma API publica alcanca.
     if (atsAtivo && ignorados.length === 0) {
-      const doAts = await this.ats.buscar(filtros).catch((e) => {
-        this.log.error(`motor ATS falhou: ${String(e).slice(0, 200)}`);
-        return [] as VagaDto[];
-      });
+      // O ATS ja devolve por data; so o `Best match` muda a ordem dele.
+      const doAts = ordenarLote(
+        await this.ats.buscar(filtros).catch((e) => {
+          this.log.error(`motor ATS falhou: ${String(e).slice(0, 200)}`);
+          return [] as VagaDto[];
+        }),
+        filtros,
+        limites,
+      );
       if (doAts.length > 0) {
         this.log.log(`ATS devolveu ${doAts.length} vagas`);
         yield { tipo: 'inicio', total: doAts.length };
@@ -711,7 +726,13 @@ export class BuscaService {
       paginacaoAtiva,
       limites,
     );
-    return { tipo: 'fim', sessao: id, temMais, totalNoFiltro };
+    return {
+      tipo: 'fim',
+      sessao: id,
+      temMais,
+      totalNoFiltro,
+      ordem: ordemAplicada(motor, filtros, limites),
+    };
   }
 
   /**
@@ -763,9 +784,13 @@ export class BuscaService {
         return { vagas: [] as VagaDto[], lidasDaApi: 0, totalNoFiltro: null };
       });
 
+      // **A pagina 2 continua a ordem da 1** (JOB-54): o `sort` esta nos
+      // filtros da sessao, entao a consulta acima ja saiu com ele; aqui e a
+      // metade local, o `Best match`, que reordena este lote como reordenou o
+      // primeiro. Antes do `registrar`, que preserva a ordem do que recebe.
       const r = this.sessoes.registrar(
         sessaoId,
-        pagina.vagas,
+        ordenarLote(pagina.vagas, filtros, limites),
         pagina.totalNoFiltro,
         pagina.lidasDaApi,
       );

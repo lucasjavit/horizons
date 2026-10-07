@@ -153,7 +153,7 @@ body {
 
 <header class="topo">
   <h1><span>Horizons</span> · quadro</h1>
-  <p class="resumo">89 cards · 67 feitos</p>
+  <p class="resumo">99 cards · 74 feitos</p>
 </header>
 
   <aside class="sprint">
@@ -163,7 +163,7 @@ body {
   </aside>
 <main class="quadro">
     <section class="coluna col-backlog" aria-labelledby="col-backlog">
-      <h2 id="col-backlog">Backlog <span class="n">21</span></h2>
+      <h2 id="col-backlog">Backlog <span class="n">22</span></h2>
       <ul>
       <li class="cartao">
         <a href="cards/APP-03-revisar-motion-effects.md">
@@ -173,6 +173,28 @@ body {
           </div>
           <h3>Revisar motion effects e referências de interface</h3>
           <p class="porque">O app hoje é estático: nada anima, nada responde ao ponteiro além do hover de cor. Isso é barato de manter e nunca atrapalha, mas também não ajuda em nada — não indica qu</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-19-total-sai-da-folha.md">
+          <div class="cabeca">
+            <span class="ident">INV-19</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>O TOTAL DUE sai da folha quando a tabela termina perto do fim</h3>
+          <p class="porque">O total é o número que a fatura existe para comunicar. Com a quantidade errada de itens, o PDF sai sem ele — uma página só, sem TOTAL DUE, e nada avisa.</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-20-rolagem-horizontal-no-celular.md">
+          <div class="cabeca">
+            <span class="ident">INV-20</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>`/invoice` ganha rolagem horizontal no celular com campo longo</h3>
+          <p class="porque">A 390px a página inteira passa da largura da tela, e o formulário fica cortado à direita — a pessoa precisa arrastar de lado para ver o fim dos campos.</p>
           
         </a>
       </li>
@@ -330,17 +352,6 @@ body {
         </a>
       </li>
       <li class="cartao">
-        <a href="cards/JOB-50-ingestao-de-vagas-rastreadas.md">
-          <div class="cabeca">
-            <span class="ident">JOB-50</span>
-            <span class="tam" title="Tamanho">M</span>
-          </div>
-          <h3>O Horizons recebe vagas rastreadas</h3>
-          <p class="porque">O rastreador envia; alguém precisa receber. Este card é o lado do Horizons do contrato, e vem primeiro porque dá para construir e testar sem o rastreador existir: um curl</p>
-          
-        </a>
-      </li>
-      <li class="cartao">
         <a href="cards/JOB-51-rastreador-rastreio-e-fila-de-envio.md">
           <div class="cabeca">
             <span class="ident">JOB-51</span>
@@ -414,7 +425,7 @@ body {
       </ul>
     </section>
     <section class="coluna col-pronto" aria-labelledby="col-pronto">
-      <h2 id="col-pronto">Pronto para fazer <span class="n">1</span></h2>
+      <h2 id="col-pronto">Pronto para fazer <span class="n">2</span></h2>
       <ul>
       <li class="cartao">
         <a href="cards/JOB-08-prompt-de-busca.md">
@@ -427,16 +438,37 @@ body {
           
         </a>
       </li>
+      <li class="cartao">
+        <a href="cards/JOB-58-data-que-nao-existe-na-rota-de-salvar.md">
+          <div class="cabeca">
+            <span class="ident">JOB-58</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>`2026-02-31` entra na vaga salva e vira 3 de março</h3>
+          <p class="porque"></p>
+          
+        </a>
+      </li>
       </ul>
     </section>
     <section class="coluna col-fazendo" aria-labelledby="col-fazendo">
-      <h2 id="col-fazendo">Fazendo <span class="n">0</span></h2>
+      <h2 id="col-fazendo">Fazendo <span class="n">1</span></h2>
       <ul>
-      <li class="vazio">Nada aqui.</li>
+      <li class="cartao">
+        <a href="cards/JOB-55-ia-verifica-remoto-do-meu-pais.md">
+          <div class="cabeca">
+            <span class="ident">JOB-55</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>A IA verifica se a vaga é remota para quem mora no meu país</h3>
+          <p class="porque">É a pergunta que o produto existe para responder. Hoje ela é respondida só pelo campo (elegibilidade.ts): o local e o regime do anúncio. Isso erra para o lado restritivo </p>
+          
+        </a>
+      </li>
       </ul>
     </section>
     <section class="coluna col-feito" aria-labelledby="col-feito">
-      <h2 id="col-feito">Feito <span class="n">67</span></h2>
+      <h2 id="col-feito">Feito <span class="n">74</span></h2>
       <ul>
       <li class="cartao">
         <a href="cards/APP-01-cabecalho-vaza-no-celular.md">
@@ -689,6 +721,28 @@ body {
           </div>
           <h3>Registro corrompido no histórico derruba o download</h3>
           <p class="porque">O download é o gesto que não pode falhar. É o único desfecho da tela de Invoice: a pessoa preencheu tudo e clica em baixar. Um registro velho e malformado no localStorage</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-18-campo-longo-atropela-o-pdf.md">
+          <div class="cabeca">
+            <span class="ident">INV-18</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Campo longo atropela o PDF em vez de ganhar outra linha</h3>
+          <p class="porque">O PDF é o único desfecho da tela de Invoice, e é o que vai para o cliente. Com um endereço comprido nos dados de pagamento, o valor sai pela margem esquerda da folha e é </p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/INV-21-numero-padrao-da-invoice.md">
+          <div class="cabeca">
+            <span class="ident">INV-21</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>O número da invoice nasce preenchido: `INV-ANO-MÊS`</h3>
+          <p class="porque">Invoice number é obrigatório e nascia vazio: toda invoice começava com a pessoa inventando um número. Quem fatura uma vez por mês usa o mês como número — então esse é o p</p>
           
         </a>
       </li>
@@ -1077,6 +1131,61 @@ body {
             <span class="tam" title="Tamanho">M</span>
           </div>
           <h3>A busca funciona sem login</h3>
+          <p class="porque"></p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-50-ingestao-de-vagas-rastreadas.md">
+          <div class="cabeca">
+            <span class="ident">JOB-50</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>O Horizons recebe vagas rastreadas</h3>
+          <p class="porque">O rastreador envia; alguém precisa receber. Este card é o lado do Horizons do contrato, e vem primeiro porque dá para construir e testar sem o rastreador existir: um curl</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-54-ordenacao-e-filtro-de-data.md">
+          <div class="cabeca">
+            <span class="ident">JOB-54</span>
+            <span class="tam" title="Tamanho">M</span>
+          </div>
+          <h3>A busca mostra as mais recentes primeiro, com `Posted` e `Sort`</h3>
+          <p class="porque">Quem busca vaga quer ver primeiro a que acabou de abrir: vaga velha já tem fila. Hoje, com texto na busca, a API ordena por relevância e a vaga de ontem pode estar na ter</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-56-cv-nao-lido-diz-o-motivo.md">
+          <div class="cabeca">
+            <span class="ident">JOB-56</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>CV não lido por falta de crédito diz isso, e não &quot;tente de novo&quot;</h3>
+          <p class="porque">Medido em 06/10, no log da API, em três uploads seguidos (12:26, 12:29, 12:30):</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-57-atualizar-chave-de-ia.md">
+          <div class="cabeca">
+            <span class="ident">JOB-57</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>Dá para atualizar a chave de IA que já está cadastrada</h3>
+          <p class="porque">Em /config/ia, o campo de chave só aparecia para provedor sem chave ou com chave recusada. É de propósito (campo aberto sobre chave boa convida a mexer no que está certo)</p>
+          
+        </a>
+      </li>
+      <li class="cartao">
+        <a href="cards/JOB-59-ingestao-grava-lote-pela-metade.md">
+          <div class="cabeca">
+            <span class="ident">JOB-59</span>
+            <span class="tam" title="Tamanho">P</span>
+          </div>
+          <h3>A ingestão grava o lote pela metade</h3>
           <p class="porque"></p>
           
         </a>

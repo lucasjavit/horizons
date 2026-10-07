@@ -27,10 +27,12 @@
  * schema de teste antes de qualquer suite comecar.
  */
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import type { PrismaClient } from '@prisma/client';
 import * as jwt from 'jsonwebtoken';
 import { AppModule } from '../src/app.module';
+import { LIMITE_DO_CORPO } from '../src/limite-do-corpo';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { clientDeTeste, exigirSchemaDeTeste, prepararSchema } from './banco-de-teste';
 
@@ -92,8 +94,12 @@ export async function subirAplicacao(schema: string): Promise<AplicacaoDeTeste> 
     .useValue(prisma)
     .compile();
 
-  const app = modulo.createNestApplication();
+  const app = modulo.createNestApplication<NestExpressApplication>();
   app.setGlobalPrefix('api');
+  // O mesmo limite de `main.ts`, pela constante compartilhada — o numero nao e
+  // repetido aqui de proposito: escrito duas vezes, o 413 do lote de ingestao
+  // apareceria so em producao (JOB-50).
+  app.useBodyParser('json', { limit: LIMITE_DO_CORPO });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

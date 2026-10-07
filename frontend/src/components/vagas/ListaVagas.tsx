@@ -4,6 +4,8 @@ import { WARN_INK } from '../cores'
 import { AcoesDaBarra, BarraDeBusca, BOTAO_ICONE } from './BarraDeBusca'
 import { HintWrap } from '../Hint'
 import { PainelDeFiltros } from './PainelDeFiltros'
+import { OrdemEData } from './OrdemEData'
+import { ORDEM_PADRAO, avisoDeOrdem, rotuloDaJanela, separarJanela } from './ordem-e-data'
 import { VagasSalvas } from './VagasSalvas'
 
 /**
@@ -17,6 +19,8 @@ const ModalFiltros = lazy(() =>
 )
 import { CaixaUploadCV } from './CaixaUploadCV'
 import { LinhaVaga } from './LinhaVaga'
+import { FiltroRemoto } from './FiltroRemoto'
+import { resumoDoFiltro, useRemotoDoPais } from './remoto-do-pais'
 import { POR_PAGINA, Paginacao } from './Paginacao'
 import type { MotivoDoFim } from './Paginacao'
 import { api, ehSemSessao } from '../../lib/api'
@@ -26,7 +30,7 @@ import { BotaoGoogle } from '../BotaoGoogle'
 // precisa saber disso para esconder a estrela e mostrar o convite no fim.
 // (Ele tinha saído em 27/08, quando o único uso virou obsoleto.)
 import { useSessao } from '../../lib/sessao'
-import type { CvLido, Historico, Vaga } from '../../types/api'
+import type { CvLido, Historico, OrdemAplicada, OrdemDaBusca, Vaga } from '../../types/api'
 
 type Estado = 'ocioso' | 'buscando' | 'pronto'
 
@@ -113,6 +117,39 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
    */
   const [totalNoFiltro, setTotalNoFiltro] = useState<number | null>(null)
   const [carregandoMais, setCarregandoMais] = useState(false)
+  /**
+   * A ordem e a janela `Posted` (JOB-54).
+   *
+   * **Estado E ref, e a ref não é enfeite.** O estado desenha os seletores; a
+   * ref é o que o `buscar` lê. São seis lugares que disparam a busca (lupa,
+   * chip, modal, limpar…), e passar a ordem por argumento em cada um seria
+   * seis chances de esquecer — a lista voltaria em outra ordem ao remover um
+   * chip, sem nada na tela mudar. E o `setState` só agenda: trocar o seletor
+   * e buscar no mesmo gesto leria o valor antigo. Quem escreve é sempre
+   * `definirOrdem`/`definirJanela`, que mantêm os dois iguais.
+   */
+  const [ordem, setOrdem] = useState<OrdemDaBusca>(ORDEM_PADRAO)
+  const [janela, setJanela] = useState<number | null>(null)
+  const ordemRef = useRef<OrdemDaBusca>(ORDEM_PADRAO)
+  const janelaRef = useRef<number | null>(null)
+  const definirOrdem = useCallback((o: OrdemDaBusca) => {
+    ordemRef.current = o
+    setOrdem(o)
+  }, [])
+  const definirJanela = useCallback((dias: number | null) => {
+    janelaRef.current = dias
+    setJanela(dias)
+  }, [])
+  /**
+   * A ordem que a lista na tela de fato tem, dita pelo servidor no `fim`.
+   *
+   * `undefined` até a busca terminar. Guardada junto com a ordem que ESTA
+   * busca pediu: comparar com o seletor vivo acusaria divergência no instante
+   * em que a pessoa troca a opção, antes de a busca nova responder.
+   */
+  const [ordemDaLista, setOrdemDaLista] = useState<
+    { pedida: OrdemDaBusca; aplicada: OrdemAplicada | undefined } | undefined
+  >()
   const [motivoDoFim, setMotivoDoFim] = useState<MotivoDoFim>(null)
   /**
    * Erro do "Load more", separado do `erroSalva`.
@@ -191,6 +228,7 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
     setTotalNoFiltro(null)
     setTemMais(false)
     setMotivoDoFim(null)
+    setOrdemDaLista(undefined)
     // Busca nova começa da primeira página: ficar na 4 depois de trocar o
     // filtro mostraria uma página vazia e pareceria "sem resultado".
     setPagina(1)
@@ -204,7 +242,23 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
       // gesto mais recente e mais específico.
       // A ordem do spread é a precedência: o topo ganha do modal, porque foi
       // o gesto mais recente e mais específico.
-      const filtros = { ...(avancados ?? {}), ...(doTopo ?? {}) }
+      const filtros: Record<string, unknown> = { ...(avancados ?? {}), ...(doTopo ?? {}) }
+
+      // **A ordem e a janela viajam em TODA busca** (JOB-54) — inclusive o
+      // padrão `newest`, explícito: sem `sort` a API ordena texto por
+      // relevância, e a vaga de ontem cai para a terceira página.
+      //
+      // `Best match` sem tecnologia não tem com o que comparar. Acontece
+      // quando a pessoa escolhe a opção e depois tira o último chip de skill:
+      // a busca volta ao padrão, e o seletor acompanha em vez de continuar
+      // dizendo `Best match` sobre uma lista por data.
+      const temTecnologia =
+        Array.isArray(filtros.technologies) && filtros.technologies.length > 0
+      if (ordemRef.current === 'match' && !temTecnologia) definirOrdem(ORDEM_PADRAO)
+      const pedida = ordemRef.current
+      filtros.sort = pedida
+      if (janelaRef.current !== null) filtros.posted_within_days = janelaRef.current
+
       for await (const ev of buscarVagas(filtros, ctrl.signal)) {
         if (ctrl.signal.aborted) return
         if (ev.tipo === 'inicio') setTotal(ev.total ?? null)
@@ -217,6 +271,7 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
           setSessao(ev.sessao ?? null)
           setTemMais(ev.temMais === true)
           setTotalNoFiltro(ev.totalNoFiltro ?? null)
+          setOrdemDaLista({ pedida, aplicada: ev.ordem })
         } else if (ev.tipo === 'erro') setErro(ev.mensagem ?? 'Search failed.')
       }
       setEstado('pronto')
@@ -227,7 +282,7 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
         setEstado('pronto')
       }
     }
-  }, [])
+  }, [definirOrdem])
 
   /**
    * Busca a próxima página do servidor (JOB-45).
@@ -535,6 +590,16 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
     [filtradas, atual],
   )
   /**
+   * A IA verifica as vagas VISÍVEIS (JOB-55) — depois que a lista aparece, e
+   * só para quem entrou. O filtro vale para a página: é o que foi lido, e
+   * filtrar a lista inteira obrigaria a ler vaga que ninguém está vendo.
+   */
+  const remoto = useRemotoDoPais(visiveis, !!usuario && !vendoSalvas && recorte !== 'descartadas')
+  const [soRemotoDoPais, setSoRemotoDoPais] = useState(false)
+  const resumoRemoto = useMemo(() => resumoDoFiltro(visiveis, remoto.seloDe), [visiveis, remoto])
+  const filtrandoRemoto = soRemotoDoPais && remoto.estado === 'ok' && recorte !== 'descartadas'
+  const naTela = filtrandoRemoto && !remoto.verificando ? resumoRemoto.sim : visiveis
+  /**
    * Quantos valores foram marcados a partir do currículo — a soma dos valores
    * por eixo, não a quantidade de eixos.
    *
@@ -632,10 +697,21 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
   const limparTudo = () => {
     setTextoDaBusca('')
     setAvancadosDaBarra({})
+    // `Posted` é filtro e sai junto. `Sort` NÃO: ordem não restringe nada, e
+    // limpar os filtros não é pedido para desfazer a preferência de ordem.
+    definirJanela(null)
     // Busca de novo já: limpar promete voltar ao catálogo inteiro, e deixar a
     // lista filtrada na tela contradiz isso — a mesma regra do `×` do campo.
     void buscar({}, {})
   }
+
+  // Só com a busca pronta e com vaga na tela: numa lista vazia não há ordem
+  // para discutir. E não para o anônimo — a ordem dele é fixa (JOB-47), o
+  // seletor já está desabilitado com o motivo, e o convite no fim explica.
+  const avisoDaOrdem =
+    estado === 'pronto' && !erro && usuario && vagas.length > 0 && ordemDaLista
+      ? avisoDeOrdem(ordemDaLista.pedida, ordemDaLista.aplicada)
+      : null
 
   return (
     <div className="flex flex-col gap-4">
@@ -647,7 +723,7 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
         linha.
       */}
       <AcoesDaBarra
-        temAlgumFiltro={quantosAtivos > 0}
+        temAlgumFiltro={quantosAtivos > 0 || janela !== null}
         onLimparTudo={limparTudo}
         acoes={
           <>
@@ -747,9 +823,45 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
               void buscar(sel, doTopo())
             }}
             onLimparTudo={limparTudo}
+            janela={
+              janela === null
+                ? undefined
+                : {
+                    rotulo: rotuloDaJanela(janela),
+                    remover: () => {
+                      definirJanela(null)
+                      void buscar(avancadosDaBarra, doTopo())
+                    },
+                  }
+            }
           />
         }
       />
+
+      {/*
+        `Posted` e `Sort` (JOB-54). Fora do quadro da barra: não são campo de
+        busca nem chip, são como a lista logo abaixo é recortada e ordenada.
+
+        **Trocar qualquer um busca na hora** — a mesma regra do `×` de um
+        chip. Um seletor que só valesse no próximo clique na lupa deixaria na
+        tela uma lista em ordem diferente da que ele anuncia.
+      */}
+      {!vendoSalvas && (
+        <OrdemEData
+          ordem={ordem}
+          janela={janela}
+          temTecnologia={(avancadosDaBarra.technologies ?? []).length > 0}
+          anonimo={!usuario}
+          onOrdem={(o) => {
+            definirOrdem(o)
+            void buscar(avancadosDaBarra, doTopo())
+          }}
+          onJanela={(dias) => {
+            definirJanela(dias)
+            void buscar(avancadosDaBarra, doTopo())
+          }}
+        />
+      )}
 
       <div className="flex flex-col gap-4">
         {vendoSalvas ? (
@@ -786,6 +898,17 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
           {totalNoFiltro !== null && totalNoFiltro > vagas.length
             ? `${vagas.length.toLocaleString('en-US')} of ${totalNoFiltro.toLocaleString('en-US')} jobs`
             : `${vagas.length.toLocaleString('en-US')} ${vagas.length === 1 ? 'job found' : 'jobs found'}`}
+        </p>
+      )}
+
+      {/*
+        A ordem pedida não é a que veio (JOB-54): a fonte que respondeu não
+        sabe ordenar assim. `status` e não `alert` — a lista está certa e
+        completa, só não na ordem do seletor.
+      */}
+      {avisoDaOrdem && (
+        <p role="status" className="text-sm" style={{ color: 'var(--accent-ink)' }}>
+          {avisoDaOrdem}
         </p>
       )}
 
@@ -929,8 +1052,21 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
             </p>
           )}
 
+          {recorte !== 'descartadas' && (
+            <FiltroRemoto
+              remoto={remoto}
+              ligado={soRemotoDoPais}
+              onAlternar={setSoRemotoDoPais}
+              resumo={{
+                sim: resumoRemoto.sim.length,
+                nao: resumoRemoto.nao,
+                semResposta: resumoRemoto.semResposta,
+              }}
+            />
+          )}
+
           <ul className="flex flex-col border-t" style={{ borderColor: 'var(--border)' }}>
-            {visiveis.map((vaga) => (
+            {naTela.map((vaga) => (
               // No recorte "Dismissed" a linha ganha o caminho de volta. É o
               // desfazer TARDIO — quem só percebeu o clique errado depois de o
               // aviso de undo sumir encontra a vaga aqui.
@@ -969,6 +1105,7 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
                 // O × só existe aqui: no recorte "Dismissed" a linha é
                 // renderizada pelo outro braço, com o botão Restore no lugar.
                 onDescartar={historico ? (v) => void descartar(v) : undefined}
+                remoto={remoto.seloDe(vaga.id)}
               />
               )
             ))}
@@ -1047,11 +1184,17 @@ export function ListaVagas({ verSalvas = false }: { verSalvas?: boolean }) {
             aberto={modalAberto}
             selecaoInicial={avancadosDaBarra}
             salvarAoAbrir={salvarAoAbrir}
+            janelaEmDias={janela}
             onFechar={() => {
               setModalAberto(false)
               setSalvarAoAbrir(false)
             }}
-            onAplicar={(sel) => {
+            onAplicar={(aplicada) => {
+              // Busca salva antiga traz `posted_within_days` (20, 90) dentro
+              // da seleção. Ele vai para o seletor `Posted`, onde aparece —
+              // na seleção, viajaria sem estar em lugar nenhum da tela.
+              const { selecao: sel, dias } = separarJanela(aplicada)
+              if (dias !== null) definirJanela(dias)
               setAvancadosDaBarra(sel)
               // Nao ha mais painel para abrir: a faixa de chips esta sempre
               // visivel, entao o que foi escolhido aparece sozinho.

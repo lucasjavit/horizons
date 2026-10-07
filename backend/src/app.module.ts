@@ -6,6 +6,7 @@ import { PerfilModule } from './perfil/perfil.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { JobsModule } from './jobs/jobs.module';
 import { EmailModule } from './email/email.module';
+import { IngestModule } from './ingest/ingest.module';
 import { IaModule } from './ia/ia.module';
 import { SettingsModule } from './settings/settings.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
@@ -27,6 +28,9 @@ import { UsuariosModule } from './usuarios/usuarios.module';
     UsuariosModule,
     JobsModule,
     EmailModule,
+    // O lado receptor do rastreador (JOB-50). Modulo proprio porque e contrato
+    // de outra aplicacao, com segredo proprio — nao e uma rota da busca.
+    IngestModule,
   ],
 })
 export class AppModule {}

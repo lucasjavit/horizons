@@ -1,5 +1,6 @@
 import type { FiltrosDto } from './job.dto';
 import { LIMITES_COM_SESSAO, type LimitesDaBusca } from './limites-anonimos';
+import { ordemEfetiva } from './ordenacao';
 
 /**
  * A traducao dos nossos filtros para a consulta do freehire.
@@ -208,6 +209,26 @@ export function paraConsultaFreehire(
   if (f.currency && !f.currencies?.length) p.set('salary_currency', f.currency);
   if (typeof f.posted_within_days === 'number') {
     p.set('posted_within_days', String(f.posted_within_days));
+  }
+
+  // **A ordem escolhida (JOB-54).** Nomes do `openapi.yaml` deles, medidos em
+  // 05/10/2026: `sort=view_count&order=desc` volta com `ignored_params` vazio
+  // e a contagem decrescente (44, 38, 37, 36...).
+  //
+  // `relevance` e `match` NAO mandam `sort`: sem ele a API ordena o texto por
+  // relevancia, e e sobre essa ordem que o `match` reordena localmente
+  // (`ordenacao.ts`). O `order` vai explicito pelo mesmo motivo do bloco de
+  // baixo — nao depender do default deles.
+  //
+  // **Vem ANTES do corte do anonimo, e a posicao e a regra**: o bloco seguinte
+  // sobrescreve `sort` e `order`, entao nenhuma escolha fura o JOB-47.
+  const ordem = ordemEfetiva(f);
+  if (ordem === 'newest') {
+    p.set('sort', 'posted_at');
+    p.set('order', 'desc');
+  } else if (ordem === 'views') {
+    p.set('sort', 'view_count');
+    p.set('order', 'desc');
   }
 
   // **O corte de idade do anonimo (JOB-47), e e aqui que ele vira consulta.**

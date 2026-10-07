@@ -105,6 +105,18 @@ services:
       # valido e desejado — sem ele o e-mail semanal e registrado no log em vez
       # de enviado, que e exatamente como o JOB-24 nasceu. Recusar o boot por
       # falta dele impediria de subir uma aplicacao que funciona.
+      # O segredo do rastreador (JOB-50). Como SMTP_HOST, e ao contrario dos
+      # segredos acima, NAO usa `VAR:?` (a forma estrita): vazio e um estado
+      # valido — a rota de ingestao responde 503 ("nao configurada neste
+      # servidor") em vez de aceitar qualquer um, e o rastreador so existe a
+      # partir do JOB-51. Recusar o boot por falta dele impediria de subir uma
+      # aplicacao que funciona.
+      #
+      # **E sem default**, ao contrario do compose de desenvolvimento: um
+      # segredo embutido no arquivo que vai para o git seria o mesmo em toda
+      # instalacao, e este autoriza ESCRITA no acervo. Minimo 32 caracteres.
+      INGEST_TOKEN: ${INGEST_TOKEN:-}
+      INGEST_DIAS_SEM_CONFIRMACAO: ${INGEST_DIAS_SEM_CONFIRMACAO:-}
       SMTP_HOST: ${SMTP_HOST:-}
       # Base publica dos links de um clique do e-mail. Aqui SEM default de
       # localhost: em producao um link para localhost e um link quebrado no

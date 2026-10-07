@@ -29,3 +29,24 @@ process.env.JWT_SECRET =
 // construcao, e a saida do Jest vira ruido. Nao ha login de verdade nos
 // testes: quem emite token e a propria suite, com o `JWT_SECRET` acima.
 delete process.env.GOOGLE_CLIENT_ID;
+
+/**
+ * O segredo da ingestao de vagas rastreadas (JOB-50).
+ *
+ * Entra aqui pelo mesmo motivo do `JWT_SECRET`: sem ele a rota
+ * `POST /ingest/jobs` responde **503** — "este servidor nao tem ingestao
+ * configurada" —, e o `fail-closed.e2e.spec.ts`, que percorre as rotas
+ * registradas exigindo **401** do anonimo, acusaria a rota de vazar quando o
+ * que falta e configuracao.
+ *
+ * **O 401 continua sendo medido de verdade**, e em dois lugares: aqui, porque
+ * com a variavel definida o anonimo bate na comparacao do segredo e leva 401
+ * como qualquer outra rota protegida; e no `ingest/ingestao.e2e.spec.ts`, que
+ * apaga a variavel de proposito para provar o 503 — inclusive com
+ * `AUTH_DISABLED=true`. Definir aqui nao afrouxa nada: troca uma falha por
+ * configuracao ausente pela checagem que se quer de fato exercitar.
+ *
+ * Valor de teste, como os de cima. Nao e o de nenhum servidor de verdade.
+ */
+process.env.INGEST_TOKEN =
+  process.env.INGEST_TOKEN_TESTE ?? 'ingest-token-de-teste-qa03-com-mais-de-32';

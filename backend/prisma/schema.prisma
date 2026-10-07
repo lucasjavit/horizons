@@ -613,3 +613,104 @@ model SavedSearch {
   @@index([userId])
   @@map("savedsearches")
 }
+
+/// Vaga que o RASTREADOR entregou (JOB-50). A copia local que a busca vai ler.
+///
+/// **Tabela separada de `FoundJob`, e nao uma coluna a mais nele.** Sao dois
+/// ciclos de vida incompativeis:
+///
+/// | | `FoundJob` | `TrackedJob` |
+/// | --- | --- | --- |
+/// | o que e | cache de UMA rodada de busca | o acervo rastreado |
+/// | chave | `(grupo, url)` | `(fonte, idExterno)` |
+/// | morre por | `expiresAt`, 15 dias de idade | fechamento, ou falta de confirmacao |
+/// | dono do fato | a busca que rodou | o ATS, pela boca do rastreador |
+///
+/// Juntar os dois obrigaria `grupo` e `expiresAt` a serem nulos aqui — e um
+/// `expiresAt` nulo num modelo cuja consulta quente e `expiresAt: { gt: now }`
+/// faria a vaga rastreada desaparecer da busca em silencio.
+///
+/// **Nao referencia `SavedJob` nem `JobHistory`, e nao pode.** Apagar a vaga
+/// fechada e o caso normal (JOB-49, decisao 6), e o que a pessoa guardou e um
+/// RETRATO independente: `SavedJob` copia o anuncio inteiro, `JobHistory`
+/// guarda so a URL. Uma FK aqui transformaria "a vaga fechou" em "a pessoa
+/// perdeu o que salvou".
+model TrackedJob {
+  id        String   @id @default(uuid())
+  /// Qual ATS/board trouxe a vaga: `greenhouse`, `lever`, `ashby`.
+  ///
+  /// **Nao e o dominio** como em `FoundJob.fonte` — aqui e o adaptador do
+  /// rastreador, e e metade da chave de idempotencia. Dois boards diferentes
+  /// podem ter o mesmo id numerico; `greenhouse` e `lever` nao.
+  fonte     String
+  /// O id da vaga NO ATS de origem, como o rastreador o leu.
+  ///
+  /// Obrigatorio e nao-vazio (o DTO exige): string vazia casaria com a
+  /// proxima vaga sem id da mesma fonte, e duas vagas diferentes virariam uma.
+  idExterno String
+  title     String
+  company   String
+  url       String
+  /// Cidade/pais como o anuncio escreveu. **E a entrada da elegibilidade** —
+  /// `lerElegibilidade` le daqui, e nao de campo que o rastreador mandou.
+  local     String?
+  regime    String?
+  skills    String[]
+  area      String?
+  anosExp   Int?
+  benefits  String[]
+  degree    String?
+  logoUrl   String?
+  paisIso   String?
+  /// O retrato, com a elegibilidade que o HORIZONS calculou. Coluna Json?
+  /// recebe `Prisma.DbNull`, nunca `null`.
+  ///
+  /// A elegibilidade e regra de produto (JOB-49, "quem e dono de que") e vive
+  /// deste lado de proposito: mudar a regra nao exige reenviar nada, e o
+  /// rastreador — que e dado de terceiro — nao pode afirmar quem a vaga
+  /// aceita.
+  snapshot  Json?
+  postedAt  DateTime?
+  /// A ultima vez que o rastreador MENCIONOU a vaga: criou, atualizou ou so
+  /// reconfirmou o id.
+  ///
+  /// E o unico relogio de validade desta tabela. Sem a reconfirmacao (a lista
+  /// `confirmar` do lote), o prazo apagaria vaga boa que simplesmente nao
+  /// mudou (JOB-49, "quando a vaga fecha").
+  confirmadaEm DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// A chave da idempotencia: o mesmo lote duas vezes nao duplica nada.
+  @@unique([fonte, idExterno])
+  /// A consulta da limpeza: quem nao e mencionado ha N dias.
+  @@index([confirmadaEm])
+  /// A busca do JOB-52 vai filtrar por aqui.
+  @@index([company])
+  @@map("tracked_jobs")
+}
+
+/// O veredito da IA sobre "esta vaga pode ser feita remotamente por quem mora
+/// em `country`?" (JOB-55).
+///
+/// **Sem `userId` de proposito**: a resposta e sobre a vaga e o pais, nao
+/// sobre a pessoa. E o que faz a leitura ser paga UMA vez — a segunda pessoa
+/// do mesmo pais vendo a mesma vaga le desta tabela, sem chamada de IA.
+model RemoteVerdict {
+  id       String @id @default(uuid())
+  /// A chave estavel da vaga: o `public_slug` do freehire, que e o `id` do
+  /// `VagaDto`. Nao a URL — ela carrega parametro de rastreio que muda.
+  vagaId   String
+  /// ISO 3166-1 alfa-2 em maiusculas, igual a `User.country`.
+  country  String
+  /// `sim` | `nao` | `nao_diz`. Texto e nao enum do Postgres: tres valores
+  /// validados na borda (`remoto-do-pais.ts`), e enum novo pede migration.
+  veredito String
+  /// O trecho LITERAL do anuncio que sustenta `sim`/`nao`. Nulo em `nao_diz`.
+  trecho   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([vagaId, country])
+  @@map("remote_verdicts")
+}

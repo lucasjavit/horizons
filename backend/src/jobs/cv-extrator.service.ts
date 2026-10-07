@@ -145,6 +145,18 @@ export class CvExtratorService {
               'preencha os filtros a mao.',
           );
         }
+        // Alguma chave foi recusada ou esta sem credito: "tente de novo em
+        // instantes" seria promessa falsa — a pessoa tentou tres vezes em
+        // 06/10 (JOB-56). So erro transitorio cai no generico, onde tentar de
+        // novo e verdade.
+        if (e.tentativas.some((t) => t.motivo === 'chave recusada')) {
+          this.log.error(`Falha ao ler CV: ${String(e).slice(0, 300)}`);
+          throw new BadRequestException(
+            'Nenhum provedor de IA conseguiu ler o curriculo: ha chave ' +
+              'recusada ou sem credito. Peca ao administrador para conferir ' +
+              'em Configuracoes, ou preencha os filtros a mao.',
+          );
+        }
       }
       throw this.falhaGenerica(e);
     }

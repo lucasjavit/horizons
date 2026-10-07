@@ -22,10 +22,12 @@ import { BuscaAgendadaService } from './busca-agendada.service';
 import { DescobertasService } from './descobertas.service';
 import { DescobertasController } from './descobertas.controller';
 import { VerificacaoDeAtsService } from './verificacao-de-ats.service';
+import { RemotoDoPaisService } from './remoto-do-pais.service';
+import { RemotoDoPaisController } from './remoto-do-pais.controller';
 
 @Module({
   imports: [SettingsModule],
-  controllers: [JobsController, VagasController, BuscaController, FacetasController, BuscasSalvasController, DescobertasController],
-  providers: [JobsService, CvParserService, CvExtratorService, VagasService, SalvasService, HistoricoService, BuscaService, BuscaIaService, BuscaAtsService, BuscaFreehireService, SessaoDeBuscaService, FacetasService, BuscasSalvasService, BuscaAgendadaService, DescobertasService, VerificacaoDeAtsService],
+  controllers: [JobsController, VagasController, BuscaController, FacetasController, BuscasSalvasController, DescobertasController, RemotoDoPaisController],
+  providers: [JobsService, CvParserService, CvExtratorService, VagasService, SalvasService, HistoricoService, BuscaService, BuscaIaService, BuscaAtsService, BuscaFreehireService, SessaoDeBuscaService, FacetasService, BuscasSalvasService, BuscaAgendadaService, DescobertasService, VerificacaoDeAtsService, RemotoDoPaisService],
 })
 export class JobsModule {}

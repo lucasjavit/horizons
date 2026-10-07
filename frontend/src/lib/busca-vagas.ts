@@ -1,4 +1,4 @@
-import type { Vaga } from '../types/api'
+import type { OrdemAplicada, Vaga } from '../types/api'
 import { tokenStore } from './auth'
 
 export interface EventoBusca {
@@ -12,6 +12,11 @@ export interface EventoBusca {
   temMais?: boolean
   /** Em `fim`: quantas vagas o filtro tem no catálogo, quando se sabe. */
   totalNoFiltro?: number | null
+  /**
+   * Em `fim`: a ordem que a lista de fato tem (JOB-54). Pode diferir da
+   * pedida — nem toda fonte sabe ordenar por visualizações ou relevância.
+   */
+  ordem?: OrdemAplicada
 }
 
 /**

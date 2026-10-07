@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { HintWrap } from '../Hint'
 import { BOTAO_ICONE } from './BarraDeBusca'
 import type { Vaga } from '../../types/api'
+import type { SeloRemoto } from './remoto-do-pais'
 import {
   bandeiraDe,
   formatarExperiencia,
@@ -29,6 +30,7 @@ export function LinhaVaga({
   nova,
   onAbrir,
   onDescartar,
+  remoto,
 }: {
   vaga: Vaga
   /** `undefined` quando a lista de salvas ainda não carregou. */
@@ -44,6 +46,11 @@ export function LinhaVaga({
   onAbrir?: (vaga: Vaga) => void
   /** `undefined` esconde o botão: histórico desligado não oferece Dismiss. */
   onDescartar?: (vaga: Vaga) => void
+  /**
+   * O veredito da IA sobre "remoto para quem mora no meu país" (JOB-55).
+   * Ausente = não há o que dizer, e a linha fica com a resposta por campo.
+   */
+  remoto?: SeloRemoto
 }) {
   const idade = formatarIdadeRelativa(vaga.postedAt)
   const experiencia = formatarExperiencia(vaga.anosExp)
@@ -172,6 +179,12 @@ export function LinhaVaga({
           {/* A faixa única de chips, na ordem da captura: área, salário,
               tecnologias, benefícios e o país por último. */}
           <ul className="mt-2 flex flex-wrap items-center gap-1.5">
+            {/* **O selo do JOB-55 vem PRIMEIRO**: é a pergunta que o produto
+                existe para responder. Sempre texto, nunca só cor — e com o
+                trecho do anúncio a um clique, porque "Remote from Brazil"
+                tem a mesma aparência se for lido ou alucinado (JOB-09). */}
+            {remoto && <SeloDeRemoto selo={remoto} />}
+
             {vaga.area && <Chip>{vaga.area}</Chip>}
 
             {salario && (
@@ -258,6 +271,29 @@ export function LinhaVaga({
  * troca de caminho e bloqueia hotlink. Sem ele a linha ficaria com o ícone de
  * imagem quebrada — pior que as iniciais, que pelo menos identificam.
  */
+function SeloDeRemoto({ selo }: { selo: SeloRemoto }) {
+  if (selo.tipo === 'verificando') {
+    return <Chip>Checking{selo.pais ? ` remote from ${selo.pais}` : ''}…</Chip>
+  }
+  if (selo.veredito === 'sim') {
+    return (
+      <Chip destaque trecho={selo.trecho} rotuloTrecho={`Why: remote from ${selo.pais}`}>
+        <span aria-hidden>✓ </span>Remote from {selo.pais}
+      </Chip>
+    )
+  }
+  if (selo.veredito === 'nao') {
+    return (
+      <Chip trecho={selo.trecho} rotuloTrecho={`Why: not from ${selo.pais}`}>
+        <span aria-hidden>✕ </span>Not from {selo.pais}
+      </Chip>
+    )
+  }
+  // `nao_diz` é resposta, e aparece: sem ela a pessoa não distingue "o
+  // anúncio não diz" de "ainda não foi verificado".
+  return <Chip>Remote from {selo.pais}: not stated</Chip>
+}
+
 function Logo({ vaga }: { vaga: Vaga }) {
   const [quebrou, setQuebrou] = useState(false)
 

@@ -56,6 +56,16 @@ export const PORTES = ['grande', 'startup'] as const;
  */
 export const SEDES = ['BR', 'AR', 'MX', 'CO', 'IN'] as const;
 
+/**
+ * As ordens que a tela oferece (JOB-54).
+ *
+ * Nomes NOSSOS, e nao os do freehire (`posted_at`, `view_count`): `match` nao
+ * existe la, e o ATS e a IA nao falam aquele vocabulario. A traducao para o
+ * parametro deles mora em `freehire-consulta.ts`.
+ */
+export const ORDENS = ['newest', 'relevance', 'views', 'match'] as const;
+export type OrdemDaBusca = (typeof ORDENS)[number];
+
 /** Vinculos. */
 export const CONTRATOS = ['clt', 'pj', 'contractor', 'freelance'] as const;
 
@@ -160,6 +170,19 @@ export class FiltrosDto {
   @IsInt()
   @Min(1)
   posted_within_days?: number;
+
+  /**
+   * A ordem da lista (JOB-54). Ausente = a ordem do motor, como sempre foi —
+   * e o que a busca agendada e o alerta de busca salva continuam recebendo.
+   *
+   * **Mora nos filtros de proposito**: a chave do cache percorre todas as
+   * chaves deste objeto e a sessao de paginacao guarda o objeto inteiro, entao
+   * a ordem entra na chave e chega a pagina 2 sem codigo a mais — e sem
+   * viajar no corpo de `POST /jobs/search/mais`, que manda so o id.
+   */
+  @IsOptional()
+  @IsIn(ORDENS)
+  sort?: OrdemDaBusca;
 
   @IsOptional()
   @IsArray()

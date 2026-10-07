@@ -34,6 +34,7 @@ export function ModalFiltros({
   aberto,
   selecaoInicial,
   salvarAoAbrir,
+  janelaEmDias,
   onFechar,
   onAplicar,
 }: {
@@ -46,6 +47,14 @@ export function ModalFiltros({
    * nome, e chegar ao que o botão prometia custava mais dois cliques.
    */
   salvarAoAbrir?: boolean
+  /**
+   * A janela `Posted` que está valendo na lista, em dias (JOB-54).
+   *
+   * Entra SÓ na contagem: sem ela o rodapé prometeria "4,846 matches" com
+   * `Today` escolhido lá fora, e a lista entregaria 40. Não é parte da
+   * seleção do modal — não vira chip aqui nem vai para a busca salva.
+   */
+  janelaEmDias?: number | null
   onFechar: () => void
   onAplicar: (selecao: SelecaoModal) => void
 }) {
@@ -98,7 +107,10 @@ export function ModalFiltros({
     const ac = new AbortController()
     setCarregando(true)
     api
-      .facetas(rascunho, ac.signal)
+      .facetas(
+        janelaEmDias ? { ...rascunho, posted_within_days: janelaEmDias } : rascunho,
+        ac.signal,
+      )
       .then((f) => setFacetas(f))
       .catch((e: unknown) => {
         if (ac.signal.aborted) return
@@ -125,7 +137,7 @@ export function ModalFiltros({
         if (!ac.signal.aborted) setCarregando(false)
       })
     return () => ac.abort()
-  }, [aberto, rascunho])
+  }, [aberto, rascunho, janelaEmDias])
 
   useEffect(() => {
     if (!aberto || !sessao) return

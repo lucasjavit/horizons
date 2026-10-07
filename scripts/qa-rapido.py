@@ -318,6 +318,37 @@ else:
     ok(status_salvar == esperado,
        f"salvar vaga sem token responde {esperado} (deu {status_salvar})")
 
+    # ------------------------------------------------------------------
+    # JOB-50 — a rota de INGESTAO nao depende do AuthGuard.
+    #
+    # ⚠️ **Este e o unico bloco do script cujo esperado NAO se inverte com
+    # AUTH_DISABLED.** Todos os de cima seguem o servidor (200 quando o login
+    # esta desligado); aqui o 401 vale nos dois modos, porque o segredo e
+    # proprio e conferido no guard ANTES do desvio de AUTH_DISABLED — e a rota
+    # ESCREVE no banco.
+    #
+    # Sem este bloco, a regressao mais plausivel (alguem troca o
+    # `@TokenDeIngestao()` por `@Public()` num deploy) passaria: o
+    # `ingestao.e2e.spec.ts` prova o mesmo com a aplicacao montada em teste, e
+    # aqui se confere o servidor que esta NO AR.
+    #
+    # Os dois desfechos legitimos de um servidor sem rastreador:
+    #   401 — INGEST_TOKEN configurado, e o anonimo foi recusado;
+    #   503 — INGEST_TOKEN ausente, e a rota se diz nao configurada.
+    # 201 e o que nao pode acontecer nunca: seria escrita aberta no acervo.
+    print()
+    print("ingestao (JOB-50)")
+    status_ing, _ = post_json("/ingest/jobs", {"upsert": []})
+    ok(status_ing in (401, 503),
+       f"ingestao sem token recusa, mesmo com AUTH_DISABLED (deu {status_ing})")
+
+    # Token errado tambem. Com o INGEST_TOKEN ausente isto da 503, e esta certo
+    # — o que se afirma e que NAO da 201.
+    status_ing, _ = post_json(
+        "/ingest/jobs", {"upsert": []}, tok="token-de-ingestao-errado-xxxxxxxxxxxx")
+    ok(status_ing in (401, 503),
+       f"ingestao com token errado recusa (deu {status_ing})")
+
     # PLT-12: /config/* e so do admin, e a rota de produto nao vaza configuracao.
     #
     # Este bloco existe porque o defeito que ele cobre nasceu de um comentario

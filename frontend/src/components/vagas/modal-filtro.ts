@@ -195,7 +195,11 @@ export const CATEGORIAS: CategoriaFiltro[] = [
   },
   {
     id: 'posted',
-    rotulo: 'Posted',
+    // **`Freshness`, e não `Posted`** (JOB-54). `Posted` passou a ser o seletor
+    // de data ao lado do `Sort`; esta categoria é a faceta `reality` — se o
+    // anúncio parece vivo, parado ou sempre aberto —, e dois "Posted" na tela
+    // para coisas diferentes fariam a pessoa procurar a janela de dias aqui.
+    rotulo: 'Freshness',
     grupo: 'REQUIREMENTS & ELIGIBILITY',
     secoes: [{ faceta: 'reality', titulo: 'Posting freshness', campo: 'reality' }],
   },
